@@ -399,13 +399,25 @@ int32_t conflict_manager::_process_acknowledgement() {
             get_acknowledgements_col_size(acknowledgements_comment_data)) {
       neb::acknowledgement trunc_ack(ack);
       if (trunc_ack.author.size() >
-          get_acknowledgements_col_size(acknowledgements_author))
+          get_acknowledgements_col_size(acknowledgements_author)) {
+        log_v2::sql()->warn(
+            "acknowledgements author ({} instead of {}) is too long to be "
+            "stored in database.",
+            trunc_ack.author.size(),
+            get_acknowledgements_col_size(acknowledgements_author));
         trunc_ack.author.resize(
             get_acknowledgements_col_size(acknowledgements_author));
+      }
       if (trunc_ack.comment.size() >
-          get_acknowledgements_col_size(acknowledgements_comment_data))
+          get_acknowledgements_col_size(acknowledgements_comment_data)) {
+        log_v2::sql()->warn(
+            "acknowledgements comment data ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_ack.comment.size(),
+            get_acknowledgements_col_size(acknowledgements_comment_data));
         trunc_ack.comment.resize(
             get_acknowledgements_col_size(acknowledgements_comment_data));
+      }
       _acknowledgement_insupdate << trunc_ack;
     } else
       _acknowledgement_insupdate << ack;
@@ -712,7 +724,17 @@ int32_t conflict_manager::_process_downtime() {
                       ", host: {}, service: {}): ",
                       dd.poller_id, dd.host_id, dd.service_id));
 
-      _downtime_insupdate << dd;
+      if (dd.author.size() > get_downtimes_col_size(downtimes_author) ||
+          dd.comment.size() > get_downtimes_col_size(downtimes_comment_data)) {
+        neb::downtime trunc_dd(dd);
+        if (trunc_dd.author.size() > get_downtimes_col_size(downtimes_author))
+          trunc_dd.author.resize(get_downtimes_col_size(downtimes_author));
+        if (trunc_dd.comment.size() > get_downtimes_col_size(downtimes_comment_data))
+          trunc_dd.comment.resize(get_downtimes_col_size(downtimes_comment_data));
+        _downtime_insupdate << trunc_dd;
+      }
+      else
+        _downtime_insupdate << dd;
       _mysql.run_statement(_downtime_insupdate, err_msg, true, conn);
       _add_action(conn, actions::downtimes);
     }
@@ -758,7 +780,38 @@ int32_t conflict_manager::_process_event_handler() {
                   ", service: {}, start time: {}): ",
                   eh.host_id, eh.service_id, eh.start_time));
 
-  _event_handler_insupdate << eh;
+  if (eh.command_args.size() > get_eventhandlers_col_size(eventhandlers_command_args) ||
+      eh.command_line.size() > get_eventhandlers_col_size(eventhandlers_command_line) ||
+      eh.output.size() > get_eventhandlers_col_size(eventhandlers_output)) {
+    neb::event_handler trunc_eh(eh);
+    if (eh.command_args.size() > get_eventhandlers_col_size(eventhandlers_command_args)) {
+      log_v2::sql()->warn(
+          "event handler command_args ({} instead of {}) is too long to be "
+          "stored in database.",
+          eh.command_args.size(),
+          get_eventhandlers_col_size(eventhandlers_command_args));
+      trunc_eh.command_args.resize(get_eventhandlers_col_size(eventhandlers_command_args));
+    }
+    if (eh.command_line.size() > get_eventhandlers_col_size(eventhandlers_command_line)) {
+      log_v2::sql()->warn(
+          "event handler command_line ({} instead of {}) is too long to be "
+          "stored in database.",
+          eh.command_line.size(),
+          get_eventhandlers_col_size(eventhandlers_command_line));
+      trunc_eh.command_line.resize(get_eventhandlers_col_size(eventhandlers_command_line));
+    }
+    if (eh.output.size() > get_eventhandlers_col_size(eventhandlers_output)) {
+      log_v2::sql()->warn(
+          "event handler output ({} instead of {}) is too long to be "
+          "stored in database.",
+          eh.output.size(),
+          get_eventhandlers_col_size(eventhandlers_output));
+      trunc_eh.output.resize(get_eventhandlers_col_size(eventhandlers_output));
+    }
+    _event_handler_insupdate << trunc_eh;
+  }
+  else
+    _event_handler_insupdate << eh;
   _mysql.run_statement(
       _event_handler_insupdate, err_msg, true,
       _mysql.choose_connection_by_instance(_cache_host_instance[eh.host_id]));
