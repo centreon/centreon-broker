@@ -77,8 +77,12 @@ class events {
 
   // Events.
   uint32_t register_event(unsigned short category_id,
-                              unsigned short event_id,
-                              event_info const& info);
+                          unsigned short event_id,
+                          std::string const& name = std::string(),
+                          event_info::event_operations const* ops = nullptr,
+                          mapping::entry const* entries = nullptr,
+                          std::string const& table = std::string(),
+                          std::string const& table_v2 = std::string());
   void unregister_event(uint32_t type_id);
 
   // ID manipulations.
