@@ -76,6 +76,7 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/remove_graph.hh"
   "${INC_DIR}/status.hh"
   "${INC_DIR}/stream.hh"
+  "${INC_DIR}/table_max_size.hh"
 )
 set_target_properties("${STORAGE}" PROPERTIES
     PREFIX ""

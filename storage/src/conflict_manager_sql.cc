@@ -24,6 +24,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
+#include "com/centreon/broker/storage/table_max_size.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
 
