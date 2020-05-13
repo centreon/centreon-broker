@@ -53,7 +53,7 @@ Centreon Broker.
 
 ## Fetching sources ##
 
-The reference repository is hosted at [GitHub](https://github.com/centreon/centreon-broker).
+
 Beware that the repository hosts in-development sources and that it
 might not work at all.
 
@@ -88,9 +88,7 @@ For the projet compilation you need to have conan installed. To install conan yo
 
     $> pip3 install conan
 
-All the dependencies pulled by conan are located in conanfile.txt. If you want to use a dependency
-from your package manager instead of conan, you need to remove it from conanfile.txt.
-
+All the dependencies pulled by conan are located in conanfile.txt. If you want to use a dependency from your package manager instead of conan, you need to remove it from conanfile.txt.
 Then you have to add a remote conan repository, for that enter the command:
 
     $> conan remote add centreon https://api.bintray.com/conan/centreon/centreon
@@ -101,24 +99,21 @@ Now, the *command conan remote list* should list two repositories:
     centreon: https://api.bintray.com/conan/centreon/centreon [Verify SSL: True]
 
 Once the sources of Centreon Broker extracted, execute the following commands:
-
-    $> git clone https://github.com/centreon/centreon-broker
+    
+    $> git clone https://github.com/centreon/centreon-broker 
     $> cd centreon-broker
     $> mkdir build
     $> cd build
     $> conan install --remote centreon --build missing ..
 
-We are adding *--build missing* parameter because you may have Conan complaining about missing binaries like *fmt* or *spdlog*. So with this parameter, conan will normally install the missing binaries.
-
+We are adding *--build missing* parameter because you may have Conan complaining about missing binaries like *fmt* or *spdlog*. So with this parameter, Conan will normally install the missing binaries.
 Once those libraries built, always from the *build* directory, enter this command (Note that these cmake parameters are strongly recommended but you can choose your own) :
 
     $> cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker  \ 
              -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On ..
-
     ...
 
-Now launch the compilation using the *make* command and then install the
-software by running *make install* as priviledged user.
+Now launch the compilation using the *make* command and then install the software by running *make install* as priviledged user.
 
     $> make 
     ...
