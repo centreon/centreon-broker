@@ -618,7 +618,21 @@ int32_t conflict_manager::_process_custom_variable_status() {
                     ", host: {}, service: {}): ",
                     cv.name, cv.host_id, cv.service_id));
 
-    _custom_variable_status_insupdate << cv;
+    if (cv.value.size() > get_customvariables_col_size(customvariables_value) ||
+        cv.name.size() > get_customvariables_col_size(customvariables_name)) {
+      neb::custom_variable_status trunc_cv(cv);
+      if (trunc_cv.value.size() >
+          get_customvariables_col_size(customvariables_value))
+        trunc_cv.value.resize(
+            get_customvariables_col_size(customvariables_value));
+      if (trunc_cv.name.size() >
+          get_customvariables_col_size(customvariables_name))
+        trunc_cv.name.resize(
+            get_customvariables_col_size(customvariables_name));
+      _custom_variable_status_insupdate << trunc_cv;
+    } else
+      _custom_variable_status_insupdate << cv;
+
     _mysql.run_statement(_custom_variable_status_insupdate, err_msg, true,
                          conn);
     _add_action(conn, actions::custom_variables);
