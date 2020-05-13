@@ -475,10 +475,22 @@ int32_t conflict_manager::_process_comment() {
   if (cmmnt.author.size() > get_comments_col_size(comments_author) ||
       cmmnt.data.size() > get_comments_col_size(comments_data)) {
     neb::comment trunc_cmnt(cmmnt);
-    if (trunc_cmnt.author.size() > get_comments_col_size(comments_author))
+    if (trunc_cmnt.author.size() > get_comments_col_size(comments_author)) {
+        log_v2::sql()->warn(
+            "comments author ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cmnt.author.size(),
+            get_comments_col_size(comments_author));
       trunc_cmnt.author.resize(get_comments_col_size(comments_author));
-    if (trunc_cmnt.data.size() > get_comments_col_size(comments_data))
+    }
+    if (trunc_cmnt.data.size() > get_comments_col_size(comments_data)) {
+      log_v2::sql()->warn(
+            "comments data ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cmnt.data.size(),
+            get_comments_col_size(comments_data));
       trunc_cmnt.data.resize(get_comments_col_size(comments_data));
+    }
     _comment_insupdate << trunc_cmnt;
   } else
     _comment_insupdate << cmmnt;
@@ -546,17 +558,35 @@ int32_t conflict_manager::_process_custom_variable() {
           cv.name.size() > get_customvariables_col_size(customvariables_name)) {
         neb::custom_variable trunc_cv(cv);
         if (trunc_cv.default_value.size() >
-            get_customvariables_col_size(customvariables_default_value))
+            get_customvariables_col_size(customvariables_default_value)) {
+          log_v2::sql()->warn(
+              "customvariables default value ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_cv.default_value.size(),
+              get_customvariables_col_size(customvariables_default_value));
           trunc_cv.default_value.resize(
               get_customvariables_col_size(customvariables_default_value));
+        }
         if (trunc_cv.value.size() >
-            get_customvariables_col_size(customvariables_value))
+            get_customvariables_col_size(customvariables_value)) {
+          log_v2::sql()->warn(
+              "customvariables value ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_cv.value.size(),
+              get_customvariables_col_size(customvariables_value));
           trunc_cv.value.resize(
               get_customvariables_col_size(customvariables_value));
+        }
         if (trunc_cv.name.size() >
-            get_customvariables_col_size(customvariables_name))
+            get_customvariables_col_size(customvariables_name)) {
+          log_v2::sql()->warn(
+              "customvariables name ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_cv.name.size(),
+              get_customvariables_col_size(customvariables_name));
           trunc_cv.name.resize(
               get_customvariables_col_size(customvariables_name));
+        }
         _custom_variable_insupdate << trunc_cv;
       } else
         _custom_variable_insupdate << cv;
@@ -634,13 +664,25 @@ int32_t conflict_manager::_process_custom_variable_status() {
         cv.name.size() > get_customvariables_col_size(customvariables_name)) {
       neb::custom_variable_status trunc_cv(cv);
       if (trunc_cv.value.size() >
-          get_customvariables_col_size(customvariables_value))
+          get_customvariables_col_size(customvariables_value)) {
+        log_v2::sql()->warn(
+            "customvariables value ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cv.value.size(),
+            get_customvariables_col_size(customvariables_value));
         trunc_cv.value.resize(
             get_customvariables_col_size(customvariables_value));
+      }
       if (trunc_cv.name.size() >
-          get_customvariables_col_size(customvariables_name))
+          get_customvariables_col_size(customvariables_name)) {
+        log_v2::sql()->warn(
+            "customvariables name ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cv.name.size(),
+            get_customvariables_col_size(customvariables_name));
         trunc_cv.name.resize(
             get_customvariables_col_size(customvariables_name));
+      }
       _custom_variable_status_insupdate << trunc_cv;
     } else
       _custom_variable_status_insupdate << cv;
@@ -727,10 +769,22 @@ int32_t conflict_manager::_process_downtime() {
       if (dd.author.size() > get_downtimes_col_size(downtimes_author) ||
           dd.comment.size() > get_downtimes_col_size(downtimes_comment_data)) {
         neb::downtime trunc_dd(dd);
-        if (trunc_dd.author.size() > get_downtimes_col_size(downtimes_author))
+        if (trunc_dd.author.size() > get_downtimes_col_size(downtimes_author)) {
+          log_v2::sql()->warn(
+              "downtimes author ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_dd.author.size(),
+              get_downtimes_col_size(downtimes_author));
           trunc_dd.author.resize(get_downtimes_col_size(downtimes_author));
-        if (trunc_dd.comment.size() > get_downtimes_col_size(downtimes_comment_data))
+        }
+        if (trunc_dd.comment.size() > get_downtimes_col_size(downtimes_comment_data)) {
+          log_v2::sql()->warn(
+              "downtimes comment data ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_dd.comment.size(),
+              get_downtimes_col_size(downtimes_comment_data));
           trunc_dd.comment.resize(get_downtimes_col_size(downtimes_comment_data));
+        }
         _downtime_insupdate << trunc_dd;
       }
       else
