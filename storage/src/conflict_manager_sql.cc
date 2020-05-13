@@ -1171,7 +1171,16 @@ int32_t conflict_manager::_process_host_group() {
                       ", group: {}): ",
                       hg.poller_id, hg.id));
 
-      _host_group_insupdate << hg;
+      if (hg.name.size() > get_hostgroups_col_size(hostgroups_name)) {
+        neb::host_group trunc_hg(hg);
+        log_v2::sql()->warn(
+            "hostgroups name ({} instead of {}) is too long to be "
+            "stored in database.",
+            hg.name.size(), get_hostgroups_col_size(hostgroups_name));
+        trunc_hg.name.resize(get_hostgroups_col_size(hostgroups_name));
+        _host_group_insupdate << trunc_hg;
+      } else
+        _host_group_insupdate << hg;
       _mysql.run_statement(_host_group_insupdate, err_msg, true, conn);
       _add_action(conn, actions::hostgroups);
       _hostgroup_cache.insert(hg.id);
