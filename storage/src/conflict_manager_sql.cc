@@ -530,7 +530,6 @@ void conflict_manager::_process_custom_variable(std::shared_ptr<io::data> d) {
         fmt::format("SQL: could not store custom variable (name: {}"
                     ", host: {}, service: {}): ",
                     cv.name, cv.host_id, cv.service_id));
-    ;
 
     if (cv.default_value.size() >
             get_customvariables_col_size(customvariables_default_value) ||

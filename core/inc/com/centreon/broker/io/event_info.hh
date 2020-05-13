@@ -48,26 +48,27 @@ class event_info {
     io::data* (*constructor)();
   };
 
-  event_info(std::string const& name = "",
-             event_operations const* ops = NULL,
-             mapping::entry const* entries = NULL,
-             std::string const& table = std::string(),
-             std::string const& table_v2 = std::string());
-  event_info(event_info const& other);
-  ~event_info();
-  event_info& operator=(event_info const& other);
-  mapping::entry const* get_mapping() const;
-  std::string const& get_name() const;
-  event_operations const& get_operations() const;
-  std::string const& get_table() const;
-  std::string const& get_table_v2() const;
-
  private:
-  mapping::entry const* _mapping;
-  std::string _name;
-  event_operations const* _ops;
-  std::string _table;
-  std::string _table_v2;
+  const mapping::entry* _mapping;
+  const std::string _name;
+  const event_operations* _ops;
+  const std::string _table;
+  const std::string _table_v2;
+
+ public:
+  event_info(std::string const& name,
+             event_operations const* ops,
+             mapping::entry const* entries,
+             std::string const& table,
+             std::string const& table_v2);
+  event_info(event_info const& other);
+  ~event_info() = default;
+  event_info& operator=(event_info const&) = delete;
+  constexpr mapping::entry const* get_mapping() { return _mapping; }
+  constexpr std::string const& get_name() { return _name; }
+  constexpr event_operations const& get_operations() { return *_ops; }
+  constexpr std::string const& get_table() const { return _table; }
+  constexpr std::string const& get_table_v2() const { return _table_v2; }
 };
 }  // namespace io
 
