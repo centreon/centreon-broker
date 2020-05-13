@@ -2,6 +2,14 @@
 Centreon Broker 20.04.2
 =======================
 
+*********
+Bug fixes
+*********
+
+BBDO is sending corrupted data
+==============================
+Data could be badly sent. Now it is fixed.
+
 ************
 Enhancements
 ************
@@ -38,10 +46,6 @@ filename.
 *********
 Bug fixes
 *********
-
-BBDO is sending corrupted data
-==============================
-Data could be badly sent. Now it is fixed.
 
 Strict mode of the database
 ===========================
