@@ -69,7 +69,7 @@ This paragraph is only a quickstart guide for the compilation of
 Centreon Broker. For a more in-depth guide with build options you should
 refer to the [online documentation](https://documentation.centreon.com/docs/centreon-broker/en/latest/installation/index.html#using-sources).
 
-First og all, check if you have these packages installed (Note that packages names come from Centos 7 distribution, so if some packages names don't match on your distribution try to find their equivalent names) : 
+First of all, check if you have these packages installed (Note that packages names come from Centos 7 distribution, so if some packages names don't match on your distribution try to find their equivalent names) : 
 	
     git, make, cmake, python3, python3-pip3, lua-devel, rrdtool-devel, gnutls-devel.
 
@@ -110,7 +110,7 @@ We are adding *--build missing* parameter because you may have Conan complaining
 Once those libraries built, always from the *build* directory, enter this command (Note that these cmake parameters are strongly recommended but you can choose your own) :
 
     $> cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker  \ 
-             -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On ..
+             -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On ..
     ...
 
 Now launch the compilation using the *make* command and then install the software by running *make install* as priviledged user.
