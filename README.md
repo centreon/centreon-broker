@@ -53,13 +53,13 @@ Centreon Broker.
 
 ## Fetching sources ##
 
-The reference repository is hosted at [GitHub](https://github.com/centreon/centreon-broker).
+
 Beware that the repository hosts in-development sources and that it
 might not work at all.
 
 Stable releases are available as gziped tarballs on [Centreon's download site](https://download.centreon.com).
 
-## Compilation (quickstart) ##
+## Compilation ##
 
 **Warning**: Centreon Broker is a low-level component of the Centreon
 software suite. If this is your first installation you would probably
@@ -69,15 +69,27 @@ This paragraph is only a quickstart guide for the compilation of
 Centreon Broker. For a more in-depth guide with build options you should
 refer to the [online documentation](https://documentation.centreon.com/docs/centreon-broker/en/latest/installation/index.html#using-sources).
 
-For the projet compilation you need to have conan installed. To install conan you need pip 
-(python package manager). You can install conan like that.
+First of all, check if you have these packages installed (Note that packages names come from Centos 7 distribution, so if some packages names don't match on your distribution try to find their equivalent names) : 
+	
+    git, make, cmake, gcc-c++, python3, python3-pip3, lua-devel, rrdtool-devel, gnutls-devel.
 
-    $> pip install conan
+If they are not installed, please install them.
 
-All the dependencies pulled by conan are located in conanfile.txt. If you want to use a dependency
-from your package manager instead of conan, you need to remove it from conanfile.txt.
+If you are on a Centos 7 distribution, follow these steps :
+   
+    $> git clone https://github.com/centreon/centreon-broker
+    $> cd centreon-broker && ./cmake.sh
+    $> cd build
+    $> make & make install
 
-You have to add a remote conan repository, for that enter the command:
+If you are on an other distribution, then follow the steps below.	 
+
+For the projet compilation you need to have conan installed. To install conan you need pip3 if you are using python3 (python package manager). You can install conan like that.
+
+    $> pip3 install conan
+
+All the dependencies pulled by conan are located in conanfile.txt. If you want to use a dependency from your package manager instead of conan, you need to remove it from conanfile.txt.
+Then you have to add a remote conan repository, for that enter the command:
 
     $> conan remote add centreon https://api.bintray.com/conan/centreon/centreon
 
@@ -87,29 +99,29 @@ Now, the *command conan remote list* should list two repositories:
     centreon: https://api.bintray.com/conan/centreon/centreon [Verify SSL: True]
 
 Once the sources of Centreon Broker extracted, execute the following commands:
-
+    
+    $> git clone https://github.com/centreon/centreon-broker 
     $> cd centreon-broker
     $> mkdir build
     $> cd build
-    $> conan install --remote centreon ..
+    $> conan install --remote centreon --build missing ..
 
-You may have Conan complaining about missing binaries like *fmt* or *spdlog*.
-To solve this, you have to follow what Conan suggests at the end of the error
-message, instead of the previous line enter this one:
+We are adding *--build missing* parameter because you may have Conan complaining about missing binaries like *fmt* or *spdlog*. So with this parameter, Conan will normally install the missing binaries.
+Once those libraries built, always from the *build* directory, enter this command (Note that these cmake parameters are strongly recommended but you can choose your own) :
 
-    $> conan install --build missing ..
-
-Once those libraries built, always from the *build* directory, enter:
-
-    $> cmake ..
+    $> cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker  \ 
+             -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On ..
     ...
 
-Now launch the compilation using the *make* command and then install the
-software by running *make install* as priviledged user.
+Now launch the compilation using the *make* command and then install the software by running *make install* as priviledged user.
 
-    $> make -j4
+    $> make 
     ...
-    $# make install
+    $> make install
+
+Normally if all compiles, you have finished installing broker. But if you want, you can also check it. Always from the *build* directory you can execute this command : 
+    
+    $> test/ut
 
 You're done !
 
