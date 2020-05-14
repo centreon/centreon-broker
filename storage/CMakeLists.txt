@@ -30,7 +30,7 @@ add_custom_command(
   COMMENT "Generating table_max_size.hh"
   OUTPUT ${INC_DIR}/table_max_size.hh
   COMMAND python3
-  ARGS ${SRC_DIR}/table_max_size.py "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" ${INC_DIR}/table_max_size.hh
+  ARGS ${SRC_DIR}/table_max_size.py ${INC_DIR}/table_max_size.hh "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml"
 )
 
 # conflict_manager library.
