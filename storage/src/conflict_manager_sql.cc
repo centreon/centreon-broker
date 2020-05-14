@@ -2002,19 +2002,44 @@ int32_t conflict_manager::_process_module() {
     }
 
     // Process object.
-    if (m.enabled) {
+    neb::module* tmp_m;
+    bool release = false;
+    if (m.args.size() > get_modules_col_size(modules_args) ||
+        m.filename.size() > get_modules_col_size(modules_filename)) {
+      tmp_m = new neb::module(m);
+      release = true;
+      if (m.args.size() > get_modules_col_size(modules_args)) {
+        log_v2::sql()->warn(
+            "modules args ({} instead of {}) is too long to be stored in database.",
+            m.args.size(), get_modules_col_size(modules_args));
+        tmp_m->args.resize(get_modules_col_size(modules_args));
+      }
+      if (m.filename.size() > get_modules_col_size(modules_filename)) {
+        log_v2::sql()->warn(
+            "modules filename ({} instead of {}) is too long to be stored in database.",
+            m.filename.size(), get_modules_col_size(modules_filename));
+        tmp_m->filename.resize(get_modules_col_size(modules_filename));
+      }
+    }
+    else
+      tmp_m = const_cast<neb::module*>(&m);
+
+    if (tmp_m->enabled) {
       std::string err_msg(fmt::format(
-          "SQL: could not store module (poller: {}): ", m.poller_id));
-      _module_insert << m;
+          "SQL: could not store module (poller: {}): ", tmp_m->poller_id));
+      _module_insert << *tmp_m;
       _mysql.run_statement(_module_insert, err_msg, true, conn);
       _add_action(conn, actions::modules);
     } else {
       std::string query(fmt::format(
           "DELETE FROM modules WHERE instance_id={} AND filename='{}'",
-          m.poller_id, m.filename));
+          tmp_m->poller_id, tmp_m->filename));
       _mysql.run_query(query, "SQL: ", false, conn);
       _add_action(conn, actions::modules);
     }
+    // the goal here is to avoid a double free corruption.
+    if (release)
+      delete tmp_m;
   }
   _pop_event(p);
   return 1;
@@ -2070,8 +2095,17 @@ int32_t conflict_manager::_process_service_check() {
       store = false;
 
     if (store) {
-      if (_cache_host_instance[sc.host_id]) {
-        _service_check_update << sc;
+      if (_cache_host_instance[sc.service_id]) {
+        if (sc.command_line.size() > get_services_col_size(services_command_line)) {
+          neb::service_check trunc_sc(sc);
+          log_v2::sql()->warn(
+              "services command_line ({} instead of {}) is too long to be stored in database.",
+              sc.command_line.size(), get_services_col_size(services_command_line));
+          trunc_sc.command_line.resize(get_services_col_size(services_command_line));
+          _service_check_update << trunc_sc;
+        } else
+          _service_check_update << sc;
+
         std::promise<int> promise;
         std::string err_msg(
             fmt::format("SQL: could not store service check command (host: {}, "
@@ -2083,10 +2117,8 @@ int32_t conflict_manager::_process_service_check() {
       } else
         logging::error(logging::medium)
             << "SQL: host with host_id = " << sc.host_id
-            << " does not exist - unable to store "
-               "service command check of that "
-               "host. You should restart "
-               "centengine";
+            << " does not exist - unable to store service command check of "
+               "that host. You should restart centengine";
     }
   } else
     // Do nothing.
@@ -2154,6 +2186,57 @@ int32_t conflict_manager::_process_service_dependency() {
           "dependent host: {}, dependent service: {}): ",
           sd.host_id, sd.service_id, sd.dependent_host_id,
           sd.dependent_service_id));
+
+      if (sd.dependency_period.size() >
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_dependency_period) ||
+          sd.execution_failure_options.size() >
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_execution_failure_options) ||
+          sd.notification_failure_options.size() >
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_notification_failure_options)) {
+        neb::service_dependency trunc_sd(sd);
+        if (sd.dependency_period.size() >
+            get_services_services_dependencies_col_size(
+                services_services_dependencies_dependency_period)) {
+          log_v2::sql()->warn(
+              "services_services_dependencies dependency period ({} instead of {}) is too long to be stored in database.",
+              sd.dependency_period.size(),
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_dependency_period));
+          trunc_sd.dependency_period.resize(
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_dependency_period));
+        }
+        if (sd.execution_failure_options.size() >
+            get_services_services_dependencies_col_size(
+                services_services_dependencies_execution_failure_options)) {
+          log_v2::sql()->warn(
+              "services_services_dependencies execution failure options ({} instead of {}) is too long to be stored in database.",
+              sd.execution_failure_options.size(),
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_execution_failure_options));
+          trunc_sd.execution_failure_options.resize(
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_execution_failure_options));
+        }
+        if (sd.notification_failure_options.size() >
+            get_services_services_dependencies_col_size(
+                services_services_dependencies_notification_failure_options)) {
+          log_v2::sql()->warn(
+              "services_services_dependencies notification failure options ({} "
+              "instead of {}) is too long to be stored in database.",
+              sd.notification_failure_options.size(),
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_notification_failure_options));
+          trunc_sd.notification_failure_options.resize(
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_notification_failure_options));
+        }
+        _service_dependency_insupdate << trunc_sd;
+      } else
+        _service_dependency_insupdate << sd;
       _service_dependency_insupdate << sd;
       _mysql.run_statement(_service_dependency_insupdate, err_msg, true, conn);
       _add_action(conn, actions::service_dependencies);
@@ -2165,9 +2248,7 @@ int32_t conflict_manager::_process_service_dependency() {
           << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
           << sd.service_id << ")";
       std::string query(
-          fmt::format("DELETE FROM serivces_services_dependencies WHERE "
-                      "dependent_host_id={} AND dependent_service_id={} AND "
-                      "host_id={} AND service_id={}",
+          fmt::format("DELETE FROM serivces_services_dependencies WHERE dependent_host_id={} AND dependent_service_id={} AND host_id={} AND service_id={}",
                       sd.dependent_host_id, sd.dependent_service_id, sd.host_id,
                       sd.service_id));
       _mysql.run_query(query, "SQL: ", false, conn);
@@ -2217,6 +2298,17 @@ int32_t conflict_manager::_process_service_group() {
       std::string err_msg(fmt::format(
           "SQL: could not store service group (poller: {}, group: {}): ",
           sg.poller_id, sg.id));
+
+      if (sg.name.size() > get_servicegroups_col_size(servicegroups_name)) {
+        neb::service_group trunc_sg(sg);
+        log_v2::sql()->warn(
+            "servicegroups name ({} instead of {}) is too long to be "
+            "stored in database.",
+            sg.name.size(), get_servicegroups_col_size(servicegroups_name));
+        trunc_sg.name.resize(get_servicegroups_col_size(servicegroups_name));
+        _service_group_insupdate << trunc_sg;
+      } else
+        _service_group_insupdate << sg;
 
       _service_group_insupdate << sg;
       _mysql.run_statement(_service_group_insupdate, err_msg, true, conn);
