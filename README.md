@@ -71,7 +71,7 @@ refer to the [online documentation](https://documentation.centreon.com/docs/cent
 
 First of all, check if you have these packages installed (Note that packages names come from Centos 7 distribution, so if some packages names don't match on your distribution try to find their equivalent names) : 
 	
-    git, make, cmake, python3, python3-pip3, lua-devel, rrdtool-devel, gnutls-devel.
+    git, make, cmake, gcc-c++, python3, python3-pip3, lua-devel, rrdtool-devel, gnutls-devel.
 
 If they are not installed, please install them.
 
