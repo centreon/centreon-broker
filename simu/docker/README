@@ -1,2 +1,6 @@
+The files partitioning-logs.xml and installBroker.sql come from the
+centreon/centreon repository. It is this part that is responsible of the
+centreon_storage database.
+
 docker run -it -d --rm -p 3306:3306 centreon-mariadb
 mariadb -u root -proot -h 127.0.0.1 centreon_storage

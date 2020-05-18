@@ -25,6 +25,14 @@ include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/storage")
 
+add_custom_command(
+  DEPENDS ${SRC_DIR}/table_max_size.py
+  COMMENT "Generating table_max_size.hh"
+  OUTPUT ${INC_DIR}/table_max_size.hh
+  COMMAND python3
+  ARGS ${SRC_DIR}/table_max_size.py ${INC_DIR}/table_max_size.hh "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml"
+)
+
 # conflict_manager library.
 add_library("conflictmgr" STATIC
   # Sources.
@@ -34,6 +42,7 @@ add_library("conflictmgr" STATIC
   "${SRC_DIR}/stored_timestamp.cc"
 
   # Headers.
+  ${INC_DIR}/table_max_size.hh
   "${INC_DIR}/conflict_manager.hh"
   "${INC_DIR}/stored_timestamp.hh"
 )
@@ -76,6 +85,7 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/remove_graph.hh"
   "${INC_DIR}/status.hh"
   "${INC_DIR}/stream.hh"
+  "${INC_DIR}/table_max_size.hh"
 )
 set_target_properties("${STORAGE}" PROPERTIES
     PREFIX ""

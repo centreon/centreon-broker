@@ -24,6 +24,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
+#include "com/centreon/broker/storage/table_max_size.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
 
@@ -392,7 +393,34 @@ int32_t conflict_manager::_process_acknowledgement() {
         ", entry time: {}): ",
         ack.poller_id, ack.host_id, ack.service_id, ack.entry_time));
 
-    _acknowledgement_insupdate << ack;
+    if (ack.author.size() >
+            get_acknowledgements_col_size(acknowledgements_author) ||
+        ack.comment.size() >
+            get_acknowledgements_col_size(acknowledgements_comment_data)) {
+      neb::acknowledgement trunc_ack(ack);
+      if (trunc_ack.author.size() >
+          get_acknowledgements_col_size(acknowledgements_author)) {
+        log_v2::sql()->warn(
+            "acknowledgements author ({} instead of {}) is too long to be "
+            "stored in database.",
+            trunc_ack.author.size(),
+            get_acknowledgements_col_size(acknowledgements_author));
+        trunc_ack.author.resize(
+            get_acknowledgements_col_size(acknowledgements_author));
+      }
+      if (trunc_ack.comment.size() >
+          get_acknowledgements_col_size(acknowledgements_comment_data)) {
+        log_v2::sql()->warn(
+            "acknowledgements comment data ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_ack.comment.size(),
+            get_acknowledgements_col_size(acknowledgements_comment_data));
+        trunc_ack.comment.resize(
+            get_acknowledgements_col_size(acknowledgements_comment_data));
+      }
+      _acknowledgement_insupdate << trunc_ack;
+    } else
+      _acknowledgement_insupdate << ack;
     _mysql.run_statement(_acknowledgement_insupdate, msg_error, true, conn);
   }
   _pop_event(p);
@@ -443,6 +471,29 @@ int32_t conflict_manager::_process_comment() {
                   ", internal ID: {}): ",
                   cmmnt.poller_id, cmmnt.host_id, cmmnt.service_id,
                   cmmnt.entry_time, cmmnt.internal_id));
+
+  if (cmmnt.author.size() > get_comments_col_size(comments_author) ||
+      cmmnt.data.size() > get_comments_col_size(comments_data)) {
+    neb::comment trunc_cmnt(cmmnt);
+    if (trunc_cmnt.author.size() > get_comments_col_size(comments_author)) {
+        log_v2::sql()->warn(
+            "comments author ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cmnt.author.size(),
+            get_comments_col_size(comments_author));
+      trunc_cmnt.author.resize(get_comments_col_size(comments_author));
+    }
+    if (trunc_cmnt.data.size() > get_comments_col_size(comments_data)) {
+      log_v2::sql()->warn(
+            "comments data ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cmnt.data.size(),
+            get_comments_col_size(comments_data));
+      trunc_cmnt.data.resize(get_comments_col_size(comments_data));
+    }
+    _comment_insupdate << trunc_cmnt;
+  } else
+    _comment_insupdate << cmmnt;
 
   _comment_insupdate << cmmnt;
   _mysql.run_statement(_comment_insupdate, err_msg, true, conn);
@@ -500,7 +551,46 @@ int32_t conflict_manager::_process_custom_variable() {
                       cv.name, cv.host_id, cv.service_id));
       ;
 
-      _custom_variable_insupdate << cv;
+      if (cv.default_value.size() >
+              get_customvariables_col_size(customvariables_default_value) ||
+          cv.value.size() >
+              get_customvariables_col_size(customvariables_value) ||
+          cv.name.size() > get_customvariables_col_size(customvariables_name)) {
+        neb::custom_variable trunc_cv(cv);
+        if (trunc_cv.default_value.size() >
+            get_customvariables_col_size(customvariables_default_value)) {
+          log_v2::sql()->warn(
+              "customvariables default value ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_cv.default_value.size(),
+              get_customvariables_col_size(customvariables_default_value));
+          trunc_cv.default_value.resize(
+              get_customvariables_col_size(customvariables_default_value));
+        }
+        if (trunc_cv.value.size() >
+            get_customvariables_col_size(customvariables_value)) {
+          log_v2::sql()->warn(
+              "customvariables value ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_cv.value.size(),
+              get_customvariables_col_size(customvariables_value));
+          trunc_cv.value.resize(
+              get_customvariables_col_size(customvariables_value));
+        }
+        if (trunc_cv.name.size() >
+            get_customvariables_col_size(customvariables_name)) {
+          log_v2::sql()->warn(
+              "customvariables name ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_cv.name.size(),
+              get_customvariables_col_size(customvariables_name));
+          trunc_cv.name.resize(
+              get_customvariables_col_size(customvariables_name));
+        }
+        _custom_variable_insupdate << trunc_cv;
+      } else
+        _custom_variable_insupdate << cv;
+
       _mysql.run_statement(_custom_variable_insupdate, err_msg, true, conn);
       _add_action(conn, actions::custom_variables);
     } else {
@@ -570,7 +660,33 @@ int32_t conflict_manager::_process_custom_variable_status() {
                     ", host: {}, service: {}): ",
                     cv.name, cv.host_id, cv.service_id));
 
-    _custom_variable_status_insupdate << cv;
+    if (cv.value.size() > get_customvariables_col_size(customvariables_value) ||
+        cv.name.size() > get_customvariables_col_size(customvariables_name)) {
+      neb::custom_variable_status trunc_cv(cv);
+      if (trunc_cv.value.size() >
+          get_customvariables_col_size(customvariables_value)) {
+        log_v2::sql()->warn(
+            "customvariables value ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cv.value.size(),
+            get_customvariables_col_size(customvariables_value));
+        trunc_cv.value.resize(
+            get_customvariables_col_size(customvariables_value));
+      }
+      if (trunc_cv.name.size() >
+          get_customvariables_col_size(customvariables_name)) {
+        log_v2::sql()->warn(
+            "customvariables name ({} instead of {}) is too long to "
+            "be stored in database.",
+            trunc_cv.name.size(),
+            get_customvariables_col_size(customvariables_name));
+        trunc_cv.name.resize(
+            get_customvariables_col_size(customvariables_name));
+      }
+      _custom_variable_status_insupdate << trunc_cv;
+    } else
+      _custom_variable_status_insupdate << cv;
+
     _mysql.run_statement(_custom_variable_status_insupdate, err_msg, true,
                          conn);
     _add_action(conn, actions::custom_variables);
@@ -650,7 +766,29 @@ int32_t conflict_manager::_process_downtime() {
                       ", host: {}, service: {}): ",
                       dd.poller_id, dd.host_id, dd.service_id));
 
-      _downtime_insupdate << dd;
+      if (dd.author.size() > get_downtimes_col_size(downtimes_author) ||
+          dd.comment.size() > get_downtimes_col_size(downtimes_comment_data)) {
+        neb::downtime trunc_dd(dd);
+        if (trunc_dd.author.size() > get_downtimes_col_size(downtimes_author)) {
+          log_v2::sql()->warn(
+              "downtimes author ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_dd.author.size(),
+              get_downtimes_col_size(downtimes_author));
+          trunc_dd.author.resize(get_downtimes_col_size(downtimes_author));
+        }
+        if (trunc_dd.comment.size() > get_downtimes_col_size(downtimes_comment_data)) {
+          log_v2::sql()->warn(
+              "downtimes comment data ({} instead of {}) is too long to "
+              "be stored in database.",
+              trunc_dd.comment.size(),
+              get_downtimes_col_size(downtimes_comment_data));
+          trunc_dd.comment.resize(get_downtimes_col_size(downtimes_comment_data));
+        }
+        _downtime_insupdate << trunc_dd;
+      }
+      else
+        _downtime_insupdate << dd;
       _mysql.run_statement(_downtime_insupdate, err_msg, true, conn);
       _add_action(conn, actions::downtimes);
     }
@@ -696,7 +834,38 @@ int32_t conflict_manager::_process_event_handler() {
                   ", service: {}, start time: {}): ",
                   eh.host_id, eh.service_id, eh.start_time));
 
-  _event_handler_insupdate << eh;
+  if (eh.command_args.size() > get_eventhandlers_col_size(eventhandlers_command_args) ||
+      eh.command_line.size() > get_eventhandlers_col_size(eventhandlers_command_line) ||
+      eh.output.size() > get_eventhandlers_col_size(eventhandlers_output)) {
+    neb::event_handler trunc_eh(eh);
+    if (eh.command_args.size() > get_eventhandlers_col_size(eventhandlers_command_args)) {
+      log_v2::sql()->warn(
+          "event handler command_args ({} instead of {}) is too long to be "
+          "stored in database.",
+          eh.command_args.size(),
+          get_eventhandlers_col_size(eventhandlers_command_args));
+      trunc_eh.command_args.resize(get_eventhandlers_col_size(eventhandlers_command_args));
+    }
+    if (eh.command_line.size() > get_eventhandlers_col_size(eventhandlers_command_line)) {
+      log_v2::sql()->warn(
+          "event handler command_line ({} instead of {}) is too long to be "
+          "stored in database.",
+          eh.command_line.size(),
+          get_eventhandlers_col_size(eventhandlers_command_line));
+      trunc_eh.command_line.resize(get_eventhandlers_col_size(eventhandlers_command_line));
+    }
+    if (eh.output.size() > get_eventhandlers_col_size(eventhandlers_output)) {
+      log_v2::sql()->warn(
+          "event handler output ({} instead of {}) is too long to be "
+          "stored in database.",
+          eh.output.size(),
+          get_eventhandlers_col_size(eventhandlers_output));
+      trunc_eh.output.resize(get_eventhandlers_col_size(eventhandlers_output));
+    }
+    _event_handler_insupdate << trunc_eh;
+  }
+  else
+    _event_handler_insupdate << eh;
   _mysql.run_statement(
       _event_handler_insupdate, err_msg, true,
       _mysql.choose_connection_by_instance(_cache_host_instance[eh.host_id]));
@@ -808,7 +977,17 @@ int32_t conflict_manager::_process_host_check() {
       if (store) {
         int32_t conn = _mysql.choose_connection_by_instance(
             _cache_host_instance[hc.host_id]);
-        _host_check_update << hc;
+
+        if (hc.command_line.size() > get_hosts_col_size(hosts_command_line)) {
+          neb::host_check trunc_hc(hc);
+          log_v2::sql()->warn(
+              "hosts command_line ({} instead of {}) is too long to be "
+              "stored in database.",
+              hc.command_line.size(), get_hosts_col_size(hosts_command_line));
+          trunc_hc.command_line.resize(get_hosts_col_size(hosts_command_line));
+          _host_check_update << trunc_hc;
+        } else
+          _host_check_update << hc;
 
         std::promise<int> promise;
         std::string err_msg(fmt::format(
@@ -881,7 +1060,58 @@ int32_t conflict_manager::_process_host_dependency() {
                       ", dependent host: {}): ",
                       hd.host_id, hd.dependent_host_id));
 
-      _host_dependency_insupdate << hd;
+      if (hd.dependency_period.size() >
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_dependency_period) ||
+          hd.execution_failure_options.size() >
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_execution_failure_options) ||
+          hd.notification_failure_options.size() >
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_notification_failure_options)) {
+        neb::host_dependency trunc_hd(hd);
+        if (hd.dependency_period.size() >
+            get_hosts_hosts_dependencies_col_size(
+                hosts_hosts_dependencies_dependency_period)) {
+          log_v2::sql()->warn(
+              "hosts_hosts_dependencies dependency period ({} instead of {}) "
+              "is too long to be stored in database.",
+              hd.dependency_period.size(),
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_dependency_period));
+          trunc_hd.dependency_period.resize(
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_dependency_period));
+        }
+        if (hd.execution_failure_options.size() >
+            get_hosts_hosts_dependencies_col_size(
+                hosts_hosts_dependencies_execution_failure_options)) {
+          log_v2::sql()->warn(
+              "hosts_hosts_dependencies execution failure options ({} instead "
+              "of {}) is too long to be stored in database.",
+              hd.execution_failure_options.size(),
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_execution_failure_options));
+          trunc_hd.execution_failure_options.resize(
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_execution_failure_options));
+        }
+        if (hd.notification_failure_options.size() >
+            get_hosts_hosts_dependencies_col_size(
+                hosts_hosts_dependencies_notification_failure_options)) {
+          log_v2::sql()->warn(
+              "hosts_hosts_dependencies notification failure options ({} "
+              "instead of {}) is too long to be stored in database.",
+              hd.notification_failure_options.size(),
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_notification_failure_options));
+          trunc_hd.notification_failure_options.resize(
+              get_hosts_hosts_dependencies_col_size(
+                  hosts_hosts_dependencies_notification_failure_options));
+        }
+        _host_dependency_insupdate << trunc_hd;
+      } else
+        _host_dependency_insupdate << hd;
       _mysql.run_statement(_host_dependency_insupdate, err_msg, true, conn);
       _add_action(conn, actions::host_dependencies);
     }
@@ -941,7 +1171,16 @@ int32_t conflict_manager::_process_host_group() {
                       ", group: {}): ",
                       hg.poller_id, hg.id));
 
-      _host_group_insupdate << hg;
+      if (hg.name.size() > get_hostgroups_col_size(hostgroups_name)) {
+        neb::host_group trunc_hg(hg);
+        log_v2::sql()->warn(
+            "hostgroups name ({} instead of {}) is too long to be "
+            "stored in database.",
+            hg.name.size(), get_hostgroups_col_size(hostgroups_name));
+        trunc_hg.name.resize(get_hostgroups_col_size(hostgroups_name));
+        _host_group_insupdate << trunc_hg;
+      } else
+        _host_group_insupdate << hg;
       _mysql.run_statement(_host_group_insupdate, err_msg, true, conn);
       _add_action(conn, actions::hostgroups);
       _hostgroup_cache.insert(hg.id);
@@ -1032,12 +1271,31 @@ int32_t conflict_manager::_process_host_group_member() {
               "SQL: could not store host group (poller: {}, group: {}): ",
               hg.poller_id, hg.id));
 
-          _host_group_insupdate << hg;
+          if (hg.name.size() > get_hostgroups_col_size(hostgroups_name)) {
+            neb::host_group trunc_hg(hg);
+            log_v2::sql()->warn(
+                "hostgroups name ({} instead of {}) is too long to be "
+                "stored in database.",
+                hg.name.size(), get_hostgroups_col_size(hostgroups_name));
+            trunc_hg.name.resize(get_hostgroups_col_size(hostgroups_name));
+            _host_group_insupdate << trunc_hg;
+          } else
+            _host_group_insupdate << hg;
+
           _mysql.run_statement(_host_group_insupdate, err_msg, false, conn);
           _add_action(conn, actions::hostgroups);
         }
 
-        _host_group_member_insert << hgm;
+        if (hgm.group_name.size() > get_hostgroups_col_size(hostgroups_name)) {
+          neb::host_group_member trunc_hgm(hgm);
+          log_v2::sql()->warn(
+              "hostgroups name ({} instead of {}) is too long to be "
+              "stored in database.",
+              hgm.group_name.size(), get_hostgroups_col_size(hostgroups_name));
+          trunc_hgm.group_name.resize(get_hostgroups_col_size(hostgroups_name));
+          _host_group_member_insert << trunc_hgm;
+        } else
+          _host_group_member_insert << hgm;
         std::string err_msg(
             fmt::format("SQL: could not store host group membership (poller: "
                         "{}, host: {}, group: {}): ",
@@ -1121,6 +1379,146 @@ int32_t conflict_manager::_process_host() {
           "SQL: could not store host (poller: {}, host: {}): ", h.poller_id,
           h.host_id));
 
+      if (h.host_name.size() > get_hosts_col_size(hosts_name) ||
+          h.action_url.size() > get_hosts_col_size(hosts_action_url) ||
+          h.address.size() > get_hosts_col_size(hosts_address) ||
+          h.alias.size() > get_hosts_col_size(hosts_alias) ||
+          h.check_command.size() > get_hosts_col_size(hosts_check_command) ||
+          h.check_period.size() > get_hosts_col_size(hosts_check_period) ||
+          h.display_name.size() > get_hosts_col_size(hosts_display_name) ||
+          h.event_handler.size() > get_hosts_col_size(hosts_event_handler) ||
+          h.icon_image.size() > get_hosts_col_size(hosts_icon_image) ||
+          h.icon_image_alt.size() > get_hosts_col_size(hosts_icon_image_alt) ||
+          h.notes.size() > get_hosts_col_size(hosts_notes) ||
+          h.notes_url.size() > get_hosts_col_size(hosts_notes_url) ||
+          h.notification_period.size() > get_hosts_col_size(hosts_notification_period) ||
+          h.output.size() > get_hosts_col_size(hosts_output) ||
+          h.perf_data.size() > get_hosts_col_size(hosts_perfdata) ||
+          h.statusmap_image.size() > get_hosts_col_size(hosts_statusmap_image) ||
+          h.timezone.size() > get_hosts_col_size(hosts_timezone)) {
+        neb::host trunc_h(h);
+        if (h.host_name.size() > get_hosts_col_size(hosts_name)) {
+          log_v2::sql()->warn(
+              "hosts name ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.host_name.size(), get_hosts_col_size(hosts_name));
+          trunc_h.host_name.resize(get_hosts_col_size(hosts_name));
+        }
+        if (h.action_url.size() > get_hosts_col_size(hosts_action_url)) {
+          log_v2::sql()->warn(
+              "hosts action_url ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.action_url.size(), get_hosts_col_size(hosts_action_url));
+          trunc_h.action_url.resize(get_hosts_col_size(hosts_action_url));
+        }
+        if (h.address.size() > get_hosts_col_size(hosts_address)) {
+          log_v2::sql()->warn(
+              "hosts address ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.address.size(), get_hosts_col_size(hosts_address));
+          trunc_h.address.resize(get_hosts_col_size(hosts_address));
+        }
+        if (h.alias.size() > get_hosts_col_size(hosts_alias)) {
+          log_v2::sql()->warn(
+              "hosts alias ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.alias.size(), get_hosts_col_size(hosts_alias));
+          trunc_h.alias.resize(get_hosts_col_size(hosts_alias));
+        }
+        if (h.check_command.size() > get_hosts_col_size(hosts_check_command)) {
+          log_v2::sql()->warn(
+              "hosts check_command ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.check_command.size(), get_hosts_col_size(hosts_check_command));
+          trunc_h.check_command.resize(get_hosts_col_size(hosts_check_command));
+        }
+        if (h.check_period.size() > get_hosts_col_size(hosts_check_period)) {
+          log_v2::sql()->warn(
+              "hosts check_period ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.check_period.size(), get_hosts_col_size(hosts_check_period));
+          trunc_h.check_period.resize(get_hosts_col_size(hosts_check_period));
+        }
+        if (h.display_name.size() > get_hosts_col_size(hosts_display_name)) {
+          log_v2::sql()->warn(
+              "hosts display_name ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.display_name.size(), get_hosts_col_size(hosts_display_name));
+          trunc_h.display_name.resize(get_hosts_col_size(hosts_display_name));
+        }
+        if (h.event_handler.size() > get_hosts_col_size(hosts_event_handler)) {
+          log_v2::sql()->warn(
+              "hosts event_handler ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.event_handler.size(), get_hosts_col_size(hosts_event_handler));
+          trunc_h.event_handler.resize(get_hosts_col_size(hosts_event_handler));
+        }
+        if (h.icon_image.size() > get_hosts_col_size(hosts_icon_image)) {
+          log_v2::sql()->warn(
+              "hosts icon_image ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.icon_image.size(), get_hosts_col_size(hosts_icon_image));
+          trunc_h.icon_image.resize(get_hosts_col_size(hosts_icon_image));
+        }
+        if (h.icon_image_alt.size() > get_hosts_col_size(hosts_icon_image_alt)) {
+          log_v2::sql()->warn(
+              "hosts icon_image_alt ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.icon_image_alt.size(), get_hosts_col_size(hosts_icon_image_alt));
+          trunc_h.icon_image_alt.resize(get_hosts_col_size(hosts_icon_image_alt));
+        }
+        if (h.notes.size() > get_hosts_col_size(hosts_notes)) {
+          log_v2::sql()->warn(
+              "hosts notes ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.notes.size(), get_hosts_col_size(hosts_notes));
+          trunc_h.notes.resize(get_hosts_col_size(hosts_notes));
+        }
+        if (h.notes_url.size() > get_hosts_col_size(hosts_notes_url)) {
+          log_v2::sql()->warn(
+              "hosts notes_url ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.notes_url.size(), get_hosts_col_size(hosts_notes_url));
+          trunc_h.notes_url.resize(get_hosts_col_size(hosts_notes_url));
+        }
+        if (h.notification_period.size() > get_hosts_col_size(hosts_notification_period)) {
+          log_v2::sql()->warn(
+              "hosts notification_period ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.notification_period.size(), get_hosts_col_size(hosts_notification_period));
+          trunc_h.notification_period.resize(get_hosts_col_size(hosts_notification_period));
+        }
+        if (h.output.size() > get_hosts_col_size(hosts_output)) {
+          log_v2::sql()->warn(
+              "hosts output ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.output.size(), get_hosts_col_size(hosts_output));
+          trunc_h.output.resize(get_hosts_col_size(hosts_output));
+        }
+        if (h.perf_data.size() > get_hosts_col_size(hosts_perfdata)) {
+          log_v2::sql()->warn(
+              "hosts perfdata ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.perf_data.size(), get_hosts_col_size(hosts_perfdata));
+          trunc_h.perf_data.resize(get_hosts_col_size(hosts_perfdata));
+        }
+        if (h.statusmap_image.size() > get_hosts_col_size(hosts_statusmap_image)) {
+          log_v2::sql()->warn(
+              "hosts statusmap_image ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.statusmap_image.size(), get_hosts_col_size(hosts_statusmap_image));
+          trunc_h.statusmap_image.resize(get_hosts_col_size(hosts_statusmap_image));
+        }
+        if (h.timezone.size() > get_hosts_col_size(hosts_timezone)) {
+          log_v2::sql()->warn(
+              "hosts timezone ({} instead of {}) is too long to be stored in "
+              "database.",
+              h.timezone.size(), get_hosts_col_size(hosts_timezone));
+          trunc_h.timezone.resize(get_hosts_col_size(hosts_timezone));
+        }
+        _host_insupdate << trunc_h;
+      }
+      else
       _host_insupdate << h;
       log_v2::sql()->debug("insert or update host...");
       _mysql.run_statement(_host_insupdate, err_msg, true, conn);
@@ -1255,7 +1653,52 @@ int32_t conflict_manager::_process_host_status() {
     }
 
     // Processing.
-    _host_status_update << hs;
+    if (hs.check_command.size() > get_hosts_col_size(hosts_check_command) ||
+        hs.check_period.size() > get_hosts_col_size(hosts_check_period) ||
+        hs.event_handler.size() > get_hosts_col_size(hosts_event_handler) ||
+        hs.output.size() > get_hosts_col_size(hosts_output) ||
+        hs.perf_data.size() > get_hosts_col_size(hosts_perfdata)) {
+      neb::host_status trunc_hs(hs);
+      if (hs.check_command.size() > get_hosts_col_size(hosts_check_command)) {
+        log_v2::sql()->warn(
+            "hosts check_command ({} instead of {}) is too long to be stored "
+            "in "
+            "database.",
+            hs.check_command.size(), get_hosts_col_size(hosts_check_command));
+        trunc_hs.check_command.resize(get_hosts_col_size(hosts_check_command));
+      }
+      if (hs.check_period.size() > get_hosts_col_size(hosts_check_period)) {
+        log_v2::sql()->warn(
+            "hosts check_period ({} instead of {}) is too long to be stored in "
+            "database.",
+            hs.check_period.size(), get_hosts_col_size(hosts_check_period));
+        trunc_hs.check_period.resize(get_hosts_col_size(hosts_check_period));
+      }
+      if (hs.event_handler.size() > get_hosts_col_size(hosts_event_handler)) {
+        log_v2::sql()->warn(
+            "hosts event_handler ({} instead of {}) is too long to be stored "
+            "in "
+            "database.",
+            hs.event_handler.size(), get_hosts_col_size(hosts_event_handler));
+        trunc_hs.event_handler.resize(get_hosts_col_size(hosts_event_handler));
+      }
+      if (hs.output.size() > get_hosts_col_size(hosts_output)) {
+        log_v2::sql()->warn(
+            "hosts output ({} instead of {}) is too long to be stored in "
+            "database.",
+            hs.output.size(), get_hosts_col_size(hosts_output));
+        trunc_hs.output.resize(get_hosts_col_size(hosts_output));
+      }
+      if (hs.perf_data.size() > get_hosts_col_size(hosts_perfdata)) {
+        log_v2::sql()->warn(
+            "hosts perfdata ({} instead of {}) is too long to be stored in "
+            "database.",
+            hs.perf_data.size(), get_hosts_col_size(hosts_perfdata));
+        trunc_hs.perf_data.resize(get_hosts_col_size(hosts_perfdata));
+      }
+      _host_status_update << trunc_hs;
+    } else
+      _host_status_update << hs;
     std::string err_msg(fmt::format(
         "SQL: could not store host status (host: {}): ", hs.host_id));
     int32_t conn =
@@ -1314,7 +1757,36 @@ int32_t conflict_manager::_process_instance() {
     // Process object.
     std::string err_msg(
         fmt::format("SQL: could not store poller (poller: {}): ", i.poller_id));
-    _instance_insupdate << i;
+
+    if (i.name.size() > get_instances_col_size(instances_name) ||
+        i.engine.size() > get_instances_col_size(instances_engine) ||
+        i.version.size() > get_instances_col_size(instances_version)) {
+      neb::instance trunc_i(i);
+      if (i.name.size() > get_instances_col_size(instances_name)) {
+        log_v2::sql()->warn(
+            "instances name ({} instead of {}) is too long to be stored "
+            "in "
+            "database.",
+            i.name.size(), get_instances_col_size(instances_name));
+        trunc_i.name.resize(get_instances_col_size(instances_name));
+      }
+      if (i.engine.size() > get_instances_col_size(instances_engine)) {
+        log_v2::sql()->warn(
+            "instances engine ({} instead of {}) is too long to be stored in "
+            "database.",
+            i.engine.size(), get_instances_col_size(instances_engine));
+        trunc_i.engine.resize(get_instances_col_size(instances_engine));
+      }
+      if (i.version.size() > get_instances_col_size(instances_version)) {
+        log_v2::sql()->warn(
+            "instances version ({} instead of {}) is too long to be stored "
+            "in database.",
+            i.version.size(), get_instances_col_size(instances_version));
+        trunc_i.version.resize(get_instances_col_size(instances_version));
+      }
+      _instance_insupdate << trunc_i;
+    } else
+      _instance_insupdate << i;
 
     _mysql.run_statement(_instance_insupdate, err_msg, true, conn);
     _add_action(conn, actions::instances);
@@ -1361,7 +1833,35 @@ int32_t conflict_manager::_process_instance_status() {
     }
 
     // Process object.
-    _instance_status_insupdate << is;
+    if (is.global_host_event_handler.size() >
+            get_instances_col_size(instances_global_host_event_handler) ||
+        is.global_service_event_handler.size() >
+            get_instances_col_size(instances_global_service_event_handler)) {
+      neb::instance_status trunc_is(is);
+      if (is.global_host_event_handler.size() >
+          get_instances_col_size(instances_global_host_event_handler)) {
+        log_v2::sql()->warn(
+            "instances global_host_event_handler ({} instead of {}) is too "
+            "long to be stored in database.",
+            is.global_host_event_handler.size(),
+            get_instances_col_size(instances_global_host_event_handler));
+        trunc_is.global_host_event_handler.resize(
+            get_instances_col_size(instances_global_host_event_handler));
+      }
+      if (is.global_service_event_handler.size() >
+          get_instances_col_size(instances_global_service_event_handler)) {
+        log_v2::sql()->warn(
+            "instances global_service_event_handler ({} instead of {}) is too "
+            "long to be stored in database.",
+            is.global_service_event_handler.size(),
+            get_instances_col_size(instances_global_service_event_handler));
+        trunc_is.global_service_event_handler.resize(
+            get_instances_col_size(instances_global_service_event_handler));
+      }
+      _instance_status_insupdate << trunc_is;
+    } else
+      _instance_status_insupdate << is;
+
     std::string err_msg(fmt::format(
         "SQL: could not update poller (poller: {}): ", is.poller_id));
     _mysql.run_statement(_instance_status_insupdate, err_msg, true, conn);
@@ -1409,7 +1909,60 @@ int32_t conflict_manager::_process_log() {
     }
 
     // Run query.
-    _log_insert << le;
+    if (le.host_name.size() > get_logs_col_size(logs_host_name) ||
+        le.poller_name.size() > get_logs_col_size(logs_instance_name) ||
+        le.notification_cmd.size() > get_logs_col_size(logs_notification_cmd) ||
+        le.notification_contact.size() > get_logs_col_size(logs_notification_contact) ||
+        le.output.size() > get_logs_col_size(logs_output) ||
+        le.service_description.size() > get_logs_col_size(logs_service_description)) {
+      neb::log_entry trunc_le(le);
+      if (le.host_name.size() > get_logs_col_size(logs_host_name)) {
+        log_v2::sql()->warn(
+            "logs host_name ({} instead of {}) is too long to be stored in "
+            "database.",
+            le.host_name.size(), get_logs_col_size(logs_host_name));
+        trunc_le.host_name.resize(get_logs_col_size(logs_host_name));
+      }
+      if (le.poller_name.size() > get_logs_col_size(logs_instance_name)) {
+        log_v2::sql()->warn(
+            "logs instance_name ({} instead of {}) is too long to be stored in "
+            "database.",
+            le.poller_name.size(), get_logs_col_size(logs_instance_name));
+        trunc_le.poller_name.resize(get_logs_col_size(logs_instance_name));
+      }
+      if (le.notification_cmd.size() > get_logs_col_size(logs_notification_cmd)) {
+        log_v2::sql()->warn(
+            "logs notification_cmd ({} instead of {}) is too long to be stored in "
+            "database.",
+            le.notification_cmd.size(), get_logs_col_size(logs_notification_cmd));
+        trunc_le.notification_cmd.resize(get_logs_col_size(logs_notification_cmd));
+      }
+      if (le.notification_contact.size() > get_logs_col_size(logs_notification_contact)) {
+        log_v2::sql()->warn(
+            "logs notification_contact ({} instead of {}) is too long to be stored in "
+            "database.",
+            le.notification_contact.size(), get_logs_col_size(logs_notification_contact));
+        trunc_le.notification_contact.resize(get_logs_col_size(logs_notification_contact));
+      }
+      if (le.output.size() > get_logs_col_size(logs_output)) {
+        log_v2::sql()->warn(
+            "logs output ({} instead of {}) is too long to be stored in "
+            "database.",
+            le.output.size(), get_logs_col_size(logs_output));
+        trunc_le.output.resize(get_logs_col_size(logs_output));
+      }
+      if (le.service_description.size() > get_logs_col_size(logs_service_description)) {
+        log_v2::sql()->warn(
+            "logs service_description ({} instead of {}) is too long to be stored in "
+            "database.",
+            le.service_description.size(), get_logs_col_size(logs_service_description));
+        trunc_le.service_description.resize(get_logs_col_size(logs_service_description));
+      }
+      _log_insert << trunc_le;
+    }
+    else
+      _log_insert << le;
+
     _mysql.run_statement(_log_insert, "SQL: ", true, conn);
     /* We just have to set the boolean */
     _pop_event(p);
@@ -1449,19 +2002,44 @@ int32_t conflict_manager::_process_module() {
     }
 
     // Process object.
-    if (m.enabled) {
+    neb::module* tmp_m;
+    bool release = false;
+    if (m.args.size() > get_modules_col_size(modules_args) ||
+        m.filename.size() > get_modules_col_size(modules_filename)) {
+      tmp_m = new neb::module(m);
+      release = true;
+      if (m.args.size() > get_modules_col_size(modules_args)) {
+        log_v2::sql()->warn(
+            "modules args ({} instead of {}) is too long to be stored in database.",
+            m.args.size(), get_modules_col_size(modules_args));
+        tmp_m->args.resize(get_modules_col_size(modules_args));
+      }
+      if (m.filename.size() > get_modules_col_size(modules_filename)) {
+        log_v2::sql()->warn(
+            "modules filename ({} instead of {}) is too long to be stored in database.",
+            m.filename.size(), get_modules_col_size(modules_filename));
+        tmp_m->filename.resize(get_modules_col_size(modules_filename));
+      }
+    }
+    else
+      tmp_m = const_cast<neb::module*>(&m);
+
+    if (tmp_m->enabled) {
       std::string err_msg(fmt::format(
-          "SQL: could not store module (poller: {}): ", m.poller_id));
-      _module_insert << m;
+          "SQL: could not store module (poller: {}): ", tmp_m->poller_id));
+      _module_insert << *tmp_m;
       _mysql.run_statement(_module_insert, err_msg, true, conn);
       _add_action(conn, actions::modules);
     } else {
       std::string query(fmt::format(
           "DELETE FROM modules WHERE instance_id={} AND filename='{}'",
-          m.poller_id, m.filename));
+          tmp_m->poller_id, tmp_m->filename));
       _mysql.run_query(query, "SQL: ", false, conn);
       _add_action(conn, actions::modules);
     }
+    // the goal here is to avoid a double free corruption.
+    if (release)
+      delete tmp_m;
   }
   _pop_event(p);
   return 1;
@@ -1517,8 +2095,17 @@ int32_t conflict_manager::_process_service_check() {
       store = false;
 
     if (store) {
-      if (_cache_host_instance[sc.host_id]) {
-        _service_check_update << sc;
+      if (_cache_host_instance[sc.service_id]) {
+        if (sc.command_line.size() > get_services_col_size(services_command_line)) {
+          neb::service_check trunc_sc(sc);
+          log_v2::sql()->warn(
+              "services command_line ({} instead of {}) is too long to be stored in database.",
+              sc.command_line.size(), get_services_col_size(services_command_line));
+          trunc_sc.command_line.resize(get_services_col_size(services_command_line));
+          _service_check_update << trunc_sc;
+        } else
+          _service_check_update << sc;
+
         std::promise<int> promise;
         std::string err_msg(
             fmt::format("SQL: could not store service check command (host: {}, "
@@ -1530,10 +2117,8 @@ int32_t conflict_manager::_process_service_check() {
       } else
         logging::error(logging::medium)
             << "SQL: host with host_id = " << sc.host_id
-            << " does not exist - unable to store "
-               "service command check of that "
-               "host. You should restart "
-               "centengine";
+            << " does not exist - unable to store service command check of "
+               "that host. You should restart centengine";
     }
   } else
     // Do nothing.
@@ -1601,6 +2186,57 @@ int32_t conflict_manager::_process_service_dependency() {
           "dependent host: {}, dependent service: {}): ",
           sd.host_id, sd.service_id, sd.dependent_host_id,
           sd.dependent_service_id));
+
+      if (sd.dependency_period.size() >
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_dependency_period) ||
+          sd.execution_failure_options.size() >
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_execution_failure_options) ||
+          sd.notification_failure_options.size() >
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_notification_failure_options)) {
+        neb::service_dependency trunc_sd(sd);
+        if (sd.dependency_period.size() >
+            get_services_services_dependencies_col_size(
+                services_services_dependencies_dependency_period)) {
+          log_v2::sql()->warn(
+              "services_services_dependencies dependency period ({} instead of {}) is too long to be stored in database.",
+              sd.dependency_period.size(),
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_dependency_period));
+          trunc_sd.dependency_period.resize(
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_dependency_period));
+        }
+        if (sd.execution_failure_options.size() >
+            get_services_services_dependencies_col_size(
+                services_services_dependencies_execution_failure_options)) {
+          log_v2::sql()->warn(
+              "services_services_dependencies execution failure options ({} instead of {}) is too long to be stored in database.",
+              sd.execution_failure_options.size(),
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_execution_failure_options));
+          trunc_sd.execution_failure_options.resize(
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_execution_failure_options));
+        }
+        if (sd.notification_failure_options.size() >
+            get_services_services_dependencies_col_size(
+                services_services_dependencies_notification_failure_options)) {
+          log_v2::sql()->warn(
+              "services_services_dependencies notification failure options ({} "
+              "instead of {}) is too long to be stored in database.",
+              sd.notification_failure_options.size(),
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_notification_failure_options));
+          trunc_sd.notification_failure_options.resize(
+              get_services_services_dependencies_col_size(
+                  services_services_dependencies_notification_failure_options));
+        }
+        _service_dependency_insupdate << trunc_sd;
+      } else
+        _service_dependency_insupdate << sd;
       _service_dependency_insupdate << sd;
       _mysql.run_statement(_service_dependency_insupdate, err_msg, true, conn);
       _add_action(conn, actions::service_dependencies);
@@ -1612,9 +2248,7 @@ int32_t conflict_manager::_process_service_dependency() {
           << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
           << sd.service_id << ")";
       std::string query(
-          fmt::format("DELETE FROM serivces_services_dependencies WHERE "
-                      "dependent_host_id={} AND dependent_service_id={} AND "
-                      "host_id={} AND service_id={}",
+          fmt::format("DELETE FROM serivces_services_dependencies WHERE dependent_host_id={} AND dependent_service_id={} AND host_id={} AND service_id={}",
                       sd.dependent_host_id, sd.dependent_service_id, sd.host_id,
                       sd.service_id));
       _mysql.run_query(query, "SQL: ", false, conn);
@@ -1664,6 +2298,17 @@ int32_t conflict_manager::_process_service_group() {
       std::string err_msg(fmt::format(
           "SQL: could not store service group (poller: {}, group: {}): ",
           sg.poller_id, sg.id));
+
+      if (sg.name.size() > get_servicegroups_col_size(servicegroups_name)) {
+        neb::service_group trunc_sg(sg);
+        log_v2::sql()->warn(
+            "servicegroups name ({} instead of {}) is too long to be "
+            "stored in database.",
+            sg.name.size(), get_servicegroups_col_size(servicegroups_name));
+        trunc_sg.name.resize(get_servicegroups_col_size(servicegroups_name));
+        _service_group_insupdate << trunc_sg;
+      } else
+        _service_group_insupdate << sg;
 
       _service_group_insupdate << sg;
       _mysql.run_statement(_service_group_insupdate, err_msg, true, conn);

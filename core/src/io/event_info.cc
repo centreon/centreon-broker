@@ -73,7 +73,7 @@ event_info& event_info::operator=(event_info const& other) {
     _table = other._table;
     _table_v2 = other._table_v2;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -82,7 +82,7 @@ event_info& event_info::operator=(event_info const& other) {
  *  @return Event mapping.
  */
 mapping::entry const* event_info::get_mapping() const {
-  return (_mapping);
+  return _mapping;
 }
 
 /**
@@ -91,7 +91,7 @@ mapping::entry const* event_info::get_mapping() const {
  *  @return Event name.
  */
 std::string const& event_info::get_name() const {
-  return (_name);
+  return _name;
 }
 
 /**
@@ -100,7 +100,7 @@ std::string const& event_info::get_name() const {
  *  @return Event operations.
  */
 event_info::event_operations const& event_info::get_operations() const {
-  return (*_ops);
+  return *_ops;
 }
 
 /**
@@ -109,7 +109,7 @@ event_info::event_operations const& event_info::get_operations() const {
  *  @return Event SQL table name.
  */
 std::string const& event_info::get_table() const {
-  return (_table);
+  return _table;
 }
 
 /**
@@ -118,5 +118,5 @@ std::string const& event_info::get_table() const {
  *  @return Event SQL table name in version 2.x.
  */
 std::string const& event_info::get_table_v2() const {
-  return (_table_v2);
+  return _table_v2;
 }
