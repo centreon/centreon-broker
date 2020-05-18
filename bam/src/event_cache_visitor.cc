@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/event_cache_visitor.hh"
+
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
@@ -39,21 +40,12 @@ event_cache_visitor::~event_cache_visitor() {}
  *  @param[out] to  The stream to commit to.
  */
 void event_cache_visitor::commit_to(io::stream& to) {
-  for (std::vector<std::shared_ptr<io::data> >::const_iterator
-           it(_others.begin()),
-       end(_others.end());
-       it != end; ++it)
-    to.write(*it);
-  for (std::vector<std::shared_ptr<io::data> >::const_iterator
-           it(_ba_events.begin()),
-       end(_ba_events.end());
-       it != end; ++it)
-    to.write(*it);
-  for (std::vector<std::shared_ptr<io::data> >::const_iterator
-           it(_kpi_events.begin()),
-       end(_kpi_events.end());
-       it != end; ++it)
-    to.write(*it);
+  for (auto const& o : _others)
+    to.write(o);
+  for (auto const& ba : _ba_events)
+    to.write(ba);
+  for (auto const& kpi : _kpi_events)
+    to.write(kpi);
   _others.clear();
   _ba_events.clear();
   _kpi_events.clear();

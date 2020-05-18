@@ -54,8 +54,8 @@ void mysql_connection::_query(mysql_task* t) {
   mysql_task_run* task(static_cast<mysql_task_run*>(t));
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
-    log_v2::sql()->error("{} could not execute query: {} ({})",
-        task->error_msg, ::mysql_error(_conn), task->query);
+    log_v2::sql()->error("{} could not execute query: {} ({})", task->error_msg,
+                         ::mysql_error(_conn), task->query);
     logging::error(logging::medium)
         << task->error_msg
         << "could not execute query: " << ::mysql_error(_conn) << " ("
@@ -72,7 +72,7 @@ void mysql_connection::_query_res(mysql_task* t) {
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
     log_v2::sql()->error("mysql_connection: run query failed: {} ({})",
-        ::mysql_error(_conn), task->query);
+                         ::mysql_error(_conn), task->query);
     exceptions::msg e;
     e << ::mysql_error(_conn);
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
@@ -88,7 +88,7 @@ void mysql_connection::_query_int(mysql_task* t) {
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
     log_v2::sql()->error("mysql_connection: run query failed {} ({})",
-        ::mysql_error(_conn), task->query);
+                         ::mysql_error(_conn), task->query);
     exceptions::msg e;
     e << ::mysql_error(_conn);
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
@@ -111,11 +111,14 @@ void mysql_connection::_commit(mysql_task* t) {
     while (attempts++ < MAX_ATTEMPTS && (res = mysql_commit(_conn))) {
       char const* err = ::mysql_error(_conn);
       if (strcmp(err, "MySQL server has gone away") == 0) {
-        log_v2::sql()->error("mysql_connection: The mysql/mariadb database seems not started. Unable to reconnect: {}",
+        log_v2::sql()->error(
+            "mysql_connection: The mysql/mariadb database seems not started. "
+            "Unable to reconnect: {}",
             ::mysql_error(_conn));
         attempts = MAX_ATTEMPTS;
       }
-      log_v2::sql()->error("could not commit queries: {}", ::mysql_error(_conn));
+      log_v2::sql()->error("could not commit queries: {}",
+                           ::mysql_error(_conn));
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
   } else
@@ -135,7 +138,8 @@ void mysql_connection::_commit(mysql_task* t) {
 void mysql_connection::_prepare(mysql_task* t) {
   mysql_task_prepare* task(static_cast<mysql_task_prepare*>(t));
   if (_stmt[task->id]) {
-    log_v2::sql()->info("mysql_connection: Statement already prepared: {} ({})", task->id, task->query);
+    log_v2::sql()->info("mysql_connection: Statement already prepared: {} ({})",
+                        task->id, task->query);
     return;
   }
 
@@ -162,7 +166,7 @@ void mysql_connection::_prepare(mysql_task* t) {
 
 void mysql_connection::_statement(mysql_task* t) {
   mysql_task_statement* task(static_cast<mysql_task_statement*>(t));
-  log_v2::sql()->debug("mysql_connection: execute statement {}",
+  log_v2::sql()->trace("mysql_connection: execute statement {}",
                        task->statement_id);
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
@@ -183,7 +187,7 @@ void mysql_connection::_statement(mysql_task* t) {
                       mysql_stmt_error(stmt), task->statement_id));
     else {
       log_v2::sql()->error("mysql: Error while binding values in statement: {}",
-          mysql_stmt_error(stmt));
+                           mysql_stmt_error(stmt));
       logging::error(logging::medium)
           << "mysql: Error while binding values in statement: "
           << mysql_stmt_error(stmt);
@@ -198,7 +202,8 @@ void mysql_connection::_statement(mysql_task* t) {
 
         mysql_commit(_conn);
 
-        log_v2::sql()->error("mysql: Error while sending prepared query: {} ({})",
+        log_v2::sql()->error(
+            "mysql: Error while sending prepared query: {} ({})",
             mysql_stmt_error(stmt), task->error_msg);
         logging::error(logging::medium)
             << "mysql: Error while sending prepared query: "
@@ -253,7 +258,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
 
         mysql_commit(_conn);
 
-        log_v2::sql()->error("mysql Error while executing prepared statement {}: {} ({})", _stmt_query[task->statement_id], mysql_stmt_error(stmt), task->statement_id);
+        log_v2::sql()->error(
+            "mysql Error while executing prepared statement {}: {} ({})",
+            _stmt_query[task->statement_id], mysql_stmt_error(stmt),
+            task->statement_id);
         logging::error(logging::medium)
             << "mysql: Error while executing prepared statement <<"
             << _stmt_query[task->statement_id]
@@ -314,10 +322,12 @@ void mysql_connection::_statement_int(mysql_task* t) {
   mysql_task_statement_int<T>* task(
       static_cast<mysql_task_statement_int<T>*>(t));
   log_v2::sql()->debug("mysql: execute statement: {}", task->statement_id);
-  log_v2::sql()->trace("statement {} query: {}", task->statement_id, _stmt_query[task->statement_id]);
+  log_v2::sql()->trace("statement {} query: {}", task->statement_id,
+                       _stmt_query[task->statement_id]);
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
-    log_v2::sql()->error("mysql: no statement to execute ({})", task->statement_id);
+    log_v2::sql()->error("mysql: no statement to execute ({})",
+                         task->statement_id);
     exceptions::msg e;
     e << "statement not prepared";
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
@@ -328,7 +338,9 @@ void mysql_connection::_statement_int(mysql_task* t) {
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
-    log_v2::sql()->debug("mysql: statement <<{}>> binding failed: {}", _stmt_query[task->statement_id], mysql_stmt_error(stmt));
+    log_v2::sql()->debug("mysql: statement <<{}>> binding failed: {}",
+                         _stmt_query[task->statement_id],
+                         mysql_stmt_error(stmt));
     exceptions::msg e;
     e << mysql_stmt_error(stmt);
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
@@ -344,8 +356,8 @@ void mysql_connection::_statement_int(mysql_task* t) {
 
         log_v2::sql()->error(
             "mysql: Error while sending prepared statement <<{}>>: {} ({})",
-            _stmt_query[task->statement_id],
-            mysql_stmt_error(stmt), task->statement_id);
+            _stmt_query[task->statement_id], mysql_stmt_error(stmt),
+            task->statement_id);
         if (++attempts >= MAX_ATTEMPTS) {
           exceptions::msg e;
           e << mysql_stmt_error(stmt);

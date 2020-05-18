@@ -19,6 +19,8 @@
 #ifndef CCB_MULTIPLEXING_PUBLISHER_HH
 #define CCB_MULTIPLEXING_PUBLISHER_HH
 
+#include <list>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -43,6 +45,7 @@ class publisher : public io::stream {
   publisher& operator=(publisher const& other) = delete;
   bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   int write(std::shared_ptr<io::data> const& d);
+  int write(std::list<std::shared_ptr<io::data>> const& to_publish);
 };
 }  // namespace multiplexing
 

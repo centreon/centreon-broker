@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/multiplexing/publisher.hh"
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -68,4 +69,18 @@ bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
 int publisher::write(std::shared_ptr<io::data> const& d) {
   engine::instance().publish(d);
   return 1;
+}
+
+/**
+ * @brief Send a list of events to multiplexing engine. This method is better
+ *        than the other write() when we have many data of the same type to
+ *        send at the same time.
+ *
+ * @param to_publish
+ *
+ * @return The number of events published.
+ */
+int publisher::write(std::list<std::shared_ptr<io::data>> const& to_publish) {
+  engine::instance().publish(to_publish);
+  return to_publish.size();
 }

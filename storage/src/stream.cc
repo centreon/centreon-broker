@@ -99,8 +99,8 @@ int32_t stream::flush() {
   _pending_events -= retval;
 
   // Event acknowledgement.
-  logging::debug(logging::low) << "storage: " << _pending_events
-                               << " events have not yet been acknowledged";
+  log_v2::perfdata()->debug("storage: {} events have not yet been acknowledged",
+                            _pending_events);
   return retval;
 }
 

@@ -224,9 +224,12 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
 
     // Check format.
     if (*tmp != '=') {
+      int i;
+      for (i = 0; i < 10 && tmp[i]; i++)
+        ;
       log_v2::perfdata()->error(
           "invalid perfdata format: equal sign not present or misplaced '{}'",
-          std::string(s, tmp + 10 - s));
+          std::string(s, tmp + i));
       error = true;
     } else
       ++tmp;
@@ -239,10 +242,14 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
     // Extract value.
     p.value(extract_double(const_cast<char const**>(&tmp), false));
     if (std::isnan(p.value())) {
+      int i;
+      for (i = 0; i < 10 && tmp[i]; i++)
+        ;
+
       log_v2::perfdata()->error(
           "storage: invalid perfdata format: no numeric value after equal sign "
           "'{}'",
-          std::string(s, tmp + 10 - s));
+          std::string(s, tmp + i));
       error = true;
       tmp = skip(tmp);
       continue;
