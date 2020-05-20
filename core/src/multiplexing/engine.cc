@@ -29,7 +29,6 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 
@@ -105,18 +104,14 @@ void engine::load() {
  */
 void engine::publish(std::shared_ptr<io::data> const& e) {
   // Lock mutex.
-  log_v2::core()->info("engine publish");
   std::lock_guard<std::mutex> lock(_engine_m);
   _publish(e);
-  log_v2::core()->info("engine publish done");
 }
 
 void engine::publish(std::list<std::shared_ptr<io::data>> const& to_publish) {
-  log_v2::core()->info("engine publish in mass");
   std::lock_guard<std::mutex> lock(_engine_m);
   for (auto& e : to_publish)
     _publish(e);
-  log_v2::core()->info("engine publish in mass done");
 }
 
 /**
