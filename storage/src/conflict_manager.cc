@@ -677,13 +677,6 @@ json11::Json::object conflict_manager::get_statistics() {
   return retval;
 }
 
-// void conflict_manager::_pop_event(
-//    std::tuple<std::shared_ptr<io::data>, stream_type, bool*>& p) {
-//  std::lock_guard<std::mutex> lk(_loop_m);
-//  *std::get<2>(p) = true;
-//  _events.pop_front();
-//}
-
 /**
  * @brief Delete the conflict_manager singleton.
  */

@@ -258,8 +258,6 @@ class conflict_manager {
   void _finish_actions();
   void _add_action(int32_t conn, actions action);
   void _insert_perfdatas();
-  //  void _pop_event(std::tuple<std::shared_ptr<io::data>, stream_type, bool*>&
-  //  p);
   std::size_t inline _get_events_size() const {
     std::lock_guard<std::mutex> lk(_loop_m);
     return _events.size();
