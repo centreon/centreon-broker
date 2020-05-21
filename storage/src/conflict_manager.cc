@@ -564,7 +564,7 @@ bool conflict_manager::_should_exit() const {
  *
  * @return The number of events to ack.
  */
-void conflict_manager::send_event(conflict_manager::stream_type c,
+int32_t conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
   assert(e);
   if (_broken)
@@ -579,6 +579,9 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
   _timeline[c].push_back(false);
   _events.emplace_back(std::make_tuple(e, c, &_timeline[c].back()));
   _loop_cv.notify_all();
+  int32_t retval = _ack[c];
+  _ack[c] = 0;
+  return retval;
 }
 
 /**
@@ -637,7 +640,7 @@ void conflict_manager::_finish_actions() {
       retval++;
     }
     _pending_queries -= retval;
-    _ack[c] = retval;
+    _ack[c] += retval;
   }
   log_v2::sql()->debug("conflict_manager: still {} not acknowledged",
                        _pending_queries);

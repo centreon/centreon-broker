@@ -131,7 +131,7 @@ void muxer::ack_events(int count) {
       --_events_size;
     }
     log_v2::perfdata()->trace("multiplexing: still {} events in {} event queue",
-                              _events.size(), _name);
+                              _events_size, _name);
 
     // Fill memory from file.
     std::shared_ptr<io::data> e;

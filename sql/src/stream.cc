@@ -516,13 +516,15 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
 
-  if (!validate(data, "SQL"))
-    return 0;
+  assert(data);
+//  if (!validate(data, "SQL"))
+//    return 0;
 
   // Process event.
-  storage::conflict_manager::instance().send_event(
+  int32_t ack = storage::conflict_manager::instance().send_event(
       storage::conflict_manager::sql, data);
-  return 0;
+  _pending_events -= ack;
+  return ack;
 }
 
 /**
@@ -533,5 +535,6 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
 void stream::statistics(json11::Json::object& tree) const {
   json11::Json::object obj{
       storage::conflict_manager::instance().get_statistics()};
+  obj["sql pending events"] = _pending_events;
   tree["conflict_manager"] = obj;
 }

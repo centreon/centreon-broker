@@ -276,7 +276,7 @@ class conflict_manager {
   static void unload();
   json11::Json::object get_statistics();
 
-  void send_event(stream_type c, std::shared_ptr<io::data> const& e);
+  int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
   void update_metric_info_cache(uint32_t index_id,
                                 uint32_t metric_id,

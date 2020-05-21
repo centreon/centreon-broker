@@ -128,6 +128,7 @@ void stream::statistics(json11::Json::object& tree) const {
   std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree["status"] = _status;
+  tree["pending events"] = _pending_events;
 }
 
 /**
@@ -138,11 +139,13 @@ void stream::statistics(json11::Json::object& tree) const {
  *  @return Number of events acknowledged.
  */
 int32_t stream::write(std::shared_ptr<io::data> const& data) {
-  if (!validate(data, "storage"))
-    return 0;
   ++_pending_events;
-  conflict_manager::instance().send_event(conflict_manager::storage, data);
-  return 0;
+  assert(data);
+//  if (!validate(data, "storage"))
+//    return 0;
+  int32_t ack = conflict_manager::instance().send_event(conflict_manager::storage, data);
+  _pending_events -= ack;
+  return ack;
 }
 
 /**************************************
@@ -160,3 +163,4 @@ void stream::_update_status(std::string const& status) {
   std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
 }
+
