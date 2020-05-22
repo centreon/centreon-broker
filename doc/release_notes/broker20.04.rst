@@ -1,4 +1,16 @@
 =======================
+Centreon Broker 20.04.3
+=======================
+
+*********
+Bug fixes
+*********
+
+Events were badly acknowledged after being sent to the database
+===============================================================
+SQL/storage dis not ack all the events. This produced retention files.
+
+=======================
 Centreon Broker 20.04.2
 =======================
 
