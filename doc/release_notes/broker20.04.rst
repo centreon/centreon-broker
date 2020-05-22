@@ -10,6 +10,10 @@ Events were badly acknowledged after being sent to the database
 ===============================================================
 SQL/storage dis not ack all the events. This produced retention files.
 
+Retention files
+===============
+A regression was introduced. All the retention files could not be read.
+
 =======================
 Centreon Broker 20.04.2
 =======================
