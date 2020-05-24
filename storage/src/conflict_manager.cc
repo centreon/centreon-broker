@@ -431,7 +431,7 @@ void conflict_manager::_callback() {
           uint16_t elem{io::events::element_of_type(type)};
           if (std::get<1>(tpl) == sql && cat == io::events::neb)
             (this->*(_neb_processing_table[elem]))(d);
-          else if (std::get<1>(tpl) == storage &&
+          else if (std::get<1>(tpl) == storage && cat == io::events::neb &&
                    type == neb::service_status::static_type())
             _storage_process_service_status(d);
           else
