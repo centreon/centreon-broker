@@ -244,13 +244,12 @@ TEST_F(OutputTest, ShortPersistentFile) {
     svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
-    ASSERT_EQ(svc->output.size(), i + 1);
   }
 
   svc->perf_data.reserve(100);
   c = '0';
-  for (auto it = svc->perf_data.begin(); it != svc->perf_data.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+    svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';
   }
