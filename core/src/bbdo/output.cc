@@ -207,7 +207,7 @@ static io::raw* serialize(io::data const& e) {
         memset(header, 0, sizeof(header));
         *reinterpret_cast<uint32_t*>(header + 4) = htonl(e.type());
         std::vector<char>::iterator it{data.begin() + beginning};
-        data.insert(it, header, header + sizeof(header) - 1);
+        data.insert(it, header, header + sizeof(header));
       }
     }
 
