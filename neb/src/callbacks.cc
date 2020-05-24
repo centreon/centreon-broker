@@ -2035,6 +2035,13 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
       service_status->perf_data = s->get_perf_data();
+//
+//    if (service_status->perf_data.size() >= 189576) {
+//      logging::error(logging::high) << "big one : adding with perfdata <<"
+//          << std::string(service_status->perf_data.c_str() + 189570, 20)
+//          << ">>";
+//    }
+//
     service_status->retry_interval = s->get_retry_interval();
     if (s->get_hostname().empty())
       throw exceptions::msg() << "unnamed host";

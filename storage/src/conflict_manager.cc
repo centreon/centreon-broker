@@ -80,11 +80,11 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
     : _exit{false},
       _broken{false},
       _loop_timeout{loop_timeout},
-      _max_pending_queries{dbcfg.get_queries_per_transaction()},
+      _max_pending_queries(dbcfg.get_queries_per_transaction()),
       _pending_queries{0},
       _mysql{dbcfg},
       _instance_timeout{instance_timeout},
-      _still_pending_events{},
+      _still_pending_events{0},
       _loop_duration{},
       _speed{},
       _ref_count{0},
@@ -392,7 +392,7 @@ void conflict_manager::_callback() {
             std::chrono::system_clock::now();
         std::unique_lock<std::mutex> lk(_loop_m);
 
-        uint32_t count = 0;
+        int32_t count = 0;
         int32_t timeout = 0;
         int32_t timeout_limit = _loop_timeout * 1000;
         std::chrono::system_clock::time_point previous_time(now0);
@@ -572,7 +572,9 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
 
   log_v2::sql()->trace(
       "conflict_manager: send_event category:{}, element:{} from {}",
-      e->type() >> 16, e->type() & 0xffff, c == 0 ? "sql" : "storage");
+      e->type() >> 16,
+      e->type() & 0xffff,
+      c == 0 ? "sql" : "storage");
 
   std::lock_guard<std::mutex> lk(_loop_m);
   _pending_queries++;
@@ -675,6 +677,8 @@ json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
   std::lock_guard<std::mutex> lk(_stat_m);
   retval["pending events"] = _still_pending_events;
+  retval["sql"] = static_cast<int32_t>(_timeline[sql].size());
+  retval["storage"] = static_cast<int32_t>(_timeline[storage].size());
   retval["stats interval"] = fmt::format("{} ms", _loop_duration);
   retval["speed"] = fmt::format("{} events/s", _speed);
   return retval;

@@ -135,8 +135,8 @@ class conflict_manager {
   bool _exit;
   std::atomic<bool> _broken;
   uint32_t _loop_timeout;
-  uint32_t _max_pending_queries;
-  uint32_t _pending_queries;
+  int32_t _max_pending_queries;
+  int32_t _pending_queries;
   mysql _mysql;
   uint32_t _instance_timeout;
   bool _store_in_db;

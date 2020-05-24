@@ -143,6 +143,12 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   assert(data);
 //  if (!validate(data, "storage"))
 //    return 0;
+//  uint32_t type = data->type();
+//  if (io::events::category_of_type(type) == io::events::neb && io::events::element_of_type(type) == neb::service_status::static_type()) {
+//    neb::service_status const& ss = *static_cast<neb::service_status*>(data.get());
+//    assert(ss.perf_data.size() < 189576 || ss.perf_data.find("8=0%", 189570) == std::string::npos);
+//  }
+//
   int32_t ack = conflict_manager::instance().send_event(conflict_manager::storage, data);
   _pending_events -= ack;
   return ack;

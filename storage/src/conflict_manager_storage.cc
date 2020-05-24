@@ -254,6 +254,7 @@ void conflict_manager::_storage_process_service_status(
 
         std::list<std::shared_ptr<io::data>> to_publish;
         for (storage::perfdata& pd : pds) {
+          assert(pd.name().size() < 255);
           auto it_index_cache = _metric_cache.find({index_id, pd.name()});
 
           /* The cache does not contain this metric */
@@ -289,7 +290,6 @@ void conflict_manager::_storage_process_service_status(
                 _metrics_insert, &promise, database::mysql_task::LAST_INSERT_ID,
                 conn);
             try {
-              assert(pd.name().size() < 255);
               metric_id = promise.get_future().get();
 
               // Insert metric in cache.

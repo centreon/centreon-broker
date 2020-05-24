@@ -144,16 +144,13 @@ TEST_F(OutputTest, WriteLongService) {
   auto svc = std::make_shared<neb::service>();
   svc->host_id = 12;
   svc->service_id = 18;
-  svc->output = std::string(70000, 'A');
+  svc->output.reserve(70000);
   char c = 'A';
-  for (std::string::iterator i = svc->output.begin(); i != svc->output.end();
-       i++) {
-    *i = c;
-    if (++c > 'Z')
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
+    if (c > 'Z')
       c = 'A';
   }
-  svc->output[69999] = 0;
-  std::cout << svc->output;
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(new into_memory());
@@ -165,7 +162,7 @@ TEST_F(OutputTest, WriteLongService) {
   stm.write(svc);
   std::vector<char> const& mem1 = memory_stream->get_memory();
 
-  ASSERT_EQ(mem1.size(), 70284u);
+  ASSERT_EQ(mem1.size(), 73956u);
 
   // The buffer is too big. So it is splitted into several -- here 2 -- buffers.
   // The are concatenated, keeped into the same block, but a new header is
@@ -177,15 +174,15 @@ TEST_F(OutputTest, WriteLongService) {
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12u);
 
   // Second block
-  // We have 70284 = HeaderSize + block1 + HeaderSize + block2
-  //      So 70284 = 16         + 0xffff + 16         + 4717
+  // We have 73956 = HeaderSize + block1 + HeaderSize + block2
+  //      So 73956 = 16         + 0xffff + 16         + 8389
   ASSERT_EQ(
       htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535 + 2)),
-      4717u);
+      8389u);
 
   // Check checksum
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)),
-            10510u);
+            63960u);
 }
 
 TEST_F(OutputTest, WriteReadService) {
@@ -196,7 +193,7 @@ TEST_F(OutputTest, WriteReadService) {
   svc->host_id = 12345;
   svc->service_id = 18;
 
-  svc->output.reserve(100000);
+  svc->output.reserve(1000000);
   char c = 'a';
   for (int i = 0; i < svc->output.capacity(); i++) {
     svc->output.push_back(c++);
@@ -205,7 +202,7 @@ TEST_F(OutputTest, WriteReadService) {
     ASSERT_EQ(svc->output.size(), i + 1);
   }
 
-  svc->perf_data.reserve(100);
+  svc->perf_data.reserve(1000000);
   c = '0';
   for (int i = 0; i < svc->perf_data.capacity(); i++) {
     svc->perf_data.push_back(c++);
@@ -228,14 +225,6 @@ TEST_F(OutputTest, WriteReadService) {
   stm.read(e, time(nullptr) + 1000);
   std::shared_ptr<neb::service> new_svc =
       std::static_pointer_cast<neb::service>(e);
-  int nb = 0;
-  for (auto c1 = svc->output.begin(), c2 = new_svc->output.begin();
-      c1 != svc->output.end() && c2 != new_svc->output.end(); ++c1, ++c2, ++nb) {
-    if (*c1 != *c2) {
-      std::cout << "output from the services are not the same, change from range " << nb << std::endl;
-      ASSERT_TRUE(false);
-    }
-  }
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
   l.unload();
