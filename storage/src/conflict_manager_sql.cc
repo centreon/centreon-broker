@@ -2204,12 +2204,30 @@ void conflict_manager::_process_service_group_member(
           "SQL: could not store service group (poller: {}, group: {}): ",
           sg.poller_id, sg.id));
 
-      _service_group_insupdate << sg;
+      if (sg.name.size() > get_servicegroups_col_size(servicegroups_name)) {
+        neb::service_group trunc_sg(sg);
+        log_v2::sql()->warn(
+            "servicegroups name ({} instead of {}) is too long to be "
+            "stored in database.",
+            sg.name.size(), get_servicegroups_col_size(servicegroups_name));
+        trunc_sg.name.resize(get_servicegroups_col_size(servicegroups_name));
+        _service_group_insupdate << trunc_sg;
+      } else
+        _service_group_insupdate << sg;
       _mysql.run_statement(_service_group_insupdate, err_msg, false, conn);
       _add_action(conn, actions::servicegroups);
     }
 
-    _service_group_member_insert << sgm;
+    if (sgm.group_name.size() > get_servicegroups_col_size(servicegroups_name)) {
+      neb::service_group_member trunc_sgm(sgm);
+      log_v2::sql()->warn(
+          "servicegroups name ({} instead of {}) is too long to be "
+          "stored in database.",
+          sgm.group_name.size(), get_servicegroups_col_size(servicegroups_name));
+      trunc_sgm.group_name.resize(get_servicegroups_col_size(servicegroups_name));
+      _service_group_member_insert << trunc_sgm;
+    } else
+      _service_group_member_insert << sgm;
     std::string err_msg(fmt::format(
         "SQL: could not store service group membership (poller: {}, host: "
         "{}, service: {}, group: {}): ",
@@ -2287,7 +2305,122 @@ void conflict_manager::_process_service(std::shared_ptr<io::data> d) {
       std::string err_msg(fmt::format(
           "SQL: could not store service (host: {}, service: {}): ", s.host_id,
           s.service_id));
-      _service_insupdate << s;
+
+      if (s.service_description.size() >
+              get_services_col_size(services_description) ||
+          s.action_url.size() > get_services_col_size(services_action_url) ||
+          s.check_command.size() >
+              get_services_col_size(services_check_command) ||
+          s.check_period.size() >
+              get_services_col_size(services_check_period) ||
+          s.display_name.size() >
+              get_services_col_size(services_display_name) ||
+          s.event_handler.size() >
+              get_services_col_size(services_event_handler) ||
+          s.icon_image.size() > get_services_col_size(services_icon_image) ||
+          s.icon_image_alt.size() >
+              get_services_col_size(services_icon_image_alt) ||
+          s.notes.size() > get_services_col_size(services_notes) ||
+          s.notes_url.size() > get_services_col_size(services_notes_url) ||
+          s.notification_period.size() >
+              get_services_col_size(services_notification_period) ||
+          s.output.size() > get_services_col_size(services_output) ||
+          s.perf_data.size() > get_services_col_size(services_perfdata)) {
+        neb::service trunc_s(s);
+        if (s.service_description.size() >
+              get_services_col_size(services_description)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.service_description.size(), get_services_col_size(services_description));
+          trunc_s.service_description.resize(get_services_col_size(services_description));
+        }
+        if (s.action_url.size() >
+              get_services_col_size(services_action_url)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.action_url.size(), get_services_col_size(services_action_url));
+          trunc_s.action_url.resize(get_services_col_size(services_action_url));
+        }
+        if (s.check_command.size() >
+              get_services_col_size(services_check_command)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.check_command.size(), get_services_col_size(services_check_command));
+          trunc_s.check_command.resize(get_services_col_size(services_check_command));
+        }
+        if (s.check_period.size() >
+              get_services_col_size(services_check_period)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.check_period.size(), get_services_col_size(services_check_period));
+          trunc_s.check_period.resize(get_services_col_size(services_check_period));
+        }
+        if (s.display_name.size() >
+              get_services_col_size(services_display_name)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.display_name.size(), get_services_col_size(services_display_name));
+          trunc_s.display_name.resize(get_services_col_size(services_display_name));
+        }
+        if (s.event_handler.size() >
+              get_services_col_size(services_event_handler)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.event_handler.size(), get_services_col_size(services_event_handler));
+          trunc_s.event_handler.resize(get_services_col_size(services_event_handler));
+        }
+        if (s.icon_image.size() >
+              get_services_col_size(services_icon_image)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.icon_image.size(), get_services_col_size(services_icon_image));
+          trunc_s.icon_image.resize(get_services_col_size(services_icon_image));
+        }
+        if (s.icon_image_alt.size() >
+              get_services_col_size(services_icon_image_alt)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.icon_image_alt.size(), get_services_col_size(services_icon_image_alt));
+          trunc_s.icon_image_alt.resize(get_services_col_size(services_icon_image_alt));
+        }
+        if (s.notes.size() >
+              get_services_col_size(services_notes)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.notes.size(), get_services_col_size(services_notes));
+          trunc_s.notes.resize(get_services_col_size(services_notes));
+        }
+        if (s.notes_url.size() >
+              get_services_col_size(services_notes_url)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.notes_url.size(), get_services_col_size(services_notes_url));
+          trunc_s.notes_url.resize(get_services_col_size(services_notes_url));
+        }
+        if (s.notification_period.size() >
+              get_services_col_size(services_notification_period)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.notification_period.size(), get_services_col_size(services_notification_period));
+          trunc_s.notification_period.resize(get_services_col_size(services_notification_period));
+        }
+        if (s.output.size() >
+              get_services_col_size(services_output)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.output.size(), get_services_col_size(services_output));
+          trunc_s.output.resize(get_services_col_size(services_output));
+        }
+        if (s.perf_data.size() >
+              get_services_col_size(services_perfdata)) {
+          log_v2::sql()->warn(
+              "services description ({} instead of {}) is too long to be stored in database.",
+              s.perf_data.size(), get_services_col_size(services_perfdata));
+          trunc_s.perf_data.resize(get_services_col_size(services_perfdata));
+        }
+        _service_insupdate << trunc_s;
+      } else
+        _service_insupdate << s;
       _mysql.run_statement(_service_insupdate, err_msg, true, conn);
       _add_action(conn, actions::services);
     } else
@@ -2343,7 +2476,52 @@ void conflict_manager::_process_service_status(std::shared_ptr<io::data> d) {
     }
 
     // Processing.
-    _service_status_update << ss;
+    if (ss.check_command.size() > get_services_col_size(services_check_command) ||
+        ss.check_period.size() > get_services_col_size(services_check_period) ||
+        ss.event_handler.size() > get_services_col_size(services_event_handler) ||
+        ss.output.size() > get_services_col_size(services_output) ||
+        ss.perf_data.size() > get_services_col_size(services_perfdata)) {
+      neb::service_status trunc_ss(ss);
+      if (ss.check_command.size() > get_services_col_size(services_check_command)) {
+        log_v2::sql()->warn(
+            "services check_command ({} instead of {}) is too long to be stored "
+            "in "
+            "database.",
+            ss.check_command.size(), get_services_col_size(services_check_command));
+        trunc_ss.check_command.resize(get_services_col_size(services_check_command));
+      }
+      if (ss.check_period.size() > get_services_col_size(services_check_period)) {
+        log_v2::sql()->warn(
+            "services check_period ({} instead of {}) is too long to be stored in "
+            "database.",
+            ss.check_period.size(), get_services_col_size(services_check_period));
+        trunc_ss.check_period.resize(get_services_col_size(services_check_period));
+      }
+      if (ss.event_handler.size() > get_services_col_size(services_event_handler)) {
+        log_v2::sql()->warn(
+            "services event_handler ({} instead of {}) is too long to be stored "
+            "in "
+            "database.",
+            ss.event_handler.size(), get_services_col_size(services_event_handler));
+        trunc_ss.event_handler.resize(get_services_col_size(services_event_handler));
+      }
+      if (ss.output.size() > get_services_col_size(services_output)) {
+        log_v2::sql()->warn(
+            "services output ({} instead of {}) is too long to be stored in "
+            "database.",
+            ss.output.size(), get_services_col_size(services_output));
+        trunc_ss.output.resize(get_services_col_size(services_output));
+      }
+      if (ss.perf_data.size() > get_services_col_size(services_perfdata)) {
+        log_v2::sql()->warn(
+            "services perfdata ({} instead of {}) is too long to be stored in "
+            "database.",
+            ss.perf_data.size(), get_services_col_size(services_perfdata));
+        trunc_ss.perf_data.resize(get_services_col_size(services_perfdata));
+      }
+      _service_status_update << trunc_ss;
+    } else
+      _service_status_update << ss;
     std::string err_msg(fmt::format(
         "SQL: could not store service status (host: {}, service: {}) ",
         ss.host_id, ss.service_id));
