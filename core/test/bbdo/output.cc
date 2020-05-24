@@ -198,18 +198,20 @@ TEST_F(OutputTest, WriteReadService) {
 
   svc->output.reserve(100000);
   char c = 'a';
-  for (auto it = svc->output.begin(); it != svc->output.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
+    ASSERT_EQ(svc->output.size(), i + 1);
   }
 
-  svc->perf_data.reserve(100000);
+  svc->perf_data.reserve(100);
   c = '0';
-  for (auto it = svc->perf_data.begin(); it != svc->perf_data.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+    svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';
+    ASSERT_EQ(svc->perf_data.size(), i + 1);
   }
   svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
 
@@ -226,6 +228,14 @@ TEST_F(OutputTest, WriteReadService) {
   stm.read(e, time(nullptr) + 1000);
   std::shared_ptr<neb::service> new_svc =
       std::static_pointer_cast<neb::service>(e);
+  int nb = 0;
+  for (auto c1 = svc->output.begin(), c2 = new_svc->output.begin();
+      c1 != svc->output.end() && c2 != new_svc->output.end(); ++c1, ++c2, ++nb) {
+    if (*c1 != *c2) {
+      std::cout << "output from the services are not the same, change from range " << nb << std::endl;
+      ASSERT_TRUE(false);
+    }
+  }
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
   l.unload();
@@ -241,10 +251,11 @@ TEST_F(OutputTest, ShortPersistentFile) {
 
   svc->output.reserve(1000);
   char c = 'a';
-  for (auto it = svc->output.begin(); it != svc->output.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
+    ASSERT_EQ(svc->output.size(), i + 1);
   }
 
   svc->perf_data.reserve(100);
