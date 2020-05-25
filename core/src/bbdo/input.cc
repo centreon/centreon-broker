@@ -139,11 +139,6 @@ static uint32_t set_string(io::data& t,
                             << "no terminating '\\0' in remaining " << size
                             << " bytes of packet";
   }
-//
-//  //FIXME DBR
-//  if (len > 190000) {
-//    log_v2::perfdata()->error("Big string!!! <<<{}>>>", std::string(str + 189570, 20));
-//  }
   member.set_string(t, str);
   return len + 1;
 }
@@ -463,14 +458,6 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
       }
     } while (packet_size == 0xFFFF);
 
-//    //FIXME DBR
-//    if (_buffer.size() > 190000) {
-//      log_v2::perfdata()->error("Big packet");
-//      size_t pos; // Should be around 1441762
-//      if ((pos = packet.find("-10_1_48=")) != std::string::npos)
-//        log_v2::perfdata()->error("Bingo !! {} at {}", std::string(packet.data() + pos - 5, 20), pos);
-//    }
-//
     // We now have a complete packet, print summary of corruption.
     if (_skipped) {
       log_v2::bbdo()->info(

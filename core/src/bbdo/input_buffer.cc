@@ -126,13 +126,7 @@ void input_buffer::extract(std::string& output, int offset, int size) {
     int to_extract((*it)->size() - it_offset);
     if (to_extract > remaining)
       to_extract = remaining;
-//    if (it_offset == 346 && *((*it)->const_data() + it_offset) == '=')
-//      log_v2::perfdata()->error("Yolo ???? {}", std::string((*it)->const_data() + it_offset, 20));
-//
     output.append((*it)->const_data() + it_offset, to_extract);
-//    size_t pos;
-//    if ((pos = output.find("-10_1_48=")) != std::string::npos)
-//      log_v2::perfdata()->error("Yolo !! {} at {}", std::string(output.data() + pos - 5, 20), pos);
     remaining -= to_extract;
   }
 

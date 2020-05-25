@@ -85,6 +85,4 @@ bool raw::empty() const {
 
 void raw::append(std::string const& msg) {
   _buffer.insert(_buffer.end(), msg.begin(), msg.end());
-//  if (strstr(&_buffer[0], "WIFI-10_1_48"))
-//    log_v2::perfdata()->error("RAW BOOOOOOOOOOMMMMMM");
 }
