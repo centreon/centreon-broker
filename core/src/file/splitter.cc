@@ -85,8 +85,10 @@ splitter::splitter(std::string const& path,
   _rid = std::numeric_limits<int>::max();
   _wid = 0;
   size_t offset{base_dir.size() + base_name.size()};
+  if (base_dir.back() != '/')
+    offset++;
   for (std::string &f : parts) {
-    const char* ptr{f.c_str() + offset + 1};
+    const char* ptr{f.c_str() + offset};
     int val = 0;
     if (*ptr) { // Not empty, conversion needed.
       char* endptr(nullptr);

@@ -19,6 +19,7 @@
 #define CCB_MYSQL_HH
 
 #include <atomic>
+
 #include "com/centreon/broker/mysql_connection.hh"
 
 CCB_BEGIN()
@@ -69,7 +70,7 @@ class mysql {
     _check_errors();
     if (thread_id < 0)
       // Here, we use _current_thread
-      thread_id = choose_best_connection();
+      thread_id = choose_best_connection(-1);
 
     _connection[thread_id]->run_statement_and_get_int<T>(stmt, promise, type);
     return thread_id;
@@ -82,7 +83,7 @@ class mysql {
   bool commit_if_needed();
   int choose_connection_by_name(std::string const& name);
   int choose_connection_by_instance(int instance_id) const;
-  int choose_best_connection();
+  int choose_best_connection(int32_t type);
 
  private:
   static void _initialize_mysql();

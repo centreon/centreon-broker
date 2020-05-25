@@ -150,5 +150,4 @@ void host_service_status::_internal_copy(host_service_status const& hss) {
   retry_interval = hss.retry_interval;
   should_be_scheduled = hss.should_be_scheduled;
   state_type = hss.state_type;
-  return;
 }

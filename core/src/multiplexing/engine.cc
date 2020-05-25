@@ -16,18 +16,21 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/multiplexing/engine.hh"
+
+#include <unistd.h>
+
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <unistd.h>
 #include <utility>
 #include <vector>
+
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
@@ -105,6 +108,12 @@ void engine::publish(std::shared_ptr<io::data> const& e) {
   _publish(e);
 }
 
+void engine::publish(std::list<std::shared_ptr<io::data>> const& to_publish) {
+  std::lock_guard<std::mutex> lock(_engine_m);
+  for (auto& e : to_publish)
+    _publish(e);
+}
+
 /**
  *  Send an event to all subscribers. It must be used from this class, and
  *  _engine_m must be locked previously. Otherwise use engine::publish().
@@ -129,7 +138,7 @@ void engine::start() {
 
     std::lock_guard<std::mutex> lock(_engine_m);
     // Local queue.
-    std::queue<std::shared_ptr<io::data> > kiew;
+    std::queue<std::shared_ptr<io::data>> kiew;
     // Get events from the cache file to the local queue.
     try {
       persistent_cache cache(_cache_file_path());
@@ -140,8 +149,7 @@ void engine::start() {
           break;
         kiew.push(d);
       }
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       logging::error(logging::medium)
           << "multiplexing: couldn't read cache file: " << e.what();
     }
@@ -153,10 +161,9 @@ void engine::start() {
     }
 
     // Notify hooks of multiplexing loop start.
-    for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin),
+    for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
          end(_hooks_end);
-         it != end;
-         ++it) {
+         it != end; ++it) {
       it->first->starting();
 
       // Read events from hook.
@@ -167,10 +174,9 @@ void engine::start() {
           _kiew.push(d);
           it->first->read(d, 0);
         }
-      }
-      catch (std::exception const& e) {
-        logging::error(logging::low) << "multiplexing: cannot read from hook: "
-                                     << e.what();
+      } catch (std::exception const& e) {
+        logging::error(logging::low)
+            << "multiplexing: cannot read from hook: " << e.what();
       }
     }
 
@@ -193,10 +199,9 @@ void engine::stop() {
     // Notify hooks of multiplexing loop end.
     logging::debug(logging::high) << "multiplexing: stopping";
     std::unique_lock<std::mutex> lock(_engine_m);
-    for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin),
+    for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
          end(_hooks_end);
-         it != end;
-         ++it) {
+         it != end; ++it) {
       it->first->stopping();
 
       // Read events from hook.
@@ -207,8 +212,7 @@ void engine::stop() {
           _kiew.push(d);
           it->first->read(d);
         }
-      }
-      catch (...) {
+      } catch (...) {
       }
     }
 
@@ -229,8 +233,7 @@ void engine::stop() {
     try {
       _cache_file.reset(new persistent_cache(_cache_file_path()));
       _cache_file->transaction();
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       logging::error(logging::medium)
           << "multiplexing: could not open cache file: " << e.what();
       _cache_file.reset();
@@ -258,7 +261,7 @@ void engine::subscribe(muxer* subscriber) {
  */
 void engine::unhook(hooker& h) {
   std::lock_guard<std::mutex> lock(_engine_m);
-  for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin);
+  for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin);
        it != _hooks.end();)
     if (it->first == &h)
       it = _hooks.erase(it);
@@ -288,9 +291,7 @@ void engine::unload() {
  */
 void engine::unsubscribe(muxer* subscriber) {
   std::lock_guard<std::mutex> lock(_muxers_m);
-  for (std::vector<muxer*>::iterator it(_muxers.begin()), end(_muxers.end());
-       it != end;
-       ++it)
+  for (auto it = _muxers.begin(), end = _muxers.end(); it != end; ++it)
     if (*it == subscriber) {
       _muxers.erase(it);
       break;
@@ -331,7 +332,9 @@ std::string engine::_cache_file_path() const {
  *
  *  @param[in] d  Unused.
  */
-void engine::_nop(std::shared_ptr<io::data> const& d) { (void)d; }
+void engine::_nop(std::shared_ptr<io::data> const& d) {
+  (void)d;
+}
 
 /**
  *  Send queued events to subscribers.
@@ -356,10 +359,9 @@ void engine::_send_to_subscribers() {
  */
 void engine::_write(std::shared_ptr<io::data> const& e) {
   // Send object to every hook.
-  for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin),
+  for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
        end(_hooks_end);
-       it != end;
-       ++it)
+       it != end; ++it)
     if (it->second) {
       it->first->write(e);
       std::shared_ptr<io::data> d;
@@ -383,8 +385,7 @@ void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
   try {
     if (_cache_file)
       _cache_file->add(d);
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::medium)
         << "multiplexing: could not write to cache file: " << e.what();
   }

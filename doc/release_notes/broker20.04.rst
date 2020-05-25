@@ -1,4 +1,33 @@
 =======================
+Centreon Broker 20.04.3
+=======================
+
+*********
+Bug fixes
+*********
+
+Events were badly acknowledged after being sent to the database
+===============================================================
+SQL/storage dis not ack all the events. This produced retention files.
+
+Long events could be corrupted
+==============================
+There was a bug in the long events management.
+
+Filter on events entering in storage
+====================================
+A bug on this filter is now fixed.
+
+Retention files
+===============
+A regression was introduced. All the retention files could not be read.
+
+MariaDB strict mode
+===================
+The strict mode implies that strings too long for a column break queries. To
+avoid this, we truncate too long strings and set a warning log for users.
+
+=======================
 Centreon Broker 20.04.2
 =======================
 

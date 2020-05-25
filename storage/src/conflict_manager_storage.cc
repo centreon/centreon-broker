@@ -18,6 +18,7 @@
 
 #include <cfloat>
 #include <cstring>
+#include <list>
 #include <sstream>
 
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -66,9 +67,8 @@ static inline bool check_equality(double a, double b) {
  *
  * @return the number of events sent to the database.
  */
-int32_t conflict_manager::_storage_process_service_status() {
-  auto& p = _events.front();
-  std::shared_ptr<io::data> d{std::get<0>(p)};
+void conflict_manager::_storage_process_service_status(
+    std::shared_ptr<io::data> d) {
   neb::service_status const& ss{*static_cast<neb::service_status*>(d.get())};
   uint64_t host_id = ss.host_id, service_id = ss.service_id;
   log_v2::perfdata()->debug(
@@ -252,7 +252,9 @@ int32_t conflict_manager::_storage_process_service_status() {
         _finish_action(-1, actions::metrics);
         p.parse_perfdata(ss.perf_data.c_str(), pds);
 
+        std::list<std::shared_ptr<io::data>> to_publish;
         for (storage::perfdata& pd : pds) {
+          assert(pd.name().size() < 255);
           auto it_index_cache = _metric_cache.find({index_id, pd.name()});
 
           /* The cache does not contain this metric */
@@ -288,7 +290,6 @@ int32_t conflict_manager::_storage_process_service_status() {
                 _metrics_insert, &promise, database::mysql_task::LAST_INSERT_ID,
                 conn);
             try {
-              assert(pd.name().size() < 255);
               metric_id = promise.get_future().get();
 
               // Insert metric in cache.
@@ -374,10 +375,10 @@ int32_t conflict_manager::_storage_process_service_status() {
                                    conn);
             }
           }
-          std::shared_ptr<storage::metric_mapping> mm =
-              std::make_shared<storage::metric_mapping>(index_id, metric_id);
-          multiplexing::publisher pblshr;
-          pblshr.write(mm);
+          // std::shared_ptr<storage::metric_mapping> mm =
+          //    std::make_shared<storage::metric_mapping>(index_id, metric_id);
+          to_publish.emplace_back(
+              std::make_shared<storage::metric_mapping>(index_id, metric_id));
 
           if (_store_in_db) {
             // Append perfdata to queue.
@@ -404,6 +405,8 @@ int32_t conflict_manager::_storage_process_service_status() {
             multiplexing::publisher().write(perf);
           }
         }
+        multiplexing::publisher pblshr;
+        pblshr.write(to_publish);
       } catch (storage::exceptions::perfdata const& e) {
         logging::error(logging::medium)
             << "storage: error while parsing perfdata of service (" << host_id
@@ -411,9 +414,6 @@ int32_t conflict_manager::_storage_process_service_status() {
       }
     }
   }
-
-  _pop_event(p);
-  return 1;
 }
 
 /**
@@ -466,8 +466,7 @@ void conflict_manager::_insert_perfdatas() {
                      "storage: could not insert data in data_bin: ");
 
     //_update_status("");
-    logging::info(logging::low)
-        << "storage: " << count << " perfdatas inserted in data_bin";
+    log_v2::sql()->info("storage: {} perfdata inserted in data_bin", count);
   }
 }
 
@@ -486,7 +485,7 @@ void conflict_manager::_check_deleted_index() {
   uint64_t index_id;
   {
     std::promise<database::mysql_result> promise;
-    int32_t conn = _mysql.choose_best_connection();
+    int32_t conn = _mysql.choose_best_connection(-1);
     std::unordered_set<uint64_t> index_to_delete;
     std::list<uint64_t> metrics_to_delete;
     try {

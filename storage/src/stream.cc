@@ -99,8 +99,8 @@ int32_t stream::flush() {
   _pending_events -= retval;
 
   // Event acknowledgement.
-  logging::debug(logging::low) << "storage: " << _pending_events
-                               << " events have not yet been acknowledged";
+  log_v2::perfdata()->debug("storage: {} events have not yet been acknowledged",
+                            _pending_events);
   return retval;
 }
 
@@ -128,6 +128,7 @@ void stream::statistics(json11::Json::object& tree) const {
   std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree["status"] = _status;
+  tree["pending events"] = _pending_events;
 }
 
 /**
@@ -138,11 +139,19 @@ void stream::statistics(json11::Json::object& tree) const {
  *  @return Number of events acknowledged.
  */
 int32_t stream::write(std::shared_ptr<io::data> const& data) {
-  if (!validate(data, "storage"))
-    return 0;
   ++_pending_events;
-  conflict_manager::instance().send_event(conflict_manager::storage, data);
-  return 0;
+  assert(data);
+//  if (!validate(data, "storage"))
+//    return 0;
+//  uint32_t type = data->type();
+//  if (io::events::category_of_type(type) == io::events::neb && io::events::element_of_type(type) == neb::service_status::static_type()) {
+//    neb::service_status const& ss = *static_cast<neb::service_status*>(data.get());
+//    assert(ss.perf_data.size() < 189576 || ss.perf_data.find("8=0%", 189570) == std::string::npos);
+//  }
+//
+  int32_t ack = conflict_manager::instance().send_event(conflict_manager::storage, data);
+  _pending_events -= ack;
+  return ack;
 }
 
 /**************************************
@@ -160,3 +169,4 @@ void stream::_update_status(std::string const& status) {
   std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
 }
+

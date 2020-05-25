@@ -17,8 +17,8 @@
 */
 #ifndef CCB_SQL_CONFLICT_MANAGER_HH
 #define CCB_SQL_CONFLICT_MANAGER_HH
-#include <atomic>
 #include <array>
+#include <atomic>
 #include <condition_variable>
 #include <deque>
 #include <list>
@@ -99,7 +99,8 @@ class conflict_manager {
     double value;
   };
 
-  static int32_t (conflict_manager::*const _neb_processing_table[])();
+  static void (conflict_manager::*const _neb_processing_table[])(
+      std::shared_ptr<io::data>);
   static conflict_manager* _singleton;
   static std::mutex _init_m;
   static std::condition_variable _init_cv;
@@ -134,8 +135,8 @@ class conflict_manager {
   bool _exit;
   std::atomic<bool> _broken;
   uint32_t _loop_timeout;
-  uint32_t _max_pending_queries;
-  uint32_t _pending_queries;
+  int32_t _max_pending_queries;
+  int32_t _pending_queries;
   mysql _mysql;
   uint32_t _instance_timeout;
   bool _store_in_db;
@@ -219,34 +220,34 @@ class conflict_manager {
   bool _is_valid_poller(uint32_t instance_id);
   void _check_deleted_index();
 
-  int32_t _process_acknowledgement();
-  int32_t _process_comment();
-  int32_t _process_custom_variable();
-  int32_t _process_custom_variable_status();
-  int32_t _process_downtime();
-  int32_t _process_event_handler();
-  int32_t _process_flapping_status();
-  int32_t _process_host_check();
-  int32_t _process_host_dependency();
-  int32_t _process_host_group();
-  int32_t _process_host_group_member();
-  int32_t _process_host();
-  int32_t _process_host_parent();
-  int32_t _process_host_status();
-  int32_t _process_instance();
-  int32_t _process_instance_status();
-  int32_t _process_log();
-  int32_t _process_module();
-  int32_t _process_service_check();
-  int32_t _process_service_dependency();
-  int32_t _process_service_group();
-  int32_t _process_service_group_member();
-  int32_t _process_service();
-  int32_t _process_service_status();
-  int32_t _process_instance_configuration();
-  int32_t _process_responsive_instance();
+  void _process_acknowledgement(std::shared_ptr<io::data> p);
+  void _process_comment(std::shared_ptr<io::data> p);
+  void _process_custom_variable(std::shared_ptr<io::data> p);
+  void _process_custom_variable_status(std::shared_ptr<io::data> p);
+  void _process_downtime(std::shared_ptr<io::data> p);
+  void _process_event_handler(std::shared_ptr<io::data> p);
+  void _process_flapping_status(std::shared_ptr<io::data> p);
+  void _process_host_check(std::shared_ptr<io::data> p);
+  void _process_host_dependency(std::shared_ptr<io::data> p);
+  void _process_host_group(std::shared_ptr<io::data> p);
+  void _process_host_group_member(std::shared_ptr<io::data> p);
+  void _process_host(std::shared_ptr<io::data> p);
+  void _process_host_parent(std::shared_ptr<io::data> p);
+  void _process_host_status(std::shared_ptr<io::data> p);
+  void _process_instance(std::shared_ptr<io::data> p);
+  void _process_instance_status(std::shared_ptr<io::data> p);
+  void _process_log(std::shared_ptr<io::data> p);
+  void _process_module(std::shared_ptr<io::data> p);
+  void _process_service_check(std::shared_ptr<io::data> p);
+  void _process_service_dependency(std::shared_ptr<io::data> p);
+  void _process_service_group(std::shared_ptr<io::data> p);
+  void _process_service_group_member(std::shared_ptr<io::data> p);
+  void _process_service(std::shared_ptr<io::data> p);
+  void _process_service_status(std::shared_ptr<io::data> p);
+  void _process_instance_configuration(std::shared_ptr<io::data> p);
+  void _process_responsive_instance(std::shared_ptr<io::data> p);
 
-  int32_t _storage_process_service_status();
+  void _storage_process_service_status(std::shared_ptr<io::data> p);
 
   void _load_deleted_instances();
   void _load_caches();
@@ -257,7 +258,6 @@ class conflict_manager {
   void _finish_actions();
   void _add_action(int32_t conn, actions action);
   void _insert_perfdatas();
-  void _pop_event(std::tuple<std::shared_ptr<io::data>, stream_type, bool*>& p);
   std::size_t inline _get_events_size() const {
     std::lock_guard<std::mutex> lk(_loop_m);
     return _events.size();
@@ -276,7 +276,7 @@ class conflict_manager {
   static void unload();
   json11::Json::object get_statistics();
 
-  void send_event(stream_type c, std::shared_ptr<io::data> const& e);
+  int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
   void update_metric_info_cache(uint32_t index_id,
                                 uint32_t metric_id,

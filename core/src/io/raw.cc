@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker::io;
 

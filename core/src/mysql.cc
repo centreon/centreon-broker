@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
@@ -150,7 +150,7 @@ int mysql::run_query(std::string const& query,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = choose_best_connection();
+    thread_id = choose_best_connection(-1);
 
   _connection[thread_id]->run_query(query, error_msg, fatal);
   return thread_id;
@@ -176,7 +176,7 @@ int mysql::run_query_and_get_result(std::string const& query,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = choose_best_connection();
+    thread_id = choose_best_connection(-1);
 
   _connection[thread_id]->run_query_and_get_result(query, promise);
   return thread_id;
@@ -205,7 +205,7 @@ int mysql::run_query_and_get_int(std::string const& query,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = choose_best_connection();
+    thread_id = choose_best_connection(-1);
 
   _connection[thread_id]->run_query_and_get_int(query, promise, type);
   return thread_id;
@@ -231,7 +231,7 @@ int mysql::run_statement(database::mysql_stmt& stmt,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = choose_best_connection();
+    thread_id = choose_best_connection(-1);
 
   _connection[thread_id]->run_statement(stmt, error_msg, fatal);
   return thread_id;
@@ -259,7 +259,7 @@ int mysql::run_statement_and_get_result(database::mysql_stmt& stmt,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = choose_best_connection();
+    thread_id = choose_best_connection(-1);
 
   _connection[thread_id]->run_statement_and_get_result(stmt, promise);
   return thread_id;
@@ -323,9 +323,14 @@ int mysql::connections_count() const {
  *
  * @return an integer.
  */
-int mysql::choose_best_connection() {
+int mysql::choose_best_connection(int32_t type) {
   /* We work with _current_connection to avoid always working with the same
    * connections. */
+  static int last_type = -1;
+  static int previous_retval = 0;
+  if (type >= 0 && last_type == type)
+    return previous_retval;
+
   int retval(_current_connection);
   int task_count(std::numeric_limits<int>::max());
   int count(_connection.size());
@@ -338,6 +343,8 @@ int mysql::choose_best_connection() {
       task_count = _connection[_current_connection]->get_tasks_count();
     }
   }
+  last_type = type;
+  previous_retval = retval;
   return retval;
 }
 

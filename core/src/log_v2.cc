@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
@@ -25,6 +24,8 @@
 
 #include <fstream>
 #include <json11.hpp>
+
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace spdlog;
@@ -50,6 +51,7 @@ log_v2::log_v2() {
   _sql_log = std::make_shared<logger>("sql", null_sink);
   _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
   _lua_log = std::make_shared<logger>("lua", null_sink);
+  _bam_log = std::make_shared<logger>("bam", null_sink);
 }
 
 log_v2::~log_v2() {
@@ -74,7 +76,9 @@ static auto json_validate = [](Json const& js) -> bool {
   return true;
 };
 
-bool log_v2::load(std::string const& file, std::string const& broker_name, std::string & err) {
+bool log_v2::load(std::string const& file,
+                  std::string const& broker_name,
+                  std::string& err) {
   std::lock_guard<std::mutex> lock(_load_m);
 
   std::ifstream my_file(file);
@@ -119,10 +123,13 @@ bool log_v2::load(std::string const& file, std::string const& broker_name, std::
           l = &_perfdata_log;
         else if (entry["name"].string_value() == "lua")
           l = &_lua_log;
+        else if (entry["name"].string_value() == "bam")
+          l = &_bam_log;
         else
           continue;
 
-        *l = std::make_shared<logger>(entry["name"].string_value(), sinks.begin(), sinks.end());
+        *l = std::make_shared<logger>(entry["name"].string_value(),
+                                      sinks.begin(), sinks.end());
         (*l)->set_level(dbg_lvls[entry["level"].string_value()]);
         (*l)->flush_on(dbg_lvls[entry["level"].string_value()]);
       }
@@ -169,4 +176,8 @@ std::shared_ptr<spdlog::logger> log_v2::perfdata() {
 
 std::shared_ptr<spdlog::logger> log_v2::lua() {
   return instance()._lua_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::bam() {
+  return instance()._bam_log;
 }

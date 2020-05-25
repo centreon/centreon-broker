@@ -144,7 +144,7 @@ static io::raw* serialize(io::data const& e) {
     // Reserve space for the BBDO header.
     uint32_t beginning(data.size());
     data.resize(data.size() + BBDO_HEADER_SIZE);
-    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning + 4))) =
+    *(reinterpret_cast<uint32_t*>(data.data() + beginning + 4)) =
         htonl(e.type());
 
     // Serialize properties of the object.
@@ -189,21 +189,19 @@ static io::raw* serialize(io::data const& e) {
       while (static_cast<uint32_t>(data.size()) >=
              (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
         // Set size.
-        *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) +
-          1) = 0xFFFF;
+        *reinterpret_cast<uint16_t*>(data.data() + beginning + 2) = 0xFFFF;
 
         // Source and destination
-        *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) +
-          2) = htonl(e.source_id);
+        *reinterpret_cast<uint32_t*>(data.data() + beginning + 8) =
+            htonl(e.source_id);
 
-        *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) +
-          3) = htonl(e.destination_id);
+        *reinterpret_cast<uint32_t*>(data.data() + beginning + 12) =
+            htonl(e.destination_id);
 
         // Set checksum.
         uint16_t chksum(misc::crc16_ccitt(data.data() + beginning + 2,
                                           BBDO_HEADER_SIZE - 2));
-        *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) =
-            htons(chksum);
+        *reinterpret_cast<uint16_t*>(data.data() + beginning) = htons(chksum);
 
         // Create new header.
         beginning += BBDO_HEADER_SIZE + 0xFFFF;
@@ -211,26 +209,25 @@ static io::raw* serialize(io::data const& e) {
         memset(header, 0, sizeof(header));
         *reinterpret_cast<uint32_t*>(header + 4) = htonl(e.type());
         std::vector<char>::iterator it{data.begin() + beginning};
-        data.insert(it, header, header + sizeof(header) - 1);
+        data.insert(it, header, header + sizeof(header));
       }
     }
 
     // Set (last) packet size.
-    *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) + 1) =
+    *reinterpret_cast<uint16_t*>(data.data() + beginning + 2) =
         htons(data.size() - beginning - BBDO_HEADER_SIZE);
 
     // Source and destination.
-    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 2) =
+    *reinterpret_cast<uint32_t*>(data.data() + beginning + 8) =
         htonl(e.source_id);
 
-    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 3) =
+    *reinterpret_cast<uint32_t*>(data.data() + beginning + 12) =
         htonl(e.destination_id);
 
     // Checksum.
     uint16_t chksum(
         misc::crc16_ccitt(data.data() + beginning + 2, BBDO_HEADER_SIZE - 2));
-    *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) =
-        htons(chksum);
+    *reinterpret_cast<uint16_t*>(data.data() + beginning) = htons(chksum);
 
     return buffer.release();
   } else {
@@ -296,9 +293,8 @@ int output::write(std::shared_ptr<io::data> const& e) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*e));
   if (serialized) {
-    log_v2::bbdo()->debug(
-        "BBDO: serialized event of type {0} to {1} bytes", e->type(),
-        serialized->size());
+    log_v2::bbdo()->debug("BBDO: serialized event of type {0} to {1} bytes",
+                          e->type(), serialized->size());
     logging::debug(logging::medium)
         << "BBDO: serialized event of type " << e->type() << " to "
         << serialized->size() << " bytes";

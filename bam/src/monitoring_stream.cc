@@ -17,11 +17,13 @@
 */
 
 #include "com/centreon/broker/bam/monitoring_stream.hh"
+
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <limits>
 #include <sstream>
+
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
@@ -35,6 +37,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -104,8 +107,7 @@ monitoring_stream::~monitoring_stream() {
  */
 int monitoring_stream::flush() {
   _mysql.commit();
-  int retval(_ack_events + _pending_events);
-  _ack_events = 0;
+  int retval = _pending_events;
   _pending_events = 0;
   return retval;
 }
@@ -177,141 +179,148 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
   if (!validate(data, "BAM"))
     return 0;
+  log_v2::bam()->trace("BAM: {} pending events", _pending_events);
 
   // Process service status events.
-  if ((data->type() == neb::service_status::static_type()) ||
-      (data->type() == neb::service::static_type())) {
-    std::shared_ptr<neb::service_status> ss(
-        std::static_pointer_cast<neb::service_status>(data));
-    logging::debug(logging::low)
-        << "BAM: processing service status (host " << ss->host_id
-        << ", service " << ss->service_id << ", hard state "
-        << ss->last_hard_state << ", current state " << ss->current_state
-        << ")";
-    multiplexing::publisher pblshr;
-    event_cache_visitor ev_cache;
-    _applier.book_service().update(ss, &ev_cache);
-    ev_cache.commit_to(pblshr);
-  } else if (data->type() == neb::acknowledgement::static_type()) {
-    std::shared_ptr<neb::acknowledgement> ack(
-        std::static_pointer_cast<neb::acknowledgement>(data));
-    logging::debug(logging::low)
-        << "BAM: processing acknowledgement (host " << ack->host_id
-        << ", service " << ack->service_id << ")";
-    multiplexing::publisher pblshr;
-    event_cache_visitor ev_cache;
-    _applier.book_service().update(ack, &ev_cache);
-    ev_cache.commit_to(pblshr);
-  } else if (data->type() == neb::downtime::static_type()) {
-    std::shared_ptr<neb::downtime> dt(
-        std::static_pointer_cast<neb::downtime>(data));
-    logging::debug(logging::low)
-        << "BAM: processing downtime (host " << dt->host_id << ", service "
-        << dt->service_id << ")";
-    multiplexing::publisher pblshr;
-    event_cache_visitor ev_cache;
-    _applier.book_service().update(dt, &ev_cache);
-    ev_cache.commit_to(pblshr);
-  } else if (data->type() == storage::metric::static_type()) {
-    std::shared_ptr<storage::metric> m(
-        std::static_pointer_cast<storage::metric>(data));
-    logging::debug(logging::low)
-        << "BAM: processing metric (id " << m->metric_id << ", time "
-        << m->ctime << ", value " << m->value << ")";
-    multiplexing::publisher pblshr;
-    event_cache_visitor ev_cache;
-    _applier.book_metric().update(m, &ev_cache);
-    ev_cache.commit_to(pblshr);
-  } else if (data->type() == bam::ba_status::static_type()) {
-    ba_status* status(static_cast<ba_status*>(data.get()));
-    logging::debug(logging::low)
-        << "BAM: processing BA status (id " << status->ba_id << ", level "
-        << status->level_nominal << ", acknowledgement "
-        << status->level_acknowledgement << ", downtime "
-        << status->level_downtime << ")";
-    _ba_update.bind_value_as_f64(0, status->level_nominal);
-    _ba_update.bind_value_as_f64(1, status->level_acknowledgement);
-    _ba_update.bind_value_as_f64(2, status->level_downtime);
-    _ba_update.bind_value_as_u32(6, status->ba_id);
-    if (status->last_state_change == (time_t)-1 ||
-        status->last_state_change == 0)
-      _ba_update.bind_value_as_null(3);
-    else
-      _ba_update.bind_value_as_u64(3, status->last_state_change.get_time_t());
-    _ba_update.bind_value_as_bool(4, status->in_downtime);
-    _ba_update.bind_value_as_i32(5, status->state);
+  switch (data->type()) {
+    case neb::service_status::static_type():
+    case neb::service::static_type(): {
+      std::shared_ptr<neb::service_status> ss(
+          std::static_pointer_cast<neb::service_status>(data));
+      log_v2::bam()->trace(
+          "BAM: processing service status (host {}, service {}, hard state {}, "
+          "current state {})",
+          ss->host_id, ss->service_id, ss->last_hard_state, ss->current_state);
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(ss, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    } break;
+    case neb::acknowledgement::static_type(): {
+      std::shared_ptr<neb::acknowledgement> ack(
+          std::static_pointer_cast<neb::acknowledgement>(data));
+      log_v2::bam()->trace(
+          "BAM: processing acknowledgement (host {}, service {})", ack->host_id,
+          ack->service_id);
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(ack, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    } break;
+    case neb::downtime::static_type(): {
+      std::shared_ptr<neb::downtime> dt(
+          std::static_pointer_cast<neb::downtime>(data));
+      log_v2::bam()->trace("BAM: processing downtime (host {}, service {})",
+                           dt->host_id, dt->service_id);
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_service().update(dt, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    } break;
+    case storage::metric::static_type(): {
+      std::shared_ptr<storage::metric> m(
+          std::static_pointer_cast<storage::metric>(data));
+      log_v2::bam()->trace("BAM: processing metric (id {}, time {}, value {})",
+                           m->metric_id, m->ctime, m->value);
+      multiplexing::publisher pblshr;
+      event_cache_visitor ev_cache;
+      _applier.book_metric().update(m, &ev_cache);
+      ev_cache.commit_to(pblshr);
+    } break;
+    case bam::ba_status::static_type(): {
+      ba_status* status(static_cast<ba_status*>(data.get()));
+      logging::debug(logging::low)
+          << "BAM: processing BA status (id " << status->ba_id << ", level "
+          << status->level_nominal << ", acknowledgement "
+          << status->level_acknowledgement << ", downtime "
+          << status->level_downtime << ")";
+      _ba_update.bind_value_as_f64(0, status->level_nominal);
+      _ba_update.bind_value_as_f64(1, status->level_acknowledgement);
+      _ba_update.bind_value_as_f64(2, status->level_downtime);
+      _ba_update.bind_value_as_u32(6, status->ba_id);
+      if (status->last_state_change == (time_t)-1 ||
+          status->last_state_change == 0)
+        _ba_update.bind_value_as_null(3);
+      else
+        _ba_update.bind_value_as_u64(3, status->last_state_change.get_time_t());
+      _ba_update.bind_value_as_bool(4, status->in_downtime);
+      _ba_update.bind_value_as_i32(5, status->state);
 
-    std::ostringstream oss_err;
-    oss_err << "BAM: could not update BA " << status->ba_id << ": ";
-    _mysql.run_statement(_ba_update, oss_err.str(), true);
+      std::ostringstream oss_err;
+      oss_err << "BAM: could not update BA " << status->ba_id << ": ";
+      _mysql.run_statement(_ba_update, oss_err.str(), true);
 
-    if (status->state_changed) {
-      std::pair<std::string, std::string> ba_svc_name(
-          _ba_mapping.get_service(status->ba_id));
-      if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
-        logging::error(logging::high)
-            << "BAM: could not trigger check of virtual service of BA "
-            << status->ba_id
-            << ": host name and service description were not found";
-      } else {
-        std::ostringstream oss;
-        time_t now(time(nullptr));
-        oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;" << ba_svc_name.first
-            << ";" << ba_svc_name.second << ";" << now;
-        _write_external_command(oss.str());
+      if (status->state_changed) {
+        std::pair<std::string, std::string> ba_svc_name(
+            _ba_mapping.get_service(status->ba_id));
+        if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
+          logging::error(logging::high)
+              << "BAM: could not trigger check of virtual service of BA "
+              << status->ba_id
+              << ": host name and service description were not found";
+        } else {
+          std::ostringstream oss;
+          time_t now(time(nullptr));
+          oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
+              << ba_svc_name.first << ";" << ba_svc_name.second << ";" << now;
+          _write_external_command(oss.str());
+        }
       }
-    }
-  } else if (data->type() == bam::kpi_status::static_type()) {
-    kpi_status* status(static_cast<kpi_status*>(data.get()));
-    logging::debug(logging::low)
-        << "BAM: processing KPI status (id " << status->kpi_id << ", level "
-        << status->level_nominal_hard << ", acknowledgement "
-        << status->level_acknowledgement_hard << ", downtime "
-        << status->level_downtime_hard << ")";
+    } break;
+    case bam::kpi_status::static_type(): {
+      kpi_status* status(static_cast<kpi_status*>(data.get()));
+      logging::debug(logging::low)
+          << "BAM: processing KPI status (id " << status->kpi_id << ", level "
+          << status->level_nominal_hard << ", acknowledgement "
+          << status->level_acknowledgement_hard << ", downtime "
+          << status->level_downtime_hard << ")";
 
-    _kpi_update.bind_value_as_f64(0, status->level_acknowledgement_hard);
-    _kpi_update.bind_value_as_i32(1, status->state_hard);
-    _kpi_update.bind_value_as_f64(2, status->level_downtime_hard);
-    _kpi_update.bind_value_as_f64(3, status->level_nominal_hard);
-    _kpi_update.bind_value_as_i32(4, 1 + 1);
-    if (status->last_state_change == (time_t)-1 ||
-        status->last_state_change == 0)
-      _kpi_update.bind_value_as_null(5);
-    else
-      _kpi_update.bind_value_as_u64(5, status->last_state_change.get_time_t());
-    _kpi_update.bind_value_as_f64(6, status->last_impact);
-    _kpi_update.bind_value_as_bool(7, status->valid);
-    _kpi_update.bind_value_as_bool(8, status->in_downtime);
-    _kpi_update.bind_value_as_u32(9, status->kpi_id);
+      _kpi_update.bind_value_as_f64(0, status->level_acknowledgement_hard);
+      _kpi_update.bind_value_as_i32(1, status->state_hard);
+      _kpi_update.bind_value_as_f64(2, status->level_downtime_hard);
+      _kpi_update.bind_value_as_f64(3, status->level_nominal_hard);
+      _kpi_update.bind_value_as_i32(4, 1 + 1);
+      if (status->last_state_change == (time_t)-1 ||
+          status->last_state_change == 0)
+        _kpi_update.bind_value_as_null(5);
+      else
+        _kpi_update.bind_value_as_u64(5,
+                                      status->last_state_change.get_time_t());
+      _kpi_update.bind_value_as_f64(6, status->last_impact);
+      _kpi_update.bind_value_as_bool(7, status->valid);
+      _kpi_update.bind_value_as_bool(8, status->in_downtime);
+      _kpi_update.bind_value_as_u32(9, status->kpi_id);
 
-    std::ostringstream oss_err;
-    oss_err << "BAM: could not update KPI " << status->kpi_id << ": ";
-    _mysql.run_statement(_kpi_update, oss_err.str(), true);
-  } else if (data->type() == inherited_downtime::static_type()) {
-    std::ostringstream oss;
-    timestamp now = timestamp::now();
-    inherited_downtime const& dwn =
-        *std::static_pointer_cast<inherited_downtime const>(data);
-    if (dwn.in_downtime)
-      oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
-          << config::applier::state::instance().poller_id() << ";ba_"
-          << dwn.ba_id << ";" << now << ";"
-          << std::numeric_limits<int32_t>::max()
-          << ";1;0;0;Centreon Broker BAM Module;"
-             "Automatic downtime triggered by BA downtime inheritance";
-    else
-      oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_"
-          << config::applier::state::instance().poller_id() << ";ba_"
-          << dwn.ba_id << ";;" << std::numeric_limits<int32_t>::max()
-          << ";1;0;;Centreon Broker BAM Module;"
-             "Automatic downtime triggered by BA downtime inheritance";
-    _write_external_command(oss.str());
+      std::ostringstream oss_err;
+      oss_err << "BAM: could not update KPI " << status->kpi_id << ": ";
+      _mysql.run_statement(_kpi_update, oss_err.str(), true);
+    } break;
+    case inherited_downtime::static_type(): {
+      std::ostringstream oss;
+      timestamp now = timestamp::now();
+      inherited_downtime const& dwn =
+          *std::static_pointer_cast<inherited_downtime const>(data);
+      if (dwn.in_downtime)
+        oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
+            << config::applier::state::instance().poller_id() << ";ba_"
+            << dwn.ba_id << ";" << now << ";"
+            << std::numeric_limits<int32_t>::max()
+            << ";1;0;0;Centreon Broker BAM Module;"
+               "Automatic downtime triggered by BA downtime inheritance";
+      else
+        oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_"
+            << config::applier::state::instance().poller_id() << ";ba_"
+            << dwn.ba_id << ";;" << std::numeric_limits<int32_t>::max()
+            << ";1;0;;Centreon Broker BAM Module;"
+               "Automatic downtime triggered by BA downtime inheritance";
+      _write_external_command(oss.str());
+    } break;
+    default:
+      break;
   }
 
   // Event acknowledgement.
-  int retval(_ack_events);
-  _ack_events = 0;
-  return retval;
+  return 0;
 }
 
 /**************************************
@@ -326,16 +335,18 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
 void monitoring_stream::_prepare() {
   // BA status.
   {
-std::string query("UPDATE mod_bam SET current_level=?,acknowledged=?,downtime=?,"
-             "last_state_change=?,in_downtime=?,current_status=? WHERE ba_id=?");
+    std::string query(
+        "UPDATE mod_bam SET current_level=?,acknowledged=?,downtime=?,"
+        "last_state_change=?,in_downtime=?,current_status=? WHERE ba_id=?");
     _ba_update = _mysql.prepare_query(query);
   }
 
   // KPI status.
   {
-    std::string query("UPDATE mod_bam_kpi SET acknowledged=?,current_status=?,"
-             "downtime=?, last_level=?,state_type=?,last_state_change=?,"
-             "last_impact=?, valid=?,in_downtime=? WHERE kpi_id=?");
+    std::string query(
+        "UPDATE mod_bam_kpi SET acknowledged=?,current_status=?,"
+        "downtime=?, last_level=?,state_type=?,last_state_change=?,"
+        "last_impact=?, valid=?,in_downtime=? WHERE kpi_id=?");
     _kpi_update = _mysql.prepare_query(query);
   }
 }

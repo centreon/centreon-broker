@@ -38,8 +38,8 @@ conflict_manager* conflict_manager::_singleton = nullptr;
 std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
-int32_t (
-    conflict_manager::*const conflict_manager::_neb_processing_table[])() = {
+void (conflict_manager::*const conflict_manager::_neb_processing_table[])(
+    std::shared_ptr<io::data>) = {
     nullptr,
     &conflict_manager::_process_acknowledgement,
     &conflict_manager::_process_comment,
@@ -80,11 +80,11 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
     : _exit{false},
       _broken{false},
       _loop_timeout{loop_timeout},
-      _max_pending_queries{dbcfg.get_queries_per_transaction()},
+      _max_pending_queries(dbcfg.get_queries_per_transaction()),
       _pending_queries{0},
       _mysql{dbcfg},
       _instance_timeout{instance_timeout},
-      _still_pending_events{},
+      _still_pending_events{0},
       _loop_duration{},
       _speed{},
       _ref_count{0},
@@ -392,7 +392,7 @@ void conflict_manager::_callback() {
             std::chrono::system_clock::now();
         std::unique_lock<std::mutex> lk(_loop_m);
 
-        uint32_t count = 0;
+        int32_t count = 0;
         int32_t timeout = 0;
         int32_t timeout_limit = _loop_timeout * 1000;
         std::chrono::system_clock::time_point previous_time(now0);
@@ -423,25 +423,29 @@ void conflict_manager::_callback() {
          */
         while (!_events.empty() && count < _max_pending_queries &&
                timeout < timeout_limit) {
-          std::shared_ptr<io::data> d{std::get<0>(_events.front())};
+          auto& tpl = _events.front();
+          std::shared_ptr<io::data> d{std::get<0>(tpl)};
           lk.unlock();
           uint32_t type{d->type()};
           uint16_t cat{io::events::category_of_type(type)};
           uint16_t elem{io::events::element_of_type(type)};
-          if (std::get<1>(_events.front()) == sql && cat == io::events::neb)
-            count += (this->*(_neb_processing_table[elem]))();
-          else if (std::get<1>(_events.front()) == storage &&
+          if (std::get<1>(tpl) == sql && cat == io::events::neb)
+            (this->*(_neb_processing_table[elem]))(d);
+          else if (std::get<1>(tpl) == storage && cat == io::events::neb &&
                    type == neb::service_status::static_type())
-            count += _storage_process_service_status();
-          else {
+            _storage_process_service_status(d);
+          else
             log_v2::sql()->trace(
                 "conflict_manager: event of type {} thrown away ; no need to "
                 "store it in the database.",
                 type);
-            *std::get<2>(_events.front()) = true;
-            _events.pop_front();
-            count++;
-          }
+
+          ++count;
+          *std::get<2>(tpl) = true;
+          lk.lock();
+          _events.pop_front();
+          lk.unlock();
+
           std::chrono::system_clock::time_point now1 =
               std::chrono::system_clock::now();
 
@@ -560,7 +564,7 @@ bool conflict_manager::_should_exit() const {
  *
  * @return The number of events to ack.
  */
-void conflict_manager::send_event(conflict_manager::stream_type c,
+int32_t conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
   assert(e);
   if (_broken)
@@ -568,13 +572,18 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
 
   log_v2::sql()->trace(
       "conflict_manager: send_event category:{}, element:{} from {}",
-      e->type() >> 16, e->type() & 0xffff, c == 0 ? "sql" : "storage");
+      e->type() >> 16,
+      e->type() & 0xffff,
+      c == 0 ? "sql" : "storage");
 
   std::lock_guard<std::mutex> lk(_loop_m);
   _pending_queries++;
   _timeline[c].push_back(false);
   _events.emplace_back(std::make_tuple(e, c, &_timeline[c].back()));
   _loop_cv.notify_all();
+  int32_t retval = _ack[c];
+  _ack[c] = 0;
+  return retval;
 }
 
 /**
@@ -633,7 +642,7 @@ void conflict_manager::_finish_actions() {
       retval++;
     }
     _pending_queries -= retval;
-    _ack[c] = retval;
+    _ack[c] += retval;
   }
   log_v2::sql()->debug("conflict_manager: still {} not acknowledged",
                        _pending_queries);
@@ -668,16 +677,11 @@ json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
   std::lock_guard<std::mutex> lk(_stat_m);
   retval["pending events"] = _still_pending_events;
-  retval["loop duration"] = std::to_string(_loop_duration) + " ms";
-  retval["speed"] = std::to_string(_speed) + " events/s";
+  retval["sql"] = static_cast<int32_t>(_timeline[sql].size());
+  retval["storage"] = static_cast<int32_t>(_timeline[storage].size());
+  retval["stats interval"] = fmt::format("{} ms", _loop_duration);
+  retval["speed"] = fmt::format("{} events/s", _speed);
   return retval;
-}
-
-void conflict_manager::_pop_event(
-    std::tuple<std::shared_ptr<io::data>, stream_type, bool*>& p) {
-  std::lock_guard<std::mutex> lk(_loop_m);
-  *std::get<2>(p) = true;
-  _events.pop_front();
 }
 
 /**

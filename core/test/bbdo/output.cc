@@ -103,10 +103,6 @@ TEST_F(OutputTest, WriteService) {
   stm.negotiate(bbdo::stream::negotiate_first);
   stm.write(svc);
   std::vector<char> const& mem1 = memory_stream->get_memory();
-  for (uint32_t i = 140; i < mem1.size(); i++) {
-    std::cout << std::hex << (static_cast<uint32_t>(mem1[i]) & 0xff) << ' ';
-  }
-  std::cout << '\n';
 
   ASSERT_EQ(mem1.size(), 276u);
   // The size is 276 - 16: 16 is the header size.
@@ -144,16 +140,13 @@ TEST_F(OutputTest, WriteLongService) {
   auto svc = std::make_shared<neb::service>();
   svc->host_id = 12;
   svc->service_id = 18;
-  svc->output = std::string(70000, 'A');
+  svc->output.reserve(70000);
   char c = 'A';
-  for (std::string::iterator i = svc->output.begin(); i != svc->output.end();
-       i++) {
-    *i = c;
-    if (++c > 'Z')
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
+    if (c > 'Z')
       c = 'A';
   }
-  svc->output[69999] = 0;
-  std::cout << svc->output;
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(new into_memory());
@@ -165,7 +158,7 @@ TEST_F(OutputTest, WriteLongService) {
   stm.write(svc);
   std::vector<char> const& mem1 = memory_stream->get_memory();
 
-  ASSERT_EQ(mem1.size(), 70284u);
+  ASSERT_EQ(mem1.size(), 73956u);
 
   // The buffer is too big. So it is splitted into several -- here 2 -- buffers.
   // The are concatenated, keeped into the same block, but a new header is
@@ -177,15 +170,15 @@ TEST_F(OutputTest, WriteLongService) {
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12u);
 
   // Second block
-  // We have 70284 = HeaderSize + block1 + HeaderSize + block2
-  //      So 70284 = 16         + 0xffff + 16         + 4717
+  // We have 73956 = HeaderSize + block1 + HeaderSize + block2
+  //      So 73956 = 16         + 0xffff + 16         + 8389
   ASSERT_EQ(
       htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535 + 2)),
-      4717u);
+      8389u);
 
   // Check checksum
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)),
-            10510u);
+            63960u);
 }
 
 TEST_F(OutputTest, WriteReadService) {
@@ -196,20 +189,22 @@ TEST_F(OutputTest, WriteReadService) {
   svc->host_id = 12345;
   svc->service_id = 18;
 
-  svc->output.reserve(100000);
+  svc->output.reserve(1000000);
   char c = 'a';
-  for (auto it = svc->output.begin(); it != svc->output.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
+    ASSERT_EQ(svc->output.size(), i + 1);
   }
 
-  svc->perf_data.reserve(100000);
+  svc->perf_data.reserve(1000000);
   c = '0';
-  for (auto it = svc->perf_data.begin(); it != svc->perf_data.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+    svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';
+    ASSERT_EQ(svc->perf_data.size(), i + 1);
   }
   svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
 
@@ -235,22 +230,23 @@ TEST_F(OutputTest, ShortPersistentFile) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
 
-  std::shared_ptr<neb::service> svc(new neb::service);
+  std::shared_ptr<neb::service_status> svc(new neb::service_status);
   svc->host_id = 12345;
   svc->service_id = 18;
+  svc->acknowledged = true;
 
   svc->output.reserve(1000);
   char c = 'a';
-  for (auto it = svc->output.begin(); it != svc->output.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
   }
 
   svc->perf_data.reserve(100);
   c = '0';
-  for (auto it = svc->perf_data.begin(); it != svc->perf_data.end(); ++it) {
-    *it = c++;
+  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+    svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';
   }
@@ -260,14 +256,64 @@ TEST_F(OutputTest, ShortPersistentFile) {
   mf->write(svc);
 
   std::shared_ptr<io::data> e;
-  mf->read(e, 0);
   mf.reset();
-  mf.reset(new persistent_file("/tmp/test_output"));
 
-  std::shared_ptr<neb::service> new_svc =
-      std::static_pointer_cast<neb::service>(e);
+
+  mf.reset(new persistent_file("/tmp/test_output"));
+  mf->read(e, 0);
+
+  std::shared_ptr<neb::service_status> new_svc =
+      std::static_pointer_cast<neb::service_status>(e);
+  ASSERT_EQ(svc->acknowledged, new_svc->acknowledged);
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
 
   l.unload();
+  std::remove("/tmp/test_output");
+}
+
+TEST_F(OutputTest, LongPersistentFile) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 12345;
+  svc->service_id = 18;
+  svc->acknowledged = true;
+
+  svc->output.reserve(100000);
+  char c = 'a';
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
+    if (c > 'z')
+      c = 'a';
+  }
+
+  svc->perf_data.reserve(100000);
+  c = '0';
+  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+    svc->perf_data.push_back(c++);
+    if (c > '9')
+      c = '0';
+  }
+  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+
+  std::unique_ptr<io::stream> mf(new persistent_file("/tmp/long_output"));
+  mf->write(svc);
+
+  std::shared_ptr<io::data> e;
+  mf.reset();
+
+
+  mf.reset(new persistent_file("/tmp/long_output"));
+  mf->read(e, 0);
+
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(svc->acknowledged, new_svc->acknowledged);
+  ASSERT_EQ(svc->output, new_svc->output);
+  ASSERT_EQ(svc->perf_data, new_svc->perf_data);
+
+  l.unload();
+  std::remove("/tmp/long_output");
 }

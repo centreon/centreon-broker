@@ -17,12 +17,15 @@
 */
 
 #include "com/centreon/broker/multiplexing/muxer.hh"
+
 #include <limits>
 #include <memory>
 #include <sstream>
+
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -49,15 +52,13 @@ uint32_t muxer::_event_queue_max_size = std::numeric_limits<uint32_t>::max();
  *                         unprocessed events in a persistent storage.
  */
 muxer::muxer(std::string const& name, bool persistent)
-    : _events_size(0),
-      _name(name),
-      _persistent(persistent) {
+    : _events_size(0), _name(name), _persistent(persistent) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {
       std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
       std::shared_ptr<io::data> e;
-      while (true) {
+      for (;;) {
         e.reset();
         mf->read(e, 0);
         if (e) {
@@ -80,7 +81,6 @@ muxer::muxer(std::string const& name, bool persistent)
     // read() operation was done on the queue file and prevent it from
     // being open in case it is empty.
     do {
-      e.reset();
       _get_event_from_file(e);
       if (!e)
         break;
@@ -94,9 +94,9 @@ muxer::muxer(std::string const& name, bool persistent)
   _pos = _events.begin();
 
   // Log messages.
-  logging::info(logging::low)
-      << "multiplexing: '" << _name << "' start with " << _events_size
-      << " in queue and the queue file is " << (_file ? "enable" : "disable");
+  log_v2::perfdata()->info(
+      "multiplexing: '{}' starts with {} in queue and the queue file is {}",
+      _name, _events_size, _file ? "enable" : "disable");
 }
 
 /**
@@ -113,11 +113,12 @@ muxer::~muxer() {
  */
 void muxer::ack_events(int count) {
   // Remove acknowledged events.
-  logging::debug(logging::low) << "multiplexing: acknowledging " << count
-                               << " events from " << _name << " event queue";
+  log_v2::perfdata()->debug(
+      "multiplexing: acknowledging {} events from {} event queue", count,
+      _name);
   if (count) {
     std::lock_guard<std::mutex> lock(_mutex);
-    for (int i(0); (i < count) && !_events.empty(); ++i) {
+    for (int i = 0; i < count && !_events.empty(); ++i) {
       if (_events.begin() == _pos) {
         logging::error(logging::high)
             << "multiplexing: attempt to "
@@ -129,11 +130,12 @@ void muxer::ack_events(int count) {
       _events.pop_front();
       --_events_size;
     }
+    log_v2::perfdata()->trace("multiplexing: still {} events in {} event queue",
+                              _events_size, _name);
 
     // Fill memory from file.
     std::shared_ptr<io::data> e;
     while (_events_size < event_queue_max_size()) {
-      e.reset();
       _get_event_from_file(e);
       if (!e)
         break;
@@ -143,7 +145,7 @@ void muxer::ack_events(int count) {
 }
 
 /**
- *  Set the maximume event queue size.
+ *  Set the maximum event queue size.
  *
  *  @param[in] max  The size limit.
  */
@@ -167,7 +169,7 @@ uint32_t muxer::event_queue_max_size() noexcept {
  *
  *  @param[in] event Event to add.
  */
-void muxer::publish(std::shared_ptr<io::data> const& event) {
+void muxer::publish(std::shared_ptr<io::data> const event) {
   if (event) {
     std::lock_guard<std::mutex> lock(_mutex);
     // Check if we should process this event.
@@ -298,9 +300,9 @@ uint32_t muxer::get_event_queue_size() const {
  *  Reprocess non-acknowledged events.
  */
 void muxer::nack_events() {
-  logging::debug(logging::low)
-      << "multiplexing: reprocessing unacknowledged events from " << _name
-      << " event queue";
+  log_v2::perfdata()->debug(
+      "multiplexing: reprocessing unacknowledged events from {} event queue",
+      _name);
   std::lock_guard<std::mutex> lock(_mutex);
   _pos = _events.begin();
 }
@@ -324,10 +326,8 @@ void muxer::statistics(json11::Json::object& tree) const {
   }
 
   // Unacknowledged events count.
-  int unacknowledged(0);
-  for (std::list<std::shared_ptr<io::data> >::const_iterator it(
-           _events.begin());
-       it != _pos; ++it)
+  int unacknowledged = 0;
+  for (auto it = _events.begin(); it != _pos; ++it)
     ++unacknowledged;
   tree["unacknowledged_events"] = unacknowledged;
 }
@@ -359,9 +359,8 @@ int muxer::write(std::shared_ptr<io::data> const& d) {
  *  @return  The memory file name associated with this muxer.
  */
 std::string muxer::memory_file(std::string const& name) {
-  std::string retval(config::applier::state::instance().cache_dir());
-  retval.append(".memory.");
-  retval.append(name);
+  std::string retval(fmt::format(
+      "{}.memory.{}", config::applier::state::instance().cache_dir(), name));
   return retval;
 }
 
@@ -373,9 +372,8 @@ std::string muxer::memory_file(std::string const& name) {
  *  @return  The queue file name associated with this muxer.
  */
 std::string muxer::queue_file(std::string const& name) {
-  std::string retval(config::applier::state::instance().cache_dir());
-  retval.append(".queue.");
-  retval.append(name);
+  std::string retval(fmt::format(
+      "{}.queue.{}", config::applier::state::instance().cache_dir(), name));
   return retval;
 }
 
@@ -441,7 +439,7 @@ std::string muxer::_memory_file() const {
 }
 
 /**
- *  Push event to queue.
+ *  Push event to queue (_mutex is locked when this method is called).
  *
  *  @param[in] event  New event.
  */

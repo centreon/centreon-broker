@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 #include <mutex>
 #include <string>
+
 #include "com/centreon/broker/bam/configuration/applier/state.hh"
 #include "com/centreon/broker/database/mysql_stmt.hh"
 #include "com/centreon/broker/database_config.hh"
@@ -75,7 +76,6 @@ class monitoring_stream : public io::stream {
   database::mysql_stmt _ba_update;
   database::mysql_stmt _kpi_update;
   database::mysql_stmt _meta_service_update;
-  int _ack_events;
   int _pending_events;
   database_config _storage_db_cfg;
   std::shared_ptr<persistent_cache> _cache;

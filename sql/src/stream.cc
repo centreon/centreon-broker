@@ -17,25 +17,27 @@
 */
 
 #include "com/centreon/broker/sql/stream.hh"
+
 #include <ctime>
 #include <limits>
 #include <sstream>
+
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/neb/downtime.hh"
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/query_preparator.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
-#include "com/centreon/broker/storage/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -141,36 +143,38 @@ void stream::_process_host_state(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted issue.
  */
 void stream::_process_issue(std::shared_ptr<io::data> const& e) {
-  (void) e;
-//  // Issue object.
-//  correlation::issue const& i(*static_cast<correlation::issue const*>(e.get()));
-//
-//  // Log message.
-//  logging::info(logging::medium)
-//      << "SQL: processing issue event (node: (" << i.host_id << ", "
-//      << i.service_id << "), start time: " << i.start_time
-//      << ", end_time: " << i.end_time << ", ack time: " << i.ack_time << ")";
-//
-//  // Prepare queries.
-//  if (!_issue_insupdate.prepared()) {
-//    query_preparator::event_unique unique;
-//    unique.insert("host_id");
-//    unique.insert("service_id");
-//    unique.insert("start_time");
-//    query_preparator qp(correlation::issue::static_type(), unique);
-//    _issue_insupdate = qp.prepare_insert_or_update(_mysql);
-//  }
-//
-//  // Processing.
-//  std::ostringstream oss;
-//  oss << "SQL: could not store issue (host: " << i.host_id
-//      << ", service: " << i.service_id << ", start time: " << i.start_time
-//      << "): ";
-//
-//  _issue_insupdate << i;
-//  _mysql.run_statement(
-//      _issue_insupdate, oss.str(), true,
-//      _mysql.choose_connection_by_instance(_cache_host_instance[i.host_id]));
+  (void)e;
+  //  // Issue object.
+  //  correlation::issue const& i(*static_cast<correlation::issue
+  //  const*>(e.get()));
+  //
+  //  // Log message.
+  //  logging::info(logging::medium)
+  //      << "SQL: processing issue event (node: (" << i.host_id << ", "
+  //      << i.service_id << "), start time: " << i.start_time
+  //      << ", end_time: " << i.end_time << ", ack time: " << i.ack_time <<
+  //      ")";
+  //
+  //  // Prepare queries.
+  //  if (!_issue_insupdate.prepared()) {
+  //    query_preparator::event_unique unique;
+  //    unique.insert("host_id");
+  //    unique.insert("service_id");
+  //    unique.insert("start_time");
+  //    query_preparator qp(correlation::issue::static_type(), unique);
+  //    _issue_insupdate = qp.prepare_insert_or_update(_mysql);
+  //  }
+  //
+  //  // Processing.
+  //  std::ostringstream oss;
+  //  oss << "SQL: could not store issue (host: " << i.host_id
+  //      << ", service: " << i.service_id << ", start time: " << i.start_time
+  //      << "): ";
+  //
+  //  _issue_insupdate << i;
+  //  _mysql.run_statement(
+  //      _issue_insupdate, oss.str(), true,
+  //      _mysql.choose_connection_by_instance(_cache_host_instance[i.host_id]));
 }
 
 /**
@@ -179,157 +183,161 @@ void stream::_process_issue(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted issue parent.
  */
 void stream::_process_issue_parent(std::shared_ptr<io::data> const& e) {
-  (void) e;
-//  // Issue parent object.
-//  correlation::issue_parent const& ip(
-//      *static_cast<correlation::issue_parent const*>(e.get()));
-//
-//  // Log message.
-//  logging::info(logging::medium)
-//      << "SQL: processing issue parent "
-//         "event (child: ("
-//      << ip.child_host_id << ", " << ip.child_service_id << ", "
-//      << ip.child_start_time << "), parent: (" << ip.parent_host_id << ", "
-//      << ip.parent_service_id << ", " << ip.parent_start_time
-//      << "), start time: " << ip.start_time << ", end time: " << ip.end_time
-//      << ")";
-//
-//  // Database schema version.
-//  bool db_v2(_mysql.schema_version() == mysql::v2);
-//
-//  // Prepare queries.
-//  if (!_issue_parent_insert.prepared() || !_issue_parent_update.prepared()) {
-//    {
-//      std::ostringstream ss;
-//      ss << "INSERT INTO "
-//         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
-//         << "  (child_id, end_time, start_time, parent_id)"
-//            "  VALUES (:child_id, :end_time, :start_time, :parent_id)";
-//      _issue_parent_insert = _mysql.prepare_query(ss.str());
-//    }
-//    {
-//      std::ostringstream ss;
-//      ss << "UPDATE "
-//         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
-//         << "  SET end_time=:end_time"
-//            "  WHERE child_id=:child_id"
-//            "    AND start_time=:start_time"
-//            "    AND parent_id=:parent_id";
-//      _issue_parent_update = _mysql.prepare_query(ss.str());
-//    }
-//  }
-//
-//  int child_id;
-//  int parent_id;
-//
-//  // Get child ID.
-//  {
-//    std::ostringstream query;
-//    query << "SELECT issue_id"
-//          << "  FROM " << (db_v2 ? "issues" : "rt_issues")
-//          << "  WHERE host_id=" << ip.child_host_id << " AND service_id";
-//    if (ip.child_service_id)
-//      query << "=" << ip.child_service_id;
-//    else
-//      query << " IS NULL";
-//    query << " AND start_time=" << ip.child_start_time;
-//
-//    std::promise<mysql_result> promise;
-//    _mysql.run_query_and_get_result(
-//        query.str(), &promise,
-//        _mysql.choose_connection_by_instance(
-//            _cache_host_instance[ip.child_host_id]));
-//    try {
-//      mysql_result res(promise.get_future().get());
-//      if (!_mysql.fetch_row(res))
-//        throw exceptions::msg() << "child issue does not exist";
-//
-//      child_id = res.value_as_i32(0);
-//      logging::debug(logging::low)
-//          << "SQL: child issue ID of (" << ip.child_host_id << ", "
-//          << ip.child_service_id << ", " << ip.child_start_time << ") is "
-//          << child_id;
-//    } catch (std::exception const& e) {
-//      throw exceptions::msg()
-//          << "SQL: could not fetch child issue "
-//             "ID (host: "
-//          << ip.child_host_id << ", service: " << ip.child_service_id
-//          << ", start: " << ip.child_start_time << "): " << e.what();
-//    }
-//  }
-//
-//  // Get parent ID.
-//  {
-//    std::ostringstream query;
-//    query << "SELECT issue_id"
-//             "  FROM "
-//          << (db_v2 ? "issues" : "rt_issues")
-//          << "  WHERE host_id=" << ip.parent_host_id << "    AND service_id";
-//    if (ip.parent_service_id)
-//      query << "=" << ip.parent_service_id;
-//    else
-//      query << " IS NULL";
-//    query << " AND start_time=" << ip.parent_start_time;
-//
-//    std::promise<mysql_result> promise;
-//    _mysql.run_query_and_get_result(
-//        query.str(), &promise,
-//        _mysql.choose_connection_by_instance(
-//            _cache_host_instance[ip.parent_host_id]));
-//    try {
-//      mysql_result res(promise.get_future().get());
-//      if (!_mysql.fetch_row(res))
-//        throw(exceptions::msg() << "parent issue does not exist");
-//
-//      parent_id = res.value_as_i32(0);
-//      logging::debug(logging::low)
-//          << "SQL: parent issue ID of (" << ip.parent_host_id << ", "
-//          << ip.parent_service_id << ", " << ip.parent_start_time << ") is "
-//          << parent_id;
-//    } catch (std::exception const& e) {
-//      throw exceptions::msg()
-//          << "SQL: could not fetch parent issue "
-//             "ID (host: "
-//          << ip.parent_host_id << ", service: " << ip.parent_service_id
-//          << ", start: " << ip.parent_start_time << "): " << e.what();
-//    }
-//  }
-//
-//  // End of parenting.
-//  if (ip.end_time != (time_t)-1) {
-//    _issue_parent_update.bind_value_as_u32(":end_time",
-//                                           static_cast<long long>(ip.end_time));
-//  } else
-//    _issue_parent_update.bind_value_as_null(":end_time");
-//  _issue_parent_update.bind_value_as_i32(":child_id", child_id);
-//  _issue_parent_update.bind_value_as_u32(":start_time",
-//                                         static_cast<long long>(ip.start_time));
-//  _issue_parent_update.bind_value_as_i32(":parent_id", parent_id);
-//  logging::debug(logging::low)
-//      << "SQL: updating issue parenting between child " << child_id
-//      << " and parent " << parent_id << " (start: " << ip.start_time
-//      << ", end: " << ip.end_time << ")";
-//  std::promise<int> promise;
-//  _mysql.run_statement_and_get_int(_issue_parent_update, &promise,
-//                                   mysql_task::AFFECTED_ROWS);
-//  try {
-//    if (promise.get_future().get() <= 0) {
-//      if (ip.end_time != (time_t)-1)
-//        _issue_parent_insert.bind_value_as_u32(
-//            ":end_time", static_cast<long long>(ip.end_time));
-//      else
-//        _issue_parent_insert.bind_value_as_null(":end_time");
-//      logging::debug(logging::low)
-//          << "SQL: inserting issue parenting between child " << child_id
-//          << " and parent " << parent_id << " (start: " << ip.start_time
-//          << ", end: " << ip.end_time << ")";
-//      _mysql.run_statement(_issue_parent_insert,
-//                           "SQL: issue parent insert query failed");
-//    }
-//  } catch (std::exception const& e) {
-//    throw exceptions::msg()
-//        << "SQL: issue parent update query failed: " << e.what();
-//  }
+  (void)e;
+  //  // Issue parent object.
+  //  correlation::issue_parent const& ip(
+  //      *static_cast<correlation::issue_parent const*>(e.get()));
+  //
+  //  // Log message.
+  //  logging::info(logging::medium)
+  //      << "SQL: processing issue parent "
+  //         "event (child: ("
+  //      << ip.child_host_id << ", " << ip.child_service_id << ", "
+  //      << ip.child_start_time << "), parent: (" << ip.parent_host_id << ", "
+  //      << ip.parent_service_id << ", " << ip.parent_start_time
+  //      << "), start time: " << ip.start_time << ", end time: " << ip.end_time
+  //      << ")";
+  //
+  //  // Database schema version.
+  //  bool db_v2(_mysql.schema_version() == mysql::v2);
+  //
+  //  // Prepare queries.
+  //  if (!_issue_parent_insert.prepared() || !_issue_parent_update.prepared())
+  //  {
+  //    {
+  //      std::ostringstream ss;
+  //      ss << "INSERT INTO "
+  //         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+  //         << "  (child_id, end_time, start_time, parent_id)"
+  //            "  VALUES (:child_id, :end_time, :start_time, :parent_id)";
+  //      _issue_parent_insert = _mysql.prepare_query(ss.str());
+  //    }
+  //    {
+  //      std::ostringstream ss;
+  //      ss << "UPDATE "
+  //         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+  //         << "  SET end_time=:end_time"
+  //            "  WHERE child_id=:child_id"
+  //            "    AND start_time=:start_time"
+  //            "    AND parent_id=:parent_id";
+  //      _issue_parent_update = _mysql.prepare_query(ss.str());
+  //    }
+  //  }
+  //
+  //  int child_id;
+  //  int parent_id;
+  //
+  //  // Get child ID.
+  //  {
+  //    std::ostringstream query;
+  //    query << "SELECT issue_id"
+  //          << "  FROM " << (db_v2 ? "issues" : "rt_issues")
+  //          << "  WHERE host_id=" << ip.child_host_id << " AND service_id";
+  //    if (ip.child_service_id)
+  //      query << "=" << ip.child_service_id;
+  //    else
+  //      query << " IS NULL";
+  //    query << " AND start_time=" << ip.child_start_time;
+  //
+  //    std::promise<mysql_result> promise;
+  //    _mysql.run_query_and_get_result(
+  //        query.str(), &promise,
+  //        _mysql.choose_connection_by_instance(
+  //            _cache_host_instance[ip.child_host_id]));
+  //    try {
+  //      mysql_result res(promise.get_future().get());
+  //      if (!_mysql.fetch_row(res))
+  //        throw exceptions::msg() << "child issue does not exist";
+  //
+  //      child_id = res.value_as_i32(0);
+  //      logging::debug(logging::low)
+  //          << "SQL: child issue ID of (" << ip.child_host_id << ", "
+  //          << ip.child_service_id << ", " << ip.child_start_time << ") is "
+  //          << child_id;
+  //    } catch (std::exception const& e) {
+  //      throw exceptions::msg()
+  //          << "SQL: could not fetch child issue "
+  //             "ID (host: "
+  //          << ip.child_host_id << ", service: " << ip.child_service_id
+  //          << ", start: " << ip.child_start_time << "): " << e.what();
+  //    }
+  //  }
+  //
+  //  // Get parent ID.
+  //  {
+  //    std::ostringstream query;
+  //    query << "SELECT issue_id"
+  //             "  FROM "
+  //          << (db_v2 ? "issues" : "rt_issues")
+  //          << "  WHERE host_id=" << ip.parent_host_id << "    AND
+  //          service_id";
+  //    if (ip.parent_service_id)
+  //      query << "=" << ip.parent_service_id;
+  //    else
+  //      query << " IS NULL";
+  //    query << " AND start_time=" << ip.parent_start_time;
+  //
+  //    std::promise<mysql_result> promise;
+  //    _mysql.run_query_and_get_result(
+  //        query.str(), &promise,
+  //        _mysql.choose_connection_by_instance(
+  //            _cache_host_instance[ip.parent_host_id]));
+  //    try {
+  //      mysql_result res(promise.get_future().get());
+  //      if (!_mysql.fetch_row(res))
+  //        throw(exceptions::msg() << "parent issue does not exist");
+  //
+  //      parent_id = res.value_as_i32(0);
+  //      logging::debug(logging::low)
+  //          << "SQL: parent issue ID of (" << ip.parent_host_id << ", "
+  //          << ip.parent_service_id << ", " << ip.parent_start_time << ") is "
+  //          << parent_id;
+  //    } catch (std::exception const& e) {
+  //      throw exceptions::msg()
+  //          << "SQL: could not fetch parent issue "
+  //             "ID (host: "
+  //          << ip.parent_host_id << ", service: " << ip.parent_service_id
+  //          << ", start: " << ip.parent_start_time << "): " << e.what();
+  //    }
+  //  }
+  //
+  //  // End of parenting.
+  //  if (ip.end_time != (time_t)-1) {
+  //    _issue_parent_update.bind_value_as_u32(":end_time",
+  //                                           static_cast<long
+  //                                           long>(ip.end_time));
+  //  } else
+  //    _issue_parent_update.bind_value_as_null(":end_time");
+  //  _issue_parent_update.bind_value_as_i32(":child_id", child_id);
+  //  _issue_parent_update.bind_value_as_u32(":start_time",
+  //                                         static_cast<long
+  //                                         long>(ip.start_time));
+  //  _issue_parent_update.bind_value_as_i32(":parent_id", parent_id);
+  //  logging::debug(logging::low)
+  //      << "SQL: updating issue parenting between child " << child_id
+  //      << " and parent " << parent_id << " (start: " << ip.start_time
+  //      << ", end: " << ip.end_time << ")";
+  //  std::promise<int> promise;
+  //  _mysql.run_statement_and_get_int(_issue_parent_update, &promise,
+  //                                   mysql_task::AFFECTED_ROWS);
+  //  try {
+  //    if (promise.get_future().get() <= 0) {
+  //      if (ip.end_time != (time_t)-1)
+  //        _issue_parent_insert.bind_value_as_u32(
+  //            ":end_time", static_cast<long long>(ip.end_time));
+  //      else
+  //        _issue_parent_insert.bind_value_as_null(":end_time");
+  //      logging::debug(logging::low)
+  //          << "SQL: inserting issue parenting between child " << child_id
+  //          << " and parent " << parent_id << " (start: " << ip.start_time
+  //          << ", end: " << ip.end_time << ")";
+  //      _mysql.run_statement(_issue_parent_insert,
+  //                           "SQL: issue parent insert query failed");
+  //    }
+  //  } catch (std::exception const& e) {
+  //    throw exceptions::msg()
+  //        << "SQL: issue parent update query failed: " << e.what();
+  //  }
 }
 
 /**
@@ -432,21 +440,21 @@ stream::stream(database_config const& dbcfg,
                uint32_t instance_timeout,
                bool with_state_events)
     : _mysql(dbcfg),
-//      _cleanup_thread(dbcfg.get_type(),
-//                      dbcfg.get_host(),
-//                      dbcfg.get_port(),
-//                      dbcfg.get_user(),
-//                      dbcfg.get_password(),
-//                      dbcfg.get_name(),
-//                      cleanup_check_interval),
+      //      _cleanup_thread(dbcfg.get_type(),
+      //                      dbcfg.get_host(),
+      //                      dbcfg.get_port(),
+      //                      dbcfg.get_user(),
+      //                      dbcfg.get_password(),
+      //                      dbcfg.get_name(),
+      //                      cleanup_check_interval),
       _pending_events{0},
       _with_state_events(with_state_events) {
-  //FIXME DBR
-  (void) cleanup_check_interval;
-//  // Get oudated instances.
-//
-//  // Run cleanup thread.
-//  _cleanup_thread.start();
+  // FIXME DBR
+  (void)cleanup_check_interval;
+  //  // Get oudated instances.
+  //
+  //  // Run cleanup thread.
+  //  _cleanup_thread.start();
   log_v2::sql()->debug("sql stream instanciation");
   storage::conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout);
 }
@@ -467,12 +475,13 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
-  int32_t retval = storage::conflict_manager::instance().get_acks(storage::conflict_manager::sql);
+  int32_t retval = storage::conflict_manager::instance().get_acks(
+      storage::conflict_manager::sql);
   _pending_events -= retval;
 
   // Event acknowledgement.
-  logging::debug(logging::low)
-      << "SQL: " << _pending_events << " events have not yet been acknowledged";
+  log_v2::sql()->debug("SQL: {} events have not yet been acknowledged",
+                       _pending_events);
   return retval;
 }
 
@@ -504,14 +513,18 @@ void stream::update() {}
  *  @return Number of events acknowledged.
  */
 int32_t stream::write(std::shared_ptr<io::data> const& data) {
-  if (!validate(data, "SQL"))
-    return 0;
-
   // Take this event into account.
   ++_pending_events;
+
+  assert(data);
+//  if (!validate(data, "SQL"))
+//    return 0;
+
   // Process event.
-  storage::conflict_manager::instance().send_event(storage::conflict_manager::sql, data);
-  return 0;
+  int32_t ack = storage::conflict_manager::instance().send_event(
+      storage::conflict_manager::sql, data);
+  _pending_events -= ack;
+  return ack;
 }
 
 /**
@@ -520,6 +533,8 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(json11::Json::object& tree) const {
-  json11::Json::object obj{storage::conflict_manager::instance().get_statistics()};
+  json11::Json::object obj{
+      storage::conflict_manager::instance().get_statistics()};
+  tree["sql pending events"] = _pending_events;
   tree["conflict_manager"] = obj;
 }
