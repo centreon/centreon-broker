@@ -103,10 +103,6 @@ TEST_F(OutputTest, WriteService) {
   stm.negotiate(bbdo::stream::negotiate_first);
   stm.write(svc);
   std::vector<char> const& mem1 = memory_stream->get_memory();
-  for (uint32_t i = 140; i < mem1.size(); i++) {
-    std::cout << std::hex << (static_cast<uint32_t>(mem1[i]) & 0xff) << ' ';
-  }
-  std::cout << '\n';
 
   ASSERT_EQ(mem1.size(), 276u);
   // The size is 276 - 16: 16 is the header size.
@@ -234,9 +230,10 @@ TEST_F(OutputTest, ShortPersistentFile) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
 
-  std::shared_ptr<neb::service> svc(new neb::service);
+  std::shared_ptr<neb::service_status> svc(new neb::service_status);
   svc->host_id = 12345;
   svc->service_id = 18;
+  svc->acknowledged = true;
 
   svc->output.reserve(1000);
   char c = 'a';
@@ -259,14 +256,64 @@ TEST_F(OutputTest, ShortPersistentFile) {
   mf->write(svc);
 
   std::shared_ptr<io::data> e;
-  mf->read(e, 0);
   mf.reset();
-  mf.reset(new persistent_file("/tmp/test_output"));
 
-  std::shared_ptr<neb::service> new_svc =
-      std::static_pointer_cast<neb::service>(e);
+
+  mf.reset(new persistent_file("/tmp/test_output"));
+  mf->read(e, 0);
+
+  std::shared_ptr<neb::service_status> new_svc =
+      std::static_pointer_cast<neb::service_status>(e);
+  ASSERT_EQ(svc->acknowledged, new_svc->acknowledged);
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
 
   l.unload();
+  std::remove("/tmp/test_output");
+}
+
+TEST_F(OutputTest, LongPersistentFile) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 12345;
+  svc->service_id = 18;
+  svc->acknowledged = true;
+
+  svc->output.reserve(100000);
+  char c = 'a';
+  for (int i = 0; i < svc->output.capacity(); i++) {
+    svc->output.push_back(c++);
+    if (c > 'z')
+      c = 'a';
+  }
+
+  svc->perf_data.reserve(100000);
+  c = '0';
+  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+    svc->perf_data.push_back(c++);
+    if (c > '9')
+      c = '0';
+  }
+  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+
+  std::unique_ptr<io::stream> mf(new persistent_file("/tmp/long_output"));
+  mf->write(svc);
+
+  std::shared_ptr<io::data> e;
+  mf.reset();
+
+
+  mf.reset(new persistent_file("/tmp/long_output"));
+  mf->read(e, 0);
+
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(svc->acknowledged, new_svc->acknowledged);
+  ASSERT_EQ(svc->output, new_svc->output);
+  ASSERT_EQ(svc->perf_data, new_svc->perf_data);
+
+  l.unload();
+  std::remove("/tmp/long_output");
 }
