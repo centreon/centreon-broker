@@ -1932,7 +1932,7 @@ void conflict_manager::_process_service_check(std::shared_ptr<io::data> d) {
       store = false;
 
     if (store) {
-      if (_cache_host_instance[sc.service_id]) {
+      if (_cache_host_instance[sc.host_id]) {
         if (sc.command_line.size() >
             get_services_col_size(services_command_line)) {
           neb::service_check trunc_sc(sc);
