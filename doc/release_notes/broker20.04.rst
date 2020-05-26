@@ -1,4 +1,18 @@
 =======================
+Centreon Broker 20.04.4
+=======================
+
+*********
+Bug fixes
+*********
+
+Neb Service Status Check were badly handled
+===========================================
+Service status check were badly handled. For example the field
+command_line was not updated in service. This bug was introduced
+in 20.04.3.
+
+=======================
 Centreon Broker 20.04.3
 =======================
 
