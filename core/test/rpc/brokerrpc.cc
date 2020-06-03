@@ -65,11 +65,19 @@ TEST_F(BrokerRpc, GetVersion) {
   oss << "GetVersion: major: " << version::major;
   brokerrpc brpc("0.0.0.0", 40000, "test");
   auto output = execute("GetVersion");
+#if CENTREON_BROKER_PATCH == 0
+  ASSERT_EQ(output.size(), 2);
+  ASSERT_EQ(output.front(), oss.str());
+  oss.str("");
+  oss << "minor: " << version::minor;
+  ASSERT_EQ(output.back(), oss.str());
+#else
   ASSERT_EQ(output.size(), 3);
   ASSERT_EQ(output.front(), oss.str());
   oss.str("");
   oss << "patch: " << version::patch;
   ASSERT_EQ(output.back(), oss.str());
+#endif
   brpc.shutdown();
 }
 
