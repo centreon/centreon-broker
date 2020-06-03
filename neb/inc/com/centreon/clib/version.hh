@@ -21,9 +21,9 @@
 
 // Compile-time values.
 # define CENTREON_CLIB_VERSION_MAJOR  20
-# define CENTREON_CLIB_VERSION_MINOR  04
+# define CENTREON_CLIB_VERSION_MINOR  10
 # define CENTREON_CLIB_VERSION_PATCH  0
-# define CENTREON_CLIB_VERSION_STRING "20.04.0"
+# define CENTREON_CLIB_VERSION_STRING "20.10.0"
 
 # include "com/centreon/namespace.hh"
 
@@ -33,9 +33,9 @@ namespace              clib {
   namespace            version {
     // Compile-time values.
     unsigned int const major = 20;
-    unsigned int const minor = 04;
+    unsigned int const minor = 10;
     unsigned int const patch = 0;
-    char const* const  string = "20.04.0";
+    char const* const  string = "20.10.0";
 
     // Run-time values.
     unsigned int       get_major() throw ();
