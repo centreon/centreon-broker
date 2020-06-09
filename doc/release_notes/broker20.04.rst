@@ -1,4 +1,17 @@
 =======================
+Centreon Broker 20.04.5
+=======================
+
+*********
+Bug fixes
+*********
+
+Not ascii characters badly encoded in database
+==============================================
+If a checkout output contains not ascii characters, they are badly transformed
+and the string looses its sense. This is fixed.
+
+=======================
 Centreon Broker 20.04.4
 =======================
 
