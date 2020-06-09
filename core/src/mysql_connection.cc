@@ -456,9 +456,9 @@ std::string mysql_connection::_get_stack() {
 void mysql_connection::_run() {
   std::unique_lock<std::mutex> locker(_result_mutex);
   _conn = mysql_init(nullptr);
-  if (!_conn) {
+  if (!_conn)
     mysql_manager::instance().set_error(::mysql_error(_conn));
-  } else {
+  else {
     while (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
@@ -469,6 +469,8 @@ void mysql_connection::_run() {
       std::this_thread::sleep_for(std::chrono::seconds(5));
     }
   }
+
+  mysql_set_character_set(_conn, "utf8");
 
   if (_qps > 1)
     mysql_autocommit(_conn, 0);
