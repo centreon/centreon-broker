@@ -688,6 +688,13 @@ if (WITH_MODULE_LUA)
   endif ()
 endif ()
 
+# Simu module.
+option(WITH_MODULE_SIMU "Build simu module." ON)
+if (WITH_MODULE_SIMU)
+  add_subdirectory(simu)
+  list(APPEND MODULE_LIST "simu")
+endif()
+
 # Influxdb module.
 option(WITH_MODULE_INFLUXDB "Build influxdb module." ON)
 if (WITH_MODULE_INFLUXDB)

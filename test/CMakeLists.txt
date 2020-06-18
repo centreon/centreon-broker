@@ -44,6 +44,7 @@ set(TESTS_DIR ${PROJECT_SOURCE_DIR}/core/test)
 include_directories(${PROJECT_SOURCE_DIR}/bam/inc)
 include_directories(${PROJECT_SOURCE_DIR}/storage/inc)
 include_directories(${PROJECT_SOURCE_DIR}/lua/inc)
+include_directories(${PROJECT_SOURCE_DIR}/simu/inc)
 include_directories(${PROJECT_SOURCE_DIR}/neb/inc)
 include_directories(${PROJECT_SOURCE_DIR}/rrd/inc)
 
