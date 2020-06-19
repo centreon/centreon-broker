@@ -44,7 +44,12 @@ mysql::mysql(database_config const& db_cfg)
  */
 mysql::~mysql() {
   log_v2::sql()->debug("mysql: destruction");
-  commit();
+  try {
+    commit();
+  }
+  catch (const std::exception& e) {
+    log_v2::sql()->warn("Unable to commit on the database server. Probably not connected: {}", e.what());
+  }
   _connection.clear();
   mysql_manager::instance().update_connections();
   logging::info(logging::low) << "mysql: mysql library closed.";
