@@ -689,7 +689,7 @@ if (WITH_MODULE_LUA)
 endif ()
 
 # Simu module.
-option(WITH_MODULE_SIMU "Build simu module." ON)
+option(WITH_MODULE_SIMU "Build simu module." OFF)
 if (WITH_MODULE_SIMU)
   add_subdirectory(simu)
   list(APPEND MODULE_LIST "simu")
