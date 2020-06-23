@@ -21,6 +21,7 @@
 
 #include <cstddef>
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -52,22 +53,38 @@ class event_info {
   const mapping::entry* _mapping;
   const std::string _name;
   const event_operations* _ops;
-  const std::string _table;
   const std::string _table_v2;
 
  public:
+  /**
+   *  Constructor.
+   *
+   *  @param[in] name      Event name.
+   *  @param[in] ops       Event operations (constructor, ...).
+   *  @param[in] entries   Event property mapping.
+   *  @param[in] table     SQL table of event (if any).
+   *  @param[in] table_v2  SQL table of event in version 2.x (if any).
+   */
   event_info(std::string const& name,
              event_operations const* ops,
              mapping::entry const* entries,
-             std::string const& table,
-             std::string const& table_v2);
-  event_info(event_info const& other);
+             std::string const& table_v2)
+      : _mapping(entries), _name(name), _ops(ops), _table_v2(table_v2) {}
+  /**
+   *  Copy constructor.
+   *
+   *  @param[in] other  Object to copy.
+   */
+  event_info(event_info const& other)
+      : _mapping(other._mapping),
+        _name(other._name),
+        _ops(other._ops),
+        _table_v2(other._table_v2) {}
   ~event_info() = default;
   event_info& operator=(event_info const&) = delete;
   constexpr mapping::entry const* get_mapping() { return _mapping; }
   constexpr std::string const& get_name() { return _name; }
   constexpr event_operations const& get_operations() { return *_ops; }
-  constexpr std::string const& get_table() const { return _table; }
   constexpr std::string const& get_table_v2() const { return _table_v2; }
 };
 }  // namespace io

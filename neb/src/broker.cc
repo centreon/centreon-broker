@@ -72,87 +72,80 @@ void broker_module_init(void const* arg) {
     {
       e.register_event(io::events::neb, neb::de_acknowledgement,
                        "acknowledgement", &neb::acknowledgement::operations,
-                       neb::acknowledgement::entries, "rt_acknowledgements",
-                       "acknowledgements");
+                       neb::acknowledgement::entries, "acknowledgements");
       e.register_event(io::events::neb, neb::de_comment, "comment",
-                       &neb::comment::operations, neb::comment::entries, "",
+                       &neb::comment::operations, neb::comment::entries,
                        "comments");
       e.register_event(io::events::neb, neb::de_custom_variable,
                        "custom_variable", &neb::custom_variable::operations,
-                       neb::custom_variable::entries, "rt_customvariables",
-                       "customvariables");
+                       neb::custom_variable::entries, "customvariables");
       e.register_event(io::events::neb, neb::de_custom_variable_status,
                        "custom_variable_status",
                        &neb::custom_variable_status::operations,
-                       neb::custom_variable_status::entries,
-                       "rt_customvariables", "customvariables");
+                       neb::custom_variable_status::entries, "customvariables");
       e.register_event(io::events::neb, neb::de_downtime, "downtime",
                        &neb::downtime::operations, neb::downtime::entries,
-                       "rt_downtimes", "downtimes");
+                       "downtimes");
       e.register_event(io::events::neb, neb::de_event_handler, "event_handler",
                        &neb::event_handler::operations,
-                       neb::event_handler::entries, "rt_eventhandlers",
-                       "eventhandlers");
+                       neb::event_handler::entries, "eventhandlers");
       e.register_event(io::events::neb, neb::de_flapping_status,
                        "flapping_status", &neb::flapping_status::operations,
-                       neb::flapping_status::entries, "rt_flappingstatuses",
-                       "flappingstatuses");
+                       neb::flapping_status::entries, "flappingstatuses");
       e.register_event(io::events::neb, neb::de_host_check, "host_check",
                        &neb::host_check::operations, neb::host_check::entries,
-                       "rt_hosts", "hosts");
+                       "hosts");
       e.register_event(
           io::events::neb, neb::de_host_dependency, "host_dependency",
           &neb::host_dependency::operations, neb::host_dependency::entries,
-          "rt_hosts_hosts_dependencies", "hosts_hosts_dependencies");
+          "hosts_hosts_dependencies");
       e.register_event(io::events::neb, neb::de_host, "host",
-                       &neb::host::operations, neb::host::entries, "rt_hosts",
-                       "hosts");
+                       &neb::host::operations, neb::host::entries, "hosts");
       e.register_event(io::events::neb, neb::de_host_group, "host_group",
                        &neb::host_group::operations, neb::host_group::entries,
-                       "", "hostgroups");
+                       "hostgroups");
       e.register_event(io::events::neb, neb::de_host_group_member,
                        "host_group_member", &neb::host_group_member::operations,
-                       neb::host_group_member::entries, "", "hosts_hostgroups");
+                       neb::host_group_member::entries, "hosts_hostgroups");
       e.register_event(io::events::neb, neb::de_host_parent, "host_parent",
                        &neb::host_parent::operations, neb::host_parent::entries,
-                       "rt_hosts_hosts_parents", "hosts_hosts_parents");
+                       "hosts_hosts_parents");
       e.register_event(io::events::neb, neb::de_host_status, "host_status",
                        &neb::host_status::operations, neb::host_status::entries,
-                       "rt_hosts", "hosts");
+                       "hosts");
       e.register_event(io::events::neb, neb::de_instance, "instance",
                        &neb::instance::operations, neb::instance::entries,
-                       "rt_instances", "instances");
+                       "instances");
       e.register_event(io::events::neb, neb::de_instance_status,
                        "instance_status", &neb::instance_status::operations,
-                       neb::instance_status::entries, "rt_instances",
+                       neb::instance_status::entries,
                        "instances");
       e.register_event(io::events::neb, neb::de_log_entry, "log_entry",
                        &neb::log_entry::operations, neb::log_entry::entries,
-                       "log_logs", "logs");
+                       "logs");
       e.register_event(io::events::neb, neb::de_module, "module",
                        &neb::module::operations, neb::module::entries,
-                       "rt_modules", "modules");
+                       "modules");
       e.register_event(io::events::neb, neb::de_service_check, "service_check",
                        &neb::service_check::operations,
-                       neb::service_check::entries, "rt_services", "services");
+                       neb::service_check::entries, "services");
       e.register_event(
           io::events::neb, neb::de_service_dependency, "service_dependency",
           &neb::service_dependency::operations,
-          neb::service_dependency::entries, "rt_services_services_dependencies",
-          "services_services_dependencies");
+          neb::service_dependency::entries, "services_services_dependencies");
       e.register_event(io::events::neb, neb::de_service, "service",
                        &neb::service::operations, neb::service::entries,
-                       "rt_services", "services");
+                       "services");
       e.register_event(io::events::neb, neb::de_service_group, "service_group",
                        &neb::service_group::operations,
-                       neb::service_group::entries, "", "servicegroups");
+                       neb::service_group::entries, "servicegroups");
       e.register_event(
           io::events::neb, neb::de_service_group_member, "service_group_member",
           &neb::service_group_member::operations,
-          neb::service_group_member::entries, "", "services_servicegroups");
+          neb::service_group_member::entries,"services_servicegroups");
       e.register_event(io::events::neb, neb::de_service_status,
                        "service_status", &neb::service_status::operations,
-                       neb::service_status::entries, "rt_services", "services");
+                       neb::service_status::entries, "services");
       e.register_event(io::events::neb, neb::de_instance_configuration,
                        "instance_configuration",
                        &neb::instance_configuration::operations,

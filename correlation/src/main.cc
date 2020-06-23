@@ -93,17 +93,17 @@ void broker_module_init(void const* arg) {
                        correlation::engine_state::entries);
       e.register_event(io::events::correlation, correlation::de_state, "state",
                        &correlation::state::operations,
-                       correlation::state::entries, "rt_servicestateevents");
+                       correlation::state::entries);
       e.register_event(io::events::correlation, correlation::de_issue, "issue",
                        &correlation::issue::operations,
-                       correlation::issue::entries, "rt_issues", "issues");
+                       correlation::issue::entries, "issues");
       e.register_event(io::events::correlation, correlation::de_issue_parent,
                        "issue_parent", &correlation::issue_parent::operations,
                        correlation::issue_parent::entries,
-                       "rt_issues_issues_parents", "issues_issues_parents");
+                       "issues_issues_parents");
       e.register_event(io::events::correlation, correlation::de_log_issue,
                        "log_issue", &correlation::log_issue::operations,
-                       correlation::log_issue::entries, "log_logs", "logs");
+                       correlation::log_issue::entries, "logs");
     }
   }
 }

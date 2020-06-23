@@ -81,7 +81,6 @@ class events {
                           std::string const& name = std::string(),
                           event_info::event_operations const* ops = nullptr,
                           mapping::entry const* entries = nullptr,
-                          std::string const& table = std::string(),
                           std::string const& table_v2 = std::string());
   void unregister_event(uint32_t type_id);
 
