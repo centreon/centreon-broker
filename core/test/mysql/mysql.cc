@@ -980,10 +980,8 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
                          "centreon_storage", 5, true, 5);
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
-  std::ostringstream oss;
-  oss << "INSERT INTO "
-      << ((ms->schema_version() == mysql::v2) ? "downtimes" : "rt_downtimes")
-      << " (actual_end_time, "
+  std::string query("INSERT INTO downtimes"
+       " (actual_end_time, "
          "actual_start_time, "
          "author, type, deletion_time, duration, end_time, entry_time, "
          "fixed, host_id, instance_id, internal_id, service_id, "
@@ -999,8 +997,8 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
          "deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
          "fixed=:fixed, host_id=:host_id, service_id=:service_id,"
          "start_time=:start_time, started=:started,"
-         "triggered_by=:triggered_by, type=:type";
-  mysql_stmt downtime_insupdate(mysql_stmt(oss.str(), true));
+         "triggered_by=:triggered_by, type=:type");
+  mysql_stmt downtime_insupdate(mysql_stmt(query, true));
   ms->prepare_statement(downtime_insupdate);
 
   time_t now(time(nullptr));
