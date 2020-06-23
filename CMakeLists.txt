@@ -423,7 +423,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/instance_broadcast.cc
   ${SRC_DIR}/io/data.cc
   ${SRC_DIR}/io/endpoint.cc
-  ${SRC_DIR}/io/event_info.cc
   ${SRC_DIR}/io/events.cc
   ${SRC_DIR}/io/factory.cc
   ${SRC_DIR}/io/protocols.cc

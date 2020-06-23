@@ -121,7 +121,6 @@ uint32_t events::register_event(unsigned short category_id,
                                 std::string const& name,
                                 event_info::event_operations const* ops,
                                 mapping::entry const* entries,
-                                std::string const& table,
                                 std::string const& table_v2) {
   categories_container::iterator it(_elements.find(category_id));
   if (it == _elements.end())
@@ -130,7 +129,7 @@ uint32_t events::register_event(unsigned short category_id,
         << category_id << " was not registered";
   int type(make_type(category_id, event_id));
   it->second.events.emplace(type,
-                            event_info(name, ops, entries, table, table_v2));
+                            event_info(name, ops, entries, table_v2));
   return type;
 }
 
