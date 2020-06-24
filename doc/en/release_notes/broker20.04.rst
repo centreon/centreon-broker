@@ -1,4 +1,17 @@
 =======================
+Centreon Broker 20.04.6
+=======================
+
+*********
+Bug fixes
+*********
+
+Segfault possible during a Mariadb server restart
+=================================================
+Centreon broker could crash when the database server was restarted. This version
+fixes this bug.
+
+=======================
 Centreon Broker 20.04.5
 =======================
 
