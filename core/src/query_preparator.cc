@@ -84,9 +84,9 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   // Find event info.
   io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw(exceptions::msg()
+    throw exceptions::msg()
           << "could not prepare insertion query for event of type " << _event_id
-          << ": event is not registered");
+          << ": event is not registered";
 
   // Build query string.
   std::string query;

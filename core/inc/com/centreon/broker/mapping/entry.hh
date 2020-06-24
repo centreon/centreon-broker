@@ -20,6 +20,7 @@
 #define CCB_MAPPING_ENTRY_HH
 
 #include <memory>
+
 #include "com/centreon/broker/mapping/property.hh"
 
 CCB_BEGIN()
@@ -32,6 +33,14 @@ namespace mapping {
  *  Holds a member with a name and a data source.
  */
 class entry {
+  const uint32_t _attribute;
+  char const* _name;
+  char const* _name_v2;
+  source* _ptr;
+  bool _serialize;
+  std::shared_ptr<source> _source;
+  source::source_type _type;
+
  public:
   enum attribute {
     always_valid = 0,
@@ -54,7 +63,7 @@ class entry {
         char const* name,
         uint32_t attr = always_valid,
         bool serialize = true,
-        char const* name_v2 = NULL)
+        char const* name_v2 = nullptr)
       : _attribute(attr),
         _name(name),
         _name_v2(name_v2),
@@ -65,24 +74,71 @@ class entry {
     _ptr = _source.get();
   }
 
-  entry();
-  entry(entry const& other);
-  ~entry();
-  entry& operator=(entry const& other);
-  uint32_t get_attribute() const;
+  /**
+   *  Default constructor.
+   */
+  entry()
+      : _attribute(always_valid),
+        _name(nullptr),
+        _name_v2(nullptr),
+        _ptr(nullptr),
+        _serialize(false),
+        _type(source::UNKNOWN) {}
+
+  /**
+   *  Copy constructor.
+   *
+   *  @param[in] other  Object to copy.
+   */
+  entry(entry const& other)
+      : _attribute(other._attribute),
+        _name(other._name),
+        _name_v2(other._name_v2),
+        _ptr(other._ptr),
+        _serialize(other._serialize),
+        _source(other._source),
+        _type(other._type) {}
+  ~entry() = default;
+  entry& operator=(entry const&) = delete;
+  constexpr uint32_t get_attribute() { return _attribute; }
   bool get_bool(io::data const& d) const;
   double get_double(io::data const& d) const;
   int get_int(io::data const& d) const;
-  char const* get_name() const;
-  char const* get_name_v2() const;
-  bool get_serialize() const;
+  /**
+   *  Get the name of this entry.
+   *
+   *  @return The name of this entry.
+   */
+  constexpr char const* get_name() { return _name; }
+  /**
+   *  Get the name of this entry in version 2.x.
+   *
+   *  @return The name of this entry in version 2.x.
+   */
+  constexpr char const* get_name_v2() { return _name_v2; }
+/**
+ *  Check if entry is to be serialized.
+ *
+ *  @return True if entry is to be serialized.
+ */
+  constexpr bool get_serialize() { return _serialize; }
   short get_short(io::data const& d) const;
   std::string const& get_string(io::data const& d) const;
   timestamp const& get_time(io::data const& d) const;
-  uint32_t get_type() const;
+/**
+ *  Get entry type.
+ *
+ *  @return Entry type.
+ */
+  constexpr uint32_t get_type() { return _type; }
   uint32_t get_uint(io::data const& d) const;
   unsigned short get_ushort(io::data const& d) const;
-  bool is_null() const;
+/**
+ *  Get if this entry is a null entry.
+ *
+ *  @return  True if this entry is a null entry (last entry).
+ */
+  constexpr bool is_null() { return _type == source::UNKNOWN; }
   void set_bool(io::data& d, bool value) const;
   void set_double(io::data& d, double value) const;
   void set_int(io::data& d, int value) const;
@@ -91,15 +147,6 @@ class entry {
   void set_time(io::data& d, timestamp const& value) const;
   void set_uint(io::data& d, uint32_t value) const;
   void set_ushort(io::data& d, unsigned short value) const;
-
- private:
-  uint32_t _attribute;
-  char const* _name;
-  char const* _name_v2;
-  source* _ptr;
-  bool _serialize;
-  std::shared_ptr<source> _source;
-  source::source_type _type;
 };
 }  // namespace mapping
 
