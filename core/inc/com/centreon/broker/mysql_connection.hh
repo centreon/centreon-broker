@@ -25,6 +25,7 @@
 #include <list>
 #include <mutex>
 #include <unordered_map>
+#include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/database/mysql_stmt.hh"
 #include "com/centreon/broker/database/mysql_task.hh"
@@ -79,12 +80,27 @@ class mysql_connection {
   bool match_config(database_config const& db_cfg) const;
   int get_tasks_count() const;
   bool is_finished() const;
+  bool is_in_error() const;
+  void clear_error();
+  std::string get_error_message();
+
+  /**
+   * @brief Create an error on the connection. All error created as this, is a fatal error that will throw
+   * an exception later.
+   */
+  template<typename... Args>
+  void set_error_message(std::string const& fmt, const Args&... args) {
+    std::lock_guard<std::mutex> lck(_error_m);
+    if (!_error.is_active())
+      _error.set_message(fmt, args...);
+  }
 
  private:
   /**************************************************************************/
   /*                    Methods executed by this thread                     */
   /**************************************************************************/
 
+  bool _server_error(int code) const;
   void _run();
   std::string _get_stack();
   void _query(database::mysql_task* t);
@@ -134,6 +150,9 @@ class mysql_connection {
   bool _started;
   uint32_t _qps;
   bool _need_commit;
+
+  mutable std::mutex _error_m;
+  database::mysql_error _error;
 };
 
 CCB_END()

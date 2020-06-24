@@ -132,27 +132,6 @@ void mysql_manager::update_connections() {
     mysql_library_end();
 }
 
-bool mysql_manager::is_in_error() const {
-  std::lock_guard<std::mutex> locker(_err_mutex);
-  return _error.is_active();
-}
-
-database::mysql_error mysql_manager::get_error() {
-  std::lock_guard<std::mutex> locker(_err_mutex);
-  return std::move(_error);
-}
-
-void mysql_manager::set_error(std::string const& message) {
-  std::lock_guard<std::mutex> locker(_err_mutex);
-  if (!_error.is_active())
-    _error = database::mysql_error(message.c_str(), true);
-}
-
-void mysql_manager::clear_error() {
-  std::lock_guard<std::mutex> locker(_err_mutex);
-  _error.clear();
-}
-
 std::map<std::string, std::string> mysql_manager::get_stats() {
   int delay(0);
   std::unique_lock<std::mutex> locker(_cfg_mutex, std::defer_lock);
