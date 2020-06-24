@@ -1,0 +1,616 @@
+diff -pur ./bam/ba_status.lua /usr/share/centreon-broker/lua/bam/ba_status.lua
+--- ./bam/ba_status.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/bam/ba_status.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -18,15 +18,9 @@ end
+ 
+ local ba_status = {
+   name = "BA Status",
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local ba_count = count.ba
+     broker_log:info(0, "BUILD BA STATUS ; ba = " .. ba_count)
+-
+-    for i = 1,ba_count do
+-      local squery = "INSERT INTO mod_bam (ba_id, calculate, downtime, acknowledged) VALUES (%i,0,0,0)"
+-      conn["cfg"]:execute(squery:format(i))
+-    end
+-
+     for i = 1,ba_count do
+       table.insert(stack, build(i))
+     end
+@@ -37,7 +31,7 @@ local ba_status = {
+     local ba_count = count.ba
+     broker_log:info(0, "CHECK BA STATUS")
+     local retval = true
+-    local cursor, error_str = conn["cfg"]:execute("SELECT count(*) from mod_bam WHERE current_level = 50" )
++    local cursor, error_str = conn["cfg"]:execute("SELECT count(*) from mod_bam" )
+     local row = cursor:fetch({}, "a")
+ 
+     if tonumber(row['count(*)']) ~= ba_count then
+diff -pur ./bam/kpi_status.lua /usr/share/centreon-broker/lua/bam/kpi_status.lua
+--- ./bam/kpi_status.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/bam/kpi_status.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -1,60 +1 @@
+- local _kpi_status = {}
+-
+-local function build(kpi_id)
+-  local now = os.time()
+-  local retval = {
+-    kpi_id = kpi_id,
+-    _type = 393218,
+-    in_downtime = 1,
+-    level_acknowledgement_hard = 1,
+-    level_acknowledgement_soft = 1,
+-    level_downtime_hard = 1,
+-    level_downtime_soft = 1,
+-    level_nominal_hard = 1,
+-    level_nominal_soft = 1,
+-    state_hard = 1,
+-    state_soft = 1,
+-    last_state_change = 0,
+-    last_impact = 1,
+-    valid = 1,
+-  }
+-  return retval
+-end
+-
+-local kpi_status = {
+-  name = "KPI Status",
+-  build = function (stack, count, conn)
+-    local kpi_count = count.kpi
+-    broker_log:info(0, "BUILD KPI STATUS ; kpi = " .. kpi_count)
+-
+-    for i = 1,kpi_count do
+-      local squery = "INSERT INTO mod_bam_kpi (kpi_id, state_type, kpi_type, valid) VALUES (%i,0,0,1)"
+-      conn["cfg"]:execute(squery:format(i))
+-    end
+-
+-    for i = 1,kpi_count do
+-      table.insert(stack, build(i))
+-    end
+-    broker_log:info(0, "BUILD KPI STATUS => FINISHED")
+-  end,
+-
+-  check = function (conn, count)
+-    local kpi_count = count.kpi
+-    broker_log:info(0, "CHECK KPI STATUS")
+-    local retval = true
+-    local cursor, error_str = conn["cfg"]:execute("SELECT count(*) from mod_bam_kpi WHERE last_impact = 1" )
+-    local row = cursor:fetch({}, "a")
+-
+-    if tonumber(row['count(*)']) ~= kpi_count then
+-      retval = false
+-    end
+-    if not retval then
+-      broker_log:info(0, "CHECK KPI STATUS => NOT DONE")
+-    else
+-      broker_log:info(0, "CHECK KPI STATUS => DONE")
+-    end
+-    return retval
+-  end
+-}
+-
+-return kpi_status
++ 
+Seulement dans /usr/share/centreon-broker/lua/bam: truncate.lua
+Seulement dans /usr/share/centreon-broker/lua: builder.lua
+Seulement dans /usr/share/centreon-broker/lua: export-all.log
+Seulement dans /usr/share/centreon-broker/lua: export-neb.log
+Seulement dans /usr/share/centreon-broker/lua: luarocks-2.3.0-1.el7.x86_64.rpm
+Seulement dans /usr/share/centreon-broker/lua: mysql.lua
+diff -pur ./neb/acknowledgements.lua /usr/share/centreon-broker/lua/neb/acknowledgements.lua
+--- ./neb/acknowledgements.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/acknowledgements.lua	2019-04-08 13:48:49.081936982 +0200
+@@ -29,7 +29,7 @@ local acknowledgements = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local instance_count = count.instance
+     local host_count = count.host
+     local service_count = count.service
+Seulement dans /usr/share/centreon-broker/lua/neb: .acknowledgements.lua.swp
+diff -pur ./neb/comments.lua /usr/share/centreon-broker/lua/neb/comments.lua
+--- ./neb/comments.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/comments.lua	2019-04-09 11:12:49.112340999 +0200
+@@ -26,13 +26,17 @@ end
+ 
+ local comments = {
+   name = "Comments",
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local host_count = count.host
+     local instance_count = count.instance
+     broker_log:info(0, "BUILD COMMENTS ; host_count = " .. host_count .. " ; instance_count = " .. count.instance)
+     local id = 1
+-    math.randomseed(os.time())
+-    _comments.internal_id = math.random(0, 10000)
++    if not _comments.internal_id then
++      math.randomseed(os.time())
++      _comments.internal_id = math.random(0, 10000)
++    else
++      _comments.internal_id = _comments.internal_id + 1
++    end
+     for j = 1,instance_count do
+       for i = 1,host_count do
+         for k = 1,count.comment do
+diff -pur ./neb/custom_variables.lua /usr/share/centreon-broker/lua/neb/custom_variables.lua
+--- ./neb/custom_variables.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/custom_variables.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -17,7 +17,7 @@ end
+ 
+ local custom_variables = {
+   name = "Custom variables",
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local cv_count = count.cv
+     local host_count = count.host * count.instance
+     broker_log:info(0, "BUILD CUSTOM VARIABLES ; cv_count = " .. tostring(cv_count) .. " host_count = " .. tostring(host_count))
+diff -pur ./neb/custom_variable_status.lua /usr/share/centreon-broker/lua/neb/custom_variable_status.lua
+--- ./neb/custom_variable_status.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/custom_variable_status.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -15,7 +15,7 @@ end
+ 
+ local custom_variable_status = {
+   name = "Custom variable status",
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local cv_count = count.cv
+     local host_count = count.host * count.instance
+     broker_log:info(0, "BUILD CUSTOM VARIABLE STATUS ; cv_count = " .. tostring(cv_count) .. " host_count = " .. tostring(host_count))
+Seulement dans /usr/share/centreon-broker/lua/neb: .custom_variable_status.lua.swp
+diff -pur ./neb/downtimes.lua /usr/share/centreon-broker/lua/neb/downtimes.lua
+--- ./neb/downtimes.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/downtimes.lua	2019-04-11 10:11:38.598003578 +0200
+@@ -42,7 +42,7 @@ local downtimes = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local downtime_count = count.host
+     broker_log:info(0, "BUILD DOWNTIMES ; downtime_count = " .. tostring(downtime_count))
+     for i = 1,downtime_count do
+@@ -53,7 +53,6 @@ local downtimes = {
+ 
+   check = function (conn, count)
+     local downtime_count = count.host
+-    local now = os.time()
+     broker_log:info(0, "CHECK DOWNTIMES")
+     local retval = true
+     broker_log:info(3, "SELECT host_id FROM downtimes WHERE start_time = "
+Seulement dans /usr/share/centreon-broker/lua/neb: .downtimes.lua.swp
+diff -pur ./neb/event_handler.lua /usr/share/centreon-broker/lua/neb/event_handler.lua
+--- ./neb/event_handler.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/event_handler.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -37,7 +37,7 @@ local event_handler = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local host_count = count.host * count.instance
+     local service_count = count.service
+     broker_log:info(0, "EVENT HANDLER ; service_count = "
+Seulement dans /usr/share/centreon-broker/lua/neb: .event_handler.lua.swp
+Seulement dans /usr/share/centreon-broker/lua/neb: finish.lua
+Seulement dans /usr/share/centreon-broker/lua/neb: .finish.lua.swp
+diff -pur ./neb/host_checks.lua /usr/share/centreon-broker/lua/neb/host_checks.lua
+--- ./neb/host_checks.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/host_checks.lua	2019-04-11 11:22:33.820282975 +0200
+@@ -13,8 +13,7 @@ end
+ 
+ local function build_log(id, instance_id, name, address)
+   if not data.now then
+-    local now = os.time()
+-    data.now = now
++    data.now = os.time()
+   end
+   local retval = {
+     category = 1,
+@@ -23,7 +22,7 @@ local function build_log(id, instance_id
+     retry = 0,
+     instance_name = "Central_" .. instance_id,
+     msg_type = 5,
+-    output = "Je viens de lancer un check",
++    output = "A check has been executed",
+     status = 0,
+     host_name = name,
+     host_id = id,
+@@ -34,13 +33,9 @@ end
+ 
+ local hosts = {
+   name = "Hosts checks",
+-  -- id: instance id
+-  -- name: instance name
+-  -- engine: Monitoring engine name in this instance
+-  -- pid: Monitoring engine pid
+-  --
++
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local host_count = count.host
+     local poller_count = count.instance
+     for j = 1,poller_count do
+@@ -85,13 +80,14 @@ local hosts = {
+ 
+     broker_log:info(0, "CHECK HOSTS LOGS")
+     local retval = true
++    broker_log:info(3, [[SELECT host_id,output from logs WHERE ctime = ]] .. data.now .. " ORDER BY host_id")
+     local cursor, error_str = conn["storage"]:execute([[SELECT host_id,output from logs WHERE ctime = ]] .. data.now .. " ORDER BY host_id")
+     local row = cursor:fetch({}, "a")
+     local id = 1
+     local instance_id = 1
+     while row do
+       broker_log:info(1, "Check for host " .. id)
+-      if tonumber(row.host_id) ~= id or row.output ~= "Je viens de lancer un check" then
++      if tonumber(row.host_id) ~= id or row.output ~= "A check has been executed" then
+         broker_log:error(0, "Row found host_id = "
+             .. row.host_id .. " output = " .. tostring(row.output))
+         retval = false
+Seulement dans /usr/share/centreon-broker/lua/neb: .host_checks.lua.swp
+diff -pur ./neb/hostgroup_members.lua /usr/share/centreon-broker/lua/neb/hostgroup_members.lua
+--- ./neb/hostgroup_members.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/hostgroup_members.lua	2019-04-10 17:00:43.265059998 +0200
+@@ -18,19 +18,22 @@ local hostgroup_members = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local host_count = count.host * count.instance
+     local hostgroup_count = count.hostgroup
+     local instance_id = 1
+     broker_log:info(0, "BUILD HOST GROUPS MEMBERS " .. host_count .. " ; " .. hostgroup_count)
++    local hg = 1
+     for j = 1,host_count do
+-      for i = 1,hostgroup_count do
+-        table.insert(
+-                stack,
+-                build(i, j, instance_id))
+-        if j % count.host == 0 then
+-          instance_id = instance_id + 1
+-        end
++      table.insert(
++              stack,
++              build(hg, j, instance_id))
++      if j % count.host == 0 then
++        instance_id = instance_id + 1
++      end
++      hg = hg + 1
++      if hg > hostgroup_count then
++        hg = 1
+       end
+     end
+     broker_log:info(0, "BUILD HOST GROUPS MEMBERS => FINISHED")
+@@ -49,7 +52,6 @@ local hostgroup_members = {
+     local cnt = 0
+     while row do
+       cnt = cnt + 1
+-      broker_log:info(0, "COUCOU")
+       if tonumber(row.hostgroup_id) ~= group_id or tonumber(row.host_id) ~= host_id then
+         broker_log:error(0, "Row found hostgroup_id = "
+             .. row.hostgroup_id .. " host_id = " .. row.host_id
+@@ -60,7 +62,10 @@ local hostgroup_members = {
+       host_id = host_id + 1
+       if host_id > host_count then
+         host_id = 1
+-        group_id = group_id + 1
++      end
++      group_id = group_id + 1
++      if group_id > hostgroup_count then
++        group_id = 1
+       end
+       row = cursor:fetch({}, "a")
+       --os.sleep(1)
+Seulement dans /usr/share/centreon-broker/lua/neb: .hostgroup_members.lua.swp
+diff -pur ./neb/hostgroups_del.lua /usr/share/centreon-broker/lua/neb/hostgroups_del.lua
+--- ./neb/hostgroups_del.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/hostgroups_del.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -18,7 +18,7 @@ local hostgroups_del = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local hostgroup_count = count.group
+     broker_log:info(0, "BUILD HOSTGROUPS DELETION; hostgroup_count = " .. tostring(hostgroup_count))
+     for i = 1,hostgroup_count do
+Seulement dans /usr/share/centreon-broker/lua/neb: .hostgroups_del.lua.swp
+diff -pur ./neb/hostgroups.lua /usr/share/centreon-broker/lua/neb/hostgroups.lua
+--- ./neb/hostgroups.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/hostgroups.lua	2019-04-10 11:42:59.708592449 +0200
+@@ -17,7 +17,7 @@ local hostgroups = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local hostgroup_count = count.group
+     broker_log:info(0, "BUILD HOSTGROUPS ; hostgroup_count = " .. tostring(hostgroup_count))
+     for i = 1,hostgroup_count do
+@@ -33,16 +33,15 @@ local hostgroups = {
+     local now = os.time()
+     broker_log:info(0, "CHECK HOSTGROUPS")
+     local retval = true
+-    local cursor, error_str = conn["storage"]:execute([[SELECT hostgroup_id, name from hostgroups ORDER BY hostgroup_id]])
++    local cursor, error_str = conn["storage"]:execute([[SELECT hostgroup_id from hostgroups ORDER BY hostgroup_id]])
+     local row = cursor:fetch({}, "a")
+     local id = 1
+     while row do
+-      local name = "hostgroup_" .. id
+       broker_log:info(1, "Check for hostgroup " .. id)
+-      if tonumber(row.hostgroup_id) ~= id or row.name ~= name then
++      if tonumber(row.hostgroup_id) ~= id then
+         broker_log:error(0, "Row found hostgroup_id = "
+-            .. row.hostgroup_id .. " name = " .. row.name
+-            .. " instead of hostgroup_id = " .. id .. " and name = " .. name)
++            .. row.hostgroup_id
++            .. " instead of hostgroup_id = " .. id)
+         retval = false
+         break
+       end
+diff -pur ./neb/hosts.lua /usr/share/centreon-broker/lua/neb/hosts.lua
+--- ./neb/hosts.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/hosts.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -91,7 +91,7 @@ local hosts = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     print("BUILD HOST")
+     local host_count = count.host
+     local poller_count = count.instance
+Seulement dans /usr/share/centreon-broker/lua/neb: .hosts.lua.swp
+diff -pur ./neb/host_status.lua /usr/share/centreon-broker/lua/neb/host_status.lua
+--- ./neb/host_status.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/host_status.lua	2019-04-09 10:12:38.650800144 +0200
+@@ -58,7 +58,7 @@ local host_status = {
+   name = "Host status",
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local host_count = count.host * count.instance
+     broker_log:info(0, "BUILD HOST STATUS ; host_count = " .. host_count)
+     for j = 1,host_count do
+@@ -78,7 +78,7 @@ local host_status = {
+     local row = cursor:fetch({}, "a")
+     if row then
+       if tonumber(row['count(*)']) ~= host_count then
+-        broker_log:error(0, "hosts not completely updated")
++        broker_log:error(0, "We should have a result equal to " .. host_count)
+         retval = false
+       end
+     end
+Seulement dans /usr/share/centreon-broker/lua/neb: .host_status.lua.swp
+diff -pur ./neb/instances.lua /usr/share/centreon-broker/lua/neb/instances.lua
+--- ./neb/instances.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/instances.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -33,7 +33,7 @@ local instances = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local poller_count = count.instance
+     broker_log:info(0, "BUILD INSTANCES ; poller_count = "
+         .. tostring(poller_count))
+Seulement dans /usr/share/centreon-broker/lua/neb: .instances.lua.swp
+diff -pur ./neb/service_checks.lua /usr/share/centreon-broker/lua/neb/service_checks.lua
+--- ./neb/service_checks.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/service_checks.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -20,7 +20,7 @@ local service_checks = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local service_count = count.service
+     local host_count = count.host * count.instance
+     for j = 1,host_count do
+Seulement dans /usr/share/centreon-broker/lua/neb: .service_checks.lua.swp
+diff -pur ./neb/servicegroups.lua /usr/share/centreon-broker/lua/neb/servicegroups.lua
+--- ./neb/servicegroups.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/servicegroups.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -17,7 +17,7 @@ local servicegroups = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local servicegroup_count = count.servicegroup
+     broker_log:info(0, "BUILD SERVICEGROUPS ; servicegroup_count = " .. tostring(servicegroup_count))
+     for i = 1,servicegroup_count do
+diff -pur ./neb/services.lua /usr/share/centreon-broker/lua/neb/services.lua
+--- ./neb/services.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/services.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -86,7 +86,7 @@ local services = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local service_count = count.service
+     local host_count = count.host * count.instance
+     broker_log:info(0, "BUILD SERVICES ; service_count = " .. service_count .. " ; host_count = " .. host_count)
+Seulement dans /usr/share/centreon-broker/lua/neb: .services.lua.swp
+diff -pur ./neb/service_status.lua /usr/share/centreon-broker/lua/neb/service_status.lua
+--- ./neb/service_status.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/neb/service_status.lua	2019-04-09 09:47:54.296593434 +0200
+@@ -71,7 +71,7 @@ local service_status = {
+   -- pid: Monitoring engine pid
+   --
+   -- return: a neb::instance event
+-  build = function (stack, count, conn)
++  build = function (stack, count)
+     local metric_count = count.metric
+     local service_count = count.service
+     local host_count = count.host * count.instance
+Seulement dans .: patch.diff
+diff -pur ./test-full.lua /usr/share/centreon-broker/lua/test-full.lua
+--- ./test-full.lua	2019-04-11 15:54:12.727346286 +0200
++++ /usr/share/centreon-broker/lua/test-full.lua	2019-04-11 15:36:09.227755141 +0200
+@@ -4,6 +4,7 @@ local mysql = require "luasql.mysql"
+ local blue = string.char(27) .. "[34m"
+ local red = string.char(27) .. "[31m"
+ local green = string.char(27) .. "[32m"
++local yellow = string.char(27) .. "[33m"
+ local reset = string.char(27) .. "[0m"
+ 
+ local simu = {
+@@ -33,8 +34,7 @@ local step = {
+   require('neb.host_status'),
+   require('neb.acknowledgements'),
+   require('neb.event_handler'),
+-  require('bam.ba_status'),
+-  require('bam.kpi_status'),
++--  require('bam.ba_status'),
+   require('bam.dimension_truncate_table_signal'),
+ }
+ 
+@@ -56,12 +56,12 @@ step[3].count = {
+   group = 10,
+   continue = true,
+ }
+---
++
+ -- Hostgroups members
+ step[4].count = {
+   host = step[2].count.host,
+   instance = step[2].count.instance,
+-  hostgroup = 1,
++  hostgroup = 10,
+   continue = true,
+ }
+ 
+@@ -116,7 +116,7 @@ step[11].count = {
+   service = 50,
+   host = step[2].count.host,
+   instance = step[2].count.instance,
+-  metric = 10,
++  metric = 1,
+   continue = true,
+ }
+ 
+@@ -130,7 +130,7 @@ step[12].count = {
+ step[13].count = {
+   host = step[2].count.host,
+   instance = step[1].count.instance,
+-  continue = true,
++  continue = false,
+ }
+ 
+ -- Host status
+@@ -156,22 +156,15 @@ step[16].count = {
+   continue = true,
+ }
+ 
+--- Ba status
+-step[17].count = {
+-  ba = 100,
+-  update_started = true,
+-  continue = true,
+-}
+-
+--- KPI status
+-step[18].count = {
+-  kpi = 100,
+-  update_started = true,
+-  continue = true,
+-}
++---- Ba status
++--step[17].count = {
++--  ba = 100,
++--  update_started = true,
++--  continue = true,
++--}
+ 
+ -- Table truncate signal
+-step[19].count = {
++step[17].count = {
+   update_started = true,
+   continue = false,
+ }
+@@ -187,6 +180,33 @@ function os.capture(cmd, raw)
+   return s
+ end
+ 
++function clean_tables()
++  local queries = {
++    -- This table can grow up quickly, so we clean it
++    { "storage", "DELETE FROM data_bin" },
++    { "storage", "DELETE FROM metrics" },
++    -- We want hostgroups to be rebuilt entirely
++    { "storage", "DELETE FROM hostgroups" },
++    -- We delete custom variables
++    { "storage", "DELETE FROM customvariables" },
++    -- We delete comments
++    { "storage", "DELETE FROM comments" },
++    -- We want hostgroups without hosts associated
++    { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_12')" },
++    { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_13')" },
++    { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_14')" },
++    { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_15')" },
++    --{ "cfg", "DELETE FROM mod_bam" },
++  }
++
++  for _,l in ipairs(queries) do
++    local cursor, error_str = simu.conn[l[1]]:execute(l[2])
++    if error_str then
++      error(error_str)
++    end
++  end
++end
++
+ function init(conf)
+   math.randomseed(os.time())
+   os.remove("/tmp/simu.log")
+@@ -199,17 +219,15 @@ function init(conf)
+     error("No connection to database")
+   end
+ 
+-  simu.conn["cfg"] = env:connect('centreon', conf['login'], conf['password'], conf['db_addr'], 3306)
+-  if not simu.conn["cfg"] then
+-    broker_log:error(0, "No connection to cfg database")
+-    error("No connection to cfg database")
+-  end
++--  simu.conn["cfg"] = env:connect('centreon', conf['login'], conf['password'], conf['db_addr'], 3306)
++--  if not simu.conn["cfg"] then
++--    broker_log:error(0, "No connection to cfg database")
++--    error("No connection to cfg database")
++--  end
+ 
+   -- Some clean up
+-  local cursor, error_str = simu.conn["storage"]:execute("DELETE FROM data_bin;")
+-  cursor, error_str = simu.conn["storage"]:execute("DELETE FROM metrics;")
+-  cursor, error_str = simu.conn["cfg"]:execute("DELETE FROM mod_bam;")
+-  cursor, error_str = simu.conn["cfg"]:execute("DELETE FROM mod_bam_kpi;")
++  clean_tables()
++  simu.start = os.clock()
+ end
+ 
+ function read()
+@@ -222,7 +240,7 @@ function read()
+     if step[simu.step_build] then
+       broker_log:info(0, "Build Step " .. simu.step_build)
+       print(green .. "BUILD " .. reset .. step[simu.step_build].name)
+-      step[simu.step_build].build(simu.stack, step[simu.step_build].count, simu.conn)
++      step[simu.step_build].build(simu.stack, step[simu.step_build].count)
+       print("   stack size " .. #simu.stack)
+       simu.step_build = simu.step_build + 1
+     end
+@@ -234,6 +252,8 @@ function read()
+       print(blue .. "CHECK " .. reset .. step[simu.step_check].name .. " DONE")
+       if not step[simu.step_check].count.continue then
+         broker_log:info(0, "No more step")
++        simu.finish = os.clock()
++        print(yellow .. "Execution duration: " .. reset .. (simu.finish - simu.start) .. "s")
+         local output = os.capture("ps ax | grep \"\\<cbd\\>\" | grep -v grep | awk '{print $1}' ", 1)
+         if output ~= "" then
+           broker_log:info(0, "SEND COMMAND: kill " .. output)
+Seulement dans /usr/share/centreon-broker/lua: .test-full.lua.swp
+Seulement dans /usr/share/centreon-broker/lua: test.lua.old

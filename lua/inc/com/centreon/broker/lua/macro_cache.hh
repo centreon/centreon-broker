@@ -25,6 +25,7 @@
 #  include "com/centreon/broker/bam/dimension_ba_event.hh"
 #  include "com/centreon/broker/bam/dimension_bv_event.hh"
 #  include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
+#  include "com/centreon/broker/neb/custom_variable.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_group.hh"
 #  include "com/centreon/broker/neb/host_group_member.hh"
@@ -55,6 +56,13 @@ namespace         lua {
     storage::metric_mapping const&
                    get_metric_mapping(unsigned int metric_id) const;
     QString const& get_host_name(unsigned int host_id) const;
+    QString const& get_notes_url(unsigned int host_id,
+                                 unsigned int service_id) const;
+    QString const& get_notes(unsigned int host_id,
+                             unsigned int service_id) const;
+    QString const& get_action_url(unsigned int host_id,
+                                  unsigned int service_id) const;
+    int32_t get_severity(unsigned int host_id, unsigned int service_id) const;
     QString const& get_host_group_name(unsigned int id) const;
     QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const&
                    get_host_group_members() const;
@@ -82,6 +90,7 @@ namespace         lua {
     void           _process_host(neb::host const& h);
     void           _process_host_group(neb::host_group const& hg);
     void           _process_host_group_member(neb::host_group_member const& hgm);
+    void           _process_custom_variable(neb::custom_variable const& cv);
     void           _process_service(neb::service const& s);
     void           _process_service_group(neb::service_group const& sg);
     void           _process_service_group_member(neb::service_group_member const& sgm);
@@ -106,6 +115,8 @@ namespace         lua {
                    _hosts;
     QHash<unsigned int, neb::host_group>
                    _host_groups;
+    QHash<QPair<unsigned int, unsigned int>, neb::custom_variable>
+                   _custom_vars;
     QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >
                    _host_group_members;
     QHash<QPair<unsigned int, unsigned int>, neb::service>

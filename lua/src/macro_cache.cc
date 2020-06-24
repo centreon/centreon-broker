@@ -106,9 +106,112 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
     throw (exceptions::msg()
            << "lua: could not find information on host "
            << host_id);
-  return (found->host_name);
+  return found->host_name;
 }
 
+/**
+ * Get the severity about a service or a host.
+ *
+ * @param host_id
+ * @param service_id The service id or 0 in case of a host.
+ *
+ * @return a severity (int32_t).
+ */
+int32_t macro_cache::get_severity(unsigned int host_id, unsigned int service_id) const {
+  auto found = _custom_vars.find({host_id, service_id});
+  if (found == _custom_vars.end())
+    throw exceptions::msg()
+        << "lua: could not find the severity of the object (host_id: "
+        << host_id << ", " << service_id << ")";
+  bool ok;
+  int32_t retval = found->value.toInt(&ok, 10);
+  if (ok)
+    return retval;
+  else
+    return 0;
+}
+
+/**
+ *  Get the notes url of a host (service_id=0) or a service.
+ *
+ *  @param[in] host_id     The id of the host.
+ *  @param[in] service_id  The id of the service.
+ *
+ *  @return             The notes url.
+ */
+QString const& macro_cache::get_notes_url(unsigned int host_id,
+                                          unsigned int service_id) const {
+  if (service_id) {
+    auto found = _services.find({host_id, service_id});
+
+    if (found == _services.end())
+      throw exceptions::msg() << "lua: could not find information on service ("
+                              << host_id << ", " << service_id << ")";
+    return found->notes_url;
+  } else {
+    auto found = _hosts.find(host_id);
+
+    if (found == _hosts.end())
+      throw exceptions::msg()
+          << "lua: could not find information on host " << host_id;
+    return found->notes_url;
+  }
+}
+
+/**
+ *  Get the action url of a host (service_id=0) or a service.
+ *
+ *  @param[in] host_id  The id of the host.
+ *  @param[in] host_id  The id of the service.
+ *
+ *  @return             The action url.
+ */
+QString const& macro_cache::get_action_url(unsigned int host_id,
+                                           unsigned int service_id) const {
+  if (service_id) {
+    auto found = _services.find({host_id, service_id});
+
+    if (found == _services.end())
+      throw exceptions::msg() << "lua: could not find information on service ("
+                              << host_id << ", " << service_id << ")";
+    return found->action_url;
+  } else {
+    auto found = _hosts.find(host_id);
+
+    if (found == _hosts.end())
+      throw exceptions::msg()
+          << "lua: could not find information on host " << host_id;
+    return found->action_url;
+  }
+}
+
+/**
+ *  Get the notes of a host (service_id=0) or a service.
+ *
+ *  @param[in] host_id     The id of the host.
+ *  @param[in] service_id  The id of the service.
+ *
+ *  @return             The notes.
+ */
+QString const& macro_cache::get_notes(unsigned int host_id,
+                                      unsigned int service_id) const {
+  if (service_id) {
+    auto found = _services.find({host_id, service_id});
+
+    if (found == _services.end())
+      throw exceptions::msg() << "lua: cound not find information on service ("
+                              << host_id << ", " << service_id << ")";
+
+    return found->notes;
+  } else {
+    auto found = _hosts.find(host_id);
+
+    if (found == _hosts.end())
+      throw exceptions::msg()
+          << "lua: could not find information on host " << host_id;
+    return found->notes;
+  }
+}
 
 /**
  *  Get a list of the host groups containing a host.
@@ -291,6 +394,8 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == bam::dimension_truncate_table_signal::static_type())
     _process_dimension_truncate_table_signal(
       *std::static_pointer_cast<bam::dimension_truncate_table_signal const>(data));
+  else if (data->type() == neb::custom_variable::static_type())
+    _process_custom_variable(*std::static_pointer_cast<neb::custom_variable const>(data));
 }
 
 /**
@@ -423,6 +528,23 @@ void macro_cache::_process_service_group_member(
   else
     _service_group_members[qMakePair(sgm.host_id, sgm.service_id)].remove(
       sgm.group_id);
+}
+
+/**
+ *  Process a custom variable event.
+ *  The goal is to keep in cache only custom variables concerning severity on
+ *  hosts and services.
+ *
+ *  @param data  The event.
+ */
+void macro_cache::_process_custom_variable(
+    neb::custom_variable const& cv) {
+  if (cv.name == "CRITICALITY_LEVEL") {
+    bool ok;
+    int32_t value = cv.value.toInt(&ok, 10);
+    if (ok && value)
+      _custom_vars[{cv.host_id, cv.service_id}] = cv;
+  }
 }
 
 /**
@@ -610,5 +732,7 @@ void macro_cache::_save_to_disk() {
        ++it)
     _cache->add(std::shared_ptr<io::data>(new bam::dimension_bv_event(*it)));
 
+  for (auto it = _custom_vars.begin(), end = _custom_vars.end(); it != end; ++it)
+    _cache->add(std::make_shared<neb::custom_variable>(*it));
   _cache->commit();
 }

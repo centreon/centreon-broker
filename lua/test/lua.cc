@@ -1283,6 +1283,113 @@ TEST_F(LuaTest, UrlEncode) {
   ASSERT_TRUE(lst[1].contains("RES2 GOOD"));
   ASSERT_TRUE(lst[2].contains("RES3 GOOD"));
 
-  //  RemoveFile(filename);
-  //  RemoveFile("/tmp/log");
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for notes url, action_url, notes are made on a host
+// Then notes url, action url or notes are returned.
+TEST_F(LuaTest, CacheGetNotesUrlTest) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  std::shared_ptr<neb::host> hst(new neb::host);
+  hst->host_id = 1;
+  hst->notes = "host notes";
+  hst->notes_url = "host notes url";
+  hst->action_url = "host action url";
+  hst->host_name = "centreon";
+  _cache->write(hst);
+
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local notes_url = broker_cache:get_notes_url(1)\n"
+               "  local action_url = broker_cache:get_action_url(1)\n"
+               "  local notes = broker_cache:get_notes(1)\n"
+               "  broker_log:info(1, \"notes_url=\" .. notes_url)\n"
+               "  broker_log:info(1, \"action_url=\" .. action_url)\n"
+               "  broker_log:info(1, \"notes=\" .. notes)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("notes_url=host notes url"));
+  ASSERT_TRUE(lst[1].contains("action_url=host action url"));
+  ASSERT_TRUE(lst[2].contains("notes=host notes"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for notes url, action_url, notes are made on a service
+// Then notes url, action url or notes are returned.
+TEST_F(LuaTest, CacheSvcGetNotesUrlTest) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 2;
+  svc->notes = "svc notes";
+  svc->notes_url = "svc notes url";
+  svc->action_url = "svc action url";
+  _cache->write(svc);
+
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local notes_url = broker_cache:get_notes_url(1, 2)\n"
+               "  local action_url = broker_cache:get_action_url(1, 2)\n"
+               "  local notes = broker_cache:get_notes(1, 2)\n"
+               "  broker_log:info(1, \"notes_url=\" .. notes_url)\n"
+               "  broker_log:info(1, \"action_url=\" .. action_url)\n"
+               "  broker_log:info(1, \"notes=\" .. notes)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("notes_url=svc notes url"));
+  ASSERT_TRUE(lst[1].contains("action_url=svc action url"));
+  ASSERT_TRUE(lst[2].contains("notes=svc notes"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, CacheSeverity) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 2;
+  svc->notes = "svc notes";
+  svc->notes_url = "svc notes url";
+  svc->action_url = "svc action url";
+  _cache->write(svc);
+  std::shared_ptr<neb::custom_variable> cv =
+      std::make_shared<neb::custom_variable>();
+  cv->name = "CRITICALITY_LEVEL";
+  cv->value = QString::number(3);
+  cv->host_id = 1;
+  cv->service_id = 2;
+  _cache->write(cv);
+
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local severity = broker_cache:get_severity(1, 2)\n"
+               "  broker_log:info(1, \"severity=\" .. severity)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("severity=3"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
 }

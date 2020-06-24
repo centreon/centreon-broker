@@ -1,0 +1,43 @@
+--package.path = package.path .. ";/home/admin/?.lua"
+
+local simu = {
+  input_file = "/usr/share/centreon-broker/lua/export-all.log",
+}
+
+function os.capture(cmd, raw)
+  local f = assert(io.popen(cmd, 'r'))
+  local s = assert(f:read('*a'))
+  f:close()
+  if raw then return s end
+  s = string.gsub(s, '^%s+', '')
+  s = string.gsub(s, '%s+$', '')
+  s = string.gsub(s, '[\n\r]+', ' ')
+  return s
+end
+
+function init(conf)
+  broker_log:set_parameters(3, "/tmp/simu.log")
+
+  -- We are waiting for a string here
+  if conf.input_file then
+    simu.input_file = conf.input_file
+  end
+  simu.f = io.open(simu.input_file, "r")
+end
+
+function read()
+  local line = simu.f:read()
+  if line == nil or line == "" then
+    if line == "" then
+      broker_log:info(0, "Empty line in the input json")
+    end
+    local output = os.capture("ps ax | grep \"sbin.cbd\" | grep -v grep | awk '{print $1}' ", 1)
+    if output ~= "" then
+      os.execute("kill " .. output)
+    end
+    return nil
+  end
+  local retval = broker.json_decode(line)
+  broker_log:info(1, "send event: " .. line)
+  return retval
+end
