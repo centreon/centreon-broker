@@ -59,6 +59,8 @@ class mysql_manager {
 
   int _current_thread;
 
+  mutable std::mutex _err_mutex;
+
   // last stats update timestamp
   time_t _stats_connections_timestamp;
   // Number of tasks per connection

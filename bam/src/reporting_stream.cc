@@ -589,6 +589,10 @@ void reporting_stream::_prepare() {
   _dimension_kpi_insert = _mysql.prepare_query(query);
 }
 
+void reporting_stream::update() {
+  log_v2::sql()->info("reporting_stream::update");
+}
+
 /**
  *  Process a ba event and write it to the db.
  *
