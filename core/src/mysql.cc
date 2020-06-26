@@ -274,6 +274,7 @@ int mysql::run_statement_and_get_result(database::mysql_stmt& stmt,
  * @param stmt The statement to prepare.
  */
 void mysql::prepare_statement(mysql_stmt const& stmt) {
+  _check_errors();
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
            it(_connection.begin()),
        end(_connection.end());
