@@ -16,10 +16,12 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/mysql_manager.hh"
+
 #include <chrono>
+
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -34,8 +36,7 @@ mysql_manager& mysql_manager::instance() {
  *  Constructor
  */
 mysql_manager::mysql_manager()
-    : _current_thread(0),
-      _stats_connections_timestamp(time(nullptr)) {
+    : _current_thread(0), _stats_connections_timestamp(time(nullptr)) {
   log_v2::sql()->trace("mysql_manager instanciation");
 }
 
@@ -46,7 +47,6 @@ mysql_manager::~mysql_manager() {
   log_v2::sql()->trace("mysql_manager destruction");
   // If connections are still active but unique here, we can remove them
   std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
-  std::lock_guard<std::mutex> err_lock(_err_mutex);
 
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
            it(_connection.begin()),
@@ -125,8 +125,7 @@ void mysql_manager::update_connections() {
       ++it;
   }
   log_v2::sql()->info("mysql_manager: still {} active connection{}",
-                                 _connection.size(),
-                                 _connection.size() > 1 ? "s" : "");
+                      _connection.size(), _connection.size() > 1 ? "s" : "");
 
   if (_connection.size() == 0)
     mysql_library_end();

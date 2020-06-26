@@ -15,6 +15,8 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <errmsg.h>
+
 #include <cstring>
 #include <sstream>
 
@@ -22,7 +24,6 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
-#include <errmsg.h>
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -51,13 +52,21 @@ void (mysql_connection::*const mysql_connection::_task_processing_table[])(
 /*                      Methods executed by this thread                       */
 /******************************************************************************/
 
+/**
+ * @brief check if the error code is a server error. At the moment, we only
+ * check two errors. Maybe we will need to add some.
+ *
+ * @param code the code to check
+ *
+ * @return a boolean telling if the error is fatal (a server error).
+ */
 bool mysql_connection::_server_error(int code) const {
   switch (code) {
-   case CR_SERVER_GONE_ERROR:
-   case CR_SERVER_LOST:
-    return true;
-   default:
-    return false;
+    case CR_SERVER_GONE_ERROR:
+    case CR_SERVER_LOST:
+      return true;
+    default:
+      return false;
   }
 }
 
@@ -165,7 +174,8 @@ void mysql_connection::_prepare(mysql_task* t) {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
       log_v2::sql()->debug("mysql_connection: prepare failed: {} on query {}",
                            ::mysql_stmt_error(stmt), task->query);
-      set_error_message("statement preparation failed ({})", mysql_stmt_error(stmt));
+      set_error_message("statement preparation failed ({})",
+                        mysql_stmt_error(stmt));
     } else
       _stmt[task->id] = stmt;
   }
@@ -189,9 +199,8 @@ void mysql_connection::_statement(mysql_task* t) {
     log_v2::sql()->error("mysql_connection: statement binding failed: {}",
                          mysql_stmt_error(stmt));
     if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
-      set_error_message(
-          "{} (while executing statement {})",
-                      mysql_stmt_error(stmt), task->statement_id);
+      set_error_message("{} (while executing statement {})",
+                        mysql_stmt_error(stmt), task->statement_id);
     else {
       log_v2::sql()->error("mysql: Error while binding values in statement: {}",
                            mysql_stmt_error(stmt));
@@ -217,9 +226,8 @@ void mysql_connection::_statement(mysql_task* t) {
             << mysql_stmt_error(stmt) << " (" << task->error_msg << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
-            set_error_message(
-                "{} (while executing statement {})",
-                            mysql_stmt_error(stmt), task->statement_id);
+            set_error_message("{} (while executing statement {})",
+                              mysql_stmt_error(stmt), task->statement_id);
           break;
         }
       } else {
@@ -418,7 +426,8 @@ std::string mysql_connection::get_error_message() {
 }
 
 /**
- * @brief Disable the connection's error. Therefore, the connection is no more in error.
+ * @brief Disable the connection's error. Therefore, the connection is no more
+ * in error.
  */
 void mysql_connection::clear_error() {
   _error.clear();

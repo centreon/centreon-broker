@@ -25,6 +25,7 @@
 #include <list>
 #include <mutex>
 #include <unordered_map>
+
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/database/mysql_stmt.hh"
@@ -70,7 +71,8 @@ class mysql_connection {
   void run_statement_and_get_int(database::mysql_stmt& stmt,
                                  std::promise<T>* promise,
                                  database::mysql_task::int_type type) {
-    _push(std::make_shared<database::mysql_task_statement_int<T>>(stmt, promise, type));
+    _push(std::make_shared<database::mysql_task_statement_int<T>>(stmt, promise,
+                                                                  type));
   }
 
   void finish();
@@ -85,10 +87,10 @@ class mysql_connection {
   std::string get_error_message();
 
   /**
-   * @brief Create an error on the connection. All error created as this, is a fatal error that will throw
-   * an exception later.
+   * @brief Create an error on the connection. All error created as this, is a
+   * fatal error that will throw an exception later.
    */
-  template<typename... Args>
+  template <typename... Args>
   void set_error_message(std::string const& fmt, const Args&... args) {
     std::lock_guard<std::mutex> lck(_error_m);
     if (!_error.is_active())
@@ -128,7 +130,7 @@ class mysql_connection {
   std::mutex _list_mutex;
   std::condition_variable _tasks_condition;
   std::atomic<bool> _finished;
-  std::list<std::shared_ptr<database::mysql_task> > _tasks_list;
+  std::list<std::shared_ptr<database::mysql_task>> _tasks_list;
   std::atomic_int _tasks_count;
 
   std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
@@ -151,6 +153,7 @@ class mysql_connection {
   uint32_t _qps;
   bool _need_commit;
 
+  /* mutex to protect the string access in _error */
   mutable std::mutex _error_m;
   database::mysql_error _error;
 };
