@@ -59,7 +59,6 @@ class reporting_stream : public io::stream {
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void statistics(json11::Json::object& tree) const;
   int write(std::shared_ptr<io::data> const& d);
-  void update();
 
  private:
   reporting_stream(reporting_stream const& other);

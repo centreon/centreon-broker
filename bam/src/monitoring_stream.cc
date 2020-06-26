@@ -153,8 +153,6 @@ void monitoring_stream::statistics(json11::Json::object& tree) const {
  *  Rebuild index and metrics cache.
  */
 void monitoring_stream::update() {
-  log_v2::sql()->info("monitoring_stream::update");
-
   try {
     configuration::state s;
     configuration::reader_v2 r(_mysql, _storage_db_cfg);
