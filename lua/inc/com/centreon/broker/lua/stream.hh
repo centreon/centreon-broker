@@ -85,9 +85,9 @@ class stream : public io::stream {
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   int write(std::shared_ptr<io::data> const& d) override;
 //  bool filter(uint32_t type);
-  int flush();
+  int flush() override;
   bool stats_mean_square(double& a, double& b) const noexcept;
-  void statistics(json11::Json::object& tree) const;
+  void statistics(json11::Json::object& tree) const override;
 };
 }  // namespace lua
 
