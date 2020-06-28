@@ -84,8 +84,8 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Loop timeout
-  // By default, 10 seconds
-  uint32_t loop_timeout{10};
+  // By default, 30 seconds
+  uint32_t loop_timeout{30};
   {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("loop_timeout"));

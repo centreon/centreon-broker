@@ -238,10 +238,7 @@ class conflict_manager {
   void _finish_actions();
   void _add_action(int32_t conn, actions action);
   void _insert_perfdatas();
-  std::size_t inline _get_events_size() const {
-    std::lock_guard<std::mutex> lk(_loop_m);
-    return _fifo.get_events().size();
-  }
+  void __exit();
 
  public:
   static void init_sql(database_config const& dbcfg,
@@ -250,9 +247,7 @@ class conflict_manager {
   static bool init_storage(bool store_in_db,
                            uint32_t rrd_len,
                            uint32_t interval_length);
-  static void close();
   static conflict_manager& instance();
-  void exit();
   static void unload();
   json11::Json::object get_statistics();
 
