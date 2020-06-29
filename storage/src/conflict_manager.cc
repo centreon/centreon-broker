@@ -83,6 +83,10 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _max_pending_queries(dbcfg.get_queries_per_transaction()),
       _mysql{dbcfg},
       _instance_timeout{instance_timeout},
+      _store_in_db{true},
+      _rrd_len{0},
+      _interval_length{0},
+      _max_perfdata_queries{0},
       _still_pending_events{0},
       _loop_duration{},
       _speed{},
@@ -99,15 +103,18 @@ conflict_manager::~conflict_manager() {
  * For the connector that does not initialize the conflict_manager, this
  * function is useful to wait.
  *
- * @param store_in_db
- * @param rrd_len
- * @param interval_length
+ * @param store_in_db A boolean to specify if perfdata should be stored in database.
+ * @param rrd_len The rrd length in seconds
+ * @param interval_length The length of an elementary time interval.
+ * @param queries_per_transaction The number of perfdata to store before sending them
+ * to database.
  *
  * @return true if all went OK.
  */
 bool conflict_manager::init_storage(bool store_in_db,
                                     uint32_t rrd_len,
-                                    uint32_t interval_length) {
+                                    uint32_t interval_length,
+                                    uint32_t queries_per_transaction) {
   log_v2::sql()->debug("conflict_manager: storage stream initialization");
   int count = 0;
 
@@ -121,6 +128,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_store_in_db = store_in_db;
       _singleton->_rrd_len = rrd_len;
       _singleton->_interval_length = interval_length;
+      _singleton->_max_perfdata_queries = queries_per_transaction;
       _singleton->_ref_count++;
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
@@ -350,7 +358,6 @@ void conflict_manager::update_metric_info_cache(uint32_t index_id,
  *  The main loop of the conflict_manager
  */
 void conflict_manager::_callback() {
-  const uint32_t perfdata_limit = 5000;
   try {
     _load_caches();
   } catch (std::exception const& e) {
@@ -450,7 +457,7 @@ void conflict_manager::_callback() {
           if (timeout >= duration) {
 
             /* If there are too many perfdata to send, let's send them... */
-            if (_perfdata_queue.size() > perfdata_limit)
+            if (_perfdata_queue.size() > _max_perfdata_queries)
               _insert_perfdatas();
 
             do {
@@ -633,6 +640,9 @@ void conflict_manager::__exit() {
 json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
   std::lock_guard<std::mutex> lk(_stat_m);
+  retval["max pending events"] = static_cast<int32_t>(_max_pending_queries);
+  retval["max perfdata events"] = static_cast<int32_t>(_max_perfdata_queries);
+  retval["loop timeout"] = static_cast<int32_t>(_loop_timeout);
   retval["pending events"] = _still_pending_events;
   retval["sql"] = static_cast<int32_t>(_fifo.get_timeline(sql).size());
   retval["storage"] = static_cast<int32_t>(_fifo.get_timeline(storage).size());

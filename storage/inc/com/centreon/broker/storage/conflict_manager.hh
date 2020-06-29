@@ -122,6 +122,7 @@ class conflict_manager {
   bool _store_in_db;
   uint32_t _rrd_len;
   uint32_t _interval_length;
+  uint32_t _max_perfdata_queries;
 
   std::thread _thread;
 
@@ -246,7 +247,8 @@ class conflict_manager {
                        uint32_t instance_timeout);
   static bool init_storage(bool store_in_db,
                            uint32_t rrd_len,
-                           uint32_t interval_length);
+                           uint32_t interval_length,
+                           uint32_t max_pending_queries);
   static conflict_manager& instance();
   static void unload();
   json11::Json::object get_statistics();

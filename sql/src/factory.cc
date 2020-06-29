@@ -41,10 +41,6 @@ using namespace com::centreon::broker::sql;
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_sql{!strncasecmp(cfg.type.c_str(), "sql", 4)};
-  if (is_sql) {
-    cfg.params["read_timeout"] = 1;
-    cfg.read_timeout = 1;
-  }
   return is_sql;
 }
 
@@ -85,19 +81,10 @@ io::endpoint* factory::new_endpoint(
 
   // Loop timeout
   // By default, 30 seconds
-  uint32_t loop_timeout{30};
-  {
-    std::map<std::string, std::string>::const_iterator it(
-        cfg.params.find("loop_timeout"));
-    if (it != cfg.params.end())
-      try {
-        loop_timeout = std::stoul(it->second);
-      }
-    catch (std::exception const& e) {
-      throw exceptions::msg() << "sql: Unable to read the 'loop_timeout' key"
-                                 " that should be a delay in seconds";
-    }
-  }
+  int32_t loop_timeout = cfg.read_timeout;
+  if (loop_timeout < 0)
+    loop_timeout = 30;
+
   // Instance timeout
   // By default, 5 minutes.
   uint32_t instance_timeout(5 * 60);

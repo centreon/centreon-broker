@@ -132,7 +132,7 @@ database_config::database_config(config::endpoint const& cfg) {
       _queries_per_transaction = 10000;
     }
   } else
-    _queries_per_transaction = 20000;
+    _queries_per_transaction = 10000;
 
   // check_replication
   it = cfg.params.find("check_replication");
