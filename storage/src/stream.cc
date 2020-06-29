@@ -74,7 +74,8 @@ stream::stream(database_config const& dbcfg,
   if (!rrd_len)
     rrd_len = 15552000;
 
-  if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length))
+  if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length,
+                                      dbcfg.get_queries_per_transaction()))
     throw broker::exceptions::shutdown()
         << "Unable to initialize the storage connection to the database";
 }
@@ -141,15 +142,19 @@ void stream::statistics(json11::Json::object& tree) const {
 int32_t stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
   assert(data);
-//  if (!validate(data, "storage"))
-//    return 0;
-//  uint32_t type = data->type();
-//  if (io::events::category_of_type(type) == io::events::neb && io::events::element_of_type(type) == neb::service_status::static_type()) {
-//    neb::service_status const& ss = *static_cast<neb::service_status*>(data.get());
-//    assert(ss.perf_data.size() < 189576 || ss.perf_data.find("8=0%", 189570) == std::string::npos);
-//  }
-//
-  int32_t ack = conflict_manager::instance().send_event(conflict_manager::storage, data);
+  //  if (!validate(data, "storage"))
+  //    return 0;
+  //  uint32_t type = data->type();
+  //  if (io::events::category_of_type(type) == io::events::neb &&
+  //  io::events::element_of_type(type) == neb::service_status::static_type()) {
+  //    neb::service_status const& ss =
+  //    *static_cast<neb::service_status*>(data.get());
+  //    assert(ss.perf_data.size() < 189576 || ss.perf_data.find("8=0%", 189570)
+  //    == std::string::npos);
+  //  }
+  //
+  int32_t ack =
+      conflict_manager::instance().send_event(conflict_manager::storage, data);
   _pending_events -= ack;
   return ack;
 }
@@ -169,4 +174,3 @@ void stream::_update_status(std::string const& status) {
   std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
 }
-

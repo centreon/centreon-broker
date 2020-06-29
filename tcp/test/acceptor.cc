@@ -70,7 +70,6 @@ TEST(TcpAcceptor, Wait2Connect) {
     std::shared_ptr<io::stream> str{try_connect(con, 4141)};
   }};
 
-  st == std::shared_ptr<io::stream>();
   while (st == std::shared_ptr<io::stream>()) {
     i++;
     st = acc.open();

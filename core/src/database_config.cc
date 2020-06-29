@@ -16,10 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/database_config.hh"
+
 #include <map>
 #include <string>
+
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/config.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -84,7 +86,7 @@ database_config::database_config(config::endpoint const& cfg) {
     _type = it->second;
   else
     throw exceptions::config()
-          << "no 'db_type' defined for endpoint '" << cfg.name << "'";
+        << "no 'db_type' defined for endpoint '" << cfg.name << "'";
 
   // db_host
   it = cfg.params.find("db_host");
@@ -123,16 +125,16 @@ database_config::database_config(config::endpoint const& cfg) {
   if (it != end) {
     try {
       _queries_per_transaction = std::stoul(it->second);
-    }
-    catch (std::exception const& e) {
-      logging::error(logging::high) << "queries_per_transaction is a number "
-                                       "but must be given as a string. Unable "
-                                       "to read the value '" << it->second
-                                    << "' - value 10000 taken by default.";
+    } catch (std::exception const& e) {
+      logging::error(logging::high)
+          << "queries_per_transaction is a number "
+             "but must be given as a string. Unable "
+             "to read the value '"
+          << it->second << "' - value 10000 taken by default.";
       _queries_per_transaction = 10000;
     }
   } else
-    _queries_per_transaction = 20000;
+    _queries_per_transaction = 10000;
 
   // check_replication
   it = cfg.params.find("check_replication");
@@ -146,16 +148,14 @@ database_config::database_config(config::endpoint const& cfg) {
   if (it != end) {
     try {
       _connections_count = std::stoul(it->second);
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       logging::error(logging::high) << "connections_count is a string "
                                        "containing an integer. If not "
                                        "specified, it will be considered as "
                                        "\"1\".";
       _connections_count = 1;
     }
-  }
-  else
+  } else
     _connections_count = 1;
 }
 

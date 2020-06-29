@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/sql/factory.hh"
+
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/sql/connector.hh"
@@ -41,10 +43,6 @@ using namespace com::centreon::broker::sql;
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_sql{!strncasecmp(cfg.type.c_str(), "sql", 4)};
-  if (is_sql) {
-    cfg.params["read_timeout"] = 1;
-    cfg.read_timeout = 1;
-  }
   return is_sql;
 }
 
@@ -84,20 +82,11 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Loop timeout
-  // By default, 10 seconds
-  uint32_t loop_timeout{10};
-  {
-    std::map<std::string, std::string>::const_iterator it(
-        cfg.params.find("loop_timeout"));
-    if (it != cfg.params.end())
-      try {
-        loop_timeout = std::stoul(it->second);
-      }
-    catch (std::exception const& e) {
-      throw exceptions::msg() << "sql: Unable to read the 'loop_timeout' key"
-                                 " that should be a delay in seconds";
-    }
-  }
+  // By default, 30 seconds
+  int32_t loop_timeout = cfg.read_timeout;
+  if (loop_timeout < 0)
+    loop_timeout = 30;
+
   // Instance timeout
   // By default, 5 minutes.
   uint32_t instance_timeout(5 * 60);
@@ -119,12 +108,8 @@ io::endpoint* factory::new_endpoint(
 
   // Connector.
   std::unique_ptr<sql::connector> c{new sql::connector};
-  c->connect_to(dbcfg,
-                cleanup_check_interval,
-                loop_timeout,
-                instance_timeout,
-                wse,
-                enable_cmd_cache);
+  c->connect_to(dbcfg, cleanup_check_interval, loop_timeout, instance_timeout,
+                wse, enable_cmd_cache);
   is_acceptor = false;
   return c.release();
 }

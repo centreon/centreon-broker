@@ -67,10 +67,6 @@ static std::string const& find_param(config::endpoint const& cfg,
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
   bool is_storage(!strncasecmp(cfg.type.c_str(), "storage", 8));
-  if (is_storage) {
-    cfg.params["read_timeout"] = "1";
-    cfg.read_timeout = 1;
-  }
   return is_storage;
 }
 

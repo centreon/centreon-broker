@@ -20,13 +20,14 @@
 #define CCB_LUA_STREAM_HH
 
 #include <array>
-#include <deque>
-#include <utility>
-#include <memory>
-#include <json11.hpp>
 #include <condition_variable>
+#include <deque>
+#include <json11.hpp>
+#include <memory>
 #include <mutex>
 #include <thread>
+#include <utility>
+
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/variant.hh"
 
@@ -41,7 +42,6 @@ namespace lua {
  *  Stream events into lua database.
  */
 class stream : public io::stream {
-
   std::thread _thread;
 
   /* Macro cache */
@@ -66,7 +66,7 @@ class stream : public io::stream {
   std::array<std::pair<time_t, size_t>, 10>::iterator _stats_it;
   time_t _next_stat;
   uint32_t _nb_stats;
-  double _a, _b;   // _stats points follow the model given by y = _a * x + _b
+  double _a, _b;  // _stats points follow the model given by y = _a * x + _b
   double _a_min;
 
   /* The exit flag */
@@ -84,10 +84,10 @@ class stream : public io::stream {
   ~stream();
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   int write(std::shared_ptr<io::data> const& d) override;
-//  bool filter(uint32_t type);
-  int flush();
+  //  bool filter(uint32_t type);
+  int flush() override;
   bool stats_mean_square(double& a, double& b) const noexcept;
-  void statistics(json11::Json::object& tree) const;
+  void statistics(json11::Json::object& tree) const override;
 };
 }  // namespace lua
 
