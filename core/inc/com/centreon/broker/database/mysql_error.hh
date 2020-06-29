@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@
 #ifndef CCB_MYSQL_ERROR_HH
 #define CCB_MYSQL_ERROR_HH
 
+#include <atomic>
 #include <string>
+#include <fmt/format.h>
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -33,19 +35,24 @@ namespace database {
  */
 class mysql_error {
  public:
-  mysql_error();
-  mysql_error(mysql_error&& other);
-  mysql_error(char const* message, bool fatal);
-  mysql_error& operator=(mysql_error const& other);
-  bool is_fatal() const;
-  std::string get_message() const;
-  void clear();
-  bool is_active() const;
+  mysql_error(): _active(false) {}
+  mysql_error(mysql_error const& other) = delete;
+  mysql_error(mysql_error&& other) = delete;
+  mysql_error(char const* message) : _message(message), _active(true) {}
+  mysql_error& operator=(mysql_error const& other) = delete;
+  std::string get_message() { return std::move(_message); }
+
+  template<typename... Args>
+  void set_message(std::string const& format, const Args&... args) {
+    _message = fmt::format(format, args...);
+    _active = true;
+  }
+  void clear() { _active = false; }
+  bool is_active() const { return _active; }
 
  private:
   std::string _message;
-  bool _active;
-  bool _fatal;
+  std::atomic<bool> _active;
 };
 }  // namespace database
 

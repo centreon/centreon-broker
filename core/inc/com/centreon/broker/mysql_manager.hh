@@ -22,6 +22,7 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
+
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/mysql.hh"
 
@@ -57,9 +58,6 @@ class mysql_manager {
   std::vector<std::shared_ptr<mysql_connection>> _connection;
 
   int _current_thread;
-
-  mutable std::mutex _err_mutex;
-  database::mysql_error _error;
 
   // last stats update timestamp
   time_t _stats_connections_timestamp;

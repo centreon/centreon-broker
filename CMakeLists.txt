@@ -449,7 +449,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/mysql.cc
   ${SRC_DIR}/database/mysql_bind.cc
   ${SRC_DIR}/database/mysql_column.cc
-  ${SRC_DIR}/database/mysql_error.cc
   ${SRC_DIR}/mysql_manager.cc
   ${SRC_DIR}/database/mysql_result.cc
   ${SRC_DIR}/database/mysql_stmt.cc

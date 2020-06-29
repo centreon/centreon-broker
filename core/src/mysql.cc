@@ -37,6 +37,8 @@ mysql::mysql(database_config const& db_cfg)
       _current_connection(0) {
   mysql_manager& mgr(mysql_manager::instance());
   _connection = mgr.get_connections(db_cfg);
+  log_v2::sql()->info("mysql connector configured with {} connection(s)",
+                      _connection.size());
 }
 
 /**
@@ -127,13 +129,9 @@ bool mysql::commit_if_needed() {
  *
  */
 void mysql::_check_errors() {
-  if (mysql_manager::instance().is_in_error()) {
-    database::mysql_error err(mysql_manager::instance().get_error());
-    if (err.is_fatal())
-      throw exceptions::msg() << err.get_message();
-    else
-      logging::error(logging::medium) << "mysql: " << err.get_message();
-  }
+  for (auto it = _connection.begin(), end = _connection.end(); it != end; ++it)
+    if ((*it)->is_in_error())
+      throw exceptions::msg() << (*it)->get_error_message();
 }
 
 /**
@@ -276,6 +274,7 @@ int mysql::run_statement_and_get_result(database::mysql_stmt& stmt,
  * @param stmt The statement to prepare.
  */
 void mysql::prepare_statement(mysql_stmt const& stmt) {
+  _check_errors();
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
            it(_connection.begin()),
        end(_connection.end());

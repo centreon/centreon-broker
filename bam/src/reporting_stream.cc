@@ -38,6 +38,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
@@ -84,6 +85,7 @@ reporting_stream::~reporting_stream() {
   // Terminate the availabilities thread.
   _availabilities->terminate();
   _availabilities->wait();
+  log_v2::sql()->debug("bam: reporting_stream destruction");
 }
 
 /**
@@ -645,7 +647,8 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
         if (m_events.find(be.start_time.get_time_t()) != m_events.end()) {
           // Insert kpi event link.
           _kpi_event_link_update.bind_value_as_i32(0, newba);
-          _kpi_event_link_update.bind_value_as_u64(1, m_events[be.start_time.get_time_t()]);
+          _kpi_event_link_update.bind_value_as_u64(
+              1, m_events[be.start_time.get_time_t()]);
           oss_err << "BAM-BI: could not update kpi event link "
                   << m_events[be.start_time.get_time_t()] << " event of BA "
                   << be.ba_id << " starting at " << be.start_time << ": ";
@@ -793,7 +796,9 @@ void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
       _mysql.run_statement_and_get_int<uint64_t>(
           _kpi_event_link, &result, mysql_task::LAST_INSERT_ID, thread_id);
 
-      uint64_t evt_id{result.get_future().get()};  //_kpi_event_link.last_insert_id().toUInt()};
+      uint64_t evt_id{
+          result.get_future()
+              .get()};  //_kpi_event_link.last_insert_id().toUInt()};
       _last_inserted_kpi[ke.ba_id].insert({ke.start_time.get_time_t(), evt_id});
     }
   } catch (std::exception const& e) {

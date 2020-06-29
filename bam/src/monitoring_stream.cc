@@ -98,6 +98,7 @@ monitoring_stream::~monitoring_stream() {
     logging::error(logging::medium)
         << "BAM: can't save cache: '" << e.what() << "'";
   }
+  log_v2::sql()->debug("bam: monitoring_stream destruction");
 }
 
 /**

@@ -15,6 +15,8 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <errmsg.h>
+
 #include <cstring>
 #include <sstream>
 
@@ -50,6 +52,24 @@ void (mysql_connection::*const mysql_connection::_task_processing_table[])(
 /*                      Methods executed by this thread                       */
 /******************************************************************************/
 
+/**
+ * @brief check if the error code is a server error. At the moment, we only
+ * check two errors. Maybe we will need to add some.
+ *
+ * @param code the code to check
+ *
+ * @return a boolean telling if the error is fatal (a server error).
+ */
+bool mysql_connection::_server_error(int code) const {
+  switch (code) {
+    case CR_SERVER_GONE_ERROR:
+    case CR_SERVER_LOST:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void mysql_connection::_query(mysql_task* t) {
   mysql_task_run* task(static_cast<mysql_task_run*>(t));
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
@@ -60,9 +80,8 @@ void mysql_connection::_query(mysql_task* t) {
         << task->error_msg
         << "could not execute query: " << ::mysql_error(_conn) << " ("
         << task->query << ")";
-    if (task->fatal)
-      mysql_manager::instance().set_error(
-          fmt::format("{} ({})", ::mysql_error(_conn), task->query));
+    if (task->fatal || _server_error(::mysql_errno(_conn)))
+      set_error_message("{} ({})", ::mysql_error(_conn), task->query);
   } else
     _need_commit = true;
 }
@@ -150,15 +169,13 @@ void mysql_connection::_prepare(mysql_task* t) {
                        task->query);
   MYSQL_STMT* stmt(mysql_stmt_init(_conn));
   if (!stmt) {
-    mysql_manager::instance().set_error(
-        "statement initialization failed: insuffisant memory");
+    set_error_message("statement initialization failed: insuffisant memory");
   } else {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
       log_v2::sql()->debug("mysql_connection: prepare failed: {} on query {}",
                            ::mysql_stmt_error(stmt), task->query);
-      std::ostringstream oss;
-      oss << "statement preparation failed (" << mysql_stmt_error(stmt) << ")";
-      mysql_manager::instance().set_error(oss.str());
+      set_error_message("statement preparation failed ({})",
+                        mysql_stmt_error(stmt));
     } else
       _stmt[task->id] = stmt;
   }
@@ -171,7 +188,7 @@ void mysql_connection::_statement(mysql_task* t) {
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
     log_v2::sql()->error("mysql_connection: no statement to execute");
-    mysql_manager::instance().set_error("statement not prepared");
+    set_error_message("statement not prepared");
     return;
   }
   MYSQL_BIND* bb(nullptr);
@@ -181,10 +198,9 @@ void mysql_connection::_statement(mysql_task* t) {
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     log_v2::sql()->error("mysql_connection: statement binding failed: {}",
                          mysql_stmt_error(stmt));
-    if (task->fatal)
-      mysql_manager::instance().set_error(
-          fmt::format("{} (while executing statement {})",
-                      mysql_stmt_error(stmt), task->statement_id));
+    if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
+      set_error_message("{} (while executing statement {})",
+                        mysql_stmt_error(stmt), task->statement_id);
     else {
       log_v2::sql()->error("mysql: Error while binding values in statement: {}",
                            mysql_stmt_error(stmt));
@@ -209,10 +225,9 @@ void mysql_connection::_statement(mysql_task* t) {
             << "mysql: Error while sending prepared query: "
             << mysql_stmt_error(stmt) << " (" << task->error_msg << ")";
         if (++attempts >= MAX_ATTEMPTS) {
-          if (task->fatal)
-            mysql_manager::instance().set_error(
-                fmt::format("{} (while executing statement {})",
-                            mysql_stmt_error(stmt), task->statement_id));
+          if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
+            set_error_message("{} (while executing statement {})",
+                              mysql_stmt_error(stmt), task->statement_id);
           break;
         }
       } else {
@@ -396,6 +411,28 @@ void mysql_connection::_fetch_row_sync(mysql_task* t) {
   }
 }
 
+/**
+ * @brief If the connection has encountered an error, this method returns true.
+ *
+ * @return a boolean True on error, False otherwise.
+ */
+bool mysql_connection::is_in_error() const {
+  return _error.is_active();
+}
+
+std::string mysql_connection::get_error_message() {
+  std::lock_guard<std::mutex> lck(_error_m);
+  return _error.get_message();
+}
+
+/**
+ * @brief Disable the connection's error. Therefore, the connection is no more
+ * in error.
+ */
+void mysql_connection::clear_error() {
+  _error.clear();
+}
+
 void mysql_connection::_finish(mysql_task* t __attribute__((unused))) {
   _finished = true;
   _tasks_condition.notify_all();
@@ -457,7 +494,7 @@ void mysql_connection::_run() {
   std::unique_lock<std::mutex> locker(_result_mutex);
   _conn = mysql_init(nullptr);
   if (!_conn)
-    mysql_manager::instance().set_error(::mysql_error(_conn));
+    set_error_message(::mysql_error(_conn));
   else {
     while (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
@@ -527,12 +564,6 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
   _thread.reset(new std::thread(&mysql_connection::_run, this));
   while (!_started)
     _result_condition.wait(locker);
-  if (mysql_manager::instance().is_in_error()) {
-    finish();
-    _thread->join();
-    database::mysql_error err(mysql_manager::instance().get_error());
-    throw exceptions::msg() << err.get_message();
-  }
 }
 
 mysql_connection::~mysql_connection() {
