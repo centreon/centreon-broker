@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/sql/factory.hh"
+
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/sql/connector.hh"
@@ -106,12 +108,8 @@ io::endpoint* factory::new_endpoint(
 
   // Connector.
   std::unique_ptr<sql::connector> c{new sql::connector};
-  c->connect_to(dbcfg,
-                cleanup_check_interval,
-                loop_timeout,
-                instance_timeout,
-                wse,
-                enable_cmd_cache);
+  c->connect_to(dbcfg, cleanup_check_interval, loop_timeout, instance_timeout,
+                wse, enable_cmd_cache);
   is_acceptor = false;
   return c.release();
 }

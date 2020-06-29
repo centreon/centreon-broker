@@ -103,11 +103,12 @@ conflict_manager::~conflict_manager() {
  * For the connector that does not initialize the conflict_manager, this
  * function is useful to wait.
  *
- * @param store_in_db A boolean to specify if perfdata should be stored in database.
+ * @param store_in_db A boolean to specify if perfdata should be stored in
+ * database.
  * @param rrd_len The rrd length in seconds
  * @param interval_length The length of an elementary time interval.
- * @param queries_per_transaction The number of perfdata to store before sending them
- * to database.
+ * @param queries_per_transaction The number of perfdata to store before sending
+ * them to database.
  *
  * @return true if all went OK.
  */
@@ -394,9 +395,9 @@ void conflict_manager::_callback() {
         int32_t timeout = 0;
         int32_t timeout_limit = _loop_timeout * 1000;
 
-        /* This variable is incremented 1000 by 1000 and represents milliseconds.
-         * Each time the duration reaches this value, we make stuffs. We make then
-         * a timer cadenced at 1000ms. */
+        /* This variable is incremented 1000 by 1000 and represents
+         * milliseconds. Each time the duration reaches this value, we make
+         * stuffs. We make then a timer cadenced at 1000ms. */
         int32_t duration = 1000;
 
         /* During this loop, connectors still fill the queue when they receive
@@ -406,24 +407,25 @@ void conflict_manager::_callback() {
          * - count < _max_pending_queries: we don't want to commit everytimes,
          *   so we keep this count to know if we reached the
          *   _max_pending_queries parameter.
-         * - timeout < timeout_limit: If the loop lives too long, we interrupt it
-         *   it is necessary for cleanup operations.
+         * - timeout < timeout_limit: If the loop lives too long, we interrupt
+         * it it is necessary for cleanup operations.
          */
         while (count < _max_pending_queries && timeout < timeout_limit) {
           auto* tpl = _fifo.first_event();
           if (!tpl) {
-            // We wait for a tuple only if it was impossible to get it immediatly
+            // We wait for a tuple only if it was impossible to get it
+            // immediatly
             tpl = _fifo.first_event_wait(std::chrono::seconds(1));
             if (!tpl) {
               log_v2::sql()->trace(
-                  "conflict_manager: timeout reached while waiting for events.");
+                  "conflict_manager: timeout reached while waiting for "
+                  "events.");
               std::lock_guard<std::mutex> lk(_stat_m);
               _still_pending_events = _fifo.get_events().size();
               _loop_duration = 0;
               _speed = 0;
               break;
-            }
-            else
+            } else
               log_v2::sql()->trace(
                   "conflict_manager: new events to send to the database.");
           }
@@ -455,7 +457,6 @@ void conflict_manager::_callback() {
 
           /* Get some stats each second */
           if (timeout >= duration) {
-
             /* If there are too many perfdata to send, let's send them... */
             if (_perfdata_queue.size() > _max_perfdata_queries)
               _insert_perfdatas();
@@ -467,7 +468,7 @@ void conflict_manager::_callback() {
             std::lock_guard<std::mutex> lk(_stat_m);
             _still_pending_events = _fifo.get_events().size();
             _loop_duration = timeout;
-	    _speed = (count * 1000.0) / _loop_duration;
+            _speed = (count * 1000.0) / _loop_duration;
           }
         }
 
@@ -543,16 +544,14 @@ bool conflict_manager::_should_exit() const {
  * @return The number of events to ack.
  */
 int32_t conflict_manager::send_event(conflict_manager::stream_type c,
-                                  std::shared_ptr<io::data> const& e) {
+                                     std::shared_ptr<io::data> const& e) {
   assert(e);
   if (_broken)
     throw exceptions::msg() << "conflict_manager: events loop interrupted";
 
   log_v2::sql()->trace(
       "conflict_manager: send_event category:{}, element:{} from {}",
-      e->type() >> 16,
-      e->type() & 0xffff,
-      c == 0 ? "sql" : "storage");
+      e->type() >> 16, e->type() & 0xffff, c == 0 ? "sql" : "storage");
 
   return _fifo.push(c, e);
 }

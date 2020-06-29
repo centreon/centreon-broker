@@ -27,10 +27,10 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
-#include "com/centreon/broker/misc/mfifo.hh"
 
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/misc/mfifo.hh"
 #include "com/centreon/broker/misc/pair.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/storage/stored_timestamp.hh"

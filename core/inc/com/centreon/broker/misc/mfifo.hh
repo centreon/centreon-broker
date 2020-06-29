@@ -19,15 +19,16 @@
 #define CCB_MISC_FIFO_HH
 #include <cassert>
 #include <chrono>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace misc {
 
-template<typename T, std::size_t N>
+template <typename T, std::size_t N>
 class mfifo {
   std::mutex _fifo_m;
   std::condition_variable _fifo_cv;
@@ -42,8 +43,7 @@ class mfifo {
    * true.
    * And later, the input source that sent events will know how many events can
    * be released from the retention queue. */
-  std::deque<std::tuple<T, uint32_t, bool*> >
-      _events;
+  std::deque<std::tuple<T, uint32_t, bool*>> _events;
 
   /* Since we have N input sources, we must manage N queues.
    * So each one will know when its events will be released. */
@@ -90,7 +90,8 @@ class mfifo {
    * @return A pointer to the tuple or nullptr if none found at the end of the
    * duration.
    */
-  std::tuple<T, uint32_t, bool*>* first_event_wait(const std::chrono::seconds& d) {
+  std::tuple<T, uint32_t, bool*>* first_event_wait(
+      const std::chrono::seconds& d) {
     std::unique_lock<std::mutex> lk(_fifo_m);
     if (_fifo_cv.wait_for(lk, d, [this] { return !_events.empty(); }))
       return &_events.front();
@@ -159,9 +160,7 @@ class mfifo {
     return _timeline[idx];
   }
 
-  int32_t get_pending_elements() const {
-    return _pending_elements;
-  }
+  int32_t get_pending_elements() const { return _pending_elements; }
 };
 }  // namespace misc
 

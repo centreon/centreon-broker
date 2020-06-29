@@ -18,7 +18,9 @@
  */
 
 #include "com/centreon/broker/storage/connector.hh"
+
 #include <gtest/gtest.h>
+
 #include "com/centreon/broker/exceptions/config.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -37,12 +39,14 @@ TEST(StorageFactory, Factory) {
 
   ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
   cfg.params["length"] = "42";
-  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), exceptions::config);
+  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache),
+               exceptions::config);
   cfg.params["db_type"] = "mysql";
   cfg.params["db_name"] = "centreon";
   ASSERT_FALSE(factory.has_endpoint(cfg));
   cfg.type = "storage";
-  storage::connector* endp = static_cast<storage::connector*>(factory.new_endpoint(cfg, is_acceptor, cache));
+  storage::connector* endp = static_cast<storage::connector*>(
+      factory.new_endpoint(cfg, is_acceptor, cache));
 
   storage::connector con;
   con.connect_to(dbcfg, 42, 60, 300, true);
@@ -65,7 +69,8 @@ TEST(StorageFactory, FactoryWithFullConf) {
 
   ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
   cfg.params["length"] = "42";
-  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), exceptions::config);
+  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache),
+               exceptions::config);
   cfg.params["db_type"] = "mysql";
   cfg.params["db_name"] = "centreon";
   cfg.params["interval"] = "43";
@@ -73,7 +78,8 @@ TEST(StorageFactory, FactoryWithFullConf) {
   cfg.params["store_in_data_bin"] = "0";
   ASSERT_FALSE(factory.has_endpoint(cfg));
   cfg.type = "storage";
-  storage::connector *endp = static_cast<storage::connector *>(factory.new_endpoint(cfg, is_acceptor, cache));
+  storage::connector* endp = static_cast<storage::connector*>(
+      factory.new_endpoint(cfg, is_acceptor, cache));
 
   storage::connector con;
   con.connect_to(dbcfg, 42, 43, 44, false);
