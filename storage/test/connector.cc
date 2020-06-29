@@ -48,8 +48,8 @@ TEST(StorageFactory, Factory) {
   con.connect_to(dbcfg, 42, 60, 300, true);
 
   ASSERT_TRUE(factory.has_endpoint(cfg));
-  ASSERT_TRUE(cfg.read_timeout == 1);
-  ASSERT_TRUE(cfg.params["read_timeout"] == "1");
+  ASSERT_EQ(cfg.read_timeout, -1);
+  ASSERT_EQ(cfg.params["read_timeout"], "");
 
   delete endp;
 }
@@ -79,8 +79,8 @@ TEST(StorageFactory, FactoryWithFullConf) {
   con.connect_to(dbcfg, 42, 43, 44, false);
 
   ASSERT_TRUE(factory.has_endpoint(cfg));
-  ASSERT_TRUE(cfg.read_timeout == 1);
-  ASSERT_TRUE(cfg.params["read_timeout"] == "1");
+  ASSERT_EQ(cfg.read_timeout, -1);
+  ASSERT_EQ(cfg.params["read_timeout"], "");
 
   delete endp;
 }
