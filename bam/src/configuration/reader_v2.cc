@@ -18,9 +18,10 @@
 
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
 
+#include <fmt/format.h>
+
 #include <cstring>
 #include <memory>
-#include <sstream>
 
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
@@ -82,41 +83,41 @@ void reader_v2::read(state& st) {
  */
 void reader_v2::_load(state::kpis& kpis) {
   try {
-    std::ostringstream oss;
-    oss << "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
-           "        k.id_indicator_ba, k.meta_id, k.boolean_id,"
-           "        k.current_status, k.last_level, k.downtime,"
-           "        k.acknowledged, k.ignore_downtime,"
-           "        k.ignore_acknowledged,"
-           "        COALESCE(COALESCE(k.drop_warning, ww.impact), "
-           "g.average_impact),"
-           "        COALESCE(COALESCE(k.drop_critical, cc.impact), "
-           "g.average_impact),"
-           "        COALESCE(COALESCE(k.drop_unknown, uu.impact), "
-           "g.average_impact),"
-           "        k.last_state_change, k.in_downtime, k.last_impact"
-           "  FROM mod_bam_kpi AS k"
-           "  INNER JOIN mod_bam AS mb"
-           "    ON k.id_ba = mb.ba_id"
-           "  INNER JOIN mod_bam_poller_relations AS pr"
-           "    ON pr.ba_id = mb.ba_id"
-           "  LEFT JOIN mod_bam_impacts AS ww"
-           "    ON k.drop_warning_impact_id = ww.id_impact"
-           "  LEFT JOIN mod_bam_impacts AS cc"
-           "    ON k.drop_critical_impact_id = cc.id_impact"
-           "  LEFT JOIN mod_bam_impacts AS uu"
-           "    ON k.drop_unknown_impact_id = uu.id_impact"
-           "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
-           "               FROM mod_bam_kpi"
-           "               WHERE activate='1'"
-           "               GROUP BY id_ba) AS g"
-           "    ON k.id_ba=g.id_ba"
-           "  WHERE k.activate='1'"
-           "    AND mb.activate='1'"
-           "    AND pr.poller_id="
-        << config::applier::state::instance().poller_id();
+    std::string query(fmt::format(
+        "SELECT  k.kpi_id, k.state_type, k.host_id, k.service_id, k.id_ba,"
+        "        k.id_indicator_ba, k.meta_id, k.boolean_id,"
+        "        k.current_status, k.last_level, k.downtime,"
+        "        k.acknowledged, k.ignore_downtime,"
+        "        k.ignore_acknowledged,"
+        "        COALESCE(COALESCE(k.drop_warning, ww.impact), "
+        "g.average_impact),"
+        "        COALESCE(COALESCE(k.drop_critical, cc.impact), "
+        "g.average_impact),"
+        "        COALESCE(COALESCE(k.drop_unknown, uu.impact), "
+        "g.average_impact),"
+        "        k.last_state_change, k.in_downtime, k.last_impact"
+        "  FROM mod_bam_kpi AS k"
+        "  INNER JOIN mod_bam AS mb"
+        "    ON k.id_ba = mb.ba_id"
+        "  INNER JOIN mod_bam_poller_relations AS pr"
+        "    ON pr.ba_id = mb.ba_id"
+        "  LEFT JOIN mod_bam_impacts AS ww"
+        "    ON k.drop_warning_impact_id = ww.id_impact"
+        "  LEFT JOIN mod_bam_impacts AS cc"
+        "    ON k.drop_critical_impact_id = cc.id_impact"
+        "  LEFT JOIN mod_bam_impacts AS uu"
+        "    ON k.drop_unknown_impact_id = uu.id_impact"
+        "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS average_impact"
+        "               FROM mod_bam_kpi"
+        "               WHERE activate='1'"
+        "               GROUP BY id_ba) AS g"
+        "    ON k.id_ba=g.id_ba"
+        "  WHERE k.activate='1'"
+        "    AND mb.activate='1'"
+        "    AND pr.poller_id={}",
+        config::applier::state::instance().poller_id()));
     std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(oss.str(), &promise);
+    _mysql.run_query_and_get_result(query, &promise);
     try {
       database::mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
@@ -163,20 +164,20 @@ void reader_v2::_load(state::kpis& kpis) {
     for (state::kpis::iterator it(kpis.begin()), end(kpis.end()); it != end;
          ++it) {
       if (it->second.is_meta()) {
-        std::ostringstream oss;
-        oss << "SELECT hsr.host_host_id, hsr.service_service_id"
-               "  FROM service AS s"
-               "  LEFT JOIN host_service_relation AS hsr"
-               "    ON s.service_id=hsr.service_service_id"
-               "  WHERE s.service_description='meta_"
-            << it->second.get_meta_id() << "'";
+        std::string query(
+            fmt::format("SELECT hsr.host_host_id, hsr.service_service_id"
+                        "  FROM service AS s"
+                        "  LEFT JOIN host_service_relation AS hsr"
+                        "    ON s.service_id=hsr.service_service_id"
+                        "  WHERE s.service_description='meta_{}'",
+                        it->second.get_meta_id()));
         std::promise<database::mysql_result> promise;
-        _mysql.run_query_and_get_result(oss.str(), &promise);
+        _mysql.run_query_and_get_result(query, &promise);
         try {
           database::mysql_result res(promise.get_future().get());
           if (!_mysql.fetch_row(res))
-            throw(exceptions::msg() << "virtual service of meta-service "
-                                    << it->first << " does not exist");
+            throw exceptions::msg() << "virtual service of meta-service "
+                                    << it->first << " does not exist";
           it->second.set_host_id(res.value_as_u32(0));
           it->second.set_service_id(res.value_as_u32(1));
         } catch (std::exception const& e) {
@@ -190,8 +191,8 @@ void reader_v2::_load(state::kpis& kpis) {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not retrieve KPI configuration from DB: " << e.what());
+    throw reader_exception()
+        << "BAM: could not retrieve KPI configuration from DB: " << e.what();
   }
 }
 
@@ -205,18 +206,18 @@ void reader_v2::_load(state::kpis& kpis) {
 void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   try {
     {
-      std::ostringstream oss;
-      oss << "SELECT b.ba_id, b.name, b.state_source, b.level_w,"
-             "       b.level_c, b.last_state_change, b.current_status,"
-             "       b.in_downtime, b.inherit_kpi_downtimes"
-             "  FROM mod_bam AS b"
-             "  INNER JOIN mod_bam_poller_relations AS pr"
-             "    ON b.ba_id=pr.ba_id"
-             "  WHERE b.activate='1'"
-             "    AND pr.poller_id="
-          << config::applier::state::instance().poller_id();
+      std::string query(
+          fmt::format("SELECT b.ba_id, b.name, b.state_source, b.level_w,"
+                      "       b.level_c, b.last_state_change, b.current_status,"
+                      "       b.in_downtime, b.inherit_kpi_downtimes"
+                      "  FROM mod_bam AS b"
+                      "  INNER JOIN mod_bam_poller_relations AS pr"
+                      "    ON b.ba_id=pr.ba_id"
+                      "  WHERE b.activate='1'"
+                      "    AND pr.poller_id={}",
+                      config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise);
+      _mysql.run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
         while (_mysql.fetch_row(res)) {
@@ -249,8 +250,8 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not retrieve BA configuration from DB: " << e.what());
+    throw reader_exception()
+        << "BAM: could not retrieve BA configuration from DB: " << e.what();
   }
 
   // Load host_id/service_id of virtual BA services. All the associated
@@ -300,16 +301,16 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not retrieve BA service IDs from DB: " << e.what());
+    throw reader_exception()
+        << "BAM: could not retrieve BA service IDs from DB: " << e.what();
   }
 
   // Test for BA without service ID.
   for (state::bas::const_iterator it(bas.begin()), end(bas.end()); it != end;
        ++it)
     if (it->second.get_service_id() == 0)
-      throw(reader_exception() << "BAM: BA " << it->second.get_id()
-                               << " has no associated service");
+      throw reader_exception()
+          << "BAM: BA " << it->second.get_id() << " has no associated service";
 
   return;
 }
@@ -322,18 +323,18 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
 void reader_v2::_load(state::bool_exps& bool_exps) {
   // Load boolean expressions themselves.
   try {
-    std::ostringstream q;
-    q << "SELECT b.boolean_id, b.name, b.expression, b.bool_state"
-         "  FROM mod_bam_boolean AS b"
-         "  INNER JOIN mod_bam_kpi AS k"
-         "    ON b.boolean_id=k.boolean_id"
-         "  INNER JOIN mod_bam_poller_relations AS pr"
-         "    ON k.id_ba=pr.ba_id"
-         "  WHERE b.activate=1"
-         "    AND pr.poller_id="
-      << config::applier::state::instance().poller_id();
+    std::string query(
+        fmt::format("SELECT b.boolean_id, b.name, b.expression, b.bool_state"
+                    "  FROM mod_bam_boolean AS b"
+                    "  INNER JOIN mod_bam_kpi AS k"
+                    "    ON b.boolean_id=k.boolean_id"
+                    "  INNER JOIN mod_bam_poller_relations AS pr"
+                    "    ON k.id_ba=pr.ba_id"
+                    "  WHERE b.activate=1"
+                    "    AND pr.poller_id={}",
+                    config::applier::state::instance().poller_id()));
     std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(q.str(), &promise);
+    _mysql.run_query_and_get_result(query, &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       bool_exps[res.value_as_u32(0)] =
@@ -346,8 +347,8 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception() << "BAM: could not retrieve boolean expression "
-                             << "configuration from DB: " << e.what());
+    throw reader_exception() << "BAM: could not retrieve boolean expression "
+                             << "configuration from DB: " << e.what();
   }
 }
 
@@ -379,8 +380,8 @@ void reader_v2::_load(state::meta_services& meta_services) {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not retrieve meta-services: " << e.what());
+    throw reader_exception()
+        << "BAM: could not retrieve meta-services: " << e.what();
   }
 
   // Load host_id/service_id of virtual meta-service services. All
@@ -422,9 +423,9 @@ void reader_v2::_load(state::meta_services& meta_services) {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not retrieve meta-services' service IDs from DB: "
-          << e.what());
+    throw reader_exception()
+        << "BAM: could not retrieve meta-services' service IDs from DB: "
+        << e.what();
   }
 
   // Check for meta-services without service ID.
@@ -446,48 +447,47 @@ void reader_v2::_load(state::meta_services& meta_services) {
     // SQL LIKE mode.
     if (!it->second.get_service_filter().empty() &&
         !it->second.get_metric_name().empty()) {
-      std::ostringstream query;
-      query << "SELECT m.metric_id"
-            << "  FROM metrics AS m"
-            << "    INNER JOIN index_data AS i"
-            << "    ON m.index_id=i.id"
-            << "    INNER JOIN services AS s"
-            << "    ON i.host_id=s.host_id AND i.service_id=s.service_id"
-            << "  WHERE s.description LIKE '" << it->second.get_service_filter()
-            << "'"
-            << "    AND m.metric_name='" << it->second.get_metric_name() << "'";
+      std::string query(fmt::format(
+          "SELECT m.metric_id"
+          " FROM metrics AS m"
+          " INNER JOIN index_data AS i"
+          " ON m.index_id=i.id"
+          " INNER JOIN services AS s"
+          " ON i.host_id=s.host_id AND i.service_id=s.service_id"
+          " WHERE s.description LIKE '{}'"
+          " AND m.metric_name='{}'",
+          it->second.get_service_filter(), it->second.get_metric_name()));
       if (!storage_mysql)
         try {
           storage_mysql.reset(new mysql(_storage_cfg));
         } catch (std::exception const& e) {
-          throw(reader_exception()
-                << "BAM: could not initialize storage database to "
-                   "retrieve metrics associated with some "
-                   "meta-service: "
-                << e.what());
+          throw reader_exception()
+              << "BAM: could not initialize storage database to "
+                 "retrieve metrics associated with some "
+                 "meta-service: "
+              << e.what();
         }
       std::promise<database::mysql_result> promise;
-      storage_mysql->run_query_and_get_result(query.str(), &promise);
+      storage_mysql->run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
         while (storage_mysql->fetch_row(res))
           it->second.add_metric(res.value_as_u32(0));
       } catch (std::exception const& e) {
-        throw(reader_exception()
-              << "BAM: could not retrieve members of meta-service '"
-              << it->second.get_name() << "': " << e.what());
+        throw reader_exception()
+            << "BAM: could not retrieve members of meta-service '"
+            << it->second.get_name() << "': " << e.what();
       }
     }
     // Service list mode.
     else {
       try {
-        std::ostringstream query;
-        query << "SELECT metric_id"
-              << "  FROM meta_service_relation"
-              << "  WHERE meta_id=" << it->second.get_id()
-              << "    AND activate='1'";
+        std::string query(
+            fmt::format("SELECT metric_id FROM meta_service_relation"
+                        " WHERE meta_id={} AND activate='1'",
+                        it->second.get_id()));
         std::promise<database::mysql_result> promise;
-        _mysql.run_query_and_get_result(query.str(), &promise);
+        _mysql.run_query_and_get_result(query, &promise);
         database::mysql_result res(promise.get_future().get());
         while (_mysql.fetch_row(res))
           it->second.add_metric(res.value_as_u32(0));
@@ -495,9 +495,9 @@ void reader_v2::_load(state::meta_services& meta_services) {
         (void)e;
         throw;
       } catch (std::exception const& e) {
-        throw(reader_exception()
-              << "BAM: could not retrieve members of meta-service '"
-              << it->second.get_name() << "': " << e.what());
+        throw reader_exception()
+            << "BAM: could not retrieve members of meta-service '"
+            << it->second.get_name() << "': " << e.what();
       }
     }
   }
@@ -530,31 +530,31 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not retrieve host/service IDs: " << e.what());
+    throw reader_exception()
+        << "BAM: could not retrieve host/service IDs: " << e.what();
   }
 
   try {
-    std::stringstream query;
-    query << "SELECT m.metric_id, m.metric_name,"
-          << "       i.host_id,"
-          << "       s.service_id"
-          << "  FROM metrics AS m"
-          << "    INNER JOIN index_data AS i"
-          << "    ON m.index_id=i.id"
-          << "    INNER JOIN services AS s"
-          << "    ON i.host_id=s.host_id AND i.service_id=s.service_id";
+    std::string query(
+        "SELECT m.metric_id, m.metric_name,"
+        " i.host_id,"
+        " s.service_id"
+        " FROM metrics AS m"
+        " INNER JOIN index_data AS i"
+        " ON m.index_id=i.id"
+        " INNER JOIN services AS s"
+        " ON i.host_id=s.host_id AND i.service_id=s.service_id");
     mysql storage_mysql(_storage_cfg);
     std::promise<database::mysql_result> promise;
-    storage_mysql.run_query_and_get_result(query.str(), &promise);
+    storage_mysql.run_query_and_get_result(query, &promise);
     database::mysql_result res(promise.get_future().get());
     while (storage_mysql.fetch_row(res)) {
       mapping.register_metric(res.value_as_u32(0), res.value_as_str(1),
                               res.value_as_u32(2), res.value_as_u32(3));
     }
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not retrieve known metrics: " << e.what());
+    throw reader_exception()
+        << "BAM: could not retrieve known metrics: " << e.what();
   }
 }
 
@@ -615,19 +615,19 @@ void reader_v2::_load_dimensions() {
     }
 
     // Load the BAs.
-    std::ostringstream oss;
-    oss << "SELECT b.ba_id, b.name, b.description,"
-           "       b.sla_month_percent_warn, b.sla_month_percent_crit,"
-           "       b.sla_month_duration_warn,"
-           "       b.sla_month_duration_crit, b.id_reporting_period"
-           "  FROM mod_bam AS b"
-           "  INNER JOIN mod_bam_poller_relations AS pr"
-           "    ON b.ba_id=pr.ba_id"
-           "  WHERE b.activate='1'"
-           "    AND pr.poller_id="
-        << config::applier::state::instance().poller_id();
+    std::string query(
+        fmt::format("SELECT b.ba_id, b.name, b.description,"
+                    "  b.sla_month_percent_warn, b.sla_month_percent_crit,"
+                    "  b.sla_month_duration_warn,"
+                    "  b.sla_month_duration_crit, b.id_reporting_period"
+                    "  FROM mod_bam AS b"
+                    "  INNER JOIN mod_bam_poller_relations AS pr"
+                    "  ON b.ba_id=pr.ba_id"
+                    "  WHERE b.activate='1'"
+                    "  AND pr.poller_id={}",
+                    config::applier::state::instance().poller_id()));
     promise = std::promise<database::mysql_result>();
-    _mysql.run_query_and_get_result(oss.str(), &promise);
+    _mysql.run_query_and_get_result(query, &promise);
     try {
       database::mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
@@ -675,18 +675,18 @@ void reader_v2::_load_dimensions() {
     }
     // Load the BA BV relations.
     {
-      std::ostringstream oss;
-      oss << "SELECT id_ba, id_ba_group"
-             "  FROM mod_bam_bagroup_ba_relation as r"
-             "  INNER JOIN mod_bam AS b"
-             "    ON b.ba_id = r.id_ba"
-             "  INNER JOIN mod_bam_poller_relations AS pr"
-             "    ON b.ba_id=pr.ba_id"
-             "  WHERE b.activate='1'"
-             "    AND pr.poller_id="
-          << config::applier::state::instance().poller_id();
+      std::string query(
+          fmt::format("SELECT id_ba, id_ba_group"
+                      " FROM mod_bam_bagroup_ba_relation as r"
+                      " INNER JOIN mod_bam AS b"
+                      " ON b.ba_id = r.id_ba"
+                      " INNER JOIN mod_bam_poller_relations AS pr"
+                      " ON b.ba_id=pr.ba_id"
+                      " WHERE b.activate='1'"
+                      " AND pr.poller_id={}",
+                      config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise);
+      _mysql.run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
         while (_mysql.fetch_row(res)) {
@@ -707,49 +707,49 @@ void reader_v2::_load_dimensions() {
     // service/host/meta_service/ba/boolean expression associated with
     // this KPI. This explains the numerous joins.
     {
-      std::ostringstream oss;
-      oss << "SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id,"
-             "       k.id_ba, k.id_indicator_ba, k.meta_id,"
-             "       k.boolean_id,"
-             "       COALESCE(COALESCE(k.drop_warning, ww.impact), "
-             "g.average_impact),"
-             "       COALESCE(COALESCE(k.drop_critical, cc.impact), "
-             "g.average_impact),"
-             "       COALESCE(COALESCE(k.drop_unknown, uu.impact), "
-             "g.average_impact),"
-             "       h.host_name, s.service_description, b.name,"
-             "       meta.meta_name, boo.name"
-             "  FROM mod_bam_kpi AS k"
-             "  LEFT JOIN mod_bam_impacts AS ww"
-             "    ON k.drop_warning_impact_id = ww.id_impact"
-             "  LEFT JOIN mod_bam_impacts AS cc"
-             "    ON k.drop_critical_impact_id = cc.id_impact"
-             "  LEFT JOIN mod_bam_impacts AS uu"
-             "    ON k.drop_unknown_impact_id = uu.id_impact"
-             "  LEFT JOIN host AS h"
-             "    ON h.host_id = k.host_id"
-             "  LEFT JOIN service AS s"
-             "    ON s.service_id = k.service_id"
-             "  INNER JOIN mod_bam AS b"
-             "    ON b.ba_id = k.id_ba"
-             "  INNER JOIN mod_bam_poller_relations AS pr"
-             "    ON b.ba_id = pr.ba_id"
-             "  LEFT JOIN meta_service AS meta"
-             "    ON meta.meta_id = k.meta_id"
-             "  LEFT JOIN mod_bam_boolean as boo"
-             "    ON boo.boolean_id = k.boolean_id"
-             "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS "
-             "average_impact"
-             "               FROM mod_bam_kpi"
-             "               WHERE activate='1'"
-             "               GROUP BY id_ba) AS g"
-             "   ON k.id_ba=g.id_ba"
-             "  WHERE k.activate='1'"
-             "    AND b.activate='1'"
-             "    AND pr.poller_id="
-          << config::applier::state::instance().poller_id();
+      std::string query(
+          fmt::format("SELECT k.kpi_id, k.kpi_type, k.host_id, k.service_id,"
+                      "       k.id_ba, k.id_indicator_ba, k.meta_id,"
+                      "       k.boolean_id,"
+                      "       COALESCE(COALESCE(k.drop_warning, ww.impact), "
+                      "g.average_impact),"
+                      "       COALESCE(COALESCE(k.drop_critical, cc.impact), "
+                      "g.average_impact),"
+                      "       COALESCE(COALESCE(k.drop_unknown, uu.impact), "
+                      "g.average_impact),"
+                      "       h.host_name, s.service_description, b.name,"
+                      "       meta.meta_name, boo.name"
+                      "  FROM mod_bam_kpi AS k"
+                      "  LEFT JOIN mod_bam_impacts AS ww"
+                      "    ON k.drop_warning_impact_id = ww.id_impact"
+                      "  LEFT JOIN mod_bam_impacts AS cc"
+                      "    ON k.drop_critical_impact_id = cc.id_impact"
+                      "  LEFT JOIN mod_bam_impacts AS uu"
+                      "    ON k.drop_unknown_impact_id = uu.id_impact"
+                      "  LEFT JOIN host AS h"
+                      "    ON h.host_id = k.host_id"
+                      "  LEFT JOIN service AS s"
+                      "    ON s.service_id = k.service_id"
+                      "  INNER JOIN mod_bam AS b"
+                      "    ON b.ba_id = k.id_ba"
+                      "  INNER JOIN mod_bam_poller_relations AS pr"
+                      "    ON b.ba_id = pr.ba_id"
+                      "  LEFT JOIN meta_service AS meta"
+                      "    ON meta.meta_id = k.meta_id"
+                      "  LEFT JOIN mod_bam_boolean as boo"
+                      "    ON boo.boolean_id = k.boolean_id"
+                      "  LEFT JOIN (SELECT id_ba, 100.0 / COUNT(kpi_id) AS "
+                      "average_impact"
+                      "               FROM mod_bam_kpi"
+                      "               WHERE activate='1'"
+                      "               GROUP BY id_ba) AS g"
+                      "   ON k.id_ba=g.id_ba"
+                      "  WHERE k.activate='1'"
+                      "    AND b.activate='1'"
+                      "    AND pr.poller_id={}",
+                      config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise);
+      _mysql.run_query_and_get_result(query, &promise);
 
       try {
         database::mysql_result res(promise.get_future().get());
@@ -829,7 +829,7 @@ void reader_v2::_load_dimensions() {
     (void)e;
     throw;
   } catch (std::exception const& e) {
-    throw(reader_exception()
-          << "BAM: could not load some dimension table: " << e.what());
+    throw reader_exception()
+        << "BAM: could not load some dimension table: " << e.what();
   }
 }

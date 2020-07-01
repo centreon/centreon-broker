@@ -11,6 +11,10 @@ Segfault possible during a Mariadb server restart
 Centreon broker could crash when the database server was restarted. This version
 fixes this bug.
 
+BAM module could never recovery after a Mariadb server restart
+==============================================================
+BAM module is better managed on database server reload/restart.
+
 =======================
 Centreon Broker 20.04.5
 =======================
