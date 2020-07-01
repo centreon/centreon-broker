@@ -90,10 +90,14 @@ void mysql_connection::_query_res(mysql_task* t) {
   mysql_task_run_res* task(static_cast<mysql_task_run_res*>(t));
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
-    log_v2::sql()->error("mysql_connection: run query failed: {} ({})",
-                         ::mysql_error(_conn), task->query);
+    std::string err_msg(fmt::format("{} while executing query {}",
+                                    ::mysql_error(_conn), task->query));
+    if (_server_error(mysql_errno(_conn)))
+      set_error_message(err_msg);
+
+    log_v2::sql()->error("mysql_connection: {}", err_msg);
     exceptions::msg e;
-    e << ::mysql_error(_conn);
+    e << err_msg;
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
   } else {
     /* All is good here */
@@ -106,10 +110,14 @@ void mysql_connection::_query_int(mysql_task* t) {
   mysql_task_run_int* task(static_cast<mysql_task_run_int*>(t));
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
-    log_v2::sql()->error("mysql_connection: run query failed {} ({})",
-                         ::mysql_error(_conn), task->query);
+    std::string err_msg(fmt::format("{} while executing query {}",
+                                    ::mysql_error(_conn), task->query));
+    if (_server_error(::mysql_errno(_conn)))
+      set_error_message(err_msg);
+
+    log_v2::sql()->error("mysql_connection: {}", err_msg);
     exceptions::msg e;
-    e << ::mysql_error(_conn);
+    e << err_msg;
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
   } else {
     _need_commit = true;
@@ -210,8 +218,14 @@ void mysql_connection::_statement(mysql_task* t) {
     }
   } else {
     int attempts(0);
-    while (true) {
+    for (;;) {
       if (mysql_stmt_execute(stmt)) {
+        if (_server_error(::mysql_stmt_errno(stmt))) {
+          set_error_message(
+              "{} while executing statement {} (id {})", mysql_stmt_error(stmt),
+              _stmt_query[task->statement_id], task->statement_id);
+          break;
+        }
         if (mysql_stmt_errno(stmt) != 1213 &&
             mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
@@ -265,8 +279,19 @@ void mysql_connection::_statement_res(mysql_task* t) {
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
   } else {
     int attempts(0);
-    while (true) {
+    for (;;) {
       if (mysql_stmt_execute(stmt)) {
+        if (_server_error(mysql_stmt_errno(stmt))) {
+          set_error_message("{} while executing statement {} (id {})",
+                            ::mysql_stmt_error(stmt),
+                            _stmt_query[task->statement_id],
+                            task->statement_id);
+          exceptions::msg e;
+          e << mysql_stmt_error(stmt);
+          task->promise->set_exception(
+              std::make_exception_ptr<exceptions::msg>(e));
+          break;
+        }
         if (mysql_stmt_errno(stmt) != 1213 &&
             mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
@@ -361,8 +386,19 @@ void mysql_connection::_statement_int(mysql_task* t) {
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
   } else {
     int attempts(0);
-    while (true) {
+    for (;;) {
       if (mysql_stmt_execute(stmt)) {
+        if (_server_error(mysql_stmt_errno(stmt))) {
+          set_error_message("{} while executing statement {} (id {})",
+                            ::mysql_stmt_error(stmt),
+                            _stmt_query[task->statement_id],
+                            task->statement_id);
+          exceptions::msg e;
+          e << mysql_stmt_error(stmt);
+          task->promise->set_exception(
+              std::make_exception_ptr<exceptions::msg>(e));
+          break;
+        }
         if (mysql_stmt_errno(stmt) != 1213 &&
             mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
@@ -493,9 +529,10 @@ std::string mysql_connection::_get_stack() {
 void mysql_connection::_run() {
   std::unique_lock<std::mutex> locker(_result_mutex);
   _conn = mysql_init(nullptr);
-  if (!_conn)
+  if (!_conn) {
     set_error_message(::mysql_error(_conn));
-  else {
+    return;
+  } else {
     while (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
@@ -507,7 +544,7 @@ void mysql_connection::_run() {
     }
   }
 
-  mysql_set_character_set(_conn, "utf8");
+  mysql_set_character_set(_conn, "utf8mb4");
 
   if (_qps > 1)
     mysql_autocommit(_conn, 0);
