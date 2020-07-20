@@ -7,7 +7,7 @@ Bug fixes
 *********
 
 Contention
-=================================================
+==========
 Conflict manager configuration is easier and more flexible.
 
 =======================
