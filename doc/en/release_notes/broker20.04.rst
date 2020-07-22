@@ -1,4 +1,16 @@
 =======================
+Centreon Broker 20.04.7
+=======================
+
+*********
+Bug fixes
+*********
+
+Contention
+==========
+Conflict manager configuration is easier and more flexible.
+
+=======================
 Centreon Broker 20.04.6
 =======================
 
