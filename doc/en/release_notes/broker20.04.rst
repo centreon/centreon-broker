@@ -1,4 +1,18 @@
 =======================
+Centreon Broker 20.04.8
+=======================
+
+*********
+Bug fixes
+*********
+
+UTF-8 encoding
+==============
+The UTF-8 chek/encoding is moved from engine to cbmod. This is easier to update
+for Centreon users. Also, the check algorithm is fixed. Some strings could be
+considered as UTF-8 strings whereas they were not.
+
+=======================
 Centreon Broker 20.04.7
 =======================
 
@@ -204,4 +218,3 @@ If a retention is configured on the influxdb server and centreon-broker sends
 too old data compared to this retention, the connector ends with an error and
 centreon-broker pushes data in retention instead of throwing them away.
 This patch fixes that.
-

@@ -16,12 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/config/applier/state.hh"
+
 #include <cassert>
 #include <cstdio>
-#include "com/centreon/broker/config/applier/state.hh"
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -148,16 +150,16 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
 
   com::centreon::broker::config::state st = s;
 
-//  // Create command file input.
-//  if (!s.command_file().empty()) {
-//    config::endpoint ept;
-//    ept.name = "(external commands)";
-//    ept.type = "extcmd";
-//    ept.params.insert({"extcmd", s.command_file()});
-//    ept.params.insert({"command_protocol", s.command_protocol()});
-//    ept.read_filters.insert("all");
-//    st.endpoints().push_back(ept);
-//  }
+  //  // Create command file input.
+  //  if (!s.command_file().empty()) {
+  //    config::endpoint ept;
+  //    ept.name = "(external commands)";
+  //    ept.type = "extcmd";
+  //    ept.params.insert({"extcmd", s.command_file()});
+  //    ept.params.insert({"command_protocol", s.command_protocol()});
+  //    ept.read_filters.insert("all");
+  //    st.endpoints().push_back(ept);
+  //  }
 
   // Apply input and output configuration.
   endpoint::instance().apply(st.endpoints());
@@ -215,7 +217,7 @@ uint32_t state::poller_id() const throw() {
  *
  *  @return Poller name of this Broker instance.
  */
-std::string const& state::poller_name() const throw() {
+std::string const& state::poller_name() const noexcept {
   return _poller_name;
 }
 

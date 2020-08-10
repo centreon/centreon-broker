@@ -27,6 +27,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -48,6 +49,7 @@ std::list<std::string> split(std::string const& str, char sep);
 std::string& trim(std::string& str) throw();
 std::string base64_encode(std::string const& str);
 bool is_number(const std::string& s);
+std::string check_string_utf8(const std::string& str) noexcept;
 
 }  // namespace string
 }  // namespace misc
