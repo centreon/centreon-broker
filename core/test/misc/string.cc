@@ -196,6 +196,11 @@ TEST(truncate, nominal2) {
   ASSERT_EQ(string::truncate(str, 0), "");
 }
 
+TEST(truncate, nominal3) {
+  std::string str("foobar 超级杀手死亡检查");
+  ASSERT_EQ(string::truncate(str, 1000), "foobar 超级杀手死亡检查");
+}
+
 TEST(truncate, utf8_1) {
   std::string str("告警数量");
   for (size_t i = 0; i < str.size(); i++) {
