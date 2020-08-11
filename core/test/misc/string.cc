@@ -179,3 +179,34 @@ TEST(string_check_utf8, strange_string) {
       "sÚcuritÚ intÚgrÚeá; la connexion a ÚtÚ fermÚe. [CLIENTá: X.X.X.X]");
   ASSERT_EQ(string::check_string_utf8(txt), txt);
 }
+
+/* A check coming from windows with characters from the cmd console */
+TEST(string_check_utf8, chinese) {
+  std::string txt("超级杀手死亡检查");
+  ASSERT_EQ(string::check_string_utf8(txt), txt);
+}
+
+TEST(truncate, nominal1) {
+  std::string str("foobar");
+  ASSERT_EQ(string::truncate(str, 3), "foo");
+}
+
+TEST(truncate, nominal2) {
+  std::string str("foobar");
+  ASSERT_EQ(string::truncate(str, 0), "");
+}
+
+TEST(truncate, nominal3) {
+  std::string str("foobar 超级杀手死亡检查");
+  ASSERT_EQ(string::truncate(str, 1000), "foobar 超级杀手死亡检查");
+}
+
+TEST(truncate, utf8_1) {
+  std::string str("告警数量");
+  for (size_t i = 0; i < str.size(); i++) {
+    std::string tmp(str);
+    std::string tmp1(string::check_string_utf8(string::truncate(tmp, i)));
+    std::cout << tmp1 << '\n';
+    ASSERT_EQ(tmp, tmp1);
+  }
+}
