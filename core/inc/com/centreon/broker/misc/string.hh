@@ -50,6 +50,7 @@ std::string& trim(std::string& str) throw();
 std::string base64_encode(std::string const& str);
 bool is_number(const std::string& s);
 std::string check_string_utf8(const std::string& str) noexcept;
+std::string& truncate(std::string& str, size_t s);
 
 }  // namespace string
 }  // namespace misc

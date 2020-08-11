@@ -21,6 +21,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
@@ -402,8 +403,8 @@ void conflict_manager::_process_acknowledgement(std::shared_ptr<io::data> d) {
             "stored in database.",
             trunc_ack.author.size(),
             get_acknowledgements_col_size(acknowledgements_author));
-        trunc_ack.author.resize(
-            get_acknowledgements_col_size(acknowledgements_author));
+        misc::string::truncate(trunc_ack.author, get_acknowledgements_col_size(
+                                                     acknowledgements_author));
       }
       if (trunc_ack.comment.size() >
           get_acknowledgements_col_size(acknowledgements_comment_data)) {
@@ -412,7 +413,8 @@ void conflict_manager::_process_acknowledgement(std::shared_ptr<io::data> d) {
             "be stored in database.",
             trunc_ack.comment.size(),
             get_acknowledgements_col_size(acknowledgements_comment_data));
-        trunc_ack.comment.resize(
+        misc::string::truncate(
+            trunc_ack.comment,
             get_acknowledgements_col_size(acknowledgements_comment_data));
       }
       _acknowledgement_insupdate << trunc_ack;
@@ -473,14 +475,16 @@ void conflict_manager::_process_comment(std::shared_ptr<io::data> d) {
           "comments author ({} instead of {}) is too long to "
           "be stored in database.",
           trunc_cmnt.author.size(), get_comments_col_size(comments_author));
-      trunc_cmnt.author.resize(get_comments_col_size(comments_author));
+      misc::string::truncate(trunc_cmnt.author,
+                             get_comments_col_size(comments_author));
     }
     if (trunc_cmnt.data.size() > get_comments_col_size(comments_data)) {
       log_v2::sql()->warn(
           "comments data ({} instead of {}) is too long to "
           "be stored in database.",
           trunc_cmnt.data.size(), get_comments_col_size(comments_data));
-      trunc_cmnt.data.resize(get_comments_col_size(comments_data));
+      misc::string::truncate(trunc_cmnt.data,
+                             get_comments_col_size(comments_data));
     }
     _comment_insupdate << trunc_cmnt;
   } else
@@ -540,7 +544,8 @@ void conflict_manager::_process_custom_variable(std::shared_ptr<io::data> d) {
             "be stored in database.",
             trunc_cv.default_value.size(),
             get_customvariables_col_size(customvariables_default_value));
-        trunc_cv.default_value.resize(
+        misc::string::truncate(
+            trunc_cv.default_value,
             get_customvariables_col_size(customvariables_default_value));
       }
       if (trunc_cv.value.size() >
@@ -550,8 +555,8 @@ void conflict_manager::_process_custom_variable(std::shared_ptr<io::data> d) {
             "be stored in database.",
             trunc_cv.value.size(),
             get_customvariables_col_size(customvariables_value));
-        trunc_cv.value.resize(
-            get_customvariables_col_size(customvariables_value));
+        misc::string::truncate(trunc_cv.value, get_customvariables_col_size(
+                                                   customvariables_value));
       }
       if (trunc_cv.name.size() >
           get_customvariables_col_size(customvariables_name)) {
@@ -560,8 +565,8 @@ void conflict_manager::_process_custom_variable(std::shared_ptr<io::data> d) {
             "be stored in database.",
             trunc_cv.name.size(),
             get_customvariables_col_size(customvariables_name));
-        trunc_cv.name.resize(
-            get_customvariables_col_size(customvariables_name));
+        misc::string::truncate(
+            trunc_cv.name, get_customvariables_col_size(customvariables_name));
       }
       _custom_variable_insupdate << trunc_cv;
     } else
@@ -632,8 +637,8 @@ void conflict_manager::_process_custom_variable_status(
           "be stored in database.",
           trunc_cv.value.size(),
           get_customvariables_col_size(customvariables_value));
-      trunc_cv.value.resize(
-          get_customvariables_col_size(customvariables_value));
+      misc::string::truncate(
+          trunc_cv.value, get_customvariables_col_size(customvariables_value));
     }
     if (trunc_cv.name.size() >
         get_customvariables_col_size(customvariables_name)) {
@@ -642,7 +647,8 @@ void conflict_manager::_process_custom_variable_status(
           "be stored in database.",
           trunc_cv.name.size(),
           get_customvariables_col_size(customvariables_name));
-      trunc_cv.name.resize(get_customvariables_col_size(customvariables_name));
+      misc::string::truncate(
+          trunc_cv.name, get_customvariables_col_size(customvariables_name));
     }
     _custom_variable_status_insupdate << trunc_cv;
   } else
@@ -717,7 +723,8 @@ void conflict_manager::_process_downtime(std::shared_ptr<io::data> d) {
             "downtimes author ({} instead of {}) is too long to "
             "be stored in database.",
             trunc_dd.author.size(), get_downtimes_col_size(downtimes_author));
-        trunc_dd.author.resize(get_downtimes_col_size(downtimes_author));
+        misc::string::truncate(trunc_dd.author,
+                               get_downtimes_col_size(downtimes_author));
       }
       if (trunc_dd.comment.size() >
           get_downtimes_col_size(downtimes_comment_data)) {
@@ -726,7 +733,8 @@ void conflict_manager::_process_downtime(std::shared_ptr<io::data> d) {
             "be stored in database.",
             trunc_dd.comment.size(),
             get_downtimes_col_size(downtimes_comment_data));
-        trunc_dd.comment.resize(get_downtimes_col_size(downtimes_comment_data));
+        misc::string::truncate(trunc_dd.comment,
+                               get_downtimes_col_size(downtimes_comment_data));
       }
       _downtime_insupdate << trunc_dd;
     } else
@@ -783,7 +791,8 @@ void conflict_manager::_process_event_handler(std::shared_ptr<io::data> d) {
           "stored in database.",
           eh.command_args.size(),
           get_eventhandlers_col_size(eventhandlers_command_args));
-      trunc_eh.command_args.resize(
+      misc::string::truncate(
+          trunc_eh.command_args,
           get_eventhandlers_col_size(eventhandlers_command_args));
     }
     if (eh.command_line.size() >
@@ -793,7 +802,8 @@ void conflict_manager::_process_event_handler(std::shared_ptr<io::data> d) {
           "stored in database.",
           eh.command_line.size(),
           get_eventhandlers_col_size(eventhandlers_command_line));
-      trunc_eh.command_line.resize(
+      misc::string::truncate(
+          trunc_eh.command_line,
           get_eventhandlers_col_size(eventhandlers_command_line));
     }
     if (eh.output.size() > get_eventhandlers_col_size(eventhandlers_output)) {
@@ -801,7 +811,8 @@ void conflict_manager::_process_event_handler(std::shared_ptr<io::data> d) {
           "event handler output ({} instead of {}) is too long to be "
           "stored in database.",
           eh.output.size(), get_eventhandlers_col_size(eventhandlers_output));
-      trunc_eh.output.resize(get_eventhandlers_col_size(eventhandlers_output));
+      misc::string::truncate(trunc_eh.output,
+                             get_eventhandlers_col_size(eventhandlers_output));
     }
     _event_handler_insupdate << trunc_eh;
   } else
@@ -906,7 +917,8 @@ void conflict_manager::_process_host_check(std::shared_ptr<io::data> d) {
             "hosts command_line ({} instead of {}) is too long to be "
             "stored in database.",
             hc.command_line.size(), get_hosts_col_size(hosts_command_line));
-        trunc_hc.command_line.resize(get_hosts_col_size(hosts_command_line));
+        misc::string::truncate(trunc_hc.command_line,
+                               get_hosts_col_size(hosts_command_line));
         _host_check_update << trunc_hc;
       } else
         _host_check_update << hc;
@@ -984,8 +996,9 @@ void conflict_manager::_process_host_dependency(std::shared_ptr<io::data> d) {
             hd.dependency_period.size(),
             get_hosts_hosts_dependencies_col_size(
                 hosts_hosts_dependencies_dependency_period));
-        trunc_hd.dependency_period.resize(get_hosts_hosts_dependencies_col_size(
-            hosts_hosts_dependencies_dependency_period));
+        misc::string::truncate(trunc_hd.dependency_period,
+                               get_hosts_hosts_dependencies_col_size(
+                                   hosts_hosts_dependencies_dependency_period));
       }
       if (hd.execution_failure_options.size() >
           get_hosts_hosts_dependencies_col_size(
@@ -996,7 +1009,8 @@ void conflict_manager::_process_host_dependency(std::shared_ptr<io::data> d) {
             hd.execution_failure_options.size(),
             get_hosts_hosts_dependencies_col_size(
                 hosts_hosts_dependencies_execution_failure_options));
-        trunc_hd.execution_failure_options.resize(
+        misc::string::truncate(
+            trunc_hd.execution_failure_options,
             get_hosts_hosts_dependencies_col_size(
                 hosts_hosts_dependencies_execution_failure_options));
       }
@@ -1009,7 +1023,8 @@ void conflict_manager::_process_host_dependency(std::shared_ptr<io::data> d) {
             hd.notification_failure_options.size(),
             get_hosts_hosts_dependencies_col_size(
                 hosts_hosts_dependencies_notification_failure_options));
-        trunc_hd.notification_failure_options.resize(
+        misc::string::truncate(
+            trunc_hd.notification_failure_options,
             get_hosts_hosts_dependencies_col_size(
                 hosts_hosts_dependencies_notification_failure_options));
       }
@@ -1064,7 +1079,8 @@ void conflict_manager::_process_host_group(std::shared_ptr<io::data> d) {
           "hostgroups name ({} instead of {}) is too long to be "
           "stored in database.",
           hg.name.size(), get_hostgroups_col_size(hostgroups_name));
-      trunc_hg.name.resize(get_hostgroups_col_size(hostgroups_name));
+      misc::string::truncate(trunc_hg.name,
+                             get_hostgroups_col_size(hostgroups_name));
       _host_group_insupdate << trunc_hg;
     } else
       _host_group_insupdate << hg;
@@ -1148,7 +1164,8 @@ void conflict_manager::_process_host_group_member(std::shared_ptr<io::data> d) {
               "hostgroups name ({} instead of {}) is too long to be "
               "stored in database.",
               hg.name.size(), get_hostgroups_col_size(hostgroups_name));
-          trunc_hg.name.resize(get_hostgroups_col_size(hostgroups_name));
+          misc::string::truncate(trunc_hg.name,
+                                 get_hostgroups_col_size(hostgroups_name));
           _host_group_insupdate << trunc_hg;
         } else
           _host_group_insupdate << hg;
@@ -1163,7 +1180,8 @@ void conflict_manager::_process_host_group_member(std::shared_ptr<io::data> d) {
             "hostgroups name ({} instead of {}) is too long to be "
             "stored in database.",
             hgm.group_name.size(), get_hostgroups_col_size(hostgroups_name));
-        trunc_hgm.group_name.resize(get_hostgroups_col_size(hostgroups_name));
+        misc::string::truncate(trunc_hgm.group_name,
+                               get_hostgroups_col_size(hostgroups_name));
         _host_group_member_insert << trunc_hgm;
       } else
         _host_group_member_insert << hgm;
@@ -1270,28 +1288,32 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "hosts name ({} instead of {}) is too long to be stored in "
               "database.",
               h.host_name.size(), get_hosts_col_size(hosts_name));
-          trunc_h.host_name.resize(get_hosts_col_size(hosts_name));
+          misc::string::truncate(trunc_h.host_name,
+                                 get_hosts_col_size(hosts_name));
         }
         if (h.action_url.size() > get_hosts_col_size(hosts_action_url)) {
           log_v2::sql()->warn(
               "hosts action_url ({} instead of {}) is too long to be stored in "
               "database.",
               h.action_url.size(), get_hosts_col_size(hosts_action_url));
-          trunc_h.action_url.resize(get_hosts_col_size(hosts_action_url));
+          misc::string::truncate(trunc_h.action_url,
+                                 get_hosts_col_size(hosts_action_url));
         }
         if (h.address.size() > get_hosts_col_size(hosts_address)) {
           log_v2::sql()->warn(
               "hosts address ({} instead of {}) is too long to be stored in "
               "database.",
               h.address.size(), get_hosts_col_size(hosts_address));
-          trunc_h.address.resize(get_hosts_col_size(hosts_address));
+          misc::string::truncate(trunc_h.address,
+                                 get_hosts_col_size(hosts_address));
         }
         if (h.alias.size() > get_hosts_col_size(hosts_alias)) {
           log_v2::sql()->warn(
               "hosts alias ({} instead of {}) is too long to be stored in "
               "database.",
               h.alias.size(), get_hosts_col_size(hosts_alias));
-          trunc_h.alias.resize(get_hosts_col_size(hosts_alias));
+          misc::string::truncate(trunc_h.alias,
+                                 get_hosts_col_size(hosts_alias));
         }
         if (h.check_command.size() > get_hosts_col_size(hosts_check_command)) {
           log_v2::sql()->warn(
@@ -1299,7 +1321,8 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "in "
               "database.",
               h.check_command.size(), get_hosts_col_size(hosts_check_command));
-          trunc_h.check_command.resize(get_hosts_col_size(hosts_check_command));
+          misc::string::truncate(trunc_h.check_command,
+                                 get_hosts_col_size(hosts_check_command));
         }
         if (h.check_period.size() > get_hosts_col_size(hosts_check_period)) {
           log_v2::sql()->warn(
@@ -1307,7 +1330,8 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "in "
               "database.",
               h.check_period.size(), get_hosts_col_size(hosts_check_period));
-          trunc_h.check_period.resize(get_hosts_col_size(hosts_check_period));
+          misc::string::truncate(trunc_h.check_period,
+                                 get_hosts_col_size(hosts_check_period));
         }
         if (h.display_name.size() > get_hosts_col_size(hosts_display_name)) {
           log_v2::sql()->warn(
@@ -1315,7 +1339,8 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "in "
               "database.",
               h.display_name.size(), get_hosts_col_size(hosts_display_name));
-          trunc_h.display_name.resize(get_hosts_col_size(hosts_display_name));
+          misc::string::truncate(trunc_h.display_name,
+                                 get_hosts_col_size(hosts_display_name));
         }
         if (h.event_handler.size() > get_hosts_col_size(hosts_event_handler)) {
           log_v2::sql()->warn(
@@ -1323,14 +1348,16 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "in "
               "database.",
               h.event_handler.size(), get_hosts_col_size(hosts_event_handler));
-          trunc_h.event_handler.resize(get_hosts_col_size(hosts_event_handler));
+          misc::string::truncate(trunc_h.event_handler,
+                                 get_hosts_col_size(hosts_event_handler));
         }
         if (h.icon_image.size() > get_hosts_col_size(hosts_icon_image)) {
           log_v2::sql()->warn(
               "hosts icon_image ({} instead of {}) is too long to be stored in "
               "database.",
               h.icon_image.size(), get_hosts_col_size(hosts_icon_image));
-          trunc_h.icon_image.resize(get_hosts_col_size(hosts_icon_image));
+          misc::string::truncate(trunc_h.icon_image,
+                                 get_hosts_col_size(hosts_icon_image));
         }
         if (h.icon_image_alt.size() >
             get_hosts_col_size(hosts_icon_image_alt)) {
@@ -1340,22 +1367,24 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "database.",
               h.icon_image_alt.size(),
               get_hosts_col_size(hosts_icon_image_alt));
-          trunc_h.icon_image_alt.resize(
-              get_hosts_col_size(hosts_icon_image_alt));
+          misc::string::truncate(trunc_h.icon_image_alt,
+                                 get_hosts_col_size(hosts_icon_image_alt));
         }
         if (h.notes.size() > get_hosts_col_size(hosts_notes)) {
           log_v2::sql()->warn(
               "hosts notes ({} instead of {}) is too long to be stored in "
               "database.",
               h.notes.size(), get_hosts_col_size(hosts_notes));
-          trunc_h.notes.resize(get_hosts_col_size(hosts_notes));
+          misc::string::truncate(trunc_h.notes,
+                                 get_hosts_col_size(hosts_notes));
         }
         if (h.notes_url.size() > get_hosts_col_size(hosts_notes_url)) {
           log_v2::sql()->warn(
               "hosts notes_url ({} instead of {}) is too long to be stored in "
               "database.",
               h.notes_url.size(), get_hosts_col_size(hosts_notes_url));
-          trunc_h.notes_url.resize(get_hosts_col_size(hosts_notes_url));
+          misc::string::truncate(trunc_h.notes_url,
+                                 get_hosts_col_size(hosts_notes_url));
         }
         if (h.notification_period.size() >
             get_hosts_col_size(hosts_notification_period)) {
@@ -1365,22 +1394,24 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "database.",
               h.notification_period.size(),
               get_hosts_col_size(hosts_notification_period));
-          trunc_h.notification_period.resize(
-              get_hosts_col_size(hosts_notification_period));
+          misc::string::truncate(trunc_h.notification_period,
+                                 get_hosts_col_size(hosts_notification_period));
         }
         if (h.output.size() > get_hosts_col_size(hosts_output)) {
           log_v2::sql()->warn(
               "hosts output ({} instead of {}) is too long to be stored in "
               "database.",
               h.output.size(), get_hosts_col_size(hosts_output));
-          trunc_h.output.resize(get_hosts_col_size(hosts_output));
+          misc::string::truncate(trunc_h.output,
+                                 get_hosts_col_size(hosts_output));
         }
         if (h.perf_data.size() > get_hosts_col_size(hosts_perfdata)) {
           log_v2::sql()->warn(
               "hosts perfdata ({} instead of {}) is too long to be stored in "
               "database.",
               h.perf_data.size(), get_hosts_col_size(hosts_perfdata));
-          trunc_h.perf_data.resize(get_hosts_col_size(hosts_perfdata));
+          misc::string::truncate(trunc_h.perf_data,
+                                 get_hosts_col_size(hosts_perfdata));
         }
         if (h.statusmap_image.size() >
             get_hosts_col_size(hosts_statusmap_image)) {
@@ -1390,15 +1421,16 @@ void conflict_manager::_process_host(std::shared_ptr<io::data> d) {
               "database.",
               h.statusmap_image.size(),
               get_hosts_col_size(hosts_statusmap_image));
-          trunc_h.statusmap_image.resize(
-              get_hosts_col_size(hosts_statusmap_image));
+          misc::string::truncate(trunc_h.statusmap_image,
+                                 get_hosts_col_size(hosts_statusmap_image));
         }
         if (h.timezone.size() > get_hosts_col_size(hosts_timezone)) {
           log_v2::sql()->warn(
               "hosts timezone ({} instead of {}) is too long to be stored in "
               "database.",
               h.timezone.size(), get_hosts_col_size(hosts_timezone));
-          trunc_h.timezone.resize(get_hosts_col_size(hosts_timezone));
+          misc::string::truncate(trunc_h.timezone,
+                                 get_hosts_col_size(hosts_timezone));
         }
         _host_insupdate << trunc_h;
       } else
@@ -1527,14 +1559,16 @@ void conflict_manager::_process_host_status(std::shared_ptr<io::data> d) {
             "in "
             "database.",
             hs.check_command.size(), get_hosts_col_size(hosts_check_command));
-        trunc_hs.check_command.resize(get_hosts_col_size(hosts_check_command));
+        misc::string::truncate(trunc_hs.check_command,
+                               get_hosts_col_size(hosts_check_command));
       }
       if (hs.check_period.size() > get_hosts_col_size(hosts_check_period)) {
         log_v2::sql()->warn(
             "hosts check_period ({} instead of {}) is too long to be stored in "
             "database.",
             hs.check_period.size(), get_hosts_col_size(hosts_check_period));
-        trunc_hs.check_period.resize(get_hosts_col_size(hosts_check_period));
+        misc::string::truncate(trunc_hs.check_period,
+                               get_hosts_col_size(hosts_check_period));
       }
       if (hs.event_handler.size() > get_hosts_col_size(hosts_event_handler)) {
         log_v2::sql()->warn(
@@ -1542,21 +1576,24 @@ void conflict_manager::_process_host_status(std::shared_ptr<io::data> d) {
             "in "
             "database.",
             hs.event_handler.size(), get_hosts_col_size(hosts_event_handler));
-        trunc_hs.event_handler.resize(get_hosts_col_size(hosts_event_handler));
+        misc::string::truncate(trunc_hs.event_handler,
+                               get_hosts_col_size(hosts_event_handler));
       }
       if (hs.output.size() > get_hosts_col_size(hosts_output)) {
         log_v2::sql()->warn(
             "hosts output ({} instead of {}) is too long to be stored in "
             "database.",
             hs.output.size(), get_hosts_col_size(hosts_output));
-        trunc_hs.output.resize(get_hosts_col_size(hosts_output));
+        misc::string::truncate(trunc_hs.output,
+                               get_hosts_col_size(hosts_output));
       }
       if (hs.perf_data.size() > get_hosts_col_size(hosts_perfdata)) {
         log_v2::sql()->warn(
             "hosts perfdata ({} instead of {}) is too long to be stored in "
             "database.",
             hs.perf_data.size(), get_hosts_col_size(hosts_perfdata));
-        trunc_hs.perf_data.resize(get_hosts_col_size(hosts_perfdata));
+        misc::string::truncate(trunc_hs.perf_data,
+                               get_hosts_col_size(hosts_perfdata));
       }
       _host_status_update << trunc_hs;
     } else
@@ -1627,21 +1664,24 @@ void conflict_manager::_process_instance(std::shared_ptr<io::data> d) {
             "in "
             "database.",
             i.name.size(), get_instances_col_size(instances_name));
-        trunc_i.name.resize(get_instances_col_size(instances_name));
+        misc::string::truncate(trunc_i.name,
+                               get_instances_col_size(instances_name));
       }
       if (i.engine.size() > get_instances_col_size(instances_engine)) {
         log_v2::sql()->warn(
             "instances engine ({} instead of {}) is too long to be stored in "
             "database.",
             i.engine.size(), get_instances_col_size(instances_engine));
-        trunc_i.engine.resize(get_instances_col_size(instances_engine));
+        misc::string::truncate(trunc_i.engine,
+                               get_instances_col_size(instances_engine));
       }
       if (i.version.size() > get_instances_col_size(instances_version)) {
         log_v2::sql()->warn(
             "instances version ({} instead of {}) is too long to be stored "
             "in database.",
             i.version.size(), get_instances_col_size(instances_version));
-        trunc_i.version.resize(get_instances_col_size(instances_version));
+        misc::string::truncate(trunc_i.version,
+                               get_instances_col_size(instances_version));
       }
       _instance_insupdate << trunc_i;
     } else
@@ -1697,7 +1737,8 @@ void conflict_manager::_process_instance_status(std::shared_ptr<io::data> d) {
             "long to be stored in database.",
             is.global_host_event_handler.size(),
             get_instances_col_size(instances_global_host_event_handler));
-        trunc_is.global_host_event_handler.resize(
+        misc::string::truncate(
+            trunc_is.global_host_event_handler,
             get_instances_col_size(instances_global_host_event_handler));
       }
       if (is.global_service_event_handler.size() >
@@ -1707,7 +1748,8 @@ void conflict_manager::_process_instance_status(std::shared_ptr<io::data> d) {
             "long to be stored in database.",
             is.global_service_event_handler.size(),
             get_instances_col_size(instances_global_service_event_handler));
-        trunc_is.global_service_event_handler.resize(
+        misc::string::truncate(
+            trunc_is.global_service_event_handler,
             get_instances_col_size(instances_global_service_event_handler));
       }
       _instance_status_insupdate << trunc_is;
@@ -1760,14 +1802,16 @@ void conflict_manager::_process_log(std::shared_ptr<io::data> d) {
           "logs host_name ({} instead of {}) is too long to be stored in "
           "database.",
           le.host_name.size(), get_logs_col_size(logs_host_name));
-      trunc_le.host_name.resize(get_logs_col_size(logs_host_name));
+      misc::string::truncate(trunc_le.host_name,
+                             get_logs_col_size(logs_host_name));
     }
     if (le.poller_name.size() > get_logs_col_size(logs_instance_name)) {
       log_v2::sql()->warn(
           "logs instance_name ({} instead of {}) is too long to be stored in "
           "database.",
           le.poller_name.size(), get_logs_col_size(logs_instance_name));
-      trunc_le.poller_name.resize(get_logs_col_size(logs_instance_name));
+      misc::string::truncate(trunc_le.poller_name,
+                             get_logs_col_size(logs_instance_name));
     }
     if (le.notification_cmd.size() > get_logs_col_size(logs_notification_cmd)) {
       log_v2::sql()->warn(
@@ -1775,8 +1819,8 @@ void conflict_manager::_process_log(std::shared_ptr<io::data> d) {
           "in "
           "database.",
           le.notification_cmd.size(), get_logs_col_size(logs_notification_cmd));
-      trunc_le.notification_cmd.resize(
-          get_logs_col_size(logs_notification_cmd));
+      misc::string::truncate(trunc_le.notification_cmd,
+                             get_logs_col_size(logs_notification_cmd));
     }
     if (le.notification_contact.size() >
         get_logs_col_size(logs_notification_contact)) {
@@ -1786,15 +1830,15 @@ void conflict_manager::_process_log(std::shared_ptr<io::data> d) {
           "database.",
           le.notification_contact.size(),
           get_logs_col_size(logs_notification_contact));
-      trunc_le.notification_contact.resize(
-          get_logs_col_size(logs_notification_contact));
+      misc::string::truncate(trunc_le.notification_contact,
+                             get_logs_col_size(logs_notification_contact));
     }
     if (le.output.size() > get_logs_col_size(logs_output)) {
       log_v2::sql()->warn(
           "logs output ({} instead of {}) is too long to be stored in "
           "database.",
           le.output.size(), get_logs_col_size(logs_output));
-      trunc_le.output.resize(get_logs_col_size(logs_output));
+      misc::string::truncate(trunc_le.output, get_logs_col_size(logs_output));
     }
     if (le.service_description.size() >
         get_logs_col_size(logs_service_description)) {
@@ -1804,8 +1848,8 @@ void conflict_manager::_process_log(std::shared_ptr<io::data> d) {
           "database.",
           le.service_description.size(),
           get_logs_col_size(logs_service_description));
-      trunc_le.service_description.resize(
-          get_logs_col_size(logs_service_description));
+      misc::string::truncate(trunc_le.service_description,
+                             get_logs_col_size(logs_service_description));
     }
     _log_insert << trunc_le;
   } else
@@ -1853,14 +1897,15 @@ void conflict_manager::_process_module(std::shared_ptr<io::data> d) {
             "modules args ({} instead of {}) is too long to be stored in "
             "database.",
             m.args.size(), get_modules_col_size(modules_args));
-        tmp_m->args.resize(get_modules_col_size(modules_args));
+        misc::string::truncate(tmp_m->args, get_modules_col_size(modules_args));
       }
       if (m.filename.size() > get_modules_col_size(modules_filename)) {
         log_v2::sql()->warn(
             "modules filename ({} instead of {}) is too long to be stored in "
             "database.",
             m.filename.size(), get_modules_col_size(modules_filename));
-        tmp_m->filename.resize(get_modules_col_size(modules_filename));
+        misc::string::truncate(tmp_m->filename,
+                               get_modules_col_size(modules_filename));
       }
     } else
       tmp_m = const_cast<neb::module*>(&m);
@@ -1941,8 +1986,8 @@ void conflict_manager::_process_service_check(std::shared_ptr<io::data> d) {
               "stored in database.",
               sc.command_line.size(),
               get_services_col_size(services_command_line));
-          trunc_sc.command_line.resize(
-              get_services_col_size(services_command_line));
+          misc::string::truncate(trunc_sc.command_line,
+                                 get_services_col_size(services_command_line));
           _service_check_update << trunc_sc;
         } else
           _service_check_update << sc;
@@ -2034,7 +2079,8 @@ void conflict_manager::_process_service_dependency(
             sd.dependency_period.size(),
             get_services_services_dependencies_col_size(
                 services_services_dependencies_dependency_period));
-        trunc_sd.dependency_period.resize(
+        misc::string::truncate(
+            trunc_sd.dependency_period,
             get_services_services_dependencies_col_size(
                 services_services_dependencies_dependency_period));
       }
@@ -2047,7 +2093,8 @@ void conflict_manager::_process_service_dependency(
             sd.execution_failure_options.size(),
             get_services_services_dependencies_col_size(
                 services_services_dependencies_execution_failure_options));
-        trunc_sd.execution_failure_options.resize(
+        misc::string::truncate(
+            trunc_sd.execution_failure_options,
             get_services_services_dependencies_col_size(
                 services_services_dependencies_execution_failure_options));
       }
@@ -2060,7 +2107,8 @@ void conflict_manager::_process_service_dependency(
             sd.notification_failure_options.size(),
             get_services_services_dependencies_col_size(
                 services_services_dependencies_notification_failure_options));
-        trunc_sd.notification_failure_options.resize(
+        misc::string::truncate(
+            trunc_sd.notification_failure_options,
             get_services_services_dependencies_col_size(
                 services_services_dependencies_notification_failure_options));
       }
@@ -2120,7 +2168,8 @@ void conflict_manager::_process_service_group(std::shared_ptr<io::data> d) {
           "servicegroups name ({} instead of {}) is too long to be "
           "stored in database.",
           sg.name.size(), get_servicegroups_col_size(servicegroups_name));
-      trunc_sg.name.resize(get_servicegroups_col_size(servicegroups_name));
+      misc::string::truncate(trunc_sg.name,
+                             get_servicegroups_col_size(servicegroups_name));
       _service_group_insupdate << trunc_sg;
     } else
       _service_group_insupdate << sg;
@@ -2210,7 +2259,8 @@ void conflict_manager::_process_service_group_member(
             "servicegroups name ({} instead of {}) is too long to be "
             "stored in database.",
             sg.name.size(), get_servicegroups_col_size(servicegroups_name));
-        trunc_sg.name.resize(get_servicegroups_col_size(servicegroups_name));
+        misc::string::truncate(trunc_sg.name,
+                               get_servicegroups_col_size(servicegroups_name));
         _service_group_insupdate << trunc_sg;
       } else
         _service_group_insupdate << sg;
@@ -2218,13 +2268,16 @@ void conflict_manager::_process_service_group_member(
       _add_action(conn, actions::servicegroups);
     }
 
-    if (sgm.group_name.size() > get_servicegroups_col_size(servicegroups_name)) {
+    if (sgm.group_name.size() >
+        get_servicegroups_col_size(servicegroups_name)) {
       neb::service_group_member trunc_sgm(sgm);
       log_v2::sql()->warn(
           "servicegroups name ({} instead of {}) is too long to be "
           "stored in database.",
-          sgm.group_name.size(), get_servicegroups_col_size(servicegroups_name));
-      trunc_sgm.group_name.resize(get_servicegroups_col_size(servicegroups_name));
+          sgm.group_name.size(),
+          get_servicegroups_col_size(servicegroups_name));
+      misc::string::truncate(trunc_sgm.group_name,
+                             get_servicegroups_col_size(servicegroups_name));
       _service_group_member_insert << trunc_sgm;
     } else
       _service_group_member_insert << sgm;
@@ -2328,95 +2381,124 @@ void conflict_manager::_process_service(std::shared_ptr<io::data> d) {
           s.perf_data.size() > get_services_col_size(services_perfdata)) {
         neb::service trunc_s(s);
         if (s.service_description.size() >
-              get_services_col_size(services_description)) {
+            get_services_col_size(services_description)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
-              s.service_description.size(), get_services_col_size(services_description));
-          trunc_s.service_description.resize(get_services_col_size(services_description));
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
+              s.service_description.size(),
+              get_services_col_size(services_description));
+          misc::string::truncate(trunc_s.service_description,
+                                 get_services_col_size(services_description));
         }
-        if (s.action_url.size() >
-              get_services_col_size(services_action_url)) {
+        if (s.action_url.size() > get_services_col_size(services_action_url)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
               s.action_url.size(), get_services_col_size(services_action_url));
-          trunc_s.action_url.resize(get_services_col_size(services_action_url));
+          misc::string::truncate(trunc_s.action_url,
+                                 get_services_col_size(services_action_url));
         }
         if (s.check_command.size() >
-              get_services_col_size(services_check_command)) {
+            get_services_col_size(services_check_command)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
-              s.check_command.size(), get_services_col_size(services_check_command));
-          trunc_s.check_command.resize(get_services_col_size(services_check_command));
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
+              s.check_command.size(),
+              get_services_col_size(services_check_command));
+          misc::string::truncate(trunc_s.check_command,
+                                 get_services_col_size(services_check_command));
         }
         if (s.check_period.size() >
-              get_services_col_size(services_check_period)) {
+            get_services_col_size(services_check_period)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
-              s.check_period.size(), get_services_col_size(services_check_period));
-          trunc_s.check_period.resize(get_services_col_size(services_check_period));
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
+              s.check_period.size(),
+              get_services_col_size(services_check_period));
+          misc::string::truncate(trunc_s.check_period,
+                                 get_services_col_size(services_check_period));
         }
         if (s.display_name.size() >
-              get_services_col_size(services_display_name)) {
+            get_services_col_size(services_display_name)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
-              s.display_name.size(), get_services_col_size(services_display_name));
-          trunc_s.display_name.resize(get_services_col_size(services_display_name));
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
+              s.display_name.size(),
+              get_services_col_size(services_display_name));
+          misc::string::truncate(trunc_s.display_name,
+                                 get_services_col_size(services_display_name));
         }
         if (s.event_handler.size() >
-              get_services_col_size(services_event_handler)) {
+            get_services_col_size(services_event_handler)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
-              s.event_handler.size(), get_services_col_size(services_event_handler));
-          trunc_s.event_handler.resize(get_services_col_size(services_event_handler));
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
+              s.event_handler.size(),
+              get_services_col_size(services_event_handler));
+          misc::string::truncate(trunc_s.event_handler,
+                                 get_services_col_size(services_event_handler));
         }
-        if (s.icon_image.size() >
-              get_services_col_size(services_icon_image)) {
+        if (s.icon_image.size() > get_services_col_size(services_icon_image)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
               s.icon_image.size(), get_services_col_size(services_icon_image));
-          trunc_s.icon_image.resize(get_services_col_size(services_icon_image));
+          misc::string::truncate(trunc_s.icon_image,
+                                 get_services_col_size(services_icon_image));
         }
         if (s.icon_image_alt.size() >
-              get_services_col_size(services_icon_image_alt)) {
+            get_services_col_size(services_icon_image_alt)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
-              s.icon_image_alt.size(), get_services_col_size(services_icon_image_alt));
-          trunc_s.icon_image_alt.resize(get_services_col_size(services_icon_image_alt));
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
+              s.icon_image_alt.size(),
+              get_services_col_size(services_icon_image_alt));
+          misc::string::truncate(
+              trunc_s.icon_image_alt,
+              get_services_col_size(services_icon_image_alt));
         }
-        if (s.notes.size() >
-              get_services_col_size(services_notes)) {
+        if (s.notes.size() > get_services_col_size(services_notes)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
               s.notes.size(), get_services_col_size(services_notes));
-          trunc_s.notes.resize(get_services_col_size(services_notes));
+          misc::string::truncate(trunc_s.notes,
+                                 get_services_col_size(services_notes));
         }
-        if (s.notes_url.size() >
-              get_services_col_size(services_notes_url)) {
+        if (s.notes_url.size() > get_services_col_size(services_notes_url)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
               s.notes_url.size(), get_services_col_size(services_notes_url));
-          trunc_s.notes_url.resize(get_services_col_size(services_notes_url));
+          misc::string::truncate(trunc_s.notes_url,
+                                 get_services_col_size(services_notes_url));
         }
         if (s.notification_period.size() >
-              get_services_col_size(services_notification_period)) {
+            get_services_col_size(services_notification_period)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
-              s.notification_period.size(), get_services_col_size(services_notification_period));
-          trunc_s.notification_period.resize(get_services_col_size(services_notification_period));
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
+              s.notification_period.size(),
+              get_services_col_size(services_notification_period));
+          misc::string::truncate(
+              trunc_s.notification_period,
+              get_services_col_size(services_notification_period));
         }
-        if (s.output.size() >
-              get_services_col_size(services_output)) {
+        if (s.output.size() > get_services_col_size(services_output)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
               s.output.size(), get_services_col_size(services_output));
-          trunc_s.output.resize(get_services_col_size(services_output));
+          misc::string::truncate(trunc_s.output,
+                                 get_services_col_size(services_output));
         }
-        if (s.perf_data.size() >
-              get_services_col_size(services_perfdata)) {
+        if (s.perf_data.size() > get_services_col_size(services_perfdata)) {
           log_v2::sql()->warn(
-              "services description ({} instead of {}) is too long to be stored in database.",
+              "services description ({} instead of {}) is too long to be "
+              "stored in database.",
               s.perf_data.size(), get_services_col_size(services_perfdata));
-          trunc_s.perf_data.resize(get_services_col_size(services_perfdata));
+          misc::string::truncate(trunc_s.perf_data,
+                                 get_services_col_size(services_perfdata));
         }
         _service_insupdate << trunc_s;
       } else
@@ -2476,48 +2558,64 @@ void conflict_manager::_process_service_status(std::shared_ptr<io::data> d) {
     }
 
     // Processing.
-    if (ss.check_command.size() > get_services_col_size(services_check_command) ||
+    if (ss.check_command.size() >
+            get_services_col_size(services_check_command) ||
         ss.check_period.size() > get_services_col_size(services_check_period) ||
-        ss.event_handler.size() > get_services_col_size(services_event_handler) ||
+        ss.event_handler.size() >
+            get_services_col_size(services_event_handler) ||
         ss.output.size() > get_services_col_size(services_output) ||
         ss.perf_data.size() > get_services_col_size(services_perfdata)) {
       neb::service_status trunc_ss(ss);
-      if (ss.check_command.size() > get_services_col_size(services_check_command)) {
+      if (ss.check_command.size() >
+          get_services_col_size(services_check_command)) {
         log_v2::sql()->warn(
-            "services check_command ({} instead of {}) is too long to be stored "
+            "services check_command ({} instead of {}) is too long to be "
+            "stored "
             "in "
             "database.",
-            ss.check_command.size(), get_services_col_size(services_check_command));
-        trunc_ss.check_command.resize(get_services_col_size(services_check_command));
+            ss.check_command.size(),
+            get_services_col_size(services_check_command));
+        misc::string::truncate(trunc_ss.check_command,
+                               get_services_col_size(services_check_command));
       }
-      if (ss.check_period.size() > get_services_col_size(services_check_period)) {
+      if (ss.check_period.size() >
+          get_services_col_size(services_check_period)) {
         log_v2::sql()->warn(
-            "services check_period ({} instead of {}) is too long to be stored in "
-            "database.",
-            ss.check_period.size(), get_services_col_size(services_check_period));
-        trunc_ss.check_period.resize(get_services_col_size(services_check_period));
-      }
-      if (ss.event_handler.size() > get_services_col_size(services_event_handler)) {
-        log_v2::sql()->warn(
-            "services event_handler ({} instead of {}) is too long to be stored "
+            "services check_period ({} instead of {}) is too long to be stored "
             "in "
             "database.",
-            ss.event_handler.size(), get_services_col_size(services_event_handler));
-        trunc_ss.event_handler.resize(get_services_col_size(services_event_handler));
+            ss.check_period.size(),
+            get_services_col_size(services_check_period));
+        misc::string::truncate(trunc_ss.check_period,
+                               get_services_col_size(services_check_period));
+      }
+      if (ss.event_handler.size() >
+          get_services_col_size(services_event_handler)) {
+        log_v2::sql()->warn(
+            "services event_handler ({} instead of {}) is too long to be "
+            "stored "
+            "in "
+            "database.",
+            ss.event_handler.size(),
+            get_services_col_size(services_event_handler));
+        misc::string::truncate(trunc_ss.event_handler,
+                               get_services_col_size(services_event_handler));
       }
       if (ss.output.size() > get_services_col_size(services_output)) {
         log_v2::sql()->warn(
             "services output ({} instead of {}) is too long to be stored in "
             "database.",
             ss.output.size(), get_services_col_size(services_output));
-        trunc_ss.output.resize(get_services_col_size(services_output));
+        misc::string::truncate(trunc_ss.output,
+                               get_services_col_size(services_output));
       }
       if (ss.perf_data.size() > get_services_col_size(services_perfdata)) {
         log_v2::sql()->warn(
             "services perfdata ({} instead of {}) is too long to be stored in "
             "database.",
             ss.perf_data.size(), get_services_col_size(services_perfdata));
-        trunc_ss.perf_data.resize(get_services_col_size(services_perfdata));
+        misc::string::truncate(trunc_ss.perf_data,
+                               get_services_col_size(services_perfdata));
       }
       _service_status_update << trunc_ss;
     } else
