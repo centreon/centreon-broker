@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/neb/callback.hh"
+
 #include <cstdlib>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
@@ -47,6 +49,6 @@ callback::callback(int id, void* handle, int (*function)(int, void*))
 /**
  *  Destructor.
  */
-callback::~callback() throw() {
+callback::~callback() noexcept {
   neb_deregister_callback(_id, _function);
 }

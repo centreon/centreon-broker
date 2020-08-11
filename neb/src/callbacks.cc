@@ -159,9 +159,9 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     ack_data = static_cast<nebstruct_acknowledgement_data*>(data);
     ack->acknowledgement_type = ack_data->acknowledgement_type;
     if (ack_data->author_name)
-      ack->author = ack_data->author_name;
+      ack->author = misc::string::check_string_utf8(ack_data->author_name);
     if (ack_data->comment_data)
-      ack->comment = ack_data->comment_data;
+      ack->comment = misc::string::check_string_utf8(ack_data->comment_data);
     ack->entry_time = time(nullptr);
     if (!ack_data->host_id)
       throw exceptions::msg() << "unnamed host";
@@ -220,9 +220,11 @@ int neb::callback_comment(int callback_type, void* data) {
     // Fill output var.
     comment_data = static_cast<nebstruct_comment_data*>(data);
     if (comment_data->author_name)
-      comment->author = comment_data->author_name;
+      comment->author =
+          misc::string::check_string_utf8(comment_data->author_name);
     if (comment_data->comment_data)
-      comment->data = comment_data->comment_data;
+      comment->data =
+          misc::string::check_string_utf8(comment_data->comment_data);
     comment->comment_type = comment_data->comment_type;
     if (NEBTYPE_COMMENT_DELETE == comment_data->type)
       comment->deletion_time = time(nullptr);
@@ -294,11 +296,12 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             new_cvar->enabled = true;
             new_cvar->host_id = host_id;
             new_cvar->modified = false;
-            new_cvar->name = cvar->var_name;
+            new_cvar->name = misc::string::check_string_utf8(cvar->var_name);
             new_cvar->var_type = 0;
             new_cvar->update_time = cvar->timestamp.tv_sec;
-            new_cvar->value = cvar->var_value;
-            new_cvar->default_value = cvar->var_value;
+            new_cvar->value = misc::string::check_string_utf8(cvar->var_value);
+            new_cvar->default_value =
+                misc::string::check_string_utf8(cvar->var_value);
 
             // Send custom variable event.
             logging::info(logging::low)
@@ -315,7 +318,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             std::shared_ptr<custom_variable> old_cvar(new custom_variable);
             old_cvar->enabled = false;
             old_cvar->host_id = host_id;
-            old_cvar->name = cvar->var_name;
+            old_cvar->name = misc::string::check_string_utf8(cvar->var_name);
             old_cvar->var_type = 0;
             old_cvar->update_time = cvar->timestamp.tv_sec;
 
@@ -341,12 +344,13 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             new_cvar->enabled = true;
             new_cvar->host_id = p.first;
             new_cvar->modified = false;
-            new_cvar->name = cvar->var_name;
+            new_cvar->name = misc::string::check_string_utf8(cvar->var_name);
             new_cvar->service_id = p.second;
             new_cvar->var_type = 1;
             new_cvar->update_time = cvar->timestamp.tv_sec;
-            new_cvar->value = cvar->var_value;
-            new_cvar->default_value = cvar->var_value;
+            new_cvar->value = misc::string::check_string_utf8(cvar->var_value);
+            new_cvar->default_value =
+                misc::string::check_string_utf8(cvar->var_value);
 
             // Send custom variable event.
             logging::info(logging::low)
@@ -367,7 +371,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
             old_cvar->enabled = false;
             old_cvar->host_id = p.first;
             old_cvar->modified = true;
-            old_cvar->name = cvar->var_name;
+            old_cvar->name = misc::string::check_string_utf8(cvar->var_name);
             old_cvar->service_id = p.second;
             old_cvar->var_type = 1;
             old_cvar->update_time = cvar->timestamp.tv_sec;
@@ -566,9 +570,11 @@ int neb::callback_downtime(int callback_type, void* data) {
     // Fill output var.
     downtime_data = static_cast<nebstruct_downtime_data*>(data);
     if (downtime_data->author_name)
-      downtime->author = downtime_data->author_name;
+      downtime->author =
+          misc::string::check_string_utf8(downtime_data->author_name);
     if (downtime_data->comment_data)
-      downtime->comment = downtime_data->comment_data;
+      downtime->comment =
+          misc::string::check_string_utf8(downtime_data->comment_data);
     downtime->downtime_type = downtime_data->downtime_type;
     downtime->duration = downtime_data->duration;
     downtime->end_time = downtime_data->end_time;
@@ -663,9 +669,11 @@ int neb::callback_event_handler(int callback_type, void* data) {
     // Fill output var.
     event_handler_data = static_cast<nebstruct_event_handler_data*>(data);
     if (event_handler_data->command_args)
-      event_handler->command_args = event_handler_data->command_args;
+      event_handler->command_args =
+          misc::string::check_string_utf8(event_handler_data->command_args);
     if (event_handler_data->command_line)
-      event_handler->command_line = event_handler_data->command_line;
+      event_handler->command_line =
+          misc::string::check_string_utf8(event_handler_data->command_line);
     event_handler->early_timeout = event_handler_data->early_timeout;
     event_handler->end_time = event_handler_data->end_time.tv_sec;
     event_handler->execution_time = event_handler_data->execution_time;
@@ -691,7 +699,8 @@ int neb::callback_event_handler(int callback_type, void* data) {
                                 << event_handler_data->host_name << "'");
     }
     if (event_handler_data->output)
-      event_handler->output = event_handler_data->output;
+      event_handler->output =
+          misc::string::check_string_utf8(event_handler_data->output);
     event_handler->return_code = event_handler_data->return_code;
     event_handler->start_time = event_handler_data->start_time.tv_sec;
     event_handler->state = event_handler_data->state;
@@ -740,8 +749,8 @@ int neb::callback_external_command(int callback_type, void* data) {
 
         // Split argument string.
         if (necd->command_args) {
-          std::list<std::string> l{
-              misc::string::split(necd->command_args, ';')};
+          std::list<std::string> l{misc::string::split(
+              misc::string::check_string_utf8(necd->command_args), ';')};
           if (l.size() != 3)
             logging::error(logging::medium)
                 << "callbacks: invalid host custom variable command";
@@ -775,8 +784,8 @@ int neb::callback_external_command(int callback_type, void* data) {
 
         // Split argument string.
         if (necd->command_args) {
-          std::list<std::string> l{
-              misc::string::split(necd->command_args, ';')};
+          std::list<std::string> l{misc::string::split(
+              misc::string::check_string_utf8(necd->command_args), ';')};
           if (l.size() != 4)
             logging::error(logging::medium)
                 << "callbacks: invalid service custom variable command";
@@ -914,7 +923,8 @@ int neb::callback_group(int callback_type, void* data) {
         new_hg->id = host_group->get_id();
         new_hg->enabled = (group_data->type != NEBTYPE_HOSTGROUP_DELETE &&
                            !host_group->members.empty());
-        new_hg->name = host_group->get_group_name();
+        new_hg->name =
+            misc::string::check_string_utf8(host_group->get_group_name());
 
         // Send host group event.
         if (new_hg->id) {
@@ -937,7 +947,8 @@ int neb::callback_group(int callback_type, void* data) {
         new_sg->id = service_group->get_id();
         new_sg->enabled = (group_data->type != NEBTYPE_SERVICEGROUP_DELETE &&
                            !service_group->members.empty());
-        new_sg->name = service_group->get_group_name();
+        new_sg->name =
+            misc::string::check_string_utf8(service_group->get_group_name());
 
         // Send service group event.
         if (new_sg->id) {
@@ -989,7 +1000,7 @@ int neb::callback_group_member(int callback_type, void* data) {
         // Output variable.
         std::shared_ptr<neb::host_group_member> hgm(new neb::host_group_member);
         hgm->group_id = hg->get_id();
-        hgm->group_name = hg->get_group_name();
+        hgm->group_name = misc::string::check_string_utf8(hg->get_group_name());
         hgm->poller_id = config::applier::state::instance().poller_id();
         uint32_t host_id = engine::get_host_id(hst->get_name());
         if (host_id != 0 && hgm->group_id != 0) {
@@ -1027,7 +1038,7 @@ int neb::callback_group_member(int callback_type, void* data) {
         std::shared_ptr<neb::service_group_member> sgm(
             new neb::service_group_member);
         sgm->group_id = sg->get_id();
-        sgm->group_name = sg->get_group_name();
+        sgm->group_name = misc::string::check_string_utf8(sg->get_group_name());
         sgm->poller_id = config::applier::state::instance().poller_id();
         std::pair<uint32_t, uint32_t> p;
         p = engine::get_host_and_service_id(svc->get_hostname(),
@@ -1091,15 +1102,17 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->acknowledged = h->get_problem_has_been_acknowledged();
     my_host->acknowledgement_type = h->get_acknowledgement_type();
     if (!h->get_action_url().empty())
-      my_host->action_url = h->get_action_url();
+      my_host->action_url =
+          misc::string::check_string_utf8(h->get_action_url());
     my_host->active_checks_enabled = h->get_checks_enabled();
     if (!h->get_address().empty())
-      my_host->address = h->get_address();
+      my_host->address = misc::string::check_string_utf8(h->get_address());
     if (!h->get_alias().empty())
-      my_host->alias = h->get_alias();
+      my_host->alias = misc::string::check_string_utf8(h->get_alias());
     my_host->check_freshness = h->get_check_freshness();
     if (!h->get_check_command().empty())
-      my_host->check_command = h->get_check_command();
+      my_host->check_command =
+          misc::string::check_string_utf8(h->get_check_command());
     my_host->check_interval = h->get_check_interval();
     if (!h->get_check_period().empty())
       my_host->check_period = h->get_check_period();
@@ -1114,10 +1127,12 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->default_passive_checks_enabled = h->get_accept_passive_checks();
     my_host->downtime_depth = h->get_scheduled_downtime_depth();
     if (!h->get_display_name().empty())
-      my_host->display_name = h->get_display_name();
+      my_host->display_name =
+          misc::string::check_string_utf8(h->get_display_name());
     my_host->enabled = (host_data->type != NEBTYPE_HOST_DELETE);
     if (!h->get_event_handler().empty())
-      my_host->event_handler = h->get_event_handler();
+      my_host->event_handler =
+          misc::string::check_string_utf8(h->get_event_handler());
     my_host->event_handler_enabled = h->get_event_handler_enabled();
     my_host->execution_time = h->get_execution_time();
     my_host->first_notification_delay = h->get_first_notification_delay();
@@ -1133,11 +1148,13 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->has_been_checked = h->get_has_been_checked();
     my_host->high_flap_threshold = h->get_high_flap_threshold();
     if (!h->get_name().empty())
-      my_host->host_name = h->get_name();
+      my_host->host_name = misc::string::check_string_utf8(h->get_name());
     if (!h->get_icon_image().empty())
-      my_host->icon_image = h->get_icon_image();
+      my_host->icon_image =
+          misc::string::check_string_utf8(h->get_icon_image());
     if (!h->get_icon_image_alt().empty())
-      my_host->icon_image_alt = h->get_icon_image_alt();
+      my_host->icon_image_alt =
+          misc::string::check_string_utf8(h->get_icon_image_alt());
     my_host->is_flapping = h->get_is_flapping();
     my_host->last_check = h->get_last_check();
     my_host->last_hard_state = h->get_last_hard_state();
@@ -1155,9 +1172,9 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->next_notification = h->get_next_notification();
     my_host->no_more_notifications = h->get_no_more_notifications();
     if (!h->get_notes().empty())
-      my_host->notes = h->get_notes();
+      my_host->notes = misc::string::check_string_utf8(h->get_notes());
     if (!h->get_notes_url().empty())
-      my_host->notes_url = h->get_notes_url();
+      my_host->notes_url = misc::string::check_string_utf8(h->get_notes_url());
     my_host->notifications_enabled = h->get_notifications_enabled();
     my_host->notification_interval = h->get_notification_interval();
     if (!h->get_notification_period().empty())
@@ -1171,15 +1188,16 @@ int neb::callback_host(int callback_type, void* data) {
         h->get_notify_on(engine::notifier::unreachable);
     my_host->obsess_over = h->get_obsess_over();
     if (!h->get_plugin_output().empty()) {
-      my_host->output = h->get_plugin_output();
+      my_host->output = misc::string::check_string_utf8(h->get_plugin_output());
       my_host->output.append("\n");
     }
     if (!h->get_long_plugin_output().empty())
-      my_host->output.append(h->get_long_plugin_output());
+      my_host->output.append(
+          misc::string::check_string_utf8(h->get_long_plugin_output()));
     my_host->passive_checks_enabled = h->get_accept_passive_checks();
     my_host->percent_state_change = h->get_percent_state_change();
     if (!h->get_perf_data().empty())
-      my_host->perf_data = h->get_perf_data();
+      my_host->perf_data = misc::string::check_string_utf8(h->get_perf_data());
     my_host->poller_id = config::applier::state::instance().poller_id();
     my_host->retain_nonstatus_information =
         h->get_retain_nonstatus_information();
@@ -1193,7 +1211,8 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->state_type = (h->get_has_been_checked() ? h->get_state_type()
                                                      : engine::notifier::hard);
     if (!h->get_statusmap_image().empty())
-      my_host->statusmap_image = h->get_statusmap_image();
+      my_host->statusmap_image =
+          misc::string::check_string_utf8(h->get_statusmap_image());
     my_host->timezone = h->get_timezone();
 
     // Find host ID.
@@ -1212,7 +1231,7 @@ int neb::callback_host(int callback_type, void* data) {
                it{h->custom_variables.begin()},
            end{h->custom_variables.end()};
            it != end; ++it) {
-        std::string const& name{it->first};
+        std::string const& name{misc::string::check_string_utf8(it->first)};
         if (it->second.is_sent() && name != "HOST_ID") {
           nebstruct_custom_variable_data data;
           memset(&data, 0, sizeof(data));
@@ -1264,7 +1283,8 @@ int neb::callback_host_check(int callback_type, void* data) {
     if (hcdata->command_line) {
       host_check->active_checks_enabled = h->get_checks_enabled();
       host_check->check_type = hcdata->check_type;
-      host_check->command_line = hcdata->command_line;
+      host_check->command_line =
+          misc::string::check_string_utf8(hcdata->command_line);
       if (!hcdata->host_name)
         throw(exceptions::msg() << "unnamed host");
       host_check->host_id = engine::get_host_id(hcdata->host_name);
@@ -1428,8 +1448,8 @@ int neb::callback_log(int callback_type, void* data) {
     le->c_time = log_data->entry_time;
     le->poller_name = config::applier::state::instance().poller_name();
     if (log_data->data) {
-      le->output = log_data->data;
-      set_log_data(*le, log_data->data);
+      le->output = misc::string::check_string_utf8(log_data->data);
+      set_log_data(*le, le->output.c_str());
     }
 
     // Send event.
@@ -1468,9 +1488,9 @@ int neb::callback_module(int callback_type, void* data) {
     module_data = static_cast<nebstruct_module_data*>(data);
     if (module_data->module) {
       me->poller_id = config::applier::state::instance().poller_id();
-      me->filename = module_data->module;
+      me->filename = misc::string::check_string_utf8(module_data->module);
       if (module_data->args)
-        me->args = module_data->args;
+        me->args = misc::string::check_string_utf8(module_data->args);
       me->loaded = !(module_data->type == NEBTYPE_MODULE_DELETE);
       me->should_be_loaded = true;
 
@@ -1640,11 +1660,11 @@ int neb::callback_program_status(int callback_type, void* data) {
     is->event_handler_enabled = program_status_data->event_handlers_enabled;
     is->flap_detection_enabled = program_status_data->flap_detection_enabled;
     if (program_status_data->global_host_event_handler)
-      is->global_host_event_handler =
-          program_status_data->global_host_event_handler;
+      is->global_host_event_handler = misc::string::check_string_utf8(
+          program_status_data->global_host_event_handler);
     if (program_status_data->global_service_event_handler)
-      is->global_service_event_handler =
-          program_status_data->global_service_event_handler;
+      is->global_service_event_handler = misc::string::check_string_utf8(
+          program_status_data->global_service_event_handler);
     is->last_alive = time(nullptr);
     is->last_command_check = program_status_data->last_command_check;
     is->notifications_enabled = program_status_data->notifications_enabled;
@@ -1752,10 +1772,12 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->acknowledged = s->get_problem_has_been_acknowledged();
     my_service->acknowledgement_type = s->get_acknowledgement_type();
     if (!s->get_action_url().empty())
-      my_service->action_url = s->get_action_url();
+      my_service->action_url =
+          misc::string::check_string_utf8(s->get_action_url());
     my_service->active_checks_enabled = s->get_checks_enabled();
     if (!s->get_check_command().empty())
-      my_service->check_command = s->get_check_command();
+      my_service->check_command =
+          misc::string::check_string_utf8(s->get_check_command());
     my_service->check_freshness = s->get_check_freshness();
     my_service->check_interval = s->get_check_interval();
     if (!s->get_check_period().empty())
@@ -1773,10 +1795,12 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->default_passive_checks_enabled = s->get_accept_passive_checks();
     my_service->downtime_depth = s->get_scheduled_downtime_depth();
     if (!s->get_display_name().empty())
-      my_service->display_name = s->get_display_name();
+      my_service->display_name =
+          misc::string::check_string_utf8(s->get_display_name());
     my_service->enabled = (service_data->type != NEBTYPE_SERVICE_DELETE);
     if (!s->get_event_handler().empty())
-      my_service->event_handler = s->get_event_handler();
+      my_service->event_handler =
+          misc::string::check_string_utf8(s->get_event_handler());
     my_service->event_handler_enabled = s->get_event_handler_enabled();
     my_service->execution_time = s->get_execution_time();
     my_service->first_notification_delay = s->get_first_notification_delay();
@@ -1794,11 +1818,14 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->has_been_checked = s->get_has_been_checked();
     my_service->high_flap_threshold = s->get_high_flap_threshold();
     if (!s->get_hostname().empty())
-      my_service->host_name = s->get_hostname();
+      my_service->host_name =
+          misc::string::check_string_utf8(s->get_hostname());
     if (!s->get_icon_image().empty())
-      my_service->icon_image = s->get_icon_image();
+      my_service->icon_image =
+          misc::string::check_string_utf8(s->get_icon_image());
     if (!s->get_icon_image_alt().empty())
-      my_service->icon_image_alt = s->get_icon_image_alt();
+      my_service->icon_image_alt =
+          misc::string::check_string_utf8(s->get_icon_image_alt());
     my_service->is_flapping = s->get_is_flapping();
     my_service->is_volatile = s->get_is_volatile();
     my_service->last_check = s->get_last_check();
@@ -1818,9 +1845,10 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->next_notification = s->get_next_notification();
     my_service->no_more_notifications = s->get_no_more_notifications();
     if (!s->get_notes().empty())
-      my_service->notes = s->get_notes();
+      my_service->notes = misc::string::check_string_utf8(s->get_notes());
     if (!s->get_notes_url().empty())
-      my_service->notes_url = s->get_notes_url();
+      my_service->notes_url =
+          misc::string::check_string_utf8(s->get_notes_url());
     my_service->notifications_enabled = s->get_notifications_enabled();
     my_service->notification_interval = s->get_notification_interval();
     if (!s->get_notification_period().empty())
@@ -1836,21 +1864,25 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->notify_on_warning = s->get_notify_on(engine::notifier::warning);
     my_service->obsess_over = s->get_obsess_over();
     if (!s->get_plugin_output().empty()) {
-      my_service->output = s->get_plugin_output();
+      my_service->output =
+          misc::string::check_string_utf8(s->get_plugin_output());
       my_service->output.append("\n");
     }
     if (!s->get_long_plugin_output().empty())
-      my_service->output.append(s->get_long_plugin_output());
+      my_service->output.append(
+          misc::string::check_string_utf8(s->get_long_plugin_output()));
     my_service->passive_checks_enabled = s->get_accept_passive_checks();
     my_service->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
-      my_service->perf_data = s->get_perf_data();
+      my_service->perf_data =
+          misc::string::check_string_utf8(s->get_perf_data());
     my_service->retain_nonstatus_information =
         s->get_retain_nonstatus_information();
     my_service->retain_status_information = s->get_retain_status_information();
     my_service->retry_interval = s->get_retry_interval();
     if (!s->get_description().empty())
-      my_service->service_description = s->get_description();
+      my_service->service_description =
+          misc::string::check_string_utf8(s->get_description());
     my_service->should_be_scheduled = s->get_should_be_scheduled();
     my_service->stalk_on_critical = s->get_stalk_on(engine::notifier::critical);
     my_service->stalk_on_ok = s->get_stalk_on(engine::notifier::ok);
@@ -1894,9 +1926,9 @@ int neb::callback_service(int callback_type, void* data) {
     } else
       logging::error(logging::medium)
           << "callbacks: service has no host ID or no service ID (yet) (host '"
-          << (!s->get_hostname().empty() ? s->get_hostname() : "(unknown)")
+          << (!s->get_hostname().empty() ? my_service->host_name : "(unknown)")
           << "', service '"
-          << (!s->get_description().empty() ? s->get_description()
+          << (!s->get_description().empty() ? my_service->service_description
                                             : "(unknown)")
           << "')";
   }
@@ -1935,7 +1967,8 @@ int neb::callback_service_check(int callback_type, void* data) {
     if (scdata->command_line) {
       service_check->active_checks_enabled = s->get_checks_enabled();
       service_check->check_type = scdata->check_type;
-      service_check->command_line = scdata->command_line;
+      service_check->command_line =
+          misc::string::check_string_utf8(scdata->command_line);
       if (!scdata->host_id)
         throw exceptions::msg() << "host without id";
       if (!scdata->service_id)
@@ -1989,7 +2022,8 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->acknowledgement_type = s->get_acknowledgement_type();
     service_status->active_checks_enabled = s->get_checks_enabled();
     if (!s->get_check_command().empty())
-      service_status->check_command = s->get_check_command();
+      service_status->check_command =
+          misc::string::check_string_utf8(s->get_check_command());
     service_status->check_interval = s->get_check_interval();
     if (!s->get_check_period().empty())
       service_status->check_period = s->get_check_period();
@@ -2000,7 +2034,8 @@ int neb::callback_service_status(int callback_type, void* data) {
                                    : 4);  // Pending state.
     service_status->downtime_depth = s->get_scheduled_downtime_depth();
     if (!s->get_event_handler().empty())
-      service_status->event_handler = s->get_event_handler();
+      service_status->event_handler =
+          misc::string::check_string_utf8(s->get_event_handler());
     service_status->event_handler_enabled = s->get_event_handler_enabled();
     service_status->execution_time = s->get_execution_time();
     service_status->flap_detection_enabled = s->get_flap_detection_enabled();
@@ -2025,23 +2060,28 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->notifications_enabled = s->get_notifications_enabled();
     service_status->obsess_over = s->get_obsess_over();
     if (!s->get_plugin_output().empty()) {
-      service_status->output = s->get_plugin_output();
+      service_status->output =
+          misc::string::check_string_utf8(s->get_plugin_output());
       service_status->output.append("\n");
     }
     if (!s->get_long_plugin_output().empty())
-      service_status->output.append(s->get_long_plugin_output());
+      service_status->output.append(
+          misc::string::check_string_utf8(s->get_long_plugin_output()));
 
     service_status->passive_checks_enabled = s->get_accept_passive_checks();
     service_status->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
-      service_status->perf_data = s->get_perf_data();
+      service_status->perf_data =
+          misc::string::check_string_utf8(s->get_perf_data());
     service_status->retry_interval = s->get_retry_interval();
     if (s->get_hostname().empty())
       throw exceptions::msg() << "unnamed host";
     if (s->get_description().empty())
       throw exceptions::msg() << "unnamed service";
-    service_status->host_name = s->get_hostname();
-    service_status->service_description = s->get_description();
+    service_status->host_name =
+        misc::string::check_string_utf8(s->get_hostname());
+    service_status->service_description =
+        misc::string::check_string_utf8(s->get_description());
     {
       std::pair<uint64_t, uint64_t> p{engine::get_host_and_service_id(
           s->get_hostname(), s->get_description())};
@@ -2049,8 +2089,8 @@ int neb::callback_service_status(int callback_type, void* data) {
       service_status->service_id = p.second;
       if (!service_status->host_id || !service_status->service_id)
         throw exceptions::msg()
-            << "could not find ID of service ('" << s->get_hostname() << "', '"
-            << s->get_description() << "')";
+            << "could not find ID of service ('" << service_status->host_name
+            << "', '" << service_status->service_description << "')";
     }
     service_status->should_be_scheduled = s->get_should_be_scheduled();
     service_status->state_type =
