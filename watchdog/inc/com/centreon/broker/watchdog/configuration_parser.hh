@@ -22,6 +22,7 @@
 #include <json11.hpp>
 #include <map>
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/watchdog/configuration.hh"
 #include "com/centreon/broker/watchdog/instance_configuration.hh"

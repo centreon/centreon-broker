@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/misc/misc.hh"
+
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <array>
 #include <cerrno>
 #include <chrono>
@@ -28,7 +30,9 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <stdexcept>
 #include <thread>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 

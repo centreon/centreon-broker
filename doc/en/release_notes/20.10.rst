@@ -1,0 +1,11 @@
+=======================
+Centreon Broker 20.10.0
+=======================
+
+************
+Enhancements
+************
+
+Watchdog
+========
+The watchdog is lighter and does no more need all the broker libraries.
