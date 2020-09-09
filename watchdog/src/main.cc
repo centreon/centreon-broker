@@ -64,7 +64,7 @@ static void apply_new_configuration(configuration const& cfg) {
 
   auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
       cfg.get_log_filename(), true);
-  file_sink->set_level(spdlog::level::warn);
+  file_sink->set_level(spdlog::level::trace);
 
   if (config.get_log_filename() != cfg.get_log_filename())
     logger.reset(new spdlog::logger("cbwd", {console_sink, file_sink}));
