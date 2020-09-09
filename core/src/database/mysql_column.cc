@@ -20,7 +20,6 @@
 
 #include <cassert>
 #include <cstring>
-#include <iostream>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
