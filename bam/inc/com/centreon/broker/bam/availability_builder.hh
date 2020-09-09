@@ -23,6 +23,7 @@
 #include <memory>
 #include <set>
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/timestamp.hh"

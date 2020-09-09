@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/bool_operation.hh"
+
 #include <cmath>
 
 using namespace com::centreon::broker::bam;

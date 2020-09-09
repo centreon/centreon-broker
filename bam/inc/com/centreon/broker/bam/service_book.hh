@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -50,9 +51,7 @@ class service_book {
   service_book(service_book const& other);
   ~service_book();
   service_book& operator=(service_book const& other);
-  void listen(uint32_t host_id,
-              uint32_t service_id,
-              service_listener* listnr);
+  void listen(uint32_t host_id, uint32_t service_id, service_listener* listnr);
   void unlisten(uint32_t host_id,
                 uint32_t service_id,
                 service_listener* listnr);
@@ -64,8 +63,7 @@ class service_book {
               io::stream* visitor = NULL);
 
  private:
-  typedef std::multimap<std::pair<uint32_t, uint32_t>,
-                        service_listener*>
+  typedef std::multimap<std::pair<uint32_t, uint32_t>, service_listener*>
       multimap;
 
   multimap _book;

@@ -17,10 +17,12 @@
 */
 
 #include "com/centreon/broker/bam/meta_service.hh"
+
 #include <cmath>
 #include <com/centreon/broker/bam/kpi_meta.hh>
 #include <ctime>
 #include <sstream>
+
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -184,8 +186,7 @@ void meta_service::recompute() {
     if (_metrics.empty())
       _value = NAN;
     else {
-      std::unordered_map<uint32_t, double>::const_iterator it(
-          _metrics.begin()),
+      std::unordered_map<uint32_t, double>::const_iterator it(_metrics.begin()),
           end(_metrics.end());
       _value = it->second;
       while (++it != end)
@@ -198,8 +199,7 @@ void meta_service::recompute() {
     if (_metrics.empty())
       _value = NAN;
     else {
-      std::unordered_map<uint32_t, double>::const_iterator it(
-          _metrics.begin()),
+      std::unordered_map<uint32_t, double>::const_iterator it(_metrics.begin()),
           end(_metrics.end());
       _value = it->second;
       while (++it != end)

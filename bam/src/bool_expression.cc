@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/bool_expression.hh"
+
 #include <ctime>
+
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/logging/logging.hh"

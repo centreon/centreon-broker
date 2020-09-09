@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/exp_tokenizer.hh"
+
 #include <cctype>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;

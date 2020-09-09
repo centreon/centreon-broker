@@ -23,6 +23,7 @@
 #include <memory>
 #include <set>
 #include <string>
+
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/hst_svc_mapping.hh"
 #include "com/centreon/broker/bam/metric_listener.hh"

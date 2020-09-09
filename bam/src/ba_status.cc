@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_status::ba_status()
-    : io::data(ba_status::static_type()), ba_id(0),
+    : io::data(ba_status::static_type()),
+      ba_id(0),
       in_downtime(false),
       level_acknowledgement(0.0),
       level_downtime(0.0),

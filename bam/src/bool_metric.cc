@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/bool_metric.hh"
+
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/metric.hh"
 

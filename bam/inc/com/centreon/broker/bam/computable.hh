@@ -21,6 +21,7 @@
 
 #include <list>
 #include <memory>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/persistent_cache.hh"

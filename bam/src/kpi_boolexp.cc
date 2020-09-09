@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/kpi_boolexp.hh"
+
 #include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
@@ -191,7 +192,7 @@ void kpi_boolexp::_fill_impact(impact_values& impact) {
   impact.set_acknowledgement(0.0);
   impact.set_downtime(0.0);
   impact.set_state(state);
-  return ;
+  return;
 }
 
 /**

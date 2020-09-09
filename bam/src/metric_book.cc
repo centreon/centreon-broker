@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/metric_book.hh"
+
 #include "com/centreon/broker/bam/metric_listener.hh"
 #include "com/centreon/broker/storage/metric.hh"
 

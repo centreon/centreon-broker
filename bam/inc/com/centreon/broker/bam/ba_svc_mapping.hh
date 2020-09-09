@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 #include <utility>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
