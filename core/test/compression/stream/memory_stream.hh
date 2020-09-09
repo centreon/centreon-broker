@@ -63,7 +63,6 @@ class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
 
   void timeout(bool time_it_out = true) {
     _timeout = time_it_out;
-    return;
   }
 
  private:
