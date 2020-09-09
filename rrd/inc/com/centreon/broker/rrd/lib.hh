@@ -20,6 +20,7 @@
 #define CCB_RRD_LIB_HH
 
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/rrd/backend.hh"
 #include "com/centreon/broker/rrd/creator.hh"

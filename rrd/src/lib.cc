@@ -26,7 +26,6 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <sstream>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
@@ -148,9 +147,7 @@ void lib::update(time_t t, std::string const& value) {
     return;
   }
 
-  std::ostringstream oss;
-  oss << t << ':' << value;
-  std::string arg(oss.str());
+  std::string arg(fmt::format("{}:{}", t, value));
 
   // Set argument table.
   char const* argv[2];

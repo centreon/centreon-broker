@@ -93,8 +93,6 @@ add_executable(ut
   ${TESTS_DIR}/multiplexing/publisher/write.cc
   ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
   ${TESTS_DIR}/processing/acceptor.cc
-  ${TESTS_DIR}/processing/temporary_endpoint.cc
-  ${TESTS_DIR}/processing/temporary_stream.cc
   ${TESTS_DIR}/processing/feeder.cc
   ${TESTS_DIR}/processing/thread.cc
   ${TESTS_DIR}/rpc/brokerrpc.cc

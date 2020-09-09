@@ -20,9 +20,11 @@
 #define CCB_RRD_CREATOR_HH
 
 #include <sys/types.h>
+
 #include <ctime>
 #include <map>
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
