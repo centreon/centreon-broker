@@ -55,7 +55,7 @@ void broker_module_init(void const* arg) {
   if (!instances++) {
     // TCP module.
     log_v2::tcp()->info("TCP: module for Centreon Broker {}",
-                                   CENTREON_BROKER_VERSION);
+                        CENTREON_BROKER_VERSION);
     logging::info(logging::high)
         << "TCP: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
