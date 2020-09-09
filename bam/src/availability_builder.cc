@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/availability_builder.hh"
+
 #include <ctime>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 

@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/kpi.hh"
+
 #include <ctime>
+
 #include "com/centreon/broker/bam/ba.hh"
 
 using namespace com::centreon::broker;
@@ -51,7 +53,6 @@ uint32_t kpi::get_ba_id() const {
   return (_ba_id);
 }
 
-
 /**
  *  Get the last state change.
  *
@@ -78,9 +79,8 @@ void kpi::set_id(uint32_t id) {
  */
 void kpi::set_ba_id(uint32_t id) {
   _ba_id = id;
-  return ;
+  return;
 }
-
 
 /**
  *  Set the initial event of the kpi.

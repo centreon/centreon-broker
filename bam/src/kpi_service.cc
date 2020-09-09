@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/kpi_service.hh"
+
 #include <cstring>
+
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -413,7 +415,8 @@ void kpi_service::visit(io::stream* visitor) {
  *  @param[out] impact Impacts of the state.
  *  @param[in]  state  Service state.
  */
-void kpi_service::_fill_impact(impact_values& impact, kpi_service::state state) {
+void kpi_service::_fill_impact(impact_values& impact,
+                               kpi_service::state state) {
   if ((state < 0) ||
       (static_cast<size_t>(state) >= (sizeof(_impacts) / sizeof(*_impacts))))
     throw(exceptions::msg()
@@ -423,7 +426,7 @@ void kpi_service::_fill_impact(impact_values& impact, kpi_service::state state) 
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);
   impact.set_downtime(_downtimed ? nominal : 0.0);
   impact.set_state(state);
-  return ;
+  return;
 }
 /**
  *  Open a new event for this KPI.

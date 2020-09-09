@@ -20,6 +20,7 @@
 #define CCB_BAM_BOOL_OPERATION_HH
 
 #include <string>
+
 #include "com/centreon/broker/bam/bool_binary_operator.hh"
 #include "com/centreon/broker/namespace.hh"
 

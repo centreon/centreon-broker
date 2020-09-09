@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/connector.hh"
+
 #include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
 

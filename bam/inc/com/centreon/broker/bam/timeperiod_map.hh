@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
 
@@ -44,9 +45,7 @@ class timeperiod_map {
   time::timeperiod::ptr get_timeperiod(uint32_t id) const;
   void add_timeperiod(uint32_t id, time::timeperiod::ptr ptr);
   void clear();
-  void add_relation(uint32_t ba_id,
-                    uint32_t timeperiod_id,
-                    bool is_default);
+  void add_relation(uint32_t ba_id, uint32_t timeperiod_id, bool is_default);
   std::vector<std::pair<time::timeperiod::ptr, bool> > get_timeperiods_by_ba_id(
       uint32_t ba_id) const;
 

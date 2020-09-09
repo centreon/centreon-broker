@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/kpi_ba.hh"
+
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -153,8 +154,10 @@ void kpi_ba::visit(io::stream* visitor) {
     {
       // BA event state.
       ba_event* bae(_ba->get_ba_event());
-      kpi_ba::state ba_state(bae ? static_cast<kpi_ba::state>(bae->status) : kpi_ba::state::state_ok);
-      timestamp last_ba_update(bae ? bae->start_time : timestamp(time(nullptr)));
+      kpi_ba::state ba_state(bae ? static_cast<kpi_ba::state>(bae->status)
+                                 : kpi_ba::state::state_ok);
+      timestamp last_ba_update(bae ? bae->start_time
+                                   : timestamp(time(nullptr)));
 
       // If no event was cached, create one.
       if (!_event) {
@@ -231,7 +234,7 @@ void kpi_ba::_fill_impact(impact_values& impact,
     downtime = 100.0;
   impact.set_downtime(downtime * nominal / 100.0);
   impact.set_state(state);
-  return ;
+  return;
 }
 
 /**

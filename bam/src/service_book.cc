@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/service_book.hh"
+
 #include "com/centreon/broker/bam/service_listener.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
