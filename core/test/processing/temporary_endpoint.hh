@@ -21,6 +21,7 @@
 #define CCB_TEMPORARY_ENDPOINT_HH
 
 #include "com/centreon/broker/io/endpoint.hh"
+#include "temporary_stream.hh"
 
 CCB_BEGIN()
 
@@ -31,17 +32,44 @@ CCB_BEGIN()
  *  Endpoint that can be set to generate errors or not.
  */
 class temporary_endpoint : public io::endpoint {
- public:
-  temporary_endpoint(std::string const& id = "");
-  temporary_endpoint(temporary_endpoint const& se);
-  ~temporary_endpoint();
-  temporary_endpoint& operator=(temporary_endpoint const& se);
-  io::endpoint* clone() const;
-  void close();
-  std::shared_ptr<io::stream> open();
-
- private:
   std::string _id;
+
+ public:
+  /**
+   *  Constructor.
+   *
+   *  @param[in] id The temporary id.
+   */
+  temporary_endpoint(std::string const& id = "")
+      : io::endpoint(false), _id(id) {}
+  /**
+   *  Copy constructor.
+   *
+   *  @param[in] se Object to copy.
+   */
+  temporary_endpoint(const temporary_endpoint& se)
+      : io::endpoint(se), _id(se._id) {}
+  /**
+   *  Destructor.
+   */
+  ~temporary_endpoint() noexcept { this->close(); }
+  temporary_endpoint& operator=(temporary_endpoint const&) = delete;
+  /**
+   *  Clone endpoint.
+   */
+  io::endpoint* clone() const { return new temporary_endpoint(*this); }
+  /**
+   *  Close endpoint.
+   */
+  void close() {}
+  /**
+   *  Open endpoint.
+   *
+   *  @return New temporary_stream.
+   */
+  std::shared_ptr<io::stream> open() {
+    return std::make_shared<temporary_stream>();
+  }
 };
 
 CCB_END()
