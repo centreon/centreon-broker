@@ -37,19 +37,17 @@ class luabinding;
  *  Stream events into lua database.
  */
 class stream : public io::stream {
+  // Access to the Lua interpreter
+  luabinding* _luabinding;
+
  public:
   stream(std::string const& lua_script,
          std::map<std::string, misc::variant> const& conf_params);
   ~stream();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  stream& operator=(stream const& other) = delete;
+  stream(stream const& other) = delete;
   int write(std::shared_ptr<io::data> const& d);
-
- private:
-  stream& operator=(stream const& other);
-  stream(stream const& other);
-
-  // Access to the Lua interpreter
-  luabinding* _luabinding;
 };
 }  // namespace simu
 

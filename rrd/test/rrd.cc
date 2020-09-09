@@ -19,9 +19,11 @@
 
 #include <gtest/gtest.h>
 #include <unistd.h>
+
 #include <cstdlib>
 #include <ctime>
 #include <memory>
+
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 

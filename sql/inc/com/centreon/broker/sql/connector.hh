@@ -33,6 +33,13 @@ namespace sql {
  *  Send events to a SQL database.
  */
 class connector : public io::endpoint {
+  uint32_t _cleanup_check_interval;
+  database_config _dbcfg;
+  uint32_t _loop_timeout;
+  uint32_t _instance_timeout;
+  bool _with_state_events;
+  bool _enable_cmd_cache;
+
  public:
   connector();
   connector(connector const& other) = delete;
@@ -44,15 +51,7 @@ class connector : public io::endpoint {
                   uint32_t instance_timeout = 15,
                   bool with_state_events = false,
                   bool enable_command_cache = false);
-  std::shared_ptr<io::stream> open();
-
- private:
-  uint32_t _cleanup_check_interval;
-  database_config _dbcfg;
-  uint32_t _loop_timeout;
-  uint32_t _instance_timeout;
-  bool _with_state_events;
-  bool _enable_cmd_cache;
+  std::shared_ptr<io::stream> open() override;
 };
 }  // namespace sql
 

@@ -39,7 +39,7 @@ class subscriber;
 }
 namespace processing {
 class failover;
-class bthread;
+class endpoint;
 }  // namespace processing
 
 namespace config {
@@ -55,7 +55,7 @@ namespace applier {
  */
 class endpoint {
  public:
-  typedef std::map<config::endpoint, processing::bthread*>::iterator iterator;
+  typedef std::map<config::endpoint, processing::endpoint*>::iterator iterator;
 
   ~endpoint();
   void apply(std::list<config::endpoint> const& endpoints);
@@ -80,13 +80,13 @@ class endpoint {
                                                  bool& is_acceptor);
   multiplexing::subscriber* _create_subscriber(config::endpoint& cfg);
   void _diff_endpoints(
-      std::map<config::endpoint, processing::bthread*> const& current,
+      std::map<config::endpoint, processing::endpoint*> const& current,
       std::list<config::endpoint> const& new_endpoints,
       std::list<config::endpoint>& to_create);
   std::unordered_set<uint32_t> _filters(
       std::set<std::string> const& str_filters);
 
-  std::map<config::endpoint, processing::bthread*> _endpoints;
+  std::map<config::endpoint, processing::endpoint*> _endpoints;
   std::timed_mutex _endpointsm;
 };
 }  // namespace applier

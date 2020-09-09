@@ -25,7 +25,7 @@ using namespace com::centreon::broker;
 
 TEST(graphiteFactory, HasEndpoint) {
   graphite::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
 
   cfg.type = "tcp";
   ASSERT_FALSE(fact.has_endpoint(cfg));
@@ -37,7 +37,7 @@ TEST(graphiteFactory, HasEndpoint) {
 
 TEST(graphiteFactory, MissingParams) {
   graphite::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   std::shared_ptr<persistent_cache> cache;
   bool is_acceptor;
 

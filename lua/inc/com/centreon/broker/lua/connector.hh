@@ -38,11 +38,11 @@ class connector : public io::endpoint {
   connector();
   connector(connector const& other);
   ~connector();
-  connector& operator=(connector const& other);
+  connector& operator=(connector const&) = delete;
   void connect_to(std::string const& lua_script,
                   std::map<std::string, misc::variant> const& cfg_params,
                   std::shared_ptr<persistent_cache> const& cache);
-  std::shared_ptr<io::stream> open();
+  std::shared_ptr<io::stream> open() override;
 
  private:
   std::string _lua_script;

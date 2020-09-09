@@ -51,7 +51,7 @@ class connector : public io::endpoint {
                   std::string const& metric_ts,
                   std::vector<column> const& metric_cols,
                   std::shared_ptr<persistent_cache> const& cache);
-  std::shared_ptr<io::stream> open();
+  std::shared_ptr<io::stream> open() override;
 
  private:
   std::string _user;

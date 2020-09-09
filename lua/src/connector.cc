@@ -47,23 +47,6 @@ connector::connector(connector const& other)
 connector::~connector() {}
 
 /**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _lua_script = other._lua_script;
-    _conf_params = other._conf_params;
-    _cache = other._cache;
-  }
-  return (*this);
-}
-
-/**
  *  Set connection parameters.
  *
  *  @param[in] lua_script              The Lua script to load

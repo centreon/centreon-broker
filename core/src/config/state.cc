@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/config/state.hh"
+
 #include "com/centreon/broker/logging/file.hh"
 
 using namespace com::centreon::broker::config;
@@ -188,8 +189,8 @@ std::string const& state::command_protocol() const throw() {
  *
  *  @return Endpoint list.
  */
-std::list<endpoint>& state::endpoints() throw() {
-  return (_endpoints);
+std::list<endpoint>& state::endpoints() noexcept {
+  return _endpoints;
 }
 
 /**

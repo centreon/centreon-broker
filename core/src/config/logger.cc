@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/config/logger.hh"
+
 #include <syslog.h>
+
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::config;

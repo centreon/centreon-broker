@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
+#include <cassert>
 #include <algorithm>
 #include <cstdlib>
+
 #include <list>
 #include <memory>
 #include <vector>
@@ -35,7 +37,7 @@
 #include "com/centreon/broker/persistent_cache.hh"
 #include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/failover.hh"
-#include "com/centreon/broker/processing/thread.hh"
+#include "com/centreon/broker/processing/endpoint.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -150,7 +152,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       std::shared_ptr<multiplexing::subscriber> s(_create_subscriber(*it));
       bool is_acceptor;
       std::shared_ptr<io::endpoint> e(_create_endpoint(*it, is_acceptor));
-      std::unique_ptr<processing::bthread> endp;
+      std::unique_ptr<processing::endpoint> endp;
       if (is_acceptor) {
         std::unique_ptr<processing::acceptor> acceptr(
             new processing::acceptor(e, it->name));
@@ -328,13 +330,13 @@ processing::failover* endpoint::_create_failover(
              failover_it(++cfg.failovers.begin()),
          failover_end(cfg.failovers.end());
          failover_it != failover_end; ++failover_it) {
-      std::list<config::endpoint>::iterator it(
-          std::find_if(l.begin(), l.end(), failover_match_name(*failover_it)));
+      auto it =
+          std::find_if(l.begin(), l.end(), failover_match_name(*failover_it));
       if (it == l.end())
-        throw(exceptions::msg()
+        throw exceptions::msg()
               << "endpoint applier: could not find "
                  "secondary failover '"
-              << *failover_it << "' for endpoint '" << cfg.name << "'");
+              << *failover_it << "' for endpoint '" << cfg.name << "'";
       bool is_acceptor(false);
       std::shared_ptr<io::endpoint> endp(_create_endpoint(*it, is_acceptor));
       if (is_acceptor) {
@@ -431,12 +433,12 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
  *  @param[out] to_create     Endpoints that should be created.
  */
 void endpoint::_diff_endpoints(
-    std::map<config::endpoint, processing::bthread*> const& current,
+    std::map<config::endpoint, processing::endpoint*> const& current,
     std::list<config::endpoint> const& new_endpoints,
     std::list<config::endpoint>& to_create) {
   // Copy some lists that we will modify.
   std::list<config::endpoint> new_ep(new_endpoints);
-  std::map<config::endpoint, processing::bthread*> to_delete(current);
+  std::map<config::endpoint, processing::endpoint*> to_delete(current);
 
   // Loop through new configuration.
   while (!new_ep.empty()) {
@@ -476,7 +478,7 @@ void endpoint::_diff_endpoints(
     }
 
     // Try to find entry and subentries in the endpoints already running.
-    std::map<config::endpoint, processing::bthread*>::iterator map_it(
+    std::map<config::endpoint, processing::endpoint*>::iterator map_it(
         to_delete.find(entries.front()));
     if (map_it == to_delete.end())
       for (std::list<config::endpoint>::iterator it(entries.begin()),
