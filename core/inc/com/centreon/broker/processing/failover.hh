@@ -29,7 +29,7 @@
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/processing/acceptor.hh"
-#include "com/centreon/broker/processing/thread.hh"
+#include "com/centreon/broker/processing/endpoint.hh"
 
 CCB_BEGIN()
 
@@ -50,8 +50,19 @@ namespace processing {
  *
  *  Multiple failover can be forwarded.
  */
-class failover : public bthread {
+class failover : public endpoint {
   friend class stats::builder;
+  std::atomic_bool _should_exit;
+
+  std::thread _thread;
+  bool _started;
+  mutable std::mutex _started_m;
+  std::condition_variable _started_cv;
+  bool _stopped;
+  mutable std::mutex _stopped_m;
+  std::condition_variable _stopped_cv;
+
+  void _callback();
 
  public:
   failover(std::shared_ptr<io::endpoint> endp,
@@ -61,11 +72,13 @@ class failover : public bthread {
   failover& operator=(failover const& other) = delete;
   ~failover();
   void add_secondary_endpoint(std::shared_ptr<io::endpoint> endp);
-  void exit() override;
   time_t get_buffering_timeout() const throw();
   bool get_initialized() const throw();
   time_t get_retry_interval() const throw();
-  void run() override;
+  void run();
+  void start() override;
+  void exit() override;
+  bool should_exit() const;
   void set_buffering_timeout(time_t secs);
   void set_failover(std::shared_ptr<processing::failover> fo);
   void set_retry_interval(time_t retry_interval);
@@ -76,6 +89,7 @@ class failover : public bthread {
   // From stat_visitable
   std::string const& _get_read_filters() const override;
   std::string const& _get_write_filters() const override;
+  uint32_t _get_queued_events() const override;
   virtual void _forward_statistic(json11::Json::object& tree) override;
 
  private:

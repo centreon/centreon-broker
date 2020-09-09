@@ -47,7 +47,7 @@ void stat_visitable::stats(json11::Json::object& tree) {
   tree["last_connection_attempt"] = static_cast<double>(_last_connection_attempt);
   tree["last_connection_success"] = static_cast<double>(_last_connection_success);
   tree["last_event_at"] = static_cast<double>(_event_processing_speed.get_last_event_time());
-  tree["queued_events"] = static_cast<int>(_queued_events);
+  tree["queued_events"] = static_cast<int>(_get_queued_events());
 
   // Forward the stats.
   _forward_statistic(tree);

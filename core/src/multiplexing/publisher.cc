@@ -39,7 +39,7 @@ publisher::publisher() {}
 /**
  *  Destructor.
  */
-publisher::~publisher() throw() {}
+publisher::~publisher() noexcept {}
 
 /**
  *  @brief Read data.
