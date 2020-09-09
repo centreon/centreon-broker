@@ -39,7 +39,7 @@ class connector : public io::endpoint {
             std::string const& ca = std::string());
   connector(connector const& right);
   ~connector();
-  connector& operator=(connector const& right);
+  connector& operator=(connector const& right) = delete;
   std::shared_ptr<io::stream> open();
   std::shared_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 

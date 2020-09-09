@@ -42,7 +42,7 @@ class connector : public io::endpoint {
  public:
   connector();
   connector(connector const& other) = delete;
-  ~connector() = default;
+  ~connector() noexcept {}
   connector& operator=(connector const& other) = delete;
   bool operator==(connector const& other) = delete;
   void connect_to(database_config const& dbcfg,

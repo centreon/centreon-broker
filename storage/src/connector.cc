@@ -57,15 +57,12 @@ void connector::connect_to(database_config const& dbcfg,
 }
 
 /**
- *  Connect to a DB.
+ * @brief Open a connection object to the database.
  *
- *  @param[in] cache  Persistent cache is not used by the storage
- *                    module.
- *
- *  @return Storage connection object.
+ * @return Storage connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return std::shared_ptr<io::stream>(
+  return
       std::make_shared<stream>(_dbcfg, _rrd_len, _interval_length,
-                               _rebuild_check_interval, _store_in_data_bin));
+                               _rebuild_check_interval, _store_in_data_bin);
 }

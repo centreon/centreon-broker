@@ -41,8 +41,8 @@ class connector : public io::endpoint {
                 std::shared_ptr<persistent_cache>());
   connector(connector const& other);
   ~connector();
-  connector& operator=(connector const& other);
-  std::shared_ptr<io::stream> open();
+  connector& operator=(connector const& other) = delete;
+  std::shared_ptr<io::stream> open() override;
 
  private:
   std::shared_ptr<persistent_cache> _cache;

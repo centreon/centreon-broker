@@ -144,8 +144,8 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(exceptions::shutdown() << "cannot read from Graphite database");
-  return (true);
+  throw exceptions::shutdown() << "cannot read from Graphite database";
+  return true;
 }
 
 /**
