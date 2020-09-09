@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,17 +20,15 @@
 
 using namespace com::centreon::broker::config;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
- *  Default constructor.
+ * @brief endpoint constructor. It stores the direction of data, way may be
+ * input or output, this corresponds to the broker configuration files.
+ *
+ * @param way io_type::input or io_type::output.
  */
-endpoint::endpoint()
-    : buffering_timeout(0),
+endpoint::endpoint(endpoint::io_type way)
+    : _type(way),
+      buffering_timeout(0),
       read_timeout((time_t)-1),
       retry_interval(30),
       cache_enabled(false) {}
@@ -40,14 +38,9 @@ endpoint::endpoint()
  *
  *  @param[in] other  Object to copy.
  */
-endpoint::endpoint(endpoint const& other) {
+endpoint::endpoint(endpoint const& other) : _type(other._type) {
   _internal_copy(other);
 }
-
-/**
- *  Destructor.
- */
-endpoint::~endpoint() {}
 
 /**
  *  Assignment operator.
@@ -59,7 +52,7 @@ endpoint::~endpoint() {}
 endpoint& endpoint::operator=(endpoint const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -70,13 +63,12 @@ endpoint& endpoint::operator=(endpoint const& other) {
  *  @return True if both objects are equal, false otherwise.
  */
 bool endpoint::operator==(endpoint const& other) const {
-  return (
-      (type == other.type) && (buffering_timeout == other.buffering_timeout) &&
-      (read_timeout == other.read_timeout) &&
-      (retry_interval == other.retry_interval) && (name == other.name) &&
-      (failovers == other.failovers) && (read_filters == other.read_filters) &&
-      (write_filters == other.write_filters) && (params == other.params) &&
-      (cache_enabled == other.cache_enabled) && (cfg == other.cfg));
+  return type == other.type && buffering_timeout == other.buffering_timeout &&
+         read_timeout == other.read_timeout &&
+         retry_interval == other.retry_interval && name == other.name &&
+         failovers == other.failovers && read_filters == other.read_filters &&
+         write_filters == other.write_filters && params == other.params &&
+         cache_enabled == other.cache_enabled && cfg == other.cfg;
 }
 
 /**
@@ -87,7 +79,7 @@ bool endpoint::operator==(endpoint const& other) const {
  *  @return True if both objects are not equal, false otherwise.
  */
 bool endpoint::operator!=(endpoint const& other) const {
-  return (!operator==(other));
+  return !operator==(other);
 }
 
 /**
@@ -100,25 +92,25 @@ bool endpoint::operator!=(endpoint const& other) const {
 bool endpoint::operator<(endpoint const& other) const {
   // Check properties that can directly be checked.
   if (type != other.type)
-    return (type < other.type);
+    return type < other.type;
   else if (buffering_timeout != other.buffering_timeout)
-    return (buffering_timeout < other.buffering_timeout);
+    return buffering_timeout < other.buffering_timeout;
   else if (read_timeout != other.read_timeout)
-    return (read_timeout < other.read_timeout);
+    return read_timeout < other.read_timeout;
   else if (retry_interval != other.retry_interval)
-    return (retry_interval < other.retry_interval);
+    return retry_interval < other.retry_interval;
   else if (name != other.name)
-    return (name < other.name);
+    return name < other.name;
   else if (failovers != other.failovers)
-    return (failovers < other.failovers);
+    return failovers < other.failovers;
   else if (read_filters != other.read_filters)
-    return (read_filters < other.read_filters);
+    return read_filters < other.read_filters;
   else if (write_filters != other.write_filters)
-    return (write_filters < other.write_filters);
+    return write_filters < other.write_filters;
   else if (cache_enabled != other.cache_enabled)
-    return (cache_enabled < other.cache_enabled);
+    return cache_enabled < other.cache_enabled;
   else if (cfg != other.cfg)
-    return (cfg < other.cfg);
+    return cfg < other.cfg;
 
   // Need to check all parameters one by one.
   std::map<std::string, std::string>::const_iterator it1{params.begin()},
@@ -133,12 +125,6 @@ bool endpoint::operator<(endpoint const& other) const {
   }
   return it1 == end1 && it2 != end2;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  @brief Copy data members.
@@ -161,5 +147,4 @@ void endpoint::_internal_copy(endpoint const& other) {
   write_filters = other.write_filters;
   cache_enabled = other.cache_enabled;
   cfg = other.cfg;
-  return;
 }
