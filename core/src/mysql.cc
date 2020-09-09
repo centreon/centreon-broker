@@ -33,7 +33,6 @@ std::once_flag init_flag;
 mysql::mysql(database_config const& db_cfg)
     : _db_cfg(db_cfg),
       _pending_queries(0),
-      _version(mysql::v2),
       _current_connection(0) {
   mysql_manager& mgr(mysql_manager::instance());
   _connection = mgr.get_connections(db_cfg);
@@ -48,9 +47,10 @@ mysql::~mysql() {
   log_v2::sql()->debug("mysql: destruction");
   try {
     commit();
-  }
-  catch (const std::exception& e) {
-    log_v2::sql()->warn("Unable to commit on the database server. Probably not connected: {}", e.what());
+  } catch (const std::exception& e) {
+    log_v2::sql()->warn(
+        "Unable to commit on the database server. Probably not connected: {}",
+        e.what());
   }
   _connection.clear();
   mysql_manager::instance().update_connections();
@@ -86,8 +86,7 @@ void mysql::commit(int thread_id) {
     if (future.get())
       _pending_queries = 0;
   } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "mysql: Unable to commit transactions: " << e.what();
+    throw;
   }
 }
 
@@ -299,15 +298,6 @@ mysql_stmt mysql::prepare_query(std::string const& query,
   prepare_statement(retval);
 
   return retval;
-}
-
-/**
- *  Returns the version of the database schema.
- *
- *  @return  A version as mysql::version.
- */
-mysql::version mysql::schema_version() const {
-  return _version;
 }
 
 /**
