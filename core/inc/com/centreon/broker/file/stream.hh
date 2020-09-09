@@ -38,6 +38,8 @@ class stream : public io::stream {
  public:
   stream(splitter* file);
   ~stream();
+  stream(stream const&) = delete;
+  stream& operator=(stream const&) = delete;
   std::string peer() const;
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void remove_all_files();
@@ -45,8 +47,6 @@ class stream : public io::stream {
   int write(std::shared_ptr<io::data> const& d);
 
  private:
-  stream(stream const& other);
-  stream& operator=(stream const& other);
 
   std::unique_ptr<splitter> _file;
   mutable std::mutex _mutex;

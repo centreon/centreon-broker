@@ -81,9 +81,9 @@ std::string misc::exec(std::string const& cmd) {
   std::string result;
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"),
                                                 pclose);
-  if (!pipe) {
+  if (!pipe)
     throw std::runtime_error("popen() failed!");
-  }
+
   while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
     result += buffer.data();
   }

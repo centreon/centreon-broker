@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2020 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,16 @@
  */
 
 #include "com/centreon/broker/rrd/cached.hh"
+
 #include <gtest/gtest.h>
+
 #include <asio.hpp>
-#include <atomic>
 #include <fstream>
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
-TEST(RRDCached, LibExisting) {
-  rrd::cached cached{"/tmp", 42, rrd::cached::local};
-
+TEST(RRDCached2, LibExisting) {
+  rrd::cached<asio::local::stream_protocol::socket> cached{"/tmp", 42};
   std::remove("/tmp/test_rrd");
   ASSERT_THROW(cached.open("/tmp/test_rrd"), exceptions::msg);
   std::ofstream ofs("/tmp/test_rrd");
@@ -39,20 +38,20 @@ TEST(RRDCached, LibExisting) {
   cached.remove("/tmp/test_rrd");
 }
 
-TEST(RRDCached, LibNew) {
-  rrd::cached cached{"/tmp", 42, rrd::cached::tcp};
+TEST(RRDCached2, LibNew) {
+  rrd::cached<asio::ip::tcp::socket> cached{"/tmp", 42};
 
   std::remove("/tmp/test_rrd");
   cached.open("/tmp/test_rrd", 3600, time(nullptr), 1, 60);
   cached.remove("/tmp/test_rrd");
 }
 
-TEST(RRDCached, BatchLocal) {
+TEST(RRDCached2, BatchLocal) {
   std::atomic_bool init_done{false};
   std::atomic_bool batch_done{false};
   testing::internal::CaptureStdout();
   ::unlink("/tmp/foobar");  // Remove previous binding.
-  rrd::cached cached{"tmp", 42, rrd::cached::local};
+  rrd::cached<asio::local::stream_protocol::socket> cached{"tmp", 42};
 
   ASSERT_THROW(cached.begin(), exceptions::msg);
 
@@ -105,12 +104,12 @@ TEST(RRDCached, BatchLocal) {
   ASSERT_EQ(testing::internal::GetCapturedStdout(), "connected\n");
 }
 
-TEST(RRDCached, BatchRemote) {
+TEST(RRDCached2, BatchRemote) {
   std::atomic_bool init_done{false};
   std::atomic_bool batch_done{false};
   testing::internal::CaptureStdout();
   ::unlink("/tmp/foobar");  // Remove previous binding.
-  rrd::cached cached{"tmp", 42, rrd::cached::tcp};
+  rrd::cached<asio::ip::tcp::socket> cached{"tmp", 42};
 
   ASSERT_THROW(cached.begin(), exceptions::msg);
 
@@ -144,7 +143,8 @@ TEST(RRDCached, BatchRemote) {
   while (!init_done)
     ;
 
-  ASSERT_THROW(cached.connect_remote("badurl.centreon.org", 4242), exceptions::msg);
+  ASSERT_THROW(cached.connect_remote("badurl.centreon.org", 4242),
+               exceptions::msg);
   ASSERT_THROW(cached.connect_remote("localhost", 2), exceptions::msg);
   ASSERT_NO_THROW(cached.connect_remote("localhost", 4242));
   cached.begin();

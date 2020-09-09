@@ -18,16 +18,19 @@
  */
 
 #include "com/centreon/broker/rrd/factory.hh"
+
 #include <gtest/gtest.h>
+
 #include <com/centreon/broker/rrd/connector.hh>
 #include <com/centreon/broker/rrd/output.hh>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
 TEST(RRDFactory, HasEndpoint) {
   rrd::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
 
   cfg.type = "ip";
   ASSERT_FALSE(fact.has_endpoint(cfg));
@@ -37,7 +40,7 @@ TEST(RRDFactory, HasEndpoint) {
 
 TEST(RRDFactory, Exception) {
   rrd::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 
@@ -47,7 +50,7 @@ TEST(RRDFactory, Exception) {
 TEST(RRDFactory, Simple) {
   rrd::factory fact2;
   rrd::factory* fact = &fact2;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 
@@ -75,7 +78,7 @@ TEST(RRDFactory, Simple) {
 
 TEST(RRDFactory, Output) {
   rrd::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 
@@ -88,11 +91,10 @@ TEST(RRDFactory, Output) {
   cfg.params["write_status"] = "false";
   cfg.params["ignore_update_errors"] = "false";
   cfg.params["path"] = "";
-  rrd::connector* con
-    {static_cast<rrd::connector*>(fact.new_endpoint(cfg, is_acceptor, cache))};
+  rrd::connector* con{
+      static_cast<rrd::connector*>(fact.new_endpoint(cfg, is_acceptor, cache))};
 
-  std::shared_ptr<rrd::output>
-    out{std::static_pointer_cast<rrd::output>(con->open())};
+  auto out = con->open();
 
   delete con;
 }

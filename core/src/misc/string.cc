@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
-#include <iostream>
 
 using namespace com::centreon::broker::misc;
 

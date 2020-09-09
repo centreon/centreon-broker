@@ -37,7 +37,7 @@ class opener : public io::endpoint {
   opener();
   opener(opener const& other);
   ~opener();
-  opener& operator=(opener const& other);
+  opener& operator=(opener const&) = delete;
   std::shared_ptr<io::stream> open();
   void set_auto_delete(bool auto_delete);
   void set_filename(std::string const& filename);
