@@ -247,9 +247,9 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       _ba_update.bind_value_as_bool(4, status->in_downtime);
       _ba_update.bind_value_as_i32(5, status->state);
 
-      std::ostringstream oss_err;
-      oss_err << "BAM: could not update BA " << status->ba_id << ": ";
-      _mysql.run_statement(_ba_update, oss_err.str(), true);
+      std::string err_msg(
+          fmt::format("BAM: could not update BA {}: ", status->ba_id));
+      _mysql.run_statement(_ba_update, err_msg, true);
 
       if (status->state_changed) {
         std::pair<std::string, std::string> ba_svc_name(
@@ -260,11 +260,11 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
               << status->ba_id
               << ": host name and service description were not found";
         } else {
-          std::ostringstream oss;
-          time_t now(time(nullptr));
-          oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
-              << ba_svc_name.first << ";" << ba_svc_name.second << ";" << now;
-          _write_external_command(oss.str());
+          time_t now = time(nullptr);
+          std::string cmd(fmt::format("[{}] SCHEDULE_FORCED_SVC_CHECK;{};{};{}",
+                                      now, ba_svc_name.first,
+                                      ba_svc_name.second, now));
+          _write_external_command(cmd);
         }
       }
     } break;
@@ -292,29 +292,31 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       _kpi_update.bind_value_as_bool(8, status->in_downtime);
       _kpi_update.bind_value_as_u32(9, status->kpi_id);
 
-      std::ostringstream oss_err;
-      oss_err << "BAM: could not update KPI " << status->kpi_id << ": ";
-      _mysql.run_statement(_kpi_update, oss_err.str(), true);
+      std::string err_msg(
+          fmt::format("BAM: could not update KPI {}: ", status->kpi_id));
+      _mysql.run_statement(_kpi_update, err_msg, true);
     } break;
     case inherited_downtime::static_type(): {
-      std::ostringstream oss;
+      std::string cmd;
       timestamp now = timestamp::now();
       inherited_downtime const& dwn =
           *std::static_pointer_cast<inherited_downtime const>(data);
       if (dwn.in_downtime)
-        oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
-            << config::applier::state::instance().poller_id() << ";ba_"
-            << dwn.ba_id << ";" << now << ";"
-            << std::numeric_limits<int32_t>::max()
-            << ";1;0;0;Centreon Broker BAM Module;"
-               "Automatic downtime triggered by BA downtime inheritance";
+        cmd = fmt::format(
+            "[{}] "
+            "SCHEDULE_SVC_DOWNTIME;_Module_BAM_{};ba_{};{};{};1;0;0;Centreon "
+            "Broker BAM Module;Automatic downtime triggered by BA downtime "
+            "inheritance",
+            now, config::applier::state::instance().poller_id(), dwn.ba_id, now,
+            std::numeric_limits<int32_t>::max());
       else
-        oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_"
-            << config::applier::state::instance().poller_id() << ";ba_"
-            << dwn.ba_id << ";;" << std::numeric_limits<int32_t>::max()
-            << ";1;0;;Centreon Broker BAM Module;"
-               "Automatic downtime triggered by BA downtime inheritance";
-      _write_external_command(oss.str());
+        cmd = fmt::format(
+            "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;{};1;0;;Centreon "
+            "Broker BAM Module;Automatic downtime triggered by BA downtime "
+            "inheritance",
+            now, config::applier::state::instance().poller_id(), dwn.ba_id, now,
+            std::numeric_limits<int32_t>::max());
+      _write_external_command(cmd);
     } break;
     default:
       break;
@@ -394,10 +396,8 @@ void monitoring_stream::_rebuild() {
 
   // Set all the BAs to should not be rebuild.
   {
-    std::ostringstream query;
-    query << "UPDATE mod_bam SET must_be_rebuild='0'";
-    _mysql.run_query(query.str(),
-                     "BAM: could not update the list of BAs to rebuild");
+    std::string query("UPDATE mod_bam SET must_be_rebuild='0'");
+    _mysql.run_query(query, "BAM: could not update the list of BAs to rebuild");
   }
 }
 
