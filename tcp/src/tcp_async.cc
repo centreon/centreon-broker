@@ -139,7 +139,7 @@ void tcp_async::start_acceptor(
     return;
 
   tcp_connection::pointer new_connection =
-      std::make_shared<tcp_connection>(_io_context, true);
+      std::make_shared<tcp_connection>(_io_context);
 
   acceptor->async_accept(new_connection->socket(),
                          std::bind(&tcp_async::handle_accept, this, acceptor,
@@ -200,8 +200,7 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
 tcp_connection::pointer tcp_async::create_connection(std::string const& host,
                                                      uint16_t port) {
   log_v2::tcp()->trace("create connection to host {}:{}", host, port);
-  tcp_connection::pointer conn =
-      std::make_shared<tcp_connection>(_io_context, false);
+  tcp_connection::pointer conn = std::make_shared<tcp_connection>(_io_context);
   asio::ip::tcp::socket& sock = conn->socket();
 
   asio::ip::tcp::resolver resolver(_io_context);

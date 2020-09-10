@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <cstring>
 
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -39,7 +40,8 @@ namespace io {
 class raw : public data {
  public:
   raw();
-  raw(raw const& r);
+  raw(raw const& r) = delete;
+  raw(std::vector<char>&& b);
   ~raw();
   raw& operator=(raw const& r);
   constexpr static uint32_t static_type() {
@@ -51,7 +53,12 @@ class raw : public data {
   size_t size() const;
   std::vector<char>& get_buffer();
   bool empty() const;
-  void append(std::string const& msg);
+
+  template <typename T>
+  void append(T const& msg) {
+    _buffer.insert(_buffer.end(), msg.begin(), msg.end());
+  }
+  void append(const char* msg);
 
  public:
   std::vector<char> _buffer;

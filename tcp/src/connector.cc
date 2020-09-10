@@ -33,17 +33,20 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
 /**
- *  Default constructor.
+ * @brief Constructor of the connector that will connect to the given host at
+ * the given port. read_timeout is a duration in seconds or -1 if no limit.
+ *
+ * @param host The host to connect to.
+ * @param port The port used for the connection.
+ * @param read_timeout The read timeout in seconds or -1 if no duration.
  */
 connector::connector(const std::string& host,
                      uint16_t port,
-                     int32_t read_timeout,
-                     int32_t write_timeout)
+                     int32_t read_timeout)
     : io::endpoint(false),
       _host(host),
       _port(port),
-      _read_timeout(read_timeout),
-      _write_timeout(write_timeout) {}
+      _read_timeout(read_timeout) {}
 
 /**
  *  Destructor.
@@ -59,9 +62,8 @@ std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
   log_v2::tcp()->info("TCP: connecting to {}:{}", _host, _port);
   try {
-    std::shared_ptr<stream> retval = std::make_shared<stream>(_host, _port);
-    retval->set_read_timeout(_read_timeout);
-    retval->set_write_timeout(_write_timeout);
+    std::shared_ptr<stream> retval =
+        std::make_shared<stream>(_host, _port, _read_timeout);
     return retval;
   } catch (const std::exception& e) {
     log_v2::tcp()->debug("Unable to establish the connection: {}", e.what());

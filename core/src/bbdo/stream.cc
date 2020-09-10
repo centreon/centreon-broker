@@ -94,19 +94,29 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Read peer packet.
   log_v2::bbdo()->debug("BBDO: retrieving welcome packet of peer");
-  logging::debug(logging::medium) << "BBDO: retrieving welcome packet of peer";
   std::shared_ptr<io::data> d;
   time_t deadline;
   if (_timeout == (time_t)-1)
     deadline = (time_t)-1;
   else
     deadline = time(nullptr) + _timeout;
-  read_any(d, deadline);
+
+  // FIXME DBR
+  read_any(d, -1 /*deadline*/);
   if (!d || d->type() != version_response::static_type()) {
-    log_v2::bbdo()->error(
-        "BBDO: invalid protocol header, aborting connection");
-    throw exceptions::msg()
-          << "BBDO: invalid protocol header, aborting connection";
+    std::string msg;
+    if (d)
+      msg = fmt::format(
+          "BBDO: invalid protocol header, aborting connection: waiting for "
+          "message of type {} but received type is {}",
+          version_response::static_type(), d->type());
+    else
+      msg = fmt::format(
+          "BBDO: invalid protocol header, aborting connection: waiting for "
+          "message of type {} but nothing received",
+          version_response::static_type());
+    log_v2::bbdo()->error(msg);
+    throw exceptions::msg() << msg;
   }
 
   // Handle protocol version.
@@ -114,15 +124,15 @@ void stream::negotiate(stream::negotiation_type neg) {
       std::static_pointer_cast<version_response>(d));
   if (v->bbdo_major != BBDO_VERSION_MAJOR) {
     log_v2::bbdo()->error(
-        "BBDO: peer is using protocol version {0}.{1}.{2} whereas we're using "
-        "protocol version {3}.{4}.{5}",
+        "BBDO: peer is using protocol version {}.{}.{} whereas we're using "
+        "protocol version {}.{}.{}",
         v->bbdo_major, v->bbdo_minor, v->bbdo_patch, BBDO_VERSION_MAJOR,
         BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
-    throw(exceptions::msg()
-          << "BBDO: peer is using protocol version " << v->bbdo_major << "."
-          << v->bbdo_minor << "." << v->bbdo_patch
-          << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
-          << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH);
+    throw exceptions::msg()
+        << "BBDO: peer is using protocol version " << v->bbdo_major << "."
+        << v->bbdo_minor << "." << v->bbdo_patch
+        << " whereas we're using protocol version " << BBDO_VERSION_MAJOR << "."
+        << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
   }
   log_v2::bbdo()->info(
       "BBDO: peer is using protocol version {0}.{1}.{2}, we're using version "
@@ -154,12 +164,8 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Negotiation.
   if (_negotiate) {
     // Apply negotiated extensions.
-    log_v2::bbdo()->info(
-        "BBDO: we have extensions '{0}' and peer has '{1}'", _extensions,
-        v->extensions);
-    logging::info(logging::medium)
-        << "BBDO: we have extensions '" << _extensions << "' and peer has '"
-        << v->extensions << "'";
+    log_v2::bbdo()->info("BBDO: we have extensions '{}' and peer has '{}'",
+                         _extensions, v->extensions);
     std::list<std::string> own_ext(misc::string::split(_extensions, ' '));
     std::list<std::string> peer_ext(misc::string::split(v->extensions, ' '));
     for (std::list<std::string>::const_iterator it{own_ext.begin()},
@@ -171,8 +177,6 @@ void stream::negotiate(stream::negotiation_type neg) {
       // Apply extension if found.
       if (peer_it != peer_ext.end()) {
         log_v2::bbdo()->info("BBDO: applying extension '{}'", *it);
-        logging::info(logging::medium)
-            << "BBDO: applying extension '" << *it << "'";
         for (std::map<std::string, io::protocols::protocol>::const_iterator
                  proto_it{io::protocols::instance().begin()},
              proto_end{io::protocols::instance().end()};
@@ -270,12 +274,12 @@ void stream::statistics(json11::Json::object& tree) const {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(std::shared_ptr<io::data> const& d) {
+int32_t stream::write(std::shared_ptr<io::data> const& d) {
   assert(_coarse || _negotiated);
   output::write(d);
 
-  int retval(_acknowledged_events);
-  _acknowledged_events = 0;
+  int32_t retval(_acknowledged_events);
+  _acknowledged_events -= retval;
   return retval;
 }
 

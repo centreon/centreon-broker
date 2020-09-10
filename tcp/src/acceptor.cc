@@ -21,8 +21,6 @@
 
 #include <fmt/format.h>
 
-#include <sstream>
-
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -34,11 +32,15 @@ using namespace com::centreon::broker::tcp;
 
 constexpr std::size_t max_pending_connection = 30;
 
-acceptor::acceptor(uint16_t port, int32_t read_timeout, int32_t write_timeout)
-    : io::endpoint(true),
-      _port(port),
-      _read_timeout(read_timeout),
-      _write_timeout(write_timeout) {}
+/**
+ * @brief Acceptor constructor. It needs the port used to listen and a read
+ * timeout duration given in seconds that can be -1 if no timeout is wanted.
+ *
+ * @param port A port.
+ * @param read_timeout A duration in seconds.
+ */
+acceptor::acceptor(uint16_t port, int32_t read_timeout)
+    : io::endpoint(true), _port(port), _read_timeout(read_timeout) {}
 
 /**
  *  Destructor.
@@ -76,7 +78,7 @@ std::shared_ptr<io::stream> acceptor::open() {
   auto conn = tcp_async::instance().get_connection(_acceptor, timeout_s);
   if (conn) {
     log_v2::tcp()->debug("acceptor gets a new connection");
-    return std::make_shared<stream>(conn);
+    return std::make_shared<stream>(conn, -1);
   }
   return std::shared_ptr<stream>();
 }
@@ -88,13 +90,7 @@ std::shared_ptr<io::stream> acceptor::open() {
  */
 void acceptor::remove_child(std::string const& child) {
   std::lock_guard<std::mutex> lock(_childrenm);
-  for (std::list<std::string>::iterator it(_children.begin()),
-       end(_children.end());
-       it != end; ++it)
-    if (*it == child) {
-      _children.erase(it);
-      break;
-    }
+  _children.remove(child);
 }
 
 /**
@@ -104,12 +100,7 @@ void acceptor::remove_child(std::string const& child) {
  */
 void acceptor::stats(json11::Json::object& tree) {
   std::lock_guard<std::mutex> children_lock(_childrenm);
-  std::ostringstream oss;
-  oss << _children.size() << ": ";
-  for (auto it = _children.begin(), end = _children.end(); it != end; ++it)
-    if (it == _children.begin())
-      oss << *it;
-    else
-      oss << ", " << *it;
-  tree["peers"] = oss.str();
+  std::string out(
+      fmt::format("{}: {}", _children.size(), fmt::join(_children, ", ")));
+  tree["peers"] = out;
 }

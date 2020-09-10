@@ -30,7 +30,6 @@ namespace tcp {
 
 class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
   constexpr static std::size_t async_buf_size = 16384;
-  const bool _server;
   asio::ip::tcp::socket _socket;
   asio::io_context::strand _strand;
 
@@ -53,7 +52,7 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
  public:
   typedef std::shared_ptr<tcp_connection> pointer;
-  tcp_connection(asio::io_context& io_context, bool server);
+  tcp_connection(asio::io_context& io_context);
   ~tcp_connection() noexcept;
 
   pointer ptr();
