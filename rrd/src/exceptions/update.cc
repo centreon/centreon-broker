@@ -30,19 +30,19 @@ using namespace com::centreon::broker::rrd::exceptions;
 /**
  *  Default constructor.
  */
-update::update() throw() {}
+update::update() noexcept {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] u Object to copy.
  */
-update::update(update const& u) throw() : broker::exceptions::msg(u) {}
+update::update(update const& u) noexcept : broker::exceptions::msg(u) {}
 
 /**
  *  Destructor.
  */
-update::~update() throw() {}
+update::~update() noexcept {}
 
 /**
  *  Assignment operator.

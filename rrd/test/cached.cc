@@ -26,7 +26,7 @@
 
 using namespace com::centreon::broker;
 
-TEST(RRDCached2, LibExisting) {
+TEST(RRDCached, LibExisting) {
   rrd::cached<asio::local::stream_protocol::socket> cached{"/tmp", 42};
   std::remove("/tmp/test_rrd");
   ASSERT_THROW(cached.open("/tmp/test_rrd"), exceptions::msg);
@@ -38,7 +38,7 @@ TEST(RRDCached2, LibExisting) {
   cached.remove("/tmp/test_rrd");
 }
 
-TEST(RRDCached2, LibNew) {
+TEST(RRDCached, LibNew) {
   rrd::cached<asio::ip::tcp::socket> cached{"/tmp", 42};
 
   std::remove("/tmp/test_rrd");
@@ -46,7 +46,7 @@ TEST(RRDCached2, LibNew) {
   cached.remove("/tmp/test_rrd");
 }
 
-TEST(RRDCached2, BatchLocal) {
+TEST(RRDCached, BatchLocal) {
   std::atomic_bool init_done{false};
   std::atomic_bool batch_done{false};
   testing::internal::CaptureStdout();
@@ -104,7 +104,7 @@ TEST(RRDCached2, BatchLocal) {
   ASSERT_EQ(testing::internal::GetCapturedStdout(), "connected\n");
 }
 
-TEST(RRDCached2, BatchRemote) {
+TEST(RRDCached, BatchRemote) {
   std::atomic_bool init_done{false};
   std::atomic_bool batch_done{false};
   testing::internal::CaptureStdout();

@@ -34,9 +34,9 @@ namespace exceptions {
  */
 class update : public broker::exceptions::msg {
  public:
-  update() throw();
-  update(update const& u) throw();
-  ~update() throw();
+  update() noexcept;
+  update(update const& u) noexcept;
+  ~update() noexcept;
   virtual broker::exceptions::msg* clone() const;
   virtual void rethrow() const;
 
@@ -46,9 +46,9 @@ class update : public broker::exceptions::msg {
    *  @param[in] t Data to insert.
    */
   template <typename T>
-  update& operator<<(T t) throw() {
+  update& operator<<(T t) noexcept {
     broker::exceptions::msg::operator<<(t);
-    return (*this);
+    return *this;
   }
 };
 }  // namespace exceptions

@@ -97,7 +97,7 @@ void connector::set_cached_local(std::string const& local_socket) {
  *
  *  @param[in] port rrdcached port.
  */
-void connector::set_cached_net(uint16_t port) throw() {
+void connector::set_cached_net(uint16_t port) noexcept {
   _cached_port = port;
 }
 
@@ -107,7 +107,7 @@ void connector::set_cached_net(uint16_t port) throw() {
  *
  *  @param[in] ignore Set to true to ignore update errors.
  */
-void connector::set_ignore_update_errors(bool ignore) throw() {
+void connector::set_ignore_update_errors(bool ignore) noexcept {
   _ignore_update_errors = ignore;
 }
 
@@ -134,7 +134,7 @@ void connector::set_status_path(std::string const& status_path) {
  *
  *  @param[in] write_metrics true if metrics must be written.
  */
-void connector::set_write_metrics(bool write_metrics) throw() {
+void connector::set_write_metrics(bool write_metrics) noexcept {
   _write_metrics = write_metrics;
 }
 
@@ -143,7 +143,7 @@ void connector::set_write_metrics(bool write_metrics) throw() {
  *
  *  @param[in] write_status true if status must be written.
  */
-void connector::set_write_status(bool write_status) throw() {
+void connector::set_write_status(bool write_status) noexcept {
   _write_status = write_status;
 }
 

@@ -134,7 +134,6 @@ TEST(TcpAcceptor, QuestionAnswer) {
     std::shared_ptr<io::raw> data_write;
     bool val;
     for (int i = 0; i < rep; i++) {
-      std::cout << "i = " << i << std::endl;
       val = false;
       std::string wanted(fmt::format("Question{}", i));
       while (!val || !data_read ||
@@ -146,7 +145,6 @@ TEST(TcpAcceptor, QuestionAnswer) {
           std::static_pointer_cast<io::raw>(data_read)->get_buffer());
       std::string result(vec.begin(), vec.end());
 
-      std::cout << "Question: " << result << "\n";
       ASSERT_EQ(wanted, result);
 
       data_write = std::make_shared<io::raw>();
@@ -181,10 +179,8 @@ TEST(TcpAcceptor, QuestionAnswer) {
         cc[0] = c;
         data_write->append(cc);
       }
-      std::cout << "write " << text << "\n";
       s_centengine->write(data_write);
 
-      std::cout << "written " << text << "\n";
       val = false;
       std::string wanted(fmt::format("Answer{}", i));
       while (!val || !data_read ||
@@ -195,7 +191,6 @@ TEST(TcpAcceptor, QuestionAnswer) {
           std::static_pointer_cast<io::raw>(data_read)->get_buffer());
       std::string result(vec.begin(), vec.end());
 
-      std::cout << "Answer: " << result << "\n";
       ASSERT_EQ(wanted, result);
     }
   });
@@ -908,7 +903,6 @@ TEST(TcpAcceptor, QuestionAnswerMultiple) {
     std::shared_ptr<io::raw> data_write;
     bool val;
     for (int i = 0; i < rep; i++) {
-      std::cout << "i = " << i << std::endl;
       val = false;
       std::string wanted(fmt::format("Question{}", i));
       while (!val || !data_read ||
@@ -920,7 +914,6 @@ TEST(TcpAcceptor, QuestionAnswerMultiple) {
           std::static_pointer_cast<io::raw>(data_read)->get_buffer());
       std::string result(vec.begin(), vec.end());
 
-      std::cout << "Question: " << result << "\n";
       ASSERT_EQ(wanted, result);
 
       data_write = std::make_shared<io::raw>();
@@ -955,10 +948,8 @@ TEST(TcpAcceptor, QuestionAnswerMultiple) {
         cc[0] = c;
         data_write->append(cc);
       }
-      std::cout << "write " << text << "\n";
       s_centengine->write(data_write);
 
-      std::cout << "written " << text << "\n";
       val = false;
       std::string wanted(fmt::format("Answer{}", i));
       while (!val || !data_read ||
@@ -969,7 +960,6 @@ TEST(TcpAcceptor, QuestionAnswerMultiple) {
           std::static_pointer_cast<io::raw>(data_read)->get_buffer());
       std::string result(vec.begin(), vec.end());
 
-      std::cout << "Answer: " << result << "\n";
       ASSERT_EQ(wanted, result);
     }
   });
