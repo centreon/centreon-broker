@@ -403,7 +403,22 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
           "expected {:x}",
           event_id, source_id, dest_id, chksum, expected);
 
-      assert(expected == chksum);
+      if (expected != chksum) {
+        // The packet is corrupted.
+        if (_skipped) {
+          // First corrupted byte.
+          log_v2::bbdo()->error("peer {} is sending corrupted data: invalid CRC: {:04x} != {:04x}",
+              peer(), chksum, expected);
+          ++_skipped;
+          _packet.erase(_packet.begin());
+          continue;
+        }
+      }
+      else if (_skipped) {
+        log_v2::bbdo()->info("peer {} sent {} corrupted payload bytes, resuming processing",
+            peer(), _skipped);
+        _skipped = 0;
+      }
 
       // It is time to finish to read the packet.
 
