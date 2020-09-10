@@ -17,8 +17,10 @@
  *
  */
 #include <gtest/gtest.h>
+
 #include <cstdlib>
 #include <iostream>
+
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -29,20 +31,16 @@
 
 using namespace com::centreon::broker;
 
-#define MSG1 "0123456789abcdef"
-#define MSG2 "foo bar baz"
-#define MSG3 "last message with qux"
-#define MSG4 "no this is the last message"
+const std::string MSG1("0123456789abcdef");
+const std::string MSG2("foo bar baz");
+const std::string MSG3("last message with qux");
+const std::string MSG4("no this is the last message");
 
 class StartStop : public testing::Test {
  public:
-  void SetUp() override {
-    config::applier::init();
-  }
+  void SetUp() override { config::applier::init(); }
 
-  void TearDown() override {
-    config::applier::deinit();
-  }
+  void TearDown() override { config::applier::deinit(); }
 };
 
 /**
@@ -63,10 +61,10 @@ TEST_F(StartStop, MultiplexingWorks) {
     s.get_muxer().set_write_filters(filters);
 
     // Send events through engine.
-    char const* messages[] = {MSG1, MSG2, nullptr};
-    for (uint32_t i = 0; messages[i]; ++i) {
+    std::array<std::string, 2> messages{MSG1, MSG2};
+    for (auto& m : messages) {
       std::shared_ptr<io::raw> data(new io::raw);
-      data->append(messages[i]);
+      data->append(m);
       multiplexing::engine::instance().publish(
           std::static_pointer_cast<io::data>(data));
     }
@@ -83,14 +81,14 @@ TEST_F(StartStop, MultiplexingWorks) {
     multiplexing::engine::instance().start();
 
     // Read retained events.
-    for (uint32_t i(0); messages[i]; ++i) {
+    for (auto& m : messages) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (!data || data->type() != io::raw::static_type())
         throw exceptions::msg() << "error at step #2";
       else {
         std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
-        if (strncmp(raw->const_data(), messages[i], strlen(messages[i])))
+        if (strncmp(raw->const_data(), m.c_str(), m.size()))
           throw exceptions::msg() << "error at step #3";
       }
     }
@@ -111,7 +109,7 @@ TEST_F(StartStop, MultiplexingWorks) {
         throw exceptions::msg() << "error at step #4";
       else {
         std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
-        if (strncmp(raw->const_data(), MSG3, strlen(MSG3)))
+        if (strncmp(raw->const_data(), MSG3.c_str(), MSG3.size()))
           throw exceptions::msg() << "error at step #5";
       }
     }

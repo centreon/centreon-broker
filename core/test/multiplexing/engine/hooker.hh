@@ -20,11 +20,13 @@
 #define HOOKER_HH
 
 #include <queue>
+
 #include "com/centreon/broker/multiplexing/hooker.hh"
 
-#define HOOKMSG1 "my first hooking message (when engine is started)"
-#define HOOKMSG2 "my second hooking message (when multiplexing events)"
-#define HOOKMSG3 "my third hooking message (when engine is stopped)"
+const std::string HOOKMSG1("my first hooking message (when engine is started)");
+const std::string HOOKMSG2(
+    "my second hooking message (when multiplexing events)");
+const std::string HOOKMSG3("my third hooking message (when engine is stopped)");
 
 using namespace com::centreon::broker;
 

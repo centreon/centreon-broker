@@ -17,6 +17,7 @@
  *
  */
 #include "hooker.hh"
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 
@@ -32,14 +33,6 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 hooker::hooker() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-// hooker::hooker(hooker const& other)
-//  : multiplexing::hooker(other), _queue(other._queue) {}
 
 /**
  *  Destructor.

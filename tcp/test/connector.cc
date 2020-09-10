@@ -66,7 +66,7 @@ TEST_F(TcpConnector, Simple) {
   std::shared_ptr<io::raw> data{new io::raw()};
   std::shared_ptr<io::data> data2{new io::raw()};
 
-  data->append("PING\n");
+  data->append(std::string("PING\n"));
   io->write(data);
 
   ASSERT_TRUE(io->peer() == "tcp://127.0.0.1:4242");
@@ -84,7 +84,7 @@ TEST_F(TcpConnector, ReadAfterTimeout) {
   std::shared_ptr<io::raw> data{new io::raw()};
   std::shared_ptr<io::data> data2{new io::raw()};
 
-  data->append("SERV_DELAY\n");
+  data->append(std::string("SERV_DELAY\n"));
   io->write(data);
 
   ASSERT_FALSE(io->read(data2, ::time(nullptr) + 1));
@@ -103,7 +103,7 @@ TEST_F(TcpConnector, MultipleSimple) {
   std::shared_ptr<io::raw> data{new io::raw()};
   std::shared_ptr<io::data> data2{new io::raw()};
 
-  data->append("PING\n");
+  data->append(std::string("PING\n"));
   io->write(data);
 
   ASSERT_TRUE(io->read(data2, ::time(nullptr) + 5));
