@@ -20,9 +20,9 @@
 #define CCB_IO_RAW_HH
 
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
-#include <cstring>
 
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -58,7 +58,6 @@ class raw : public data {
   void append(T const& msg) {
     _buffer.insert(_buffer.end(), msg.begin(), msg.end());
   }
-  void append(const char* msg);
 
  public:
   std::vector<char> _buffer;
