@@ -145,8 +145,6 @@ static std::string debug_buf(const char* data, int32_t size) {
  * side.
  */
 int32_t tcp_connection::write(const std::vector<char>& v) {
-  log_v2::bbdo()->trace("Writing BBDO event with header {}",
-                        debug_buf(v.data(), 16));
   {
     std::lock_guard<std::mutex> lck(_data_m);
     if (_current_error) {

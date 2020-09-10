@@ -242,123 +242,6 @@ static io::raw* serialize(const io::data& e) {
   return nullptr;
 }
 
-//static io::raw* serialize(io::data const& e) {
-//  // Get event info (mapping).
-//  io::event_info const* info(io::events::instance().get_event_info(e.type()));
-//  if (info) {
-//    // Serialization buffer.
-//    std::unique_ptr<io::raw> buffer(new io::raw);
-//    std::vector<char>& data(buffer->get_buffer());
-//
-//    // Reserve space for the BBDO header.
-//    uint32_t beginning(data.size());
-//    data.resize(data.size() + BBDO_HEADER_SIZE);
-//    *(reinterpret_cast<uint32_t*>(data.data() + beginning + 4)) =
-//        htonl(e.type());
-//
-//    // Serialize properties of the object.
-//    for (mapping::entry const* current_entry(info->get_mapping());
-//         !current_entry->is_null(); ++current_entry) {
-//      // Skip entries that should not be serialized.
-//      if (current_entry->get_serialize())
-//        switch (current_entry->get_type()) {
-//          case mapping::source::BOOL:
-//            get_boolean(e, *current_entry, data);
-//            break;
-//          case mapping::source::DOUBLE:
-//            get_double(e, *current_entry, data);
-//            break;
-//          case mapping::source::INT:
-//            get_integer(e, *current_entry, data);
-//            break;
-//          case mapping::source::SHORT:
-//            get_short(e, *current_entry, data);
-//            break;
-//          case mapping::source::STRING:
-//            get_string(e, *current_entry, data);
-//            break;
-//          case mapping::source::TIME:
-//            get_timestamp(e, *current_entry, data);
-//            break;
-//          case mapping::source::UINT:
-//            get_uint(e, *current_entry, data);
-//            break;
-//          default:
-//            log_v2::bbdo()->error(
-//                "BBDO: invalid mapping for object of type '{}': {} is not a "
-//                "known type ID",
-//                info->get_name(), current_entry->get_type());
-//            throw exceptions::msg() << "BBDO: invalid mapping for object"
-//                                    << " of type '" << info->get_name()
-//                                    << "': " << current_entry->get_type()
-//                                    << " is not a known type ID";
-//        }
-//
-//      // Packet splitting.
-//      while (static_cast<uint32_t>(data.size()) >=
-//             (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
-//        // Set size.
-//        *reinterpret_cast<uint16_t*>(data.data() + beginning + 2) = 0xFFFF;
-//
-//        // Source and destination
-//        *reinterpret_cast<uint32_t*>(data.data() + beginning + 8) =
-//            htonl(e.source_id);
-//
-//        *reinterpret_cast<uint32_t*>(data.data() + beginning + 12) =
-//            htonl(e.destination_id);
-//
-//        // Set checksum.
-//        uint16_t chksum(misc::crc16_ccitt(data.data() + beginning + 2,
-//                                          BBDO_HEADER_SIZE - 2));
-//        *reinterpret_cast<uint16_t*>(data.data() + beginning) = htons(chksum);
-//
-//        log_v2::bbdo()->trace("Writing: header eventID {} sourceID {} destID {} checksum {:x}", e.type(), e.source_id, e.destination_id, chksum);
-//        // Create new header.
-//        beginning += BBDO_HEADER_SIZE + 0xFFFF;
-//        char header[BBDO_HEADER_SIZE];
-//        memset(header, 0, sizeof(header));
-//        *reinterpret_cast<uint32_t*>(header + 4) = htonl(e.type());
-//        std::vector<char>::iterator it{data.begin() + beginning};
-//        data.insert(it, header, header + sizeof(header));
-//      }
-//    }
-//
-//    // Set (last) packet size.
-//    *reinterpret_cast<uint16_t*>(data.data() + beginning + 2) =
-//        htons(data.size() - beginning - BBDO_HEADER_SIZE);
-//
-//    // Source and destination.
-//    *reinterpret_cast<uint32_t*>(data.data() + beginning + 8) =
-//        htonl(e.source_id);
-//
-//    *reinterpret_cast<uint32_t*>(data.data() + beginning + 12) =
-//        htonl(e.destination_id);
-//
-//    // Checksum.
-//    uint16_t chksum(
-//        misc::crc16_ccitt(data.data() + beginning + 2, BBDO_HEADER_SIZE - 2));
-//    *reinterpret_cast<uint16_t*>(data.data() + beginning) = htons(chksum);
-//
-//    return buffer.release();
-//  } else {
-//    log_v2::bbdo()->info(
-//        "BBDO: cannot serialize event of ID {}: event was not registered and "
-//        "will therefore be ignored",
-//        e.type());
-//    logging::info(logging::high)
-//        << "BBDO: cannot serialize event of ID " << e.type()
-//        << ": event was not registered and will therefore be ignored";
-//  }
-//
-//  return nullptr;
-//}
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
@@ -397,9 +280,6 @@ void output::statistics(json11::Json::object& tree) const {
  *  @return Number of events acknowledged.
  */
 int output::write(std::shared_ptr<io::data> const& e) {
-  std::hash<std::thread::id> hasher;
-  log_v2::bbdo()->trace("write with thread {}",
-                        hasher(std::this_thread::get_id()));
   if (!validate(e, "BBDO"))
     return 1;
 
@@ -408,9 +288,6 @@ int output::write(std::shared_ptr<io::data> const& e) {
   if (serialized) {
     log_v2::bbdo()->debug("BBDO: serialized event of type {} to {} bytes",
                           e->type(), serialized->size());
-    logging::debug(logging::medium)
-        << "BBDO: serialized event of type " << e->type() << " to "
-        << serialized->size() << " bytes";
     _substream->write(serialized);
   }
 

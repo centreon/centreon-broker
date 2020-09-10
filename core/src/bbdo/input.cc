@@ -376,9 +376,6 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
-  std::hash<std::thread::id> hasher;
-  log_v2::bbdo()->trace("read_any with thread {}",
-                        hasher(std::this_thread::get_id()));
   try {
     // Return value.
     std::unique_ptr<io::data> e;
@@ -405,34 +402,18 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
           "Reading: header eventID {} sourceID {} destID {} checksum {:x} and "
           "expected {:x}",
           event_id, source_id, dest_id, chksum, expected);
-      log_v2::bbdo()->trace("Reading: header packet size {}", packet_size);
 
       assert(expected == chksum);
 
       // It is time to finish to read the packet.
 
-      assert(_packet.size() != 65536);
       _read_packet(BBDO_HEADER_SIZE + packet_size, deadline);
-      if (_packet.size() > BBDO_HEADER_SIZE + packet_size + 2) {
-        assert(_packet[BBDO_HEADER_SIZE + packet_size] != 0 ||
-               _packet[BBDO_HEADER_SIZE + packet_size + 1] != 0);
-      }
-
-      log_v2::bbdo()->trace(
-          "Content starts with {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} "
-          "{:x}",
-          _packet[BBDO_HEADER_SIZE], _packet[BBDO_HEADER_SIZE + 1],
-          _packet[BBDO_HEADER_SIZE + 2], _packet[BBDO_HEADER_SIZE + 3],
-          _packet[BBDO_HEADER_SIZE + 4], _packet[BBDO_HEADER_SIZE + 5],
-          _packet[BBDO_HEADER_SIZE + 6], _packet[BBDO_HEADER_SIZE + 7],
-          _packet[BBDO_HEADER_SIZE + 8], _packet[BBDO_HEADER_SIZE + 9]);
-
-      // The size is now at least of BBDO_HEADER_SIZE + packet_size.
+      // Now, _packet contains at least BBDO_HEADER_SIZE + packet_size bytes.
 
       std::vector<char> content;
       if (_packet.size() == BBDO_HEADER_SIZE + packet_size) {
         log_v2::bbdo()->trace(
-            "packet matches header + content => removing header");
+            "packet matches header + content => extracting content");
         // We remove the header from the packet: FIXME DBR this is not
         // beautiful...
 
@@ -441,35 +422,19 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
         _packet.clear();
         // The size should be of only packet_size now.
       } else {
-        assert(_packet.size() > BBDO_HEADER_SIZE + packet_size);
+        /* we have _packet.size() > BBDO_HEADER_SIZE + packet_size */
 
-        // The signature of the next packet cannot be 0x0000
-        assert(_packet[BBDO_HEADER_SIZE + packet_size] != 0 ||
-               _packet[BBDO_HEADER_SIZE + packet_size + 1] != 0);
-        log_v2::bbdo()->trace(
-            "packet longer than header + content => splitting the whole of "
-            "size {}",
-            _packet.size());
+        size_t previous_packet_size = _packet.size();
         // packet contains more than one BBDO packet...
         content =
             std::vector<char>(_packet.begin() + BBDO_HEADER_SIZE,
                               _packet.begin() + BBDO_HEADER_SIZE + packet_size);
         _packet.erase(_packet.begin(),
                       _packet.begin() + BBDO_HEADER_SIZE + packet_size);
-        log_v2::bbdo()->trace(" => content without header with size {}",
-                              content.size());
-        log_v2::bbdo()->trace(" => cache with size {}", _packet.size());
-
         log_v2::bbdo()->trace(
-            "_packet header starts with {:x} {:x} {:x} {:x} {:x} {:x} {:x} "
-            "{:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x}",
-            _packet[0], _packet[1], _packet[2], _packet[3], _packet[4],
-            _packet[5], _packet[6], _packet[7], _packet[8], _packet[9],
-            _packet[10], _packet[11], _packet[12], _packet[13], _packet[14],
-            _packet[15]);
+            "packet longer than header + content => splitting the whole of "
+            "size {} to content of size {} and remaining of size {}", previous_packet_size, content.size(), _packet.size());
       }
-
-      assert(content.size() == packet_size);
 
       if (packet_size != 0xffff) {
         // Cool we can work with it!
@@ -486,6 +451,8 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
             break;
           }
         }
+        assert(_buffer.size() == 0);
+
         // FIXME DBR: unserialize should be a method of buffer. This would avoid
         // conversions from a deque of vectors to one vector.
         pack = content.data();
@@ -524,6 +491,7 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
         if (!done)
           _buffer.emplace_back(
               input::buffer(event_id, source_id, dest_id, std::move(content)));
+        assert(_buffer.size() == 1);
       }
     }
   } catch (const exceptions::timeout& e) {
@@ -741,14 +709,8 @@ void input::_read_packet(size_t size, time_t deadline) {
       if (!new_v.empty()) {
         if (_packet.size() == 0)
           _packet = std::move(new_v);
-        else {
+        else
           _packet.insert(_packet.end(), new_v.begin(), new_v.end());
-
-          if (_packet.size() > 65535 + BBDO_HEADER_SIZE + 2) {
-            assert(_packet[BBDO_HEADER_SIZE + 65535] != 0 ||
-                   _packet[BBDO_HEADER_SIZE + 65535 + 1] != 0);
-          }
-        }
       }
     }
     if (timeout)
