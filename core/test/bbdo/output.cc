@@ -33,6 +33,7 @@
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/persistent_file.hh"
+#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -88,7 +89,7 @@ TEST_F(OutputTest, WriteService) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
 
-  std::shared_ptr<neb::service> svc(new neb::service);
+  std::shared_ptr<neb::service> svc(std::make_shared<neb::service>());
   svc->host_id = 12345;
   svc->service_id = 18;
   svc->output = "Bonjour";
@@ -142,7 +143,7 @@ TEST_F(OutputTest, WriteLongService) {
   svc->service_id = 18;
   svc->output.reserve(70000);
   char c = 'A';
-  for (int i = 0; i < svc->output.capacity(); i++) {
+  for (uint32_t i = 0; i < svc->output.capacity(); i++) {
     svc->output.push_back(c++);
     if (c > 'Z')
       c = 'A';
@@ -191,7 +192,7 @@ TEST_F(OutputTest, WriteReadService) {
 
   svc->output.reserve(1000000);
   char c = 'a';
-  for (int i = 0; i < svc->output.capacity(); i++) {
+  for (uint32_t i = 0; i < svc->output.capacity(); i++) {
     svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
@@ -200,7 +201,7 @@ TEST_F(OutputTest, WriteReadService) {
 
   svc->perf_data.reserve(1000000);
   c = '0';
-  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+  for (uint32_t i = 0; i < svc->perf_data.capacity(); i++) {
     svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';
@@ -237,7 +238,7 @@ TEST_F(OutputTest, ShortPersistentFile) {
 
   svc->output.reserve(1000);
   char c = 'a';
-  for (int i = 0; i < svc->output.capacity(); i++) {
+  for (uint32_t i = 0; i < svc->output.capacity(); i++) {
     svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
@@ -245,7 +246,7 @@ TEST_F(OutputTest, ShortPersistentFile) {
 
   svc->perf_data.reserve(100);
   c = '0';
-  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+  for (uint32_t i = 0; i < svc->perf_data.capacity(); i++) {
     svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';
@@ -283,7 +284,7 @@ TEST_F(OutputTest, LongPersistentFile) {
 
   svc->output.reserve(100000);
   char c = 'a';
-  for (int i = 0; i < svc->output.capacity(); i++) {
+  for (uint32_t i = 0; i < svc->output.capacity(); i++) {
     svc->output.push_back(c++);
     if (c > 'z')
       c = 'a';
@@ -291,7 +292,7 @@ TEST_F(OutputTest, LongPersistentFile) {
 
   svc->perf_data.reserve(100000);
   c = '0';
-  for (int i = 0; i < svc->perf_data.capacity(); i++) {
+  for (uint32_t i = 0; i < svc->perf_data.capacity(); i++) {
     svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';

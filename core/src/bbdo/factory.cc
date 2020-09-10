@@ -16,12 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
+
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -63,19 +65,18 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Return value.
-  io::endpoint* retval{nullptr};
+  io::endpoint* retval = nullptr;
 
   // Coarse endpoint ?
-  bool coarse{false};
+  bool coarse = false;
   {
-    std::map<std::string, std::string>::const_iterator it(
-        cfg.params.find("coarse"));
+    auto it = cfg.params.find("coarse");
     if (it != cfg.params.end())
       coarse = config::parser::parse_boolean(it->second);
   }
 
   // Negotiation allowed ?
-  bool negotiate{false};
+  bool negotiate = false;
   std::string extensions;
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator it(
@@ -94,10 +95,9 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end())
       try {
         ack_limit = std::stoul(it->second);
-      }
-      catch (const std::exception& e) {
+      } catch (const std::exception& e) {
         logging::config(logging::high)
-          << "BBDO: Bad value for ack_limit, it must be an integer.";
+            << "BBDO: Bad value for ack_limit, it must be an integer.";
       }
   }
 
@@ -110,27 +110,29 @@ io::endpoint* factory::new_endpoint(
       host = it->second;
   }
 
-  is_acceptor = host.empty();
-
   if (is_acceptor) {
     // One peer retention mode ?
-//    bool one_peer_retention_mode{false};
-//    std::map<std::string, std::string>::const_iterator it(
-//        cfg.params.find("one_peer_retention_mode"));
-//    if (it != cfg.params.end())
-//      one_peer_retention_mode = config::parser::parse_boolean(it->second);
-//    if (one_peer_retention_mode)
-//      is_acceptor = false;
+    //    bool one_peer_retention_mode{false};
+    //    std::map<std::string, std::string>::const_iterator it(
+    //        cfg.params.find("one_peer_retention_mode"));
+    //    if (it != cfg.params.end())
+    //      one_peer_retention_mode = config::parser::parse_boolean(it->second);
+    //    if (one_peer_retention_mode)
+    //      is_acceptor = false;
+
+    // One peer retention mode?
+    bool one_peer_retention_mode =
+        cfg.get_io_type() == config::endpoint::output;
     retval =
         new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
-                           false, coarse, ack_limit);
-    logging::debug(logging::high)
-      << "BBDO: new acceptor " << cfg.name;
+                           one_peer_retention_mode, coarse, ack_limit);
+    if (one_peer_retention_mode)
+      is_acceptor = false;
+    log_v2::bbdo()->debug("BBDO: new acceptor {}", cfg.name);
   } else {
     retval = new bbdo::connector(negotiate, extensions, cfg.read_timeout,
                                  coarse, ack_limit);
-    logging::debug(logging::high)
-      << "BBDO: new connector " << cfg.name;
+    log_v2::bbdo()->debug("BBDO: new connector {}", cfg.name);
   }
   return retval;
 }

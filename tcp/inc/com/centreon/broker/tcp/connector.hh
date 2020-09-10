@@ -24,11 +24,11 @@
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
-#if ASIO_VERSION < 101200
-namespace asio {
-typedef io_service io_context;
-}
-#endif
+//#if ASIO_VERSION < 101200
+//namespace asio {
+//typedef io_service io_context;
+//}
+//#endif
 
 CCB_BEGIN()
 
@@ -43,13 +43,9 @@ class connector : public io::endpoint {
   const std::string _host;
   const uint16_t _port;
   const int32_t _read_timeout;
-  const int32_t _write_timeout;
 
  public:
-  connector(const std::string& host,
-            uint16_t port,
-            int32_t read_timeout,
-            int32_t write_timeout);
+  connector(const std::string& host, uint16_t port, int32_t read_timeout);
   ~connector();
 
   connector& operator=(connector const& other) = delete;

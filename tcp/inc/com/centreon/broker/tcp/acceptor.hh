@@ -39,16 +39,13 @@ namespace tcp {
 class acceptor : public io::endpoint {
   const uint16_t _port;
   const int32_t _read_timeout;
-  const int32_t _write_timeout;
 
   std::list<std::string> _children;
   std::mutex _childrenm;
-  std::mutex _mutex;
   std::shared_ptr<asio::ip::tcp::acceptor> _acceptor;
-  std::thread _thread;
 
  public:
-  acceptor(uint16_t port, int32_t read_timeout, int32_t write_timeout);
+  acceptor(uint16_t port, int32_t read_timeout);
   ~acceptor() noexcept;
 
   acceptor(acceptor const& other) = delete;

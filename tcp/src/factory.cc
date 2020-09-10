@@ -82,15 +82,6 @@ io::endpoint* factory::new_endpoint(
     port = static_cast<uint16_t>(std::stol(it->second));
   }
 
-  // Find TCP socket timeout options.
-  int write_timeout(-1);
-  {
-    std::map<std::string, std::string>::const_iterator it{
-        cfg.params.find("socket_write_timeout")};
-    if (it != cfg.params.end())
-      write_timeout = std::stoul(it->second);
-  }
-
   int read_timeout(-1);
   {
     std::map<std::string, std::string>::const_iterator it{
@@ -103,15 +94,14 @@ io::endpoint* factory::new_endpoint(
   std::unique_ptr<io::endpoint> endp;
   if (host.empty()) {
     is_acceptor = true;
-    std::unique_ptr<tcp::acceptor> a(
-        new tcp::acceptor(port, read_timeout, write_timeout));
+    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(port, read_timeout));
     endp.reset(a.release());
   }
   // Connector.
   else {
     is_acceptor = false;
     std::unique_ptr<tcp::connector> c(
-        new tcp::connector(host, port, read_timeout, write_timeout));
+        new tcp::connector(host, port, read_timeout));
     endp.reset(c.release());
   }
   return endp.release();

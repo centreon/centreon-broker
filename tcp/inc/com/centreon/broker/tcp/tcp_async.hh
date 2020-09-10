@@ -63,7 +63,8 @@ class tcp_async {
                      tcp_connection::pointer new_connection,
                      const asio::error_code& error);
   tcp_connection::pointer get_connection(
-      std::shared_ptr<asio::ip::tcp::acceptor> acceptor, uint32_t timeout_s);
+      std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
+      uint32_t timeout_s);
 
   static tcp_async& instance();
 };

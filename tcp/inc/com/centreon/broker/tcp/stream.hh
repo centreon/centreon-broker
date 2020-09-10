@@ -22,14 +22,9 @@
 #include <asio.hpp>
 #include <memory>
 #include <string>
-#include "com/centreon/broker/io/stream.hh"
-#include "com/centreon/broker/namespace.hh"
 
-#if ASIO_VERSION < 101200
-namespace asio {
-typedef io_service io_context;
-}
-#endif
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/tcp/tcp_connection.hh"
 
 CCB_BEGIN()
 
@@ -44,27 +39,23 @@ class acceptor;
  *  TCP stream.
  */
 class stream : public io::stream {
+  const std::string _host;
+  const uint16_t _port;
+  const int32_t _read_timeout;
+  tcp_connection::pointer _connection;
+  acceptor* _parent;
+
  public:
+  stream(std::string const& host, uint16_t port, int32_t read_timeout);
+  stream(tcp_connection::pointer conn, int32_t read_timeout);
+  ~stream();
   stream& operator=(stream const& other) = delete;
   stream(stream const& other) = delete;
-  stream(std::shared_ptr<asio::ip::tcp::socket> sock, std::string const& name);
-  ~stream();
-  std::string peer() const;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  std::string peer() const override;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void set_parent(acceptor* parent);
-  void set_read_timeout(int secs);
-  void set_write_timeout(int secs);
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
-  void _set_socket_options();
-
-  std::string _name;
-  acceptor* _parent;
-  std::shared_ptr<asio::ip::tcp::socket> _socket;
-  int _read_timeout;
-  int _write_timeout;
-  bool _socket_gone;
+  int32_t flush() override;
+  int32_t write(std::shared_ptr<io::data> const& d) override;
 };
 }  // namespace tcp
 

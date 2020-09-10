@@ -25,14 +25,13 @@ using namespace com::centreon::broker;
 class BbdoInputBufferErase : public ::testing::Test {
  public:
   void SetUp() override {
-    for (int i(1); i < 120; ++i) {
-      char buffer[120];
-      for (int j(0); j < i; ++j)
-        buffer[j] = j;
-      _raw.append(buffer, i);
-      std::shared_ptr<io::raw> r(new io::raw);
-      std::copy(buffer, buffer + i, std::back_inserter(r->get_buffer()));
-      _buffer.append(r);
+    for (int i = 1; i < 120; ++i) {
+      std::vector<char> buffer;
+      buffer.reserve(120);
+      for (int j = 0; j < i; ++j)
+        buffer.push_back(j);
+      _raw.append(buffer.data(), i);
+      _buffer.append(std::move(buffer));
     }
   }
 

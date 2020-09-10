@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@
 #include <atomic>
 #include <sstream>
 #include <system_error>
+#include <thread>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -37,54 +38,46 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
+/**
+ * @brief Stream constructor used by a connector. The stream establishes a
+ * connection to the host server listening on the given port.
+ * read_timeout is a duration in seconds used to read on the socket.
+ *
+ * @param host The host to connect to.
+ * @param port The port used by the host to listen.
+ * @param read_timeout The read_timeout in seconds or -1 if no timeout.
+ */
+stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
+    : _host(host),
+      _port(port),
+      _read_timeout(read_timeout),
+      _connection(tcp_async::instance().create_connection(host, port)),
+      _parent(nullptr) {}
 
 /**
- *  Constructor.
+ * @brief Stream constructor for a server. The connection is already running.
+ * We just specify the read_timeout which is a duration in seconds.
  *
- *  @param[in] sock  Socket used by this stream.
- *  @param[in] name  Name of this connection.
+ * @param conn The connection to use by this stream.
+ * @param read_timeout A duration in seconds or -1 if no timeout.
  */
-stream::stream(std::shared_ptr<asio::ip::tcp::socket> sock,
-               std::string const& name)
-    : _name(name),
-      _parent(nullptr),
-      _socket(sock),
-      _read_timeout(-1),
-      _write_timeout(-1),
-      _socket_gone(false) {
-  // Set the SO_KEEPALIVE option.
-  asio::socket_base::keep_alive option{true};
-  _socket->set_option(option);
-
-  // Set the write timeout option.
-  if (_write_timeout >= 0) {
-    struct timeval t;
-    t.tv_sec = _write_timeout;
-    t.tv_usec = 0;
-    ::setsockopt(_socket->native_handle(), SOL_SOCKET, SO_SNDTIMEO, &t,
-                 sizeof(t));
-  }
-}
+stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
+    : _host(conn->socket().remote_endpoint().address().to_string()),
+      _port(conn->socket().remote_endpoint().port()),
+      _read_timeout(read_timeout),
+      _connection(conn),
+      _parent(nullptr) {}
 
 /**
  *  Destructor.
  */
 stream::~stream() {
-  try {
-    tcp_async::instance().unregister_socket(*_socket, _socket_gone);
+  log_v2::tcp()->trace("stream closed");
+  if (_connection->socket().is_open())
+    _connection->close();
 
-    // Remove from parent.
-    if (_parent)
-      _parent->remove_child(_name);
-  }
-  // Ignore exception, whatever the error might be.
-  catch (...) {
-  }
+  if (_parent)
+    _parent->remove_child(peer());
 }
 
 /**
@@ -93,10 +86,10 @@ stream::~stream() {
  *  @return Peer name.
  */
 std::string stream::peer() const {
-  std::ostringstream oss;
-  oss << "tcp://" << _socket->remote_endpoint().address().to_string() << ":"
-      << _socket->remote_endpoint().port();
-  return oss.str();
+  return fmt::format(
+      "tcp://{}:{}",
+      _connection->socket().remote_endpoint().address().to_string(),
+      _connection->socket().remote_endpoint().port());
 }
 
 /**
@@ -109,28 +102,36 @@ std::string stream::peer() const {
  */
 
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  d.reset(new io::raw());
+  static uint32_t thread_id = 0;
+  std::hash<std::thread::id> hasher;
+  uint32_t current_thread_id = hasher(std::this_thread::get_id());
+  if (thread_id == 0)
+    thread_id = current_thread_id;
+  if (thread_id != current_thread_id) {
+    log_v2::tcp()->trace("thread {} != thread {} and stream = {}", thread_id,
+                         current_thread_id, reinterpret_cast<uint64_t>(this));
+  }
+
+  log_v2::tcp()->trace("read on stream");
+
+  // Set deadline.
+  {
+    time_t now = ::time(nullptr);
+    if (_read_timeout != -1 &&
+        (deadline == static_cast<time_t>(-1) || now + _read_timeout < deadline))
+      deadline = now + _read_timeout / 1000;
+  }
+
+  if (_connection->is_closed()) {
+    d.reset(new io::raw);
+    throw exceptions::msg() << "Connection lost";
+  }
+
+  bool timeout = false;
+  d.reset(new io::raw(_connection->read(deadline, &timeout)));
   std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
-
-  bool socket_closed{false};
-  bool timeout{false};
-  data->get_buffer() = std::move(tcp_async::instance().wait_for_packet(
-      *_socket, deadline, socket_closed, timeout));
-
-  if (socket_closed) {
-    _socket_gone = true;
-    log_v2::tcp()->error("TCP peer '{}'connection reset ", _name);
-    throw exceptions::msg() << "TCP peer '" << _name << "'connection reset ";
-  }
-
-  if (timeout) {
-    log_v2::tcp()->trace("TCP Read timeout");
-    d.reset();
-    return false;
-  }
-
   log_v2::tcp()->debug("TCP Read done : {} bytes", data->get_buffer().size());
-  return true;
+  return !timeout;
 }
 
 /**
@@ -142,28 +143,8 @@ void stream::set_parent(acceptor* parent) {
   _parent = parent;
 }
 
-/**
- *  Set read timeout.
- *
- *  @param[in] secs  Timeout in seconds.
- */
-void stream::set_read_timeout(int secs) {
-  if (secs == -1)
-    _read_timeout = -1;
-  else
-    _read_timeout = secs;
-}
-
-/**
- *  Set write timeout.
- *
- *  @param[in] secs  Write timeout in seconds.
- */
-void stream::set_write_timeout(int secs) {
-  if (secs == -1)
-    _write_timeout = -1;
-  else
-    _write_timeout = secs;
+int32_t stream::flush() {
+  return _connection->flush();
 }
 
 /**
@@ -173,30 +154,26 @@ void stream::set_write_timeout(int secs) {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(std::shared_ptr<io::data> const& d) {
+int32_t stream::write(std::shared_ptr<io::data> const& d) {
+  log_v2::tcp()->trace("write on stream");
   // Check that data exists and should be processed.
-  if (!validate(d, "TCP"))
-    return 1;
+  assert(d);
+
+  if (_connection->is_closed())
+    throw exceptions::msg() << "Connection lost";
 
   if (d->type() == io::raw::static_type()) {
     std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
-    log_v2::tcp()->debug("TCP: write request of {0} bytes to peer '{1}'",
-                         r->size(), _name);
-    logging::debug(logging::low) << "TCP: write request of " << r->size()
-                                 << " bytes to peer '" << _name << "'";
-
+    log_v2::tcp()->debug("TCP: write request of {} bytes to peer '{}:{}'",
+                         r->size(), _host, _port);
+    log_v2::tcp()->trace("write {} bytes", r->size());
     std::error_code err;
-
-    asio::write(*_socket, asio::buffer(r->data(), r->size()), err);
-
-    if (err) {
-      _socket_gone = true;
-      log_v2::tcp()->error("TCP: error while writing to peer '{0}' : {1}",
-                           _name, err.message());
-      throw exceptions::msg() << "TCP: error while writing to peer '" << _name
-                              << "': " << err.message();
+    try {
+      return _connection->write(r->get_buffer());
+    } catch (std::exception const& e) {
+      log_v2::tcp()->error("Socket gone");
+      throw;
     }
   }
-
   return 1;
 }

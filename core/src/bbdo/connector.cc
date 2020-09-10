@@ -17,9 +17,11 @@
 */
 
 #include "com/centreon/broker/bbdo/connector.hh"
-#include <cassert>
+
 #include <algorithm>
+#include <cassert>
 #include <memory>
+
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -56,48 +58,9 @@ connector::connector(bool negotiate,
       _coarse{coarse},
       _extensions{extensions},
       _negotiate{negotiate},
-      _timeout{timeout},
-      _ack_limit{ack_limit} {
-  if (_timeout == (time_t)-1 || _timeout == 0)
-    _timeout = 3;
-}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other Object to copy.
- */
-connector::connector(connector const& other)
-    : io::endpoint{other},
-      _coarse{other._coarse},
-      _extensions{other._extensions},
-      _negotiate{other._negotiate},
-      _timeout{other._timeout},
-      _ack_limit{other._ack_limit} {}
-
-/**
- *  Destructor.
- */
-connector::~connector() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _coarse = other._coarse;
-    _extensions = other._extensions;
-    _negotiate = other._negotiate;
-    _timeout = other._timeout;
-    _ack_limit = other._ack_limit;
-  }
-  return *this;
-}
+      // FIXME DBR: why this trick?
+      _timeout(timeout == -1 || timeout == 0 ? 3 : timeout),
+      _ack_limit{ack_limit} {}
 
 /**
  *  Open the connector.
@@ -109,10 +72,10 @@ std::shared_ptr<io::stream> connector::open() {
   std::shared_ptr<io::stream> retval;
 
   // We must have a lower layer.
-  if (_from) {
+  if (_from)
     // Open lower layer connection and add our own layer.
     retval = _open(_from->open());
-  }
+
   return retval;
 }
 
@@ -129,7 +92,6 @@ std::shared_ptr<io::stream> connector::open() {
  */
 std::shared_ptr<io::stream> connector::_open(
     std::shared_ptr<io::stream> stream) {
-  assert(!_coarse);
   std::shared_ptr<bbdo::stream> bbdo_stream;
   if (stream) {
     bbdo_stream = std::make_shared<bbdo::stream>();

@@ -28,11 +28,9 @@ using namespace com::centreon::broker::tcp;
  * @brief tcp_connection constructor.
  *
  * @param io_context The io_context needed to use the socket.
- * @param server Is this connection a listener or a connector? (no more used)
  */
-tcp_connection::tcp_connection(asio::io_context& io_context, bool server)
-    : _server(server),
-      _socket(io_context),
+tcp_connection::tcp_connection(asio::io_context& io_context)
+    : _socket(io_context),
       _strand(io_context),
       _writing(false),
       _acks(0),
