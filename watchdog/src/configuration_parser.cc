@@ -131,7 +131,7 @@ void configuration_parser::_parse_centreon_broker_element(
     throw msg_fmt("reload field not provided for cbd instance");
 
   if (instance_name.string_value().empty())
-    throw msg_fmt("watchdog: missing instance name");
+    throw msg_fmt("missing instance name");
 
   std::string executable;
   if (instance_executable.string_value().empty())

@@ -71,6 +71,8 @@ static void apply_new_configuration(configuration const& cfg) {
   else
     logger.reset(new spdlog::logger("cbwd", {console_sink}));
 
+  logger->flush_on(spdlog::level::trace);
+
   std::set<std::string> to_update;
   std::set<std::string> to_delete;
   std::set<std::string> to_create;
@@ -183,6 +185,7 @@ int main(int argc, char** argv) {
   console_sink->set_level(spdlog::level::warn);
   console_sink->set_pattern("[cbwd] [%^%l%$] %v");
   logger.reset(new spdlog::logger("cbwd", {console_sink}));
+  logger->flush_on(spdlog::level::trace);
 
   if (argc != 2 || ::strcmp(argv[1], "-h") == 0) {
     print_help();
@@ -197,7 +200,7 @@ int main(int argc, char** argv) {
     configuration_parser parser;
     config = parser.parse(config_filename);
   } catch (std::exception const& e) {
-    logger->error("watchdog: Could not parse the configuration file '{}': {}",
+    logger->error("Could not parse the configuration file '{}': {}",
                   config_filename, e.what());
     return 2;
   }
@@ -215,6 +218,8 @@ int main(int argc, char** argv) {
       int status, stopped_pid;
       stopped_pid = waitpid(0, &status, WNOHANG);
       if (stopped_pid > 0) {
+        logger->error("cbd instance with PID {} has stopped, attempt to restart it",
+            stopped_pid);
         for (std::unordered_map<std::string, instance*>::iterator
                  it = instances.begin(),
                  end = instances.end();
@@ -232,7 +237,7 @@ int main(int argc, char** argv) {
         freq++;
         if (freq / instances.size() > 5) {
           logger->error(
-              "watchdog: cbd seems to stop too many times, you must look at "
+              "cbd seems to stop too many times, you must look at "
               "its configuration. The watchdog loop is slow down");
         } else
           timeout = 0;
@@ -247,7 +252,7 @@ int main(int argc, char** argv) {
           config = parser.parse(config_filename);
           apply_new_configuration(config);
         } catch (std::exception const& e) {
-          logger->error("watchdog: Could not parse the new configuration: {}",
+          logger->error("Could not parse the new configuration: {}",
                         e.what());
         }
         sighup = false;
