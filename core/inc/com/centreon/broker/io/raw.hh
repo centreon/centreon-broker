@@ -40,7 +40,7 @@ namespace io {
 class raw : public data {
  public:
   raw();
-  raw(raw const& r) = delete;
+  raw(raw const& r);
   raw(std::vector<char>&& b);
   ~raw();
   raw& operator=(raw const& r);

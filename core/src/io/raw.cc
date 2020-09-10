@@ -37,7 +37,7 @@ raw::raw() : io::data(raw::static_type()) {}
  *
  *  @param[in] r Object to copy.
  */
-//raw::raw(raw const& r) : io::data(r), _buffer{r._buffer} {}
+raw::raw(raw const& r) : io::data(r), _buffer{r._buffer} {}
 
 raw::raw(std::vector<char>&& b) : io::data(raw::static_type()), _buffer(std::move(b)) {}
 

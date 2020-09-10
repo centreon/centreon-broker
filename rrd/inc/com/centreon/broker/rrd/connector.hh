@@ -42,12 +42,12 @@ class connector : public io::endpoint {
   std::shared_ptr<io::stream> open() override;
   void set_cache_size(uint32_t cache_size);
   void set_cached_local(std::string const& local_socket);
-  void set_cached_net(uint16_t port) throw();
-  void set_ignore_update_errors(bool ignore) throw();
+  void set_cached_net(uint16_t port) noexcept;
+  void set_ignore_update_errors(bool ignore) noexcept;
   void set_metrics_path(std::string const& metrics_path);
   void set_status_path(std::string const& status_path);
-  void set_write_metrics(bool write_metrics) throw();
-  void set_write_status(bool write_status) throw();
+  void set_write_metrics(bool write_metrics) noexcept;
+  void set_write_status(bool write_status) noexcept;
 
  private:
   std::string _real_path_of(std::string const& path);

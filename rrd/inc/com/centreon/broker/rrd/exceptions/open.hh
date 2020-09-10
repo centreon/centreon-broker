@@ -34,9 +34,9 @@ namespace exceptions {
  */
 class open : public broker::exceptions::msg {
  public:
-  open() throw();
-  open(open const& o) throw();
-  ~open() throw();
+  open() noexcept;
+  open(open const& o) noexcept;
+  ~open() noexcept;
   virtual broker::exceptions::msg* clone() const;
   virtual void rethrow() const;
 
@@ -46,9 +46,9 @@ class open : public broker::exceptions::msg {
    *  @param[in] t Data to insert.
    */
   template <typename T>
-  open& operator<<(T t) throw() {
+  open& operator<<(T t) noexcept {
     broker::exceptions::msg::operator<<(t);
-    return (*this);
+    return *this;
   }
 };
 }  // namespace exceptions

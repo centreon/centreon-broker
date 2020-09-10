@@ -220,6 +220,7 @@ void creator::_open(std::string const& filename,
   int argc(0);
 
   // DS.
+  std::string ds;
   {
     const char* tt;
     switch (value_type) {
@@ -235,20 +236,21 @@ void creator::_open(std::string const& filename,
       default:
         tt = "GAUGE";
     }
-    std::string ds(fmt::format("DS:value:{}:{}:U:U", tt, step * 10));
+    ds = fmt::format("DS:value:{}:{}:U:U", tt, step * 10);
     argv[argc++] = ds.c_str();
   }
 
   // Base RRA.
+  std::string rra1;
   {
-    std::string rra1(
-        fmt::format("RRA:AVERAGE:0.5:{}:{}", step, length / step + 1));
+    rra1 = fmt::format("RRA:AVERAGE:0.5:{}:{}", step, length / step + 1);
     argv[argc++] = rra1.c_str();
   }
 
   // Aggregate RRA.
+  std::string rra2;
   if (step < 3600) {
-    std::string rra2(fmt::format("RRA:AVERAGE:0.5:3600:{}", length / 3600 + 1));
+    rra2 = fmt::format("RRA:AVERAGE:0.5:3600:{}", length / 3600 + 1);
     argv[argc++] = rra2.c_str();
   }
 
@@ -281,8 +283,8 @@ void creator::_read_write(int out_fd,
   // Reset position of in_fd.
   if (lseek(in_fd, 0, SEEK_SET) == (off_t)-1) {
     char const* msg(strerror(errno));
-    throw(exceptions::open()
-          << "RRD: could not create file '" << filename << "': " << msg);
+    throw exceptions::open()
+        << "RRD: could not create file '" << filename << "': " << msg;
   }
 
   char buffer[4096];
