@@ -405,17 +405,19 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
 
       if (expected != chksum) {
         // The packet is corrupted.
-        if (_skipped) {
+        if (_skipped == 0) {
           // First corrupted byte.
-          log_v2::bbdo()->error("peer {} is sending corrupted data: invalid CRC: {:04x} != {:04x}",
+          log_v2::bbdo()->error(
+              "peer {} is sending corrupted data: invalid CRC: {:04x} != "
+              "{:04x}",
               peer(), chksum, expected);
-          ++_skipped;
-          _packet.erase(_packet.begin());
-          continue;
         }
-      }
-      else if (_skipped) {
-        log_v2::bbdo()->info("peer {} sent {} corrupted payload bytes, resuming processing",
+        ++_skipped;
+        _packet.erase(_packet.begin());
+        continue;
+      } else if (_skipped) {
+        log_v2::bbdo()->info(
+            "peer {} sent {} corrupted payload bytes, resuming processing",
             peer(), _skipped);
         _skipped = 0;
       }
@@ -448,7 +450,8 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
                       _packet.begin() + BBDO_HEADER_SIZE + packet_size);
         log_v2::bbdo()->trace(
             "packet longer than header + content => splitting the whole of "
-            "size {} to content of size {} and remaining of size {}", previous_packet_size, content.size(), _packet.size());
+            "size {} to content of size {} and remaining of size {}",
+            previous_packet_size, content.size(), _packet.size());
       }
 
       if (packet_size != 0xffff) {
