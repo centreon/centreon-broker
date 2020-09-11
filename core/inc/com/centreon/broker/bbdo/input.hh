@@ -21,8 +21,8 @@
 
 //#include <memory>
 //#include <mutex>
-#include <string>
 #include <deque>
+#include <string>
 
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/stream.hh"
@@ -57,7 +57,11 @@ class input : virtual public io::stream {
       _buf.push_back(v);
     }
     buffer(const buffer&) = delete;
-    buffer(buffer&& other) : _event_id(other._event_id), _source_id(other._source_id), _dest_id(other._dest_id), _buf(std::move(other._buf)) {}
+    buffer(buffer&& other)
+        : _event_id(other._event_id),
+          _source_id(other._source_id),
+          _dest_id(other._dest_id),
+          _buf(std::move(other._buf)) {}
 
     buffer& operator=(const buffer&) = delete;
     buffer& operator=(buffer&& other) {
@@ -90,11 +94,12 @@ class input : virtual public io::stream {
     }
 
     void push_back(std::vector<char>&& v) { _buf.push_back(v); }
+    uint32_t get_event_id() const { return _event_id; }
   };
 
   /* If during a packet reading, we get several ones, this vector is useful
-  * to keep in cache all but the first one. It will be read before a call
-  * to _read_packet(). */
+   * to keep in cache all but the first one. It will be read before a call
+   * to _read_packet(). */
   std::vector<char> _packet;
 
   /* We good get parts of BBDO packets in the wrong order, this deque is useful
