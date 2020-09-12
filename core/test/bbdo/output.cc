@@ -147,7 +147,7 @@ TEST_F(OutputTest, WriteLongService) {
   svc->service_id = 18;
   svc->output.reserve(70000);
   char c = 'A';
-  for (uint32_t i = 0; i < svc->output.capacity(); i++) {
+  for (uint32_t i = 0; i < 70000; i++) {
     svc->output.push_back(c++);
     if (c > 'Z')
       c = 'A';
@@ -163,7 +163,7 @@ TEST_F(OutputTest, WriteLongService) {
   stm.write(svc);
   std::vector<char> const& mem1 = memory_stream->get_memory();
 
-  ASSERT_EQ(mem1.size(), 73956u);
+  ASSERT_EQ(mem1.size(), 70285u);
 
   // The buffer is too big. So it is splitted into several -- here 2 -- buffers.
   // The are concatenated, keeped into the same block, but a new header is
@@ -175,15 +175,15 @@ TEST_F(OutputTest, WriteLongService) {
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12u);
 
   // Second block
-  // We have 73956 = HeaderSize + block1 + HeaderSize + block2
-  //      So 73956 = 16         + 0xffff + 16         + 8389
+  // We have 70285 = HeaderSize + block1 + HeaderSize + block2
+  //      So 70285 = 16         + 0xffff + 16         + 4718
   ASSERT_EQ(
       htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535 + 2)),
-      8389u);
+      4718u);
 
   // Check checksum
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)),
-            63960u);
+            10233u);
 }
 
 TEST_F(OutputTest, WriteReadService) {
