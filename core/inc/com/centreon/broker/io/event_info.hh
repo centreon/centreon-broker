@@ -62,7 +62,6 @@ class event_info {
    *  @param[in] name      Event name.
    *  @param[in] ops       Event operations (constructor, ...).
    *  @param[in] entries   Event property mapping.
-   *  @param[in] table     SQL table of event (if any).
    *  @param[in] table_v2  SQL table of event in version 2.x (if any).
    */
   event_info(std::string const& name,
