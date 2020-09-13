@@ -200,7 +200,8 @@ void mysql_stmt::operator<<(io::data const& d) {
             bind_value_as_i32(field, current_entry->get_short(d));
             break;
           case mapping::source::STRING: {
-            const std::string& v(current_entry->get_string(d));
+            size_t max_len;
+            const std::string& v(current_entry->get_string(d, &max_len));
             if (current_entry->get_attribute() ==
                 mapping::entry::invalid_on_zero) {
               if (v == "")

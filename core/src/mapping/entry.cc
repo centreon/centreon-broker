@@ -80,8 +80,8 @@ short entry::get_short(io::data const& d) const {
  *
  *  @return The string value.
  */
-std::string const& entry::get_string(io::data const& d) const {
-  return _ptr->get_string(d);
+std::string const& entry::get_string(io::data const& d, size_t* max_len) const {
+  return _ptr->get_string(d, max_len);
 }
 
 /**
