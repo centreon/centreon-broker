@@ -192,12 +192,6 @@ mapping::entry const downtime::entries[] = {
     mapping::entry(&downtime::was_cancelled, "cancelled"),
     mapping::entry(&downtime::was_started, "started"),
     mapping::entry(&downtime::comment, "comment_data"),
-    mapping::entry(&downtime::is_recurring,
-                   "is_recurring",
-                   mapping::entry::invalid_on_v2),
-    mapping::entry(&downtime::recurring_timeperiod,
-                   "recurring_timeperiod",
-                   mapping::entry::invalid_on_v2),
     mapping::entry(&downtime::come_from, ""),
     mapping::entry()};
 

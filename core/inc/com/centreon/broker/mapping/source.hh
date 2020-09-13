@@ -56,7 +56,7 @@ class source {
   virtual double get_double(io::data const& d) = 0;
   virtual int get_int(io::data const& d) = 0;
   virtual short get_short(io::data const& d) = 0;
-  virtual std::string const& get_string(io::data const& d) = 0;
+  virtual std::string const& get_string(io::data const& d, size_t* max_len) = 0;
   virtual timestamp const& get_time(io::data const& d) = 0;
   virtual uint32_t get_uint(io::data const& d) = 0;
   virtual unsigned short get_ushort(io::data const& d) = 0;

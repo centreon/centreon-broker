@@ -19,6 +19,7 @@
 #ifndef CCB_MAPPING_ENTRY_HH
 #define CCB_MAPPING_ENTRY_HH
 
+#include <cassert>
 #include <memory>
 
 #include "com/centreon/broker/mapping/property.hh"
@@ -34,7 +35,6 @@ namespace mapping {
  */
 class entry {
   const uint32_t _attribute;
-  char const* _name;
   char const* _name_v2;
   source* _ptr;
   bool _serialize;
@@ -45,9 +45,7 @@ class entry {
   enum attribute {
     always_valid = 0,
     invalid_on_zero = (1 << 0),
-    invalid_on_minus_one = (1 << 1),
-    invalid_on_v2 = (1 << 2),
-    invalid_on_v3 = (1 << 3)
+    invalid_on_minus_one = (1 << 1)
   };
 
   /**
@@ -62,14 +60,10 @@ class entry {
   entry(U(T::*prop),
         char const* name,
         uint32_t attr = always_valid,
-        bool serialize = true,
-        char const* name_v2 = nullptr)
+        bool serialize = true)
       : _attribute(attr),
-        _name(name),
-        _name_v2(name_v2),
+        _name_v2(name),
         _serialize(serialize) {
-    if (!_name_v2 && !(attr & invalid_on_v2))
-      _name_v2 = _name;
     _source = std::make_shared<property<T>>(prop, &_type);
     _ptr = _source.get();
   }
@@ -79,7 +73,6 @@ class entry {
    */
   entry()
       : _attribute(always_valid),
-        _name(nullptr),
         _name_v2(nullptr),
         _ptr(nullptr),
         _serialize(false),
@@ -92,7 +85,6 @@ class entry {
    */
   entry(entry const& other)
       : _attribute(other._attribute),
-        _name(other._name),
         _name_v2(other._name_v2),
         _ptr(other._ptr),
         _serialize(other._serialize),
@@ -104,12 +96,7 @@ class entry {
   bool get_bool(io::data const& d) const;
   double get_double(io::data const& d) const;
   int get_int(io::data const& d) const;
-  /**
-   *  Get the name of this entry.
-   *
-   *  @return The name of this entry.
-   */
-  constexpr char const* get_name() { return _name; }
+
   /**
    *  Get the name of this entry in version 2.x.
    *
@@ -123,7 +110,7 @@ class entry {
  */
   constexpr bool get_serialize() { return _serialize; }
   short get_short(io::data const& d) const;
-  std::string const& get_string(io::data const& d) const;
+  std::string const& get_string(io::data const& d, size_t* max_len = nullptr) const;
   timestamp const& get_time(io::data const& d) const;
 /**
  *  Get entry type.

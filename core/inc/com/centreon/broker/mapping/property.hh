@@ -164,7 +164,7 @@ class property : public source {
    */
   property& operator=(property const& other) {
     _prop = other._prop;
-    return (*this);
+    return *this;
   }
 
   /**
@@ -175,7 +175,7 @@ class property : public source {
    *  @return Boolean property.
    */
   bool get_bool(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.b));
+    return static_cast<T const*>(&d)->*(_prop.b);
   }
 
   /**
@@ -186,7 +186,7 @@ class property : public source {
    *  @return Double property.
    */
   double get_double(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.d));
+    return static_cast<T const*>(&d)->*(_prop.d);
   }
 
   /**
@@ -197,7 +197,7 @@ class property : public source {
    *  @return Integer property.
    */
   int get_int(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.i));
+    return static_cast<T const*>(&d)->*(_prop.i);
   }
 
   /**
@@ -208,7 +208,7 @@ class property : public source {
    *  @return Short property.
    */
   short get_short(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.s));
+    return static_cast<T const*>(&d)->*(_prop.s);
   }
 
   /**
@@ -218,8 +218,8 @@ class property : public source {
    *
    *  @return String property.
    */
-  std::string const& get_string(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.q));
+  std::string const& get_string(io::data const& d, size_t* max_len) {
+    return static_cast<T const*>(&d)->*(_prop.q);
   }
 
   /**
@@ -230,7 +230,7 @@ class property : public source {
    *  @return Time property.
    */
   timestamp const& get_time(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.t));
+    return static_cast<T const*>(&d)->*(_prop.t);
   }
 
   /**
@@ -241,7 +241,7 @@ class property : public source {
    *  @return Unsigned integer property.
    */
   uint32_t get_uint(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.I));
+    return static_cast<T const*>(&d)->*(_prop.I);
   }
 
   /**
@@ -252,7 +252,7 @@ class property : public source {
    *  @return Unsigned short property.
    */
   unsigned short get_ushort(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.S));
+    return static_cast<T const*>(&d)->*(_prop.S);
   }
 
   /**

@@ -78,9 +78,6 @@ mapping::entry const host_dependency::entries[] = {
                    "host_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&host_dependency::notification_failure_options,
-                   nullptr,
-                   mapping::entry::always_valid,
-                   true,
                    "notification_failure_options"),
     mapping::entry()};
 
