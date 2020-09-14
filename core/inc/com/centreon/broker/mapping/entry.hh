@@ -48,6 +48,17 @@ class entry {
     invalid_on_minus_one = (1 << 1)
   };
 
+  template <typename T>
+  entry(std::string(T::*prop),
+        char const* name,
+        size_t max_len,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr), _name_v2(name), _serialize(serialize) {
+    _source = std::make_shared<sproperty<T>>(prop, max_len, &_type);
+    _ptr = _source.get();
+  }
+
   /**
    *  @brief Constructor.
    *
@@ -61,9 +72,7 @@ class entry {
         char const* name,
         uint32_t attr = always_valid,
         bool serialize = true)
-      : _attribute(attr),
-        _name_v2(name),
-        _serialize(serialize) {
+      : _attribute(attr), _name_v2(name), _serialize(serialize) {
     _source = std::make_shared<property<T>>(prop, &_type);
     _ptr = _source.get();
   }
@@ -90,9 +99,9 @@ class entry {
         _serialize(other._serialize),
         _source(other._source),
         _type(other._type) {}
-  ~entry() = default;
+  ~entry() noexcept = default;
   entry& operator=(entry const&) = delete;
-  constexpr uint32_t get_attribute() { return _attribute; }
+  constexpr uint32_t get_attribute() const { return _attribute; }
   bool get_bool(io::data const& d) const;
   double get_double(io::data const& d) const;
   int get_int(io::data const& d) const;
@@ -102,30 +111,31 @@ class entry {
    *
    *  @return The name of this entry in version 2.x.
    */
-  constexpr char const* get_name_v2() { return _name_v2; }
-/**
- *  Check if entry is to be serialized.
- *
- *  @return True if entry is to be serialized.
- */
-  constexpr bool get_serialize() { return _serialize; }
+  constexpr char const* get_name_v2() const { return _name_v2; }
+  /**
+   *  Check if entry is to be serialized.
+   *
+   *  @return True if entry is to be serialized.
+   */
+  constexpr bool get_serialize() const { return _serialize; }
   short get_short(io::data const& d) const;
-  std::string const& get_string(io::data const& d, size_t* max_len = nullptr) const;
+  std::string const& get_string(io::data const& d,
+                                size_t* max_len = nullptr) const;
   timestamp const& get_time(io::data const& d) const;
-/**
- *  Get entry type.
- *
- *  @return Entry type.
- */
-  constexpr uint32_t get_type() { return _type; }
+  /**
+   *  Get entry type.
+   *
+   *  @return Entry type.
+   */
+  constexpr uint32_t get_type() const { return _type; }
   uint32_t get_uint(io::data const& d) const;
   unsigned short get_ushort(io::data const& d) const;
-/**
- *  Get if this entry is a null entry.
- *
- *  @return  True if this entry is a null entry (last entry).
- */
-  constexpr bool is_null() { return _type == source::UNKNOWN; }
+  /**
+   *  Get if this entry is a null entry.
+   *
+   *  @return  True if this entry is a null entry (last entry).
+   */
+  constexpr bool is_null() const { return _type == source::UNKNOWN; }
   void set_bool(io::data& d, bool value) const;
   void set_double(io::data& d, double value) const;
   void set_int(io::data& d, int value) const;

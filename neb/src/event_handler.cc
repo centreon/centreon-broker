@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/event_handler.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -128,11 +130,20 @@ mapping::entry const event_handler::entries[] = {
     mapping::entry(&event_handler::state, "state"),
     mapping::entry(&event_handler::state_type, "state_type"),
     mapping::entry(&event_handler::timeout, "timeout"),
-    mapping::entry(&event_handler::command_args, "command_args"),
-    mapping::entry(&event_handler::command_line, "command_line"),
-    mapping::entry(&event_handler::output, "output"), mapping::entry()};
+    mapping::entry(&event_handler::command_args,
+                   "command_args",
+                   get_eventhandlers_col_size(eventhandlers_command_args)),
+    mapping::entry(&event_handler::command_line,
+                   "command_line",
+                   get_eventhandlers_col_size(eventhandlers_command_line)),
+    mapping::entry(&event_handler::output,
+                   "output",
+                   get_eventhandlers_col_size(eventhandlers_output)),
+    mapping::entry()};
 
 // Operations.
-static io::data* new_event_handler() { return new event_handler; }
+static io::data* new_event_handler() {
+  return new event_handler;
+}
 io::event_info::event_operations const event_handler::operations = {
     &new_event_handler};

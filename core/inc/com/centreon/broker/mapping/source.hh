@@ -20,6 +20,7 @@
 #define CCB_MAPPING_SOURCE_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
@@ -48,8 +49,16 @@ class source {
     USHORT,
     ULONG
   };
-  source();
-  virtual ~source();
+
+  /**
+   *  Default constructor.
+   */
+  source() {}
+
+  /**
+   *  Destructor.
+   */
+  virtual ~source() noexcept {}
   source(source const&) = delete;
   source& operator=(source const&) = delete;
   virtual bool get_bool(io::data const& d) = 0;

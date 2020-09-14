@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/service_check.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -76,7 +78,9 @@ mapping::entry const service_check::entries[] = {
     mapping::entry(&service_check::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&service_check::command_line, "command_line"),
+    mapping::entry(&service_check::command_line,
+                   "command_line",
+                   get_services_col_size(services_command_line)),
     mapping::entry()};
 
 // Operations.

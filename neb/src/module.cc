@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/module.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -94,9 +96,11 @@ void module::_internal_copy(module const& other) {
 
 // Mapping.
 mapping::entry const module::entries[] = {
-    mapping::entry(&module::args, "args"),
+    mapping::entry(&module::args, "args", get_modules_col_size(modules_args)),
     mapping::entry(&module::enabled, ""),
-    mapping::entry(&module::filename, "filename"),
+    mapping::entry(&module::filename,
+                   "filename",
+                   get_modules_col_size(modules_filename)),
     mapping::entry(&module::poller_id,
                    "instance_id",
                    mapping::entry::invalid_on_zero),

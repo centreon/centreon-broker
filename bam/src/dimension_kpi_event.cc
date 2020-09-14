@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -130,32 +132,47 @@ mapping::entry const dimension_kpi_event::entries[] = {
     mapping::entry(&bam::dimension_kpi_event::ba_id,
                    "ba_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&bam::dimension_kpi_event::ba_name, "ba_name"),
+    mapping::entry(
+        &bam::dimension_kpi_event::ba_name,
+        "ba_name",
+        get_mod_bam_reporting_kpi_col_size(mod_bam_reporting_kpi_ba_name)),
     mapping::entry(&bam::dimension_kpi_event::host_id,
                    "host_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&bam::dimension_kpi_event::host_name, "host_name"),
+    mapping::entry(
+        &bam::dimension_kpi_event::host_name,
+        "host_name",
+        get_mod_bam_reporting_kpi_col_size(mod_bam_reporting_kpi_host_name)),
     mapping::entry(&bam::dimension_kpi_event::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&bam::dimension_kpi_event::service_description,
-                   "service_description"),
+                   "service_description",
+                   get_mod_bam_reporting_kpi_col_size(
+                       mod_bam_reporting_kpi_service_description)),
     mapping::entry(&bam::dimension_kpi_event::kpi_ba_id,
                    "kpi_ba_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&bam::dimension_kpi_event::kpi_ba_name, "kpi_ba_name"),
+    mapping::entry(
+        &bam::dimension_kpi_event::kpi_ba_name,
+        "kpi_ba_name",
+        get_mod_bam_reporting_kpi_col_size(mod_bam_reporting_kpi_kpi_ba_name)),
     mapping::entry(&bam::dimension_kpi_event::meta_service_id,
                    "meta_service_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&bam::dimension_kpi_event::meta_service_name,
                    "meta_service_name",
+                   get_mod_bam_reporting_kpi_col_size(
+                       mod_bam_reporting_kpi_meta_service_name),
                    mapping::entry::invalid_on_zero),
     mapping::entry(&bam::dimension_kpi_event::boolean_id,
                    "boolean_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&bam::dimension_kpi_event::boolean_name,
-                   "boolean_name",
-                   mapping::entry::invalid_on_zero),
+    mapping::entry(
+        &bam::dimension_kpi_event::boolean_name,
+        "boolean_name",
+        get_mod_bam_reporting_kpi_col_size(mod_bam_reporting_kpi_boolean_name),
+        mapping::entry::invalid_on_zero),
     mapping::entry(&bam::dimension_kpi_event::impact_warning, "impact_warning"),
     mapping::entry(&bam::dimension_kpi_event::impact_critical,
                    "impact_critical"),

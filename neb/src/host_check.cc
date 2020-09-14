@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/host_check.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -70,7 +72,9 @@ mapping::entry const host_check::entries[] = {
                    "host_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&host_check::next_check, ""),
-    mapping::entry(&host_check::command_line, "command_line"),
+    mapping::entry(&host_check::command_line,
+                   "command_line",
+                   get_hosts_col_size(hosts_command_line)),
     mapping::entry()};
 
 // Operations.

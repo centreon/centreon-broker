@@ -52,6 +52,14 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 
+add_custom_command(
+  DEPENDS ${SRC_DIR}/database/table_max_size.py
+  COMMENT "Generating table_max_size.hh"
+  OUTPUT ${INC_DIR}/database/table_max_size.hh
+  COMMAND python3
+  ARGS ${SRC_DIR}/database/table_max_size.py ${INC_DIR}/database/table_max_size.hh "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml" "${PROJECT_SOURCE_DIR}/simu/docker/bam.sql"
+)
+
 
 set(protobuf_MODULE_COMPATIBLE True)
 find_package(json11 REQUIRED)
@@ -436,7 +444,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/logging/syslogger.cc
   ${SRC_DIR}/logging/temp_logger.cc
   ${SRC_DIR}/mapping/entry.cc
-  ${SRC_DIR}/mapping/source.cc
   ${SRC_DIR}/misc/diagnostic.cc
   ${SRC_DIR}/misc/filesystem.cc
   ${SRC_DIR}/misc/global_lock.cc

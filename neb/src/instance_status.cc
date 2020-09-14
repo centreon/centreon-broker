@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/instance_status.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -135,8 +137,7 @@ mapping::entry const instance_status::entries[] = {
     mapping::entry(&instance_status::last_command_check,
                    "last_command_check",
                    mapping::entry::invalid_on_minus_one),
-    mapping::entry(&instance_status::notifications_enabled,
-                   "notifications"),
+    mapping::entry(&instance_status::notifications_enabled, "notifications"),
     mapping::entry(&instance_status::obsess_over_hosts, "obsess_over_hosts"),
     mapping::entry(&instance_status::obsess_over_services,
                    "obsess_over_services"),
@@ -145,9 +146,12 @@ mapping::entry const instance_status::entries[] = {
     mapping::entry(&instance_status::passive_service_checks_enabled,
                    "passive_service_checks"),
     mapping::entry(&instance_status::global_host_event_handler,
-                   "global_host_event_handler"),
-    mapping::entry(&instance_status::global_service_event_handler,
-                   "global_service_event_handler"),
+                   "global_host_event_handler",
+                   get_instances_col_size(instances_global_host_event_handler)),
+    mapping::entry(
+        &instance_status::global_service_event_handler,
+        "global_service_event_handler",
+        get_instances_col_size(instances_global_service_event_handler)),
     mapping::entry()};
 
 // Operations.
