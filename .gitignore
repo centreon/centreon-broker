@@ -23,6 +23,6 @@ build
 cmake-build-debug
 core/inc/com/centreon/broker/vars.hh
 core/inc/com/centreon/broker/version.hh
-storage/inc/com/centreon/broker/storage/table_max_size.hh
+core/inc/com/centreon/broker/database/table_max_size.hh
 .idea
 .vscode

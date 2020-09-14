@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/host_group.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -73,7 +75,9 @@ mapping::entry const host_group::entries[] = {
     mapping::entry(&host_group::id,
                    "hostgroup_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&host_group::name, "name"),
+    mapping::entry(&host_group::name,
+                   "name",
+                   get_hostgroups_col_size(hostgroups_name)),
     mapping::entry(&host_group::enabled, nullptr),
     mapping::entry(&host_group::poller_id,
                    nullptr,

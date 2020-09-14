@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/service_status.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -108,20 +110,22 @@ void service_status::_internal_copy(service_status const& ss) {
 
 // Mapping.
 mapping::entry const service_status::entries[] = {
-    mapping::entry(&service_status::acknowledged,
-                   "acknowledged"),
+    mapping::entry(&service_status::acknowledged, "acknowledged"),
     mapping::entry(&service_status::acknowledgement_type,
                    "acknowledgement_type"),
     mapping::entry(&service_status::active_checks_enabled, "active_checks"),
     mapping::entry(&service_status::check_interval, "check_interval"),
-    mapping::entry(&service_status::check_period, "check_period"),
+    mapping::entry(&service_status::check_period,
+                   "check_period",
+                   get_services_col_size(services_check_period)),
     mapping::entry(&service_status::check_type, "check_type"),
     mapping::entry(&service_status::current_check_attempt, "check_attempt"),
     mapping::entry(&service_status::current_state, "state"),
-    mapping::entry(&service_status::downtime_depth,
-                   "scheduled_downtime_depth"),
+    mapping::entry(&service_status::downtime_depth, "scheduled_downtime_depth"),
     mapping::entry(&service_status::enabled, "enabled"),
-    mapping::entry(&service_status::event_handler, "event_handler"),
+    mapping::entry(&service_status::event_handler,
+                   "event_handler",
+                   get_services_col_size(services_event_handler)),
     mapping::entry(&service_status::event_handler_enabled,
                    "event_handler_enabled"),
     mapping::entry(&service_status::execution_time, "execution_time"),
@@ -170,13 +174,10 @@ mapping::entry const service_status::entries[] = {
                    mapping::entry::invalid_on_zero),
     mapping::entry(&service_status::no_more_notifications,
                    "no_more_notifications"),
-    mapping::entry(&service_status::notification_number,
-                   "notification_number"),
-    mapping::entry(&service_status::notifications_enabled,
-                   "notify"),
+    mapping::entry(&service_status::notification_number, "notification_number"),
+    mapping::entry(&service_status::notifications_enabled, "notify"),
     mapping::entry(&service_status::obsess_over, "obsess_over_service"),
-    mapping::entry(&service_status::passive_checks_enabled,
-                   "passive_checks"),
+    mapping::entry(&service_status::passive_checks_enabled, "passive_checks"),
     mapping::entry(&service_status::percent_state_change,
                    "percent_state_change"),
     mapping::entry(&service_status::retry_interval, "retry_interval"),
@@ -186,9 +187,15 @@ mapping::entry const service_status::entries[] = {
                    mapping::entry::invalid_on_zero),
     mapping::entry(&service_status::should_be_scheduled, "should_be_scheduled"),
     mapping::entry(&service_status::state_type, "state_type"),
-    mapping::entry(&service_status::check_command, "check_command"),
-    mapping::entry(&service_status::output, "output"),
-    mapping::entry(&service_status::perf_data, "perfdata"),
+    mapping::entry(&service_status::check_command,
+                   "check_command",
+                   get_services_col_size(services_check_command)),
+    mapping::entry(&service_status::output,
+                   "output",
+                   get_services_col_size(services_output)),
+    mapping::entry(&service_status::perf_data,
+                   "perfdata",
+                   get_services_col_size(services_perfdata)),
     mapping::entry()};
 
 // Operations.

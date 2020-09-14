@@ -33,7 +33,7 @@ namespace mapping {
  */
 template <typename T>
 class property : public source {
- private:
+ protected:
   union {
     bool T::*b;
     double T::*d;
@@ -96,18 +96,6 @@ class property : public source {
   }
 
   /**
-   *  String constructor.
-   *
-   *  @param[in]  q String property.
-   *  @param[out] t If not NULL, set to STRING.
-   */
-  property(std::string(T::*q), source_type* t) {
-    _prop.q = q;
-    if (t)
-      *t = STRING;
-  }
-
-  /**
    *  Time constructor.
    *
    *  @param[in]  tt Time property.
@@ -115,6 +103,18 @@ class property : public source {
    */
   property(timestamp(T::*ts), source_type* t) {
     _prop.t = ts;
+    if (t)
+      *t = TIME;
+  }
+
+  /**
+   *  String constructor.
+   *
+   *  @param[in]  q String property.
+   *  @param[out] t  If not NULL, set to STRING.
+   */
+  property(std::string(T::*q), source_type* t) {
+    _prop.q = q;
     if (t)
       *t = TIME;
   }
@@ -153,7 +153,7 @@ class property : public source {
   /**
    *  Destructor.
    */
-  ~property() {}
+  ~property() noexcept {}
 
   /**
    *  Assignment operator.
@@ -335,6 +335,39 @@ class property : public source {
     static_cast<T*>(&d)->*(_prop.S) = value;
   }
 };
+
+template <typename T>
+class sproperty : public property<T> {
+  const size_t _max_len;
+
+ public:
+  /**
+   *  String constructor.
+   *
+   *  @param[in]  q String property.
+   *  @param[in]  max_len This value is used for serialization. If the string
+   *  is longer, it will be truncated to be stored in the database unless the
+   *  value is 0.
+   *  @param[out] t If not NULL, set to STRING.
+   */
+  sproperty(std::string(T::*q), size_t max_len, source::source_type* t)
+      : property<T>(q, t), _max_len(max_len) {}
+
+  /**
+   *  Get a string property.
+   *
+   *  @param[in] d Object to get from.
+   *
+   *  @return String property.
+   */
+  std::string const& get_string(io::data const& d, size_t* max_len) {
+    if (max_len)
+      *max_len = _max_len;
+    return property<T>::get_string(d, max_len);
+    // return static_cast<T const*>(&d)->*(_prop.q);
+  }
+};
+
 }  // namespace mapping
 
 CCB_END()

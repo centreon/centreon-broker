@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/bam/kpi_event.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -107,8 +109,14 @@ mapping::entry const kpi_event::entries[] = {
     mapping::entry(&bam::kpi_event::end_time, "end_time"),
     mapping::entry(&bam::kpi_event::impact_level, "impact_level"),
     mapping::entry(&bam::kpi_event::in_downtime, "in_downtime"),
-    mapping::entry(&bam::kpi_event::output, "first_output"),
-    mapping::entry(&bam::kpi_event::perfdata, "first_perfdata"),
+    mapping::entry(&bam::kpi_event::output,
+                   "first_output",
+                   get_mod_bam_reporting_kpi_events_col_size(
+                       mod_bam_reporting_kpi_events_first_output)),
+    mapping::entry(&bam::kpi_event::perfdata,
+                   "first_perfdata",
+                   get_mod_bam_reporting_kpi_events_col_size(
+                       mod_bam_reporting_kpi_events_first_perfdata)),
     mapping::entry(&bam::kpi_event::start_time, "start_time"),
     mapping::entry(&bam::kpi_event::status, "status"),
     mapping::entry()};

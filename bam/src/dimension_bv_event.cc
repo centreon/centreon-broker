@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -92,8 +94,14 @@ mapping::entry const dimension_bv_event::entries[] = {
     mapping::entry(&bam::dimension_bv_event::bv_id,
                    "bv_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&bam::dimension_bv_event::bv_name, "bv_name"),
-    mapping::entry(&bam::dimension_bv_event::bv_description, "bv_description"),
+    mapping::entry(
+        &bam::dimension_bv_event::bv_name,
+        "bv_name",
+        get_mod_bam_reporting_bv_col_size(mod_bam_reporting_bv_bv_name)),
+    mapping::entry(
+        &bam::dimension_bv_event::bv_description,
+        "bv_description",
+        get_mod_bam_reporting_bv_col_size(mod_bam_reporting_bv_bv_description)),
     mapping::entry()};
 
 // Operations.
