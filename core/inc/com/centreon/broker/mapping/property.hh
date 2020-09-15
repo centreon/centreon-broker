@@ -218,7 +218,7 @@ class property : public source {
    *
    *  @return String property.
    */
-  std::string const& get_string(io::data const& d, size_t* max_len) {
+  std::string const& get_string(io::data const& d, size_t* max_len __attribute__((unused))) {
     return static_cast<T const*>(&d)->*(_prop.q);
   }
 
