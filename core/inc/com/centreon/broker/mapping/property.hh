@@ -116,7 +116,7 @@ class property : public source {
   property(std::string(T::*q), source_type* t) {
     _prop.q = q;
     if (t)
-      *t = TIME;
+      *t = STRING;
   }
 
   /**
