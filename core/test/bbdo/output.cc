@@ -27,13 +27,13 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/misc/variant.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/persistent_file.hh"
-#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -46,8 +46,11 @@ class into_memory : public io::stream {
   bool read(std::shared_ptr<io::data>& d,
             time_t deadline = (time_t)-1) override {
     (void)deadline;
+    if (_memory.empty())
+      return false;
     std::shared_ptr<io::raw> raw(new io::raw);
-    raw->get_buffer() = _memory;
+    raw->get_buffer() = std::move(_memory);
+    _memory.clear();
     d = raw;
     return true;
   }
@@ -58,6 +61,7 @@ class into_memory : public io::stream {
   }
 
   std::vector<char> const& get_memory() const { return _memory; }
+  std::vector<char>& get_mutable_memory() { return _memory; }
 
  private:
   std::vector<char> _memory;
@@ -259,7 +263,6 @@ TEST_F(OutputTest, ShortPersistentFile) {
   std::shared_ptr<io::data> e;
   mf.reset();
 
-
   mf.reset(new persistent_file("/tmp/test_output"));
   mf->read(e, 0);
 
@@ -305,7 +308,6 @@ TEST_F(OutputTest, LongPersistentFile) {
   std::shared_ptr<io::data> e;
   mf.reset();
 
-
   mf.reset(new persistent_file("/tmp/long_output"));
   mf->read(e, 0);
 
@@ -317,4 +319,142 @@ TEST_F(OutputTest, LongPersistentFile) {
 
   l.unload();
   std::remove("/tmp/long_output");
+}
+
+TEST_F(OutputTest, WriteReadBadChksum) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 12345;
+  svc->service_id = 18;
+
+  svc->output = "ServiceOutput";
+  svc->perf_data = "value=18.0";
+  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+
+  std::shared_ptr<io::stream> stream;
+  std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
+  bbdo::stream stm;
+  stm.set_substream(memory_stream);
+  stm.set_coarse(false);
+  stm.set_negotiate(false);
+  stm.negotiate(bbdo::stream::negotiate_first);
+  stm.write(svc);
+  /* Duplication of the serialized service in the stream. */
+  std::vector<char> m1(memory_stream->get_memory().begin(),
+                       memory_stream->get_memory().end());
+
+  svc->perf_data = "metric=3.14";
+  svc->output = "SecondOutput";
+  stm.write(svc);
+  auto& m = memory_stream->get_mutable_memory();
+  m.insert(m.end(), m1.begin(), m1.end());
+  /* Corruption of the first chksum. */
+  m[0]++;
+
+  std::shared_ptr<io::data> e;
+  stm.read(e, time(nullptr) + 1000);
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(new_svc->output, std::string("ServiceOutput"));
+  ASSERT_EQ(new_svc->perf_data, std::string("value=18.0"));
+  l.unload();
+}
+
+TEST_F(OutputTest, ServiceTooShort) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 12345;
+  svc->service_id = 18;
+
+  svc->output = "ServiceOutput";
+  svc->perf_data = "value=18.0";
+  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+
+  std::shared_ptr<io::stream> stream;
+  std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
+  bbdo::stream stm;
+  stm.set_substream(memory_stream);
+  stm.set_coarse(false);
+  stm.set_negotiate(false);
+  stm.negotiate(bbdo::stream::negotiate_first);
+  stm.write(svc);
+  /* Duplication of the serialized service in the stream. */
+  std::vector<char> m1(memory_stream->get_memory().begin(),
+                       memory_stream->get_memory().end());
+
+  svc->perf_data = "metric=3.14";
+  svc->output = "SecondOutput";
+  stm.write(svc);
+  auto& m = memory_stream->get_mutable_memory();
+  /* The first event is short cut by 10 bytes. */
+  m.erase(m.end() - 10, m.end());
+  m.insert(m.end(), m1.begin(), m1.end());
+
+  std::shared_ptr<io::data> e;
+  /* Here, we still can read the first event even if it is corrupted. */
+  stm.read(e, time(nullptr) + 1000);
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(new_svc->output, std::string("SecondOutput"));
+  ASSERT_NE(new_svc->perf_data, std::string("metric=3.14"));
+
+  /* We cannot read the second one. */
+  stm.read(e, time(nullptr) + 1000);
+  new_svc = std::static_pointer_cast<neb::service>(e);
+  ASSERT_TRUE(e == nullptr);
+  l.unload();
+}
+
+TEST_F(OutputTest, ServiceTooShortAndAGoodOne) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 12345;
+  svc->service_id = 18;
+
+  svc->output = "ServiceOutput";
+  svc->perf_data = "value=18.0";
+  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+
+  std::shared_ptr<io::stream> stream;
+  std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
+  bbdo::stream stm;
+  stm.set_substream(memory_stream);
+  stm.set_coarse(false);
+  stm.set_negotiate(false);
+  stm.negotiate(bbdo::stream::negotiate_first);
+  stm.write(svc);
+  /* Duplication of the serialized service in the stream. */
+  std::vector<char> m1(memory_stream->get_memory().begin(),
+                       memory_stream->get_memory().end());
+
+  svc->perf_data = "metric=3.14";
+  svc->output = "SecondOutput";
+  stm.write(svc);
+  auto& m = memory_stream->get_mutable_memory();
+  /* The first event is short cut by 10 bytes. */
+  m1.insert(m1.end(), m.begin(), m.end());
+  m.erase(m.end() - 12, m.end());
+  m.insert(m.end(), m1.begin(), m1.end());
+
+  std::shared_ptr<io::data> e;
+  /* Here, we still can read the first event even if it is corrupted. */
+  stm.read(e, time(nullptr) + 1000);
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(new_svc->output, std::string("SecondOutput"));
+  ASSERT_NE(new_svc->perf_data, std::string("metric=3.14"));
+
+  /* We cannot read the second one. */
+  /* But the third is readable. */
+  stm.read(e, time(nullptr) + 1000);
+  new_svc = std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(new_svc->output, std::string("SecondOutput"));
+  ASSERT_EQ(new_svc->perf_data, std::string("metric=3.14"));
+  l.unload();
 }
