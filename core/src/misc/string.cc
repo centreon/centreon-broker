@@ -357,14 +357,14 @@ size_t string::adjust_size_utf8(const std::string& str, size_t s) {
  *
  * @return a reference to the string str.
  */
-std::string string::copy_utf8(const std::string& str, size_t s) {
+size_t string::adjust_size_utf8(const std::string& str, size_t s) {
   if (s >= str.size())
-    return std::string(str);
+    return str.size();
   if (s == 0)
-    return std::string();
+    return s;
   else {
     while ((str[s] & 0xc0) == 0x80)
       s--;
-    return std::string(str.begin(), str.begin() + s);
+    return s;
   }
 }
