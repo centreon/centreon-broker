@@ -216,3 +216,28 @@ TEST(truncate, utf8_1) {
     ASSERT_EQ(tmp, tmp1);
   }
 }
+
+TEST(copy_utf8, nominal1) {
+  std::string str("foobar");
+  ASSERT_EQ(string::copy_utf8(str, 3), "foo");
+}
+
+TEST(copy_utf8, nominal2) {
+  std::string str("foobar");
+  ASSERT_EQ(string::copy_utf8(str, 0), "");
+}
+
+TEST(copy_utf8, nominal3) {
+  std::string str("foobar 超级杀手死亡检查");
+  ASSERT_EQ(string::copy_utf8(str, 1000), "foobar 超级杀手死亡检查");
+}
+
+TEST(copy_utf8, utf8_1) {
+  std::string str("告警数量");
+  for (size_t i = 0; i < str.size(); i++) {
+    std::string cpy(string::copy_utf8(str, i));
+    std::string tmp(string::check_string_utf8(cpy));
+    std::cout << tmp << '\n';
+    ASSERT_EQ(cpy, tmp);
+  }
+}

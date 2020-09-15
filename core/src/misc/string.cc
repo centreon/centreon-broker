@@ -344,3 +344,26 @@ std::string& string::truncate(std::string& str, size_t s) {
   }
   return str;
 }
+
+/**
+ * @brief This function makes a copy of the first s bytes of the given string
+ * but it takes care of the UTF-8 encoding and avoids to cut the string in the
+ * middle of a character. This function assumes the string to be UTF-8 encoded.
+ *
+ * @param str A string to truncate.
+ * @param s The desired size, maybe the resulting string will contain less
+ * characters.
+ *
+ * @return a reference to the string str.
+ */
+std::string string::copy_utf8(const std::string& str, size_t s) {
+  if (s >= str.size())
+    return std::string(str);
+  if (s == 0)
+    return std::string();
+  else {
+    while ((str[s] & 0xc0) == 0x80)
+      s--;
+    return std::string(str.begin(), str.begin() + s);
+  }
+}
