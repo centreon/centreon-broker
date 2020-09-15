@@ -19,6 +19,7 @@
 #include "com/centreon/broker/misc/string.hh"
 
 #include <gtest/gtest.h>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/misc/misc.hh"
 
@@ -209,35 +210,33 @@ TEST(truncate, nominal3) {
 
 TEST(truncate, utf8_1) {
   std::string str("告警数量");
-  for (size_t i = 0; i < str.size(); i++) {
+  for (size_t i = 0; i <= str.size(); i++) {
     std::string tmp(str);
     std::string tmp1(string::check_string_utf8(string::truncate(tmp, i)));
-    std::cout << tmp1 << '\n';
     ASSERT_EQ(tmp, tmp1);
   }
 }
 
-TEST(copy_utf8, nominal1) {
+TEST(adjust_size_utf8, nominal1) {
   std::string str("foobar");
-  ASSERT_EQ(string::copy_utf8(str, 3), "foo");
+  ASSERT_EQ(fmt::string_view(str.data(), string::adjust_size_utf8(str, 3)), fmt::string_view("foo"));
 }
 
-TEST(copy_utf8, nominal2) {
+TEST(adjust_size_utf8, nominal2) {
   std::string str("foobar");
-  ASSERT_EQ(string::copy_utf8(str, 0), "");
+  ASSERT_EQ(fmt::string_view(str.data(), string::adjust_size_utf8(str, 0)), "");
 }
 
-TEST(copy_utf8, nominal3) {
+TEST(adjust_size_utf8, nominal3) {
   std::string str("foobar 超级杀手死亡检查");
-  ASSERT_EQ(string::copy_utf8(str, 1000), "foobar 超级杀手死亡检查");
+  ASSERT_EQ(fmt::string_view(str.data(), string::adjust_size_utf8(str, 1000)), str);
 }
 
-TEST(copy_utf8, utf8_1) {
+TEST(adjust_size_utf8, utf8_1) {
   std::string str("告警数量");
-  for (size_t i = 0; i < str.size(); i++) {
-    std::string cpy(string::copy_utf8(str, i));
-    std::string tmp(string::check_string_utf8(cpy));
-    std::cout << tmp << '\n';
-    ASSERT_EQ(cpy, tmp);
+  for (size_t i = 0; i <= str.size(); i++) {
+    fmt::string_view sv(str.data(), string::adjust_size_utf8(str, i));
+    std::string tmp(string::check_string_utf8(std::string(sv.data(), sv.data() + sv.size())));
+    ASSERT_EQ(sv.size(), tmp.size());
   }
 }

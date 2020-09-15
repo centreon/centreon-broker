@@ -63,8 +63,8 @@ class mysql_stmt {
   void bind_value_as_bool(int range, bool value);
   void bind_value_as_bool(std::string const& key, bool value);
 
-  void bind_value_as_str(int range, std::string const& value);
-  void bind_value_as_str(std::string const& key, std::string const& value);
+  void bind_value_as_str(int range, const fmt::string_view& value);
+  void bind_value_as_str(std::string const& key, const fmt::string_view& value);
 
   void bind_value_as_null(int range);
   void bind_value_as_null(std::string const& key);

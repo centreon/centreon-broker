@@ -51,7 +51,7 @@ std::string base64_encode(std::string const& str);
 bool is_number(const std::string& s);
 std::string check_string_utf8(const std::string& str) noexcept;
 std::string& truncate(std::string& str, size_t s);
-std::string copy_utf8(const std::string& str, size_t s);
+size_t adjust_size_utf8(const std::string& str, size_t s);
 
 }  // namespace string
 }  // namespace misc

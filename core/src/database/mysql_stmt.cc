@@ -202,23 +202,23 @@ void mysql_stmt::operator<<(io::data const& d) {
             break;
           case mapping::source::STRING: {
             size_t max_len = 0;
-            std::string vv;
-            const std::string* vp;
             const std::string& v(current_entry->get_string(d, &max_len));
+            fmt::string_view sv;
             if (max_len > 0 && v.size() > max_len) {
               log_v2::sql()->trace("column '{}' should admit a too long string, it is cut to {} characters.", current_entry->get_name_v2(), max_len);
-              vv = misc::string::copy_utf8(v, max_len);
-              vp = &vv;
+              max_len = misc::string::adjust_size_utf8(v, max_len);
+              sv = fmt::string_view(v.data(), max_len);
             }
-            else vp = &v;
+            else
+              sv = fmt::string_view(v);
             if (current_entry->get_attribute() ==
                 mapping::entry::invalid_on_zero) {
-              if (*vp == "")
+              if (sv.size() == 0)
                 bind_value_as_null(field);
               else
-                bind_value_as_str(field, *vp);
+                bind_value_as_str(field, sv);
             } else
-              bind_value_as_str(field, *vp);
+              bind_value_as_str(field, sv);
           } break;
           case mapping::source::TIME: {
             time_t v(current_entry->get_time(d));
@@ -476,14 +476,14 @@ void mysql_stmt::bind_value_as_bool(std::string const& name, bool value) {
   }
 }
 
-void mysql_stmt::bind_value_as_str(int range, std::string const& value) {
+void mysql_stmt::bind_value_as_str(int range, const fmt::string_view& value) {
   if (!_bind)
     _bind.reset(new database::mysql_bind(_param_count));
   _bind->set_value_as_str(range, value);
 }
 
 void mysql_stmt::bind_value_as_str(std::string const& name,
-                                   std::string const& value) {
+                                   const fmt::string_view& value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
     bind_value_as_str(it->second, value);

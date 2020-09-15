@@ -52,7 +52,7 @@ class mysql_bind {
   void set_value_as_null(int range);
   void set_value_as_tiny(int range, char value);
   char* value_as_str(int range);
-  void set_value_as_str(int range, std::string const& value);
+  void set_value_as_str(int range, const fmt::string_view& value);
   int get_size() const;
   bool value_is_null(int range) const;
   bool is_empty() const;

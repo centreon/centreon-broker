@@ -85,7 +85,7 @@ char* mysql_bind::value_as_str(int range) {
   return static_cast<char*>(_bind[range].buffer);
 }
 
-void mysql_bind::set_value_as_str(int range, std::string const& value) {
+void mysql_bind::set_value_as_str(int range, const fmt::string_view& value) {
   assert(static_cast<uint32_t>(range) < _bind.size());
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_STRING);
