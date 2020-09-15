@@ -24,8 +24,9 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -200,16 +201,24 @@ void mysql_stmt::operator<<(io::data const& d) {
             bind_value_as_i32(field, current_entry->get_short(d));
             break;
           case mapping::source::STRING: {
-            size_t max_len;
+            size_t max_len = 0;
+            std::string vv;
+            const std::string* vp;
             const std::string& v(current_entry->get_string(d, &max_len));
+            if (max_len > 0 && v.size() > max_len) {
+              log_v2::sql()->trace("column '{}' should admit a too long string, it is cut to {} characters.", current_entry->get_name_v2(), max_len);
+              vv = misc::string::copy_utf8(v, max_len);
+              vp = &vv;
+            }
+            else vp = &v;
             if (current_entry->get_attribute() ==
                 mapping::entry::invalid_on_zero) {
-              if (v == "")
+              if (*vp == "")
                 bind_value_as_null(field);
               else
-                bind_value_as_str(field, v);
+                bind_value_as_str(field, *vp);
             } else
-              bind_value_as_str(field, v);
+              bind_value_as_str(field, *vp);
           } break;
           case mapping::source::TIME: {
             time_t v(current_entry->get_time(d));
@@ -234,9 +243,6 @@ void mysql_stmt::operator<<(io::data const& d) {
             uint32_t v(current_entry->get_uint(d));
             switch (current_entry->get_attribute()) {
               case mapping::entry::invalid_on_zero:
-                //              if (v == 0)
-                //                bind_value_as_null(field);
-                //              else
                 bind_value_as_u32(field, v);
                 break;
               case mapping::entry::invalid_on_minus_one:
@@ -258,8 +264,8 @@ void mysql_stmt::operator<<(io::data const& d) {
       }
     }
   } else
-    throw(exceptions::msg() << "cannot bind object of type " << d.type()
-                            << " to database query: mapping does not exist");
+    throw exceptions::msg() << "cannot bind object of type " << d.type()
+                            << " to database query: mapping does not exist";
 }
 
 void mysql_stmt::bind_value_as_i32(int range, int value) {
@@ -285,8 +291,7 @@ void mysql_stmt::bind_value_as_i32(std::string const& name, int value) {
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}", name, get_id());
   }
 }
 
@@ -313,8 +318,8 @@ void mysql_stmt::bind_value_as_u32(std::string const& name, uint32_t value) {
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
@@ -342,8 +347,8 @@ void mysql_stmt::bind_value_as_u64(std::string const& name,
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
@@ -376,8 +381,8 @@ void mysql_stmt::bind_value_as_f32(std::string const& name, float value) {
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
@@ -410,8 +415,8 @@ void mysql_stmt::bind_value_as_f64(std::string const& name, double value) {
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
@@ -438,8 +443,8 @@ void mysql_stmt::bind_value_as_tiny(std::string const& name, char value) {
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
@@ -466,8 +471,8 @@ void mysql_stmt::bind_value_as_bool(std::string const& name, bool value) {
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
@@ -495,8 +500,8 @@ void mysql_stmt::bind_value_as_str(std::string const& name,
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
@@ -523,8 +528,8 @@ void mysql_stmt::bind_value_as_null(std::string const& name) {
         return;
       }
     }
-    logging::debug(logging::low) << "mysql: cannot bind object with name '"
-                                 << name << "' in statement " << get_id();
+    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+                                 name, get_id());
   }
 }
 
