@@ -45,8 +45,7 @@ if (WITH_ASAN)
   set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 endif ()
 
-set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
-include_directories("${INC_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/core/inc")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
@@ -60,6 +59,7 @@ add_custom_command(
   ARGS ${SRC_DIR}/database/table_max_size.py ${INC_DIR}/database/table_max_size.hh "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml" "${PROJECT_SOURCE_DIR}/simu/docker/bam.sql"
 )
 
+set_source_files_properties("${INC_DIR}/database/table_max_size.hh" PROPERTIES GENERATED TRUE)
 
 set(protobuf_MODULE_COMPATIBLE True)
 find_package(json11 REQUIRED)
@@ -575,6 +575,7 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/database/mysql_result.hh
   ${INC_DIR}/database/mysql_stmt.hh
   ${INC_DIR}/database/mysql_task.hh
+  ${INC_DIR}/database/table_max_size.hh
   ${INC_DIR}/mysql_connection.hh
   ${INC_DIR}/query_preparator.hh
   ${INC_DIR}/persistent_cache.hh

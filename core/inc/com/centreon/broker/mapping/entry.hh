@@ -37,7 +37,7 @@ class entry {
   const uint32_t _attribute;
   char const* _name_v2;
   source* _ptr;
-  bool _serialize;
+  const bool _serialize;
   std::shared_ptr<source> _source;
   source::source_type _type;
 
@@ -101,7 +101,7 @@ class entry {
         _type(other._type) {}
   ~entry() noexcept = default;
   entry& operator=(entry const&) = delete;
-  constexpr uint32_t get_attribute() const { return _attribute; }
+  uint32_t get_attribute() const { return _attribute; }
   bool get_bool(io::data const& d) const;
   double get_double(io::data const& d) const;
   int get_int(io::data const& d) const;
@@ -111,13 +111,13 @@ class entry {
    *
    *  @return The name of this entry in version 2.x.
    */
-  constexpr char const* get_name_v2() const { return _name_v2; }
+  const char* get_name_v2() const { return _name_v2; }
   /**
    *  Check if entry is to be serialized.
    *
    *  @return True if entry is to be serialized.
    */
-  constexpr bool get_serialize() const { return _serialize; }
+  bool get_serialize() const { return _serialize; }
   short get_short(io::data const& d) const;
   std::string const& get_string(io::data const& d,
                                 size_t* max_len = nullptr) const;
@@ -127,7 +127,7 @@ class entry {
    *
    *  @return Entry type.
    */
-  constexpr uint32_t get_type() const { return _type; }
+  uint32_t get_type() const { return _type; }
   uint32_t get_uint(io::data const& d) const;
   unsigned short get_ushort(io::data const& d) const;
   /**
@@ -135,7 +135,7 @@ class entry {
    *
    *  @return  True if this entry is a null entry (last entry).
    */
-  constexpr bool is_null() const { return _type == source::UNKNOWN; }
+  bool is_null() const { return _type == source::UNKNOWN; }
   void set_bool(io::data& d, bool value) const;
   void set_double(io::data& d, double value) const;
   void set_int(io::data& d, int value) const;

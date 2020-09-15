@@ -50,7 +50,7 @@ class event_info {
   };
 
  private:
-  const mapping::entry* _mapping;
+  const mapping::entry* const _mapping;
   const std::string _name;
   const event_operations* _ops;
   const std::string _table_v2;
@@ -81,10 +81,10 @@ class event_info {
         _table_v2(other._table_v2) {}
   ~event_info() = default;
   event_info& operator=(event_info const&) = delete;
-  constexpr mapping::entry const* get_mapping() const { return _mapping; }
-  constexpr std::string const& get_name() const { return _name; }
-  constexpr event_operations const& get_operations() const { return *_ops; }
-  constexpr std::string const& get_table_v2() const { return _table_v2; }
+  const mapping::entry* get_mapping() const { return _mapping; }
+  const std::string& get_name() const { return _name; }
+  const event_operations& get_operations() const { return *_ops; }
+  const std::string& get_table_v2() const { return _table_v2; }
 };
 }  // namespace io
 

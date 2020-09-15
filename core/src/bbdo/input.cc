@@ -210,7 +210,7 @@ static io::data* unserialize(uint32_t event_type,
       t->source_id = source_id;
       t->destination_id = destination_id;
       // Browse all mapping to unserialize the object.
-      for (mapping::entry const* current_entry(info->get_mapping());
+      for (const mapping::entry* current_entry = info->get_mapping();
            !current_entry->is_null(); ++current_entry)
         // Skip entries that should not be serialized.
         if (current_entry->get_serialize()) {
