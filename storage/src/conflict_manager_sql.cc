@@ -45,9 +45,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   /* Database version. */
 
   int32_t conn = _mysql.choose_connection_by_instance(instance_id);
-  logging::debug(logging::low)
-      << "conflict_manager: disable hosts and services (instance_id: "
-      << instance_id << ")";
+  log_v2::sql()->debug(
+      "conflict_manager: disable hosts and services (instance_id: {})", instance_id);
   /* Disable hosts and services. */
   std::string query(fmt::format(
       "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id "
@@ -60,9 +59,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::hosts);
 
   /* Remove host group memberships. */
-  logging::debug(logging::low)
-      << "conflict_manager: remove host group memberships (instance_id:"
-      << instance_id << ")";
+  log_v2::sql()->debug(
+      "conflict_manager: remove host group memberships (instance_id: {})", instance_id);
   query = fmt::format(
       "DELETE hosts_hostgroups FROM hosts_hostgroups LEFT JOIN hosts ON "
       "hosts_hostgroups.host_id=hosts.host_id WHERE hosts.instance_id={}",
@@ -74,9 +72,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::hostgroups);
 
   /* Remove service group memberships */
-  logging::debug(logging::low)
-      << "conflict_manager: remove service group memberships (instance_id:"
-      << instance_id << ")";
+  log_v2::sql()->debug("conflict_manager: remove service group memberships (instance_id: {})", instance_id);
   query = fmt::format(
       "DELETE services_servicegroups FROM services_servicegroups LEFT JOIN "
       "hosts ON services_servicegroups.host_id=hosts.host_id WHERE "
@@ -88,9 +84,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::servicegroups);
 
   /* Remove host groups. */
-  logging::debug(logging::low)
-      << "conflict_manager: remove empty host groups (instance_id:"
-      << instance_id << ")";
+  log_v2::sql()->debug("conflict_manager: remove empty host groups (instance_id: {})", instance_id);
   _mysql.run_query(
       "DELETE hg FROM hostgroups AS hg LEFT JOIN hosts_hostgroups AS hhg ON "
       "hg.hostgroup_id=hhg.hostgroup_id WHERE hhg.hostgroup_id IS NULL",
@@ -98,9 +92,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::hostgroups);
 
   /* Remove service groups. */
-  logging::debug(logging::low)
-      << "conflict_manager: remove empty service groups (instance_id:"
-      << instance_id << ")";
+  log_v2::sql()->debug("conflict_manager: remove empty service groups (instance_id: {})", instance_id);
 
   _mysql.run_query(
       "DELETE sg FROM servicegroups AS sg LEFT JOIN services_servicegroups as "
@@ -110,9 +102,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::servicegroups);
 
   /* Remove host dependencies. */
-  logging::debug(logging::low)
-      << "conflict_manager: remove host dependencies (instance_id:"
-      << instance_id << ")";
+  log_v2::sql()->debug("conflict_manager: remove host dependencies (instance_id: {})", instance_id);
   query = fmt::format(
       "DELETE hhd FROM hosts_hosts_dependencies AS hhd INNER JOIN hosts as "
       "h ON hhd.host_id=h.host_id OR hhd.dependent_host_id=h.host_id WHERE "
@@ -125,9 +115,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::host_dependencies);
 
   /* Remove host parents. */
-  logging::debug(logging::low)
-      << "conflict_manager: remove host parents (instance_id:" << instance_id
-      << ")";
+  log_v2::sql()->debug("conflict_manager: remove host parents (instance_id: {})", instance_id);
   query = fmt::format(
       "DELETE hhp FROM hosts_hosts_parents AS hhp INNER JOIN hosts as h ON "
       "hhp.child_id=h.host_id OR hhp.parent_id=h.host_id WHERE "
@@ -139,9 +127,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::host_parents);
 
   /* Remove service dependencies. */
-  logging::debug(logging::low)
-      << "conflict_manager: remove service dependencies (instance_id:"
-      << instance_id << ")";
+  log_v2::sql()->debug("conflict_manager: remove service dependencies (instance_id: {})", instance_id);
   query = fmt::format(
       "DELETE ssd FROM services_services_dependencies AS ssd"
       " INNER JOIN services as s"
@@ -156,16 +142,14 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::service_dependencies);
 
   /* Remove list of modules. */
-  logging::debug(logging::low)
-      << "SQL: remove list of modules (instance_id:" << instance_id << ")";
+  log_v2::sql()->debug("SQL: remove list of modules (instance_id: {})", instance_id);
   query = fmt::format("DELETE FROM modules WHERE instance_id={}", instance_id);
   _mysql.run_query(
       query, "conflict_manager: could not clean modules table: ", false, conn);
   _add_action(conn, actions::modules);
 
   // Cancellation of downtimes.
-  logging::debug(logging::low)
-      << "SQL: Cancellation of downtimes (instance_id:" << instance_id << ")";
+  log_v2::sql()->debug("SQL: Cancellation of downtimes (instance_id: {})", instance_id);
   query = fmt::format(
       "UPDATE downtimes AS d INNER JOIN hosts AS h ON d.host_id=h.host_id "
       "SET d.cancelled=1 WHERE d.actual_end_time IS NULL AND d.cancelled=0 "
@@ -177,9 +161,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _add_action(conn, actions::downtimes);
 
   // Remove comments.
-  logging::debug(logging::low)
-      << "conflict_manager: remove comments (instance_id:" << instance_id
-      << ")";
+  log_v2::sql()->debug(
+      "conflict_manager: remove comments (instance_id: {})", instance_id);
   query = fmt::format(
       "UPDATE comments AS c JOIN hosts AS h ON c.host_id=h.host_id SET "
       "c.deletion_time={} WHERE h.instance_id={} AND c.persistent=0 AND "
@@ -208,8 +191,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
  *  Update all the hosts and services of unresponsive instances.
  */
 void conflict_manager::_update_hosts_and_services_of_unresponsive_instances() {
-  logging::debug(logging::medium)
-      << "conflict_manager: checking for outdated instances";
+  log_v2::sql()->debug("conflict_manager: checking for outdated instances");
 
   /* Don't do anything if timeout is deactivated. */
   if (_instance_timeout == 0)
@@ -324,9 +306,7 @@ bool conflict_manager::_is_valid_poller(uint32_t instance_id) {
   bool deleted = false;
   if (_cache_deleted_instance_id.find(instance_id) !=
       _cache_deleted_instance_id.end()) {
-    logging::info(logging::low) << "conflict_manager: discarding some event "
-                                   "related to a deleted poller ("
-                                << instance_id << ")";
+    log_v2::sql()->info("conflict_manager: discarding some event related to a deleted poller ({})", instance_id);
     deleted = true;
   } else
     /* Update poller timestamp. */
@@ -414,9 +394,8 @@ void conflict_manager::_process_comment(std::shared_ptr<io::data> d) {
   int32_t conn = _mysql.choose_connection_by_instance(cmmnt.poller_id);
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing comment of poller " << cmmnt.poller_id << " on ("
-      << cmmnt.host_id << ", " << cmmnt.service_id << ")";
+  log_v2::sql()->info(
+      "SQL: processing comment of poller {} on ({}, {})", cmmnt.poller_id, cmmnt.host_id, cmmnt.service_id);
 
   // Prepare queries.
   if (!_comment_insupdate.prepared()) {
@@ -472,9 +451,8 @@ void conflict_manager::_process_custom_variable(std::shared_ptr<io::data> d) {
 
   // Processing.
   if (cv.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling custom variable '" << cv.name << "' of ("
-        << cv.host_id << ", " << cv.service_id << ")";
+    log_v2::sql()->info("SQL: enabling custom variable '{}' of ({}, {})",
+        cv.name, cv.host_id, cv.service_id);
     std::string err_msg(
         fmt::format("SQL: could not store custom variable (name: {}"
                     ", host: {}, service: {}): ",
@@ -484,9 +462,8 @@ void conflict_manager::_process_custom_variable(std::shared_ptr<io::data> d) {
     _mysql.run_statement(_custom_variable_insupdate, err_msg, true, conn);
     _add_action(conn, actions::custom_variables);
   } else {
-    logging::info(logging::medium)
-        << "SQL: disabling custom variable '" << cv.name << "' of ("
-        << cv.host_id << ", " << cv.service_id << ")";
+    log_v2::sql()->info("SQL: disabling custom variable '{}' of ({}, {})",
+        cv.name, cv.host_id, cv.service_id);
     _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
     _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
     _custom_variable_delete.bind_value_as_str(":name", cv.name);
@@ -527,9 +504,7 @@ void conflict_manager::_process_custom_variable_status(
     _custom_variable_status_insupdate = qp.prepare_insert_or_update(_mysql);
   }
 
-  logging::info(logging::medium)
-      << "SQL: enabling custom variable '" << cv.name << "' of (" << cv.host_id
-      << ", " << cv.service_id << ")";
+  log_v2::sql()->info("SQL: enabling custom variable '{}' of ({}, {})", cv.name, cv.host_id, cv.service_id);
 
   std::string err_msg(
       fmt::format("SQL: could not store custom variable (name: {}"
@@ -558,14 +533,13 @@ void conflict_manager::_process_downtime(std::shared_ptr<io::data> d) {
   neb::downtime const& dd = *static_cast<neb::downtime const*>(d.get());
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing downtime event (poller: " << dd.poller_id
-      << ", host: " << dd.host_id << ", service: " << dd.service_id
-      << ", start time: " << dd.start_time << ", end_time: " << dd.end_time
-      << ", actual start time: " << dd.actual_start_time
-      << ", actual end time: " << dd.actual_end_time
-      << ", duration: " << dd.duration << ", entry time: " << dd.entry_time
-      << ", deletion time: " << dd.deletion_time << ")";
+  log_v2::sql()->info(
+      "SQL: processing downtime event (poller: {}"
+      ", host: {}, service: {}, start time: {}, end_time: {}"
+      ", actual start time: {}"
+      ", actual end time: {}"
+      ", duration: {}, entry time: {}"
+      ", deletion time: {})", dd.poller_id, dd.host_id, dd.service_id, dd.start_time, dd.end_time, dd.actual_start_time, dd.actual_end_time, dd.duration, dd.entry_time, dd.deletion_time);
 
   // Check if poller is valid.
   if (_is_valid_poller(dd.poller_id)) {
@@ -617,10 +591,9 @@ void conflict_manager::_process_event_handler(std::shared_ptr<io::data> d) {
       *static_cast<neb::event_handler const*>(d.get());
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing event handler event (host: " << eh.host_id
-      << ", service: " << eh.service_id << ", start time " << eh.start_time
-      << ")";
+  log_v2::sql()->info("SQL: processing event handler event (host: {}"
+      ", service: {}, start time {})",
+      eh.host_id, eh.service_id, eh.start_time);
 
   // Prepare queries.
   if (!_event_handler_insupdate.prepared()) {
@@ -657,10 +630,10 @@ void conflict_manager::_process_flapping_status(std::shared_ptr<io::data> d) {
       *static_cast<neb::flapping_status const*>(d.get()));
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing flapping status event (host: " << fs.host_id
-      << ", service: " << fs.service_id << ", entry time " << fs.event_time
-      << ")";
+  log_v2::sql()->info(
+      "SQL: processing flapping status event (host: {}, service: {}, entry time: {})",
+      fs.host_id,
+      fs.service_id, fs.event_time);
 
   // Prepare queries.
   if (!_flapping_status_insupdate.prepared()) {
@@ -742,10 +715,9 @@ void conflict_manager::_process_host_check(std::shared_ptr<io::data> d) {
     }
   } else
     // Do nothing.
-    logging::info(logging::medium)
-        << "SQL: not processing host check event (host: " << hc.host_id
-        << ", command: " << hc.command_line << ", check type: " << hc.check_type
-        << ", next check: " << hc.next_check << ", now: " << now << ")";
+    log_v2::sql()->info(
+        "SQL: not processing host check event (host: {}, command: {}, check type: {}, next check: {}, now: {})",
+        hc.host_id, hc.command_line, hc.check_type, hc.next_check, now);
 }
 
 /**
@@ -769,9 +741,7 @@ void conflict_manager::_process_host_dependency(std::shared_ptr<io::data> d) {
 
   // Insert/Update.
   if (hd.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling host dependency of " << hd.dependent_host_id << " on "
-        << hd.host_id;
+    log_v2::sql()->info("SQL: enabling host dependency of {} on {}", hd.dependent_host_id, hd.host_id);
 
     // Prepare queries.
     if (!_host_dependency_insupdate.prepared()) {
@@ -794,9 +764,8 @@ void conflict_manager::_process_host_dependency(std::shared_ptr<io::data> d) {
   }
   // Delete.
   else {
-    logging::info(logging::medium)
-        << "SQL: removing host dependency of " << hd.dependent_host_id << " on "
-        << hd.host_id;
+    log_v2::sql()->info("SQL: removing host dependency of {} on {}",
+        hd.dependent_host_id, hd.host_id);
     std::string query(fmt::format(
         "DELETE FROM hosts_hosts_dependencies WHERE dependent_host_id={}"
         " AND host_id={}",
@@ -821,9 +790,8 @@ void conflict_manager::_process_host_group(std::shared_ptr<io::data> d) {
   neb::host_group const& hg{*static_cast<neb::host_group const*>(d.get())};
 
   if (hg.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling host group " << hg.id << " ('" << hg.name
-        << "') on instance " << hg.poller_id;
+    log_v2::sql()->info("SQL: enabling host group {} ('{}' on instance {})",
+        hg.id, hg.name, hg.poller_id);
     _prepare_hg_insupdate_statement();
 
     std::string err_msg(
@@ -838,9 +806,8 @@ void conflict_manager::_process_host_group(std::shared_ptr<io::data> d) {
   }
   // Delete group.
   else {
-    logging::info(logging::medium)
-        << "SQL: disabling host group " << hg.id << " ('" << hg.name
-        << "' on instance " << hg.poller_id;
+    log_v2::sql()->info("SQL: disabling host group {} ('{}' on instance {})",
+        hg.id, hg.name, hg.poller_id);
 
     // Delete group members.
     {
@@ -873,10 +840,9 @@ void conflict_manager::_process_host_group_member(std::shared_ptr<io::data> d) {
 
   if (hgm.enabled) {
     // Log message.
-    logging::info(logging::medium)
-        << "SQL: enabling membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance "
-        << hgm.poller_id;
+    log_v2::sql()->info(
+        "SQL: enabling membership of host {} to host group {} on instance {}",
+        hgm.host_id, hgm.group_id, hgm.poller_id);
 
     // We only need to try to insert in this table as the
     // host_id/hostgroup_id should be UNIQUE.
@@ -927,10 +893,9 @@ void conflict_manager::_process_host_group_member(std::shared_ptr<io::data> d) {
   // Delete.
   else {
     // Log message.
-    logging::info(logging::medium)
-        << "SQL: disabling membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance "
-        << hgm.poller_id;
+    log_v2::sql()->info(
+        "SQL: disabling membership of host {} to host group {} on instance {}",
+        hgm.host_id, hgm.group_id, hgm.poller_id);
 
     if (!_host_group_member_delete.prepared()) {
       query_preparator::event_unique unique;
@@ -1025,8 +990,8 @@ void conflict_manager::_process_host_parent(std::shared_ptr<io::data> d) {
   // Enable parenting.
   if (hp.enabled) {
     // Log message.
-    logging::info(logging::medium)
-        << "SQL: host " << hp.parent_id << " is parent of host " << hp.host_id;
+    log_v2::sql()->info(
+        "SQL: host {} is parent of host {}", hp.parent_id, hp.host_id);
 
     // Prepare queries.
     if (!_host_parent_insert.prepared()) {
@@ -1046,9 +1011,9 @@ void conflict_manager::_process_host_parent(std::shared_ptr<io::data> d) {
   }
   // Disable parenting.
   else {
-    logging::info(logging::medium)
-        << "SQL: host " << hp.parent_id << " is not parent of host "
-        << hp.host_id << " anymore";
+    log_v2::sql()->info(
+        "SQL: host {} is not parent of host {} anymore",
+        hp.parent_id, hp.host_id);
 
     // Prepare queries.
     if (!_host_parent_delete.prepared()) {
@@ -1111,12 +1076,7 @@ void conflict_manager::_process_host_status(std::shared_ptr<io::data> d) {
     _add_action(conn, actions::hosts);
   } else
     // Do nothing.
-    logging::info(logging::medium)
-        << "SQL: not processing host status event (id: " << hs.host_id
-        << ", check type: " << hs.check_type
-        << ", last check: " << hs.last_check
-        << ", next check: " << hs.next_check << ", now: " << now << ", state ("
-        << hs.current_state << ", " << hs.state_type << "))";
+    log_v2::sql()->info("SQL: not processing host status event (id: {}, check type: {}, last check: {}, next check: {}, now: {}, state: ({}, {}))", hs.host_id, hs.check_type, hs.last_check, hs.next_check, now, hs.current_state, hs.state_type);
 }
 
 /**
@@ -1137,10 +1097,8 @@ void conflict_manager::_process_instance(std::shared_ptr<io::data> d) {
                          actions::host_dependencies);
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing poller event "
-      << "(id: " << i.poller_id << ", name: " << i.name
-      << ", running: " << (i.is_running ? "yes" : "no") << ")";
+  log_v2::sql()->info("SQL: processing poller event (id: {}, name: {}, running: {})",
+      i.poller_id, i.name, i.is_running ? "yes" : "no");
 
   // Clean tables.
   _clean_tables(i.poller_id);
@@ -1183,9 +1141,8 @@ void conflict_manager::_process_instance_status(std::shared_ptr<io::data> d) {
                          actions::comments);
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing poller status event (id: " << is.poller_id
-      << ", last alive: " << is.last_alive << ")";
+  log_v2::sql()->info("SQL: processing poller status event (id: {}, last alive: {})",
+      is.poller_id, is.last_alive);
 
   // Processing.
   if (_is_valid_poller(is.poller_id)) {
@@ -1220,9 +1177,8 @@ void conflict_manager::_process_log(std::shared_ptr<io::data> d) {
   neb::log_entry const& le(*static_cast<neb::log_entry const*>(d.get()));
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing log of poller '" << le.poller_name
-      << "' generated at " << le.c_time << " (type " << le.msg_type << ")";
+  log_v2::sql()->info("SQL: processing log of poller '{}' generated at {} (type {})",
+      le.poller_name, le.c_time, le.msg_type);
 
   // Prepare query.
   if (!_log_insert.prepared()) {
@@ -1249,10 +1205,8 @@ void conflict_manager::_process_module(std::shared_ptr<io::data> d) {
   int32_t conn = _mysql.choose_connection_by_instance(m.poller_id);
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing module event (poller: " << m.poller_id
-      << ", filename: " << m.filename
-      << ", loaded: " << (m.loaded ? "yes" : "no") << ")";
+  log_v2::sql()->info("SQL: processing module event (poller: {}, filename: {}, loaded: {})",
+      m.poller_id, m.filename, m.loaded ? "yes" : "no");
 
   // Processing.
   if (_is_valid_poller(m.poller_id)) {
@@ -1312,10 +1266,8 @@ void conflict_manager::_process_service_check(std::shared_ptr<io::data> d) {
       || (sc.next_check >= now - 5 * 60) ||
       !sc.next_check) {  // - initial state
     // Apply to DB.
-    logging::info(logging::medium)
-        << "SQL: processing service check event (host: " << sc.host_id
-        << ", service: " << sc.service_id << ", command: " << sc.command_line
-        << ")";
+    log_v2::sql()->info("SQL: processing service check event (host: {}, service: {}, command: {})",
+        sc.host_id, sc.service_id, sc.command_line);
 
     // Prepare queries.
     if (!_service_check_update.prepared()) {
@@ -1354,11 +1306,7 @@ void conflict_manager::_process_service_check(std::shared_ptr<io::data> d) {
     }
   } else
     // Do nothing.
-    logging::info(logging::medium)
-        << "SQL: not processing service check event (host: " << sc.host_id
-        << ", service: " << sc.service_id << ", command: " << sc.command_line
-        << ", check_type: " << sc.check_type
-        << ", next_check: " << sc.next_check << ", now: " << now << ")";
+    log_v2::sql()->info("SQL: not processing service check event (host: {}, service: {}, command: {}, check_type: {}, next_check: {}, now: {})", sc.host_id, sc.service_id, sc.command_line, sc.check_type, sc.next_check, now);
 }
 
 /**
@@ -1383,10 +1331,8 @@ void conflict_manager::_process_service_dependency(
 
   // Insert/Update.
   if (sd.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling service dependency of (" << sd.dependent_host_id
-        << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
-        << sd.service_id << ")";
+    log_v2::sql()->info("SQL: enabling service dependency of ({}, {}) on ({}, {})",
+        sd.dependent_host_id, sd.dependent_service_id, sd.host_id, sd.service_id);
 
     // Prepare queries.
     if (!_service_dependency_insupdate.prepared()) {
@@ -1412,10 +1358,8 @@ void conflict_manager::_process_service_dependency(
   }
   // Delete.
   else {
-    logging::info(logging::medium)
-        << "SQL: removing service dependency of (" << sd.dependent_host_id
-        << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
-        << sd.service_id << ")";
+    log_v2::sql()->info("SQL: removing service dependency of ({}, {}) on ({}, {})",
+        sd.dependent_host_id, sd.dependent_service_id, sd.host_id, sd.service_id);
     std::string query(fmt::format(
         "DELETE FROM serivces_services_dependencies WHERE dependent_host_id={} "
         "AND dependent_service_id={} AND host_id={} AND service_id={}",
@@ -1444,9 +1388,8 @@ void conflict_manager::_process_service_group(std::shared_ptr<io::data> d) {
 
   // Insert/update group.
   if (sg.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling service group " << sg.id << " ('" << sg.name
-        << "') on instance " << sg.poller_id;
+    log_v2::sql()->info("SQL: enabling service group {} ('{}' on instance {})",
+        sg.id, sg.name, sg.poller_id);
     _prepare_sg_insupdate_statement();
 
     std::string err_msg(fmt::format(
@@ -1460,9 +1403,8 @@ void conflict_manager::_process_service_group(std::shared_ptr<io::data> d) {
   }
   // Delete group.
   else {
-    logging::info(logging::medium)
-        << "SQL: disabling service group " << sg.id << " ('" << sg.name
-        << "') on instance " << sg.poller_id;
+    log_v2::sql()->info("SQL: disabling service group {} ('{}' on instance {})",
+        sg.id, sg.name, sg.poller_id);
 
     // Delete group members.
     {
@@ -1499,10 +1441,8 @@ void conflict_manager::_process_service_group_member(
 
   if (sgm.enabled) {
     // Log message.
-    logging::info(logging::medium)
-        << "SQL: enabling membership of service (" << sgm.host_id << ", "
-        << sgm.service_id << ") to service group " << sgm.group_id
-        << " on instance " << sgm.poller_id;
+    log_v2::sql()->info("SQL: enabling membership of service ({}, {}) to service group {} on instance {}",
+        sgm.host_id, sgm.service_id, sgm.group_id, sgm.poller_id);
 
     // We only need to try to insert in this table as the
     // host_id/service_id/servicegroup_id combo should be UNIQUE.
@@ -1548,10 +1488,8 @@ void conflict_manager::_process_service_group_member(
   // Delete.
   else {
     // Log message.
-    logging::info(logging::medium)
-        << "SQL: disabling membership of service (" << sgm.host_id << ", "
-        << sgm.service_id << ") to service group " << sgm.group_id
-        << " on instance " << sgm.poller_id;
+    log_v2::sql()->info("SQL: disabling membership of service ({}, {}) to service group {} on instance {}",
+        sgm.host_id, sgm.service_id, sgm.group_id, sgm.poller_id);
 
     if (!_service_group_member_delete.prepared()) {
       query_preparator::event_unique unique;
@@ -1591,11 +1529,8 @@ void conflict_manager::_process_service(std::shared_ptr<io::data> d) {
         _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
 
     // Log message.
-    logging::info(logging::medium)
-        << "SQL: processing service event "
-           "(host id: "
-        << s.host_id << ", service_id: " << s.service_id
-        << ", description: " << s.service_description << ")";
+    log_v2::sql()->info("SQL: processing service event (host id: {}, service id: {}, description: {})",
+        s.host_id, s.service_id, s.service_description);
 
     // Processing.
     // FixMe BAM Generate fake services, this service
@@ -1608,7 +1543,6 @@ void conflict_manager::_process_service(std::shared_ptr<io::data> d) {
         unique.insert("host_id");
         unique.insert("service_id");
         query_preparator qp(neb::service::static_type(), unique);
-        logging::debug(logging::medium) << "mysql: PREPARE INSERT ON SERVICES";
         _service_insupdate = qp.prepare_insert_or_update(_mysql);
       }
 
@@ -1657,10 +1591,7 @@ void conflict_manager::_process_service_status(std::shared_ptr<io::data> d) {
       ||                         // - normal case
       ss.next_check >= now - 5 * 60 || !ss.next_check) {  // - initial state
     // Apply to DB.
-    logging::info(logging::medium)
-        << "SQL: processing service status event (host: " << ss.host_id
-        << ", service: " << ss.service_id << ", last check: " << ss.last_check
-        << ", state (" << ss.current_state << ", " << ss.state_type << "))";
+    log_v2::sql()->info("SQL: processing service status event (host: {}, service: {}, last check: {}, state ({}, {}))", ss.host_id, ss.service_id, ss.last_check, ss.current_state, ss.state_type);
 
     // Prepare queries.
     if (!_service_status_update.prepared()) {
@@ -1682,12 +1613,8 @@ void conflict_manager::_process_service_status(std::shared_ptr<io::data> d) {
     _add_action(conn, actions::hosts);
   } else
     // Do nothing.
-    logging::info(logging::medium)
-        << "SQL: not processing service status event (host: " << ss.host_id
-        << ", service: " << ss.service_id << ", check_type: " << ss.check_type
-        << ", last check: " << ss.last_check
-        << ", next_check: " << ss.next_check << ", now: " << now << ", state ("
-        << ss.current_state << ", " << ss.state_type << "))";
+    log_v2::sql()->info("SQL: not processing service status event (host: {}, service: {}, check type: {}, last check: {}, next check: {}, now: {}, state ({}, {}))",
+        ss.host_id, ss.service_id, ss.check_type, ss.last_check, ss.next_check, now, ss.current_state, ss.state_type);
 }
 
 /**
