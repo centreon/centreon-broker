@@ -101,31 +101,15 @@ class property : public source {
    *
    *  @param[in]  S Unsigned short property.
    */
-  property(unsigned short(T::*S), source_type* t) { _prop.S = S; }
-
-  /**
-   *  Copy constructor.
-   *
-   *  @param[in] other Object to copy.
-   */
-  property(property const& other) : source(other), _prop(other._prop) {}
+  property(unsigned short(T::*S)) { _prop.S = S; }
 
   /**
    *  Destructor.
    */
   ~property() noexcept {}
 
-  /**
-   *  Assignment operator.
-   *
-   *  @param[in] other Object to copy.
-   *
-   *  @return This object.
-   */
-  property& operator=(property const& other) {
-    _prop = other._prop;
-    return *this;
-  }
+  property& operator=(property const&) = delete;
+  property(const property&) = delete;
 
   /**
    *  Get a boolean property.
@@ -324,7 +308,6 @@ class sproperty : public property<T> {
     if (max_len)
       *max_len = _max_len;
     return property<T>::get_string(d, max_len);
-    // return static_cast<T const*>(&d)->*(_prop.q);
   }
 };
 
