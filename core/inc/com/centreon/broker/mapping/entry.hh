@@ -39,7 +39,7 @@ class entry {
   source* _ptr;
   const bool _serialize;
   std::shared_ptr<source> _source;
-  source::source_type _type;
+  const source::source_type _type;
 
  public:
   enum attribute {
@@ -48,32 +48,173 @@ class entry {
     invalid_on_minus_one = (1 << 1)
   };
 
+  /**
+   * @brief String constructor.
+   *
+   * @tparam T Property container class.
+   * @param T::*prop The property to point to.
+   * @param name The name of the property.
+   * @param max_len Its max size or 0 if unlimited.
+   * @param attr A bit field about the property validity.
+   * @param serialize Is this property sent to the database.
+   */
   template <typename T>
   entry(std::string(T::*prop),
         char const* name,
         size_t max_len,
         uint32_t attr = always_valid,
         bool serialize = true)
-      : _attribute(attr), _name_v2(name), _serialize(serialize) {
-    _source = std::make_shared<sproperty<T>>(prop, max_len, &_type);
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::STRING) {
+    _source = std::make_shared<sproperty<T>>(prop, max_len);
     _ptr = _source.get();
   }
 
   /**
-   *  @brief Constructor.
+   *  @brief Boolean constructor.
    *
    *  Build an entry from a property.
    *
    *  @param[in] name Entry name.
    *  @param[in] prop Property.
    */
-  template <typename T, typename U>
-  entry(U(T::*prop),
+  template <typename T>
+  entry(bool(T::*prop),
         char const* name,
         uint32_t attr = always_valid,
         bool serialize = true)
-      : _attribute(attr), _name_v2(name), _serialize(serialize) {
-    _source = std::make_shared<property<T>>(prop, &_type);
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::BOOL) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+  /**
+   *  @brief Double constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   *  @param[in] prop Property.
+   */
+  template <typename T>
+  entry(double(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::DOUBLE) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+  /**
+   *  @brief Unsigned integer constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   *  @param[in] prop Property.
+   */
+  template <typename T>
+  entry(uint32_t(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::UINT) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+  /**
+   *  @brief Integer constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   *  @param[in] prop Property.
+   */
+  template <typename T>
+  entry(int(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::INT) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+  /**
+   *  @brief Unsigned short constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   *  @param[in] prop Property.
+   */
+  template <typename T>
+  entry(unsigned short(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::USHORT) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+  /**
+   *  @brief Short constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   *  @param[in] prop Property.
+   */
+  template <typename T>
+  entry(short(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::SHORT) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+  /**
+   *  @brief Time constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   */
+  template <typename T>
+  entry(timestamp(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::TIME) {
+    _source = std::make_shared<property<T>>(prop);
     _ptr = _source.get();
   }
 

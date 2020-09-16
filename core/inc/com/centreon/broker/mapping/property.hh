@@ -51,97 +51,57 @@ class property : public source {
    *  Boolean constructor.
    *
    *  @param[in]  b Boolean property.
-   *  @param[out] t If not NULL, set to BOOL.
    */
-  property(bool(T::*b), source_type* t) {
-    _prop.b = b;
-    if (t)
-      *t = BOOL;
-  }
+  property(bool(T::*b)) { _prop.b = b; }
 
   /**
    *  Double constructor.
    *
    *  @param[in]  d Double property.
-   *  @param[out] t If not NULL, set to DOUBLE.
    */
-  property(double(T::*d), source_type* t) {
-    _prop.d = d;
-    if (t)
-      *t = DOUBLE;
-  }
+  property(double(T::*d)) { _prop.d = d; }
 
   /**
    *  integer constructor.
    *
    *  @param[in]  i integer property.
-   *  @param[out] t if not null, set to int.
    */
-  property(int(T::*i), source_type* t) {
-    _prop.i = i;
-    if (t)
-      *t = INT;
-  }
+  property(int32_t(T::*i)) { _prop.i = i; }
 
   /**
    *  Short constructor.
    *
    *  @param[in]  s Short property.
-   *  @param[out] t If not NULL, set to SHORT.
    */
-  property(short(T::*s), source_type* t) {
-    _prop.s = s;
-    if (t)
-      *t = SHORT;
-  }
+  property(short(T::*s)) { _prop.s = s; }
 
   /**
    *  Time constructor.
    *
    *  @param[in]  tt Time property.
-   *  @param[out] t  If not NULL, set to TIME.
    */
-  property(timestamp(T::*ts), source_type* t) {
-    _prop.t = ts;
-    if (t)
-      *t = TIME;
-  }
+  property(timestamp(T::*ts)) { _prop.t = ts; }
 
   /**
    *  String constructor.
    *
    *  @param[in]  q String property.
-   *  @param[out] t  If not NULL, set to STRING.
    */
-  property(std::string(T::*q), source_type* t) {
-    _prop.q = q;
-    if (t)
-      *t = STRING;
-  }
+  property(std::string(T::*q)) { _prop.q = q; }
 
   /**
    *  Unsigned integer constructor.
    *
    *  @param[in]  I Unsigned integer property.
-   *  @param[out] t If not NULL, set to UINT.
    */
-  property(uint32_t(T::*I), source_type* t) {
-    _prop.I = I;
-    if (t)
-      *t = UINT;
-  }
+  property(uint32_t(T::*I)) { _prop.I = I; }
 
   /**
    *  Unsigned short constructor.
    *
    *  @param[in]  S Unsigned short property.
-   *  @param[out] t If not NULL, set to USHORT.
    */
-  property(unsigned short(T::*S), source_type* t) {
-    _prop.S = S;
-    if (t)
-      *t = USHORT;
-  }
+  property(unsigned short(T::*S), source_type* t) { _prop.S = S; }
 
   /**
    *  Copy constructor.
@@ -218,7 +178,8 @@ class property : public source {
    *
    *  @return String property.
    */
-  std::string const& get_string(io::data const& d, size_t* max_len __attribute__((unused))) {
+  std::string const& get_string(io::data const& d,
+                                size_t* max_len __attribute__((unused))) {
     return static_cast<T const*>(&d)->*(_prop.q);
   }
 
@@ -348,10 +309,9 @@ class sproperty : public property<T> {
    *  @param[in]  max_len This value is used for serialization. If the string
    *  is longer, it will be truncated to be stored in the database unless the
    *  value is 0.
-   *  @param[out] t If not NULL, set to STRING.
    */
-  sproperty(std::string(T::*q), size_t max_len, source::source_type* t)
-      : property<T>(q, t), _max_len(max_len) {}
+  sproperty(std::string(T::*q), size_t max_len)
+      : property<T>(q), _max_len(max_len) {}
 
   /**
    *  Get a string property.
