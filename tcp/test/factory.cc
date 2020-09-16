@@ -66,6 +66,31 @@ TEST(TcpFactory, Acceptor) {
   delete endp;
 }
 
+TEST(TcpFactory, BadPort) {
+  tcp::factory fact;
+  config::endpoint cfg(config::endpoint::io_type::output);
+  bool is_acceptor;
+  std::shared_ptr<persistent_cache> cache;
+
+  cfg.params["port"] = "a4a343";
+  cfg.params["host"] = "10.12.13.22";
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+}
+
+TEST(TcpFactory, BadHost) {
+  tcp::factory fact;
+  config::endpoint cfg(config::endpoint::io_type::output);
+  bool is_acceptor;
+  std::shared_ptr<persistent_cache> cache;
+
+  cfg.params["port"] = "4343";
+  cfg.params["host"] = " 10.12.13.22";
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+
+  cfg.params["host"] = "10.12.13.22 ";
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+}
+
 TEST(TcpFactory, Connector) {
   tcp::factory fact;
   config::endpoint cfg(config::endpoint::io_type::output);
