@@ -106,12 +106,12 @@ mapping::entry const instance_broadcast::entries[] = {
     mapping::entry(&instance_broadcast::broker_id,
                    "broker_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&instance_broadcast::broker_name, "broker_name"),
+    mapping::entry(&instance_broadcast::broker_name, "broker_name", 0),
     mapping::entry(&instance_broadcast::enabled, "enabled"),
     mapping::entry(&instance_broadcast::poller_id,
                    "poller_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&instance_broadcast::poller_name, "poller_name"),
+    mapping::entry(&instance_broadcast::poller_name, "poller_name", 0),
     mapping::entry()};
 
 // Operations.

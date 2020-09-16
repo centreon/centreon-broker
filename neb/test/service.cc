@@ -18,9 +18,13 @@
  */
 
 #include "com/centreon/broker/neb/service.hh"
+
 #include <gtest/gtest.h>
+
 #include <cmath>
 #include <cstdlib>
+
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
@@ -167,4 +171,13 @@ TEST_F(Service, DefaultCtor) {
   ASSERT_FALSE(s.state_type != 0);
   ASSERT_FALSE(!s.service_description.empty());
   ASSERT_FALSE(s.service_id != 0);
+
+  /* action_url has a max size */
+  const mapping::entry& entry(neb::service::entries[2]);
+  ASSERT_EQ(std::string(entry.get_name_v2()), "action_url");
+  ASSERT_EQ(entry.get_type(), mapping::source::STRING);
+  size_t max_len;
+  std::string str(entry.get_string(s, &max_len));
+  ASSERT_EQ(max_len, get_services_col_size(services_action_url));
+  ASSERT_TRUE(str.empty());
 }

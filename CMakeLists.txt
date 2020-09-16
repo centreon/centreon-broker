@@ -52,14 +52,16 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 
 add_custom_command(
-  DEPENDS ${SRC_DIR}/database/table_max_size.py
+  DEPENDS ${SRC_DIR}/database/table_max_size.py "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml" "${PROJECT_SOURCE_DIR}/simu/docker/bam.sql" "${PROJECT_SOURCE_DIR}/simu/docker/createTablesCentstorage.sql"
   COMMENT "Generating table_max_size.hh"
   OUTPUT ${INC_DIR}/database/table_max_size.hh
   COMMAND python3
-  ARGS ${SRC_DIR}/database/table_max_size.py ${INC_DIR}/database/table_max_size.hh "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml" "${PROJECT_SOURCE_DIR}/simu/docker/bam.sql"
+  ARGS ${SRC_DIR}/database/table_max_size.py ${INC_DIR}/database/table_max_size.hh "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml" "${PROJECT_SOURCE_DIR}/simu/docker/bam.sql" "${PROJECT_SOURCE_DIR}/simu/docker/createTablesCentstorage.sql"
 )
 
-set_source_files_properties("${INC_DIR}/database/table_max_size.hh" PROPERTIES GENERATED TRUE)
+add_custom_target(table_max_size DEPENDS ${INC_DIR}/database/table_max_size.hh)
+
+set_source_files_properties(${INC_DIR}/database/table_max_size.hh PROPERTIES GENERATED TRUE)
 
 set(protobuf_MODULE_COMPATIBLE True)
 find_package(json11 REQUIRED)

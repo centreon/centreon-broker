@@ -95,7 +95,7 @@ mapping::entry const version_response::entries[] = {
     mapping::entry(&version_response::bbdo_major, "major"),
     mapping::entry(&version_response::bbdo_minor, "minor"),
     mapping::entry(&version_response::bbdo_patch, "patch"),
-    mapping::entry(&version_response::extensions, "extensions"),
+    mapping::entry(&version_response::extensions, "extensions", 0),
     mapping::entry()};
 
 // Operations.

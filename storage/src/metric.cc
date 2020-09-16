@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cmath>
 
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -88,7 +89,9 @@ mapping::entry const metric::entries[] = {
     mapping::entry(&metric::metric_id,
                    "metric_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&metric::name, "name"),
+    mapping::entry(&metric::name,
+                   "name",
+                   get_metrics_col_size(metrics_metric_name)),
     mapping::entry(&metric::rrd_len, "rrd_len"),
     mapping::entry(&metric::value, "value"),
     mapping::entry(&metric::value_type, "value_type"),

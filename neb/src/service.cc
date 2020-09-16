@@ -207,7 +207,7 @@ mapping::entry const service::entries[] = {
     mapping::entry(&service::host_id,
                    "host_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&service::host_name, ""),
+    mapping::entry(&service::host_name, nullptr, 0),
     mapping::entry(static_cast<std::string(service::*)>(&service::icon_image),
                    "icon_image",
                    get_services_col_size(services_icon_image)),
