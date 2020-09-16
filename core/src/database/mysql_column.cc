@@ -152,7 +152,7 @@ void mysql_column::set_value(const fmt::string_view& str) {
   _length[0] = size;
   char** vector = static_cast<char**>(_vector);
   strncpy(vector[0], str.data(), size);
-  vector[size] = 0;
+  vector[0][size] = 0;
 }
 
 bool mysql_column::is_null() const {
