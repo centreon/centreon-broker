@@ -297,8 +297,8 @@ void stream::acknowledge_events(uint32_t events) {
  */
 void stream::send_event_acknowledgement() {
   if (!_coarse) {
-    std::shared_ptr<ack> acknowledgement(std::make_shared<ack>());
-    acknowledgement->acknowledged_events = _events_received_since_last_ack;
+    std::shared_ptr<ack> acknowledgement(
+        std::make_shared<ack>(_events_received_since_last_ack));
     output::write(acknowledgement);
     _events_received_since_last_ack = 0;
   }
