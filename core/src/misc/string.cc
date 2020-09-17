@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <fmt/format.h>
 
 using namespace com::centreon::broker::misc;
 
@@ -332,18 +333,6 @@ std::string string::check_string_utf8(std::string const& str) noexcept {
  *
  * @return a reference to the string str.
  */
-std::string& string::truncate(std::string& str, size_t s) {
-  if (s >= str.size())
-    return str;
-  if (s == 0)
-    str.resize(0);
-  else {
-    while ((str[s] & 0xc0) == 0x80)
-      s--;
-    str.resize(s);
-  }
-  return str;
-}
 
 /**
  * @brief This function makes a copy of the first s bytes of the given string
