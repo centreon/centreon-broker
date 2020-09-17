@@ -38,9 +38,10 @@ namespace bbdo {
 class ack : public io::data {
  public:
   ack();
-  ack(ack const& other);
+  ack(uint32_t acknowledged_events);
   ~ack();
-  ack& operator=(ack const& other);
+  ack(ack const&) = delete;
+  ack& operator=(ack const&) = delete;
 
   /**
    *  Get the event type.
@@ -55,9 +56,6 @@ class ack : public io::data {
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(ack const& right);
 };
 }  // namespace bbdo
 
