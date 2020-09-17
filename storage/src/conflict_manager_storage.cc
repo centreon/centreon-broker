@@ -192,8 +192,8 @@ void conflict_manager::_storage_process_service_status(
         log_v2::sql()->debug(
             "Updating index_data for host_id={} and service_id={}", host_id,
             service_id);
-        _index_data_update.bind_value_as_str(0, ss.host_name);
-        _index_data_update.bind_value_as_str(1, ss.service_description);
+        _index_data_update.bind_value_as_str(0, hv);
+        _index_data_update.bind_value_as_str(1, sv);
         _index_data_update.bind_value_as_str(2, "0");
         _index_data_update.bind_value_as_str(3, special ? "1" : "0");
         _index_data_update.bind_value_as_i32(4, index_id);

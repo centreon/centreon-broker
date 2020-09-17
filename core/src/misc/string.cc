@@ -18,10 +18,11 @@
 
 #include "com/centreon/broker/misc/string.hh"
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cassert>
 #include <fstream>
-#include <fmt/format.h>
 
 using namespace com::centreon::broker::misc;
 
@@ -321,18 +322,6 @@ std::string string::check_string_utf8(std::string const& str) noexcept {
   assert(is_cp1252 == is_iso8859);
   return iso8859_to_utf8();
 }
-
-/**
- * @brief This function works almost like the resize method but takes care
- * of the UTF-8 encoding and avoids to cut a string in the middle of a
- * character. This function assumes the string to be UTF-8 encoded.
- *
- * @param str A string to truncate.
- * @param s The desired size, maybe the resulting string will contain less
- * characters.
- *
- * @return a reference to the string str.
- */
 
 /**
  * @brief This function makes a copy of the first s bytes of the given string
