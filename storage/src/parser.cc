@@ -25,8 +25,10 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -214,9 +216,12 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
       }
     }
 
-    if (end - s + 1 > 0)
-      p.name(std::move(std::string(s, end - s + 1)));
-    else {
+    if (end - s + 1 > 0) {
+      std::string name(std::move(std::string(s, end - s + 1)));
+      name.resize(misc::string::adjust_size_utf8(
+          name, get_metrics_col_size(metrics_metric_name)));
+      p.name(std::move(name));
+    } else {
       log_v2::perfdata()->error("metric name empty before '{}...'",
                                 std::string(s, 10));
       error = true;
@@ -257,7 +262,12 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
 
     // Extract unit.
     size_t t = strcspn(tmp, " \t\n\r;");
-    p.unit(std::move(std::string(tmp, t)));
+    {
+      std::string unit(std::move(std::string(tmp, t)));
+      unit.resize(misc::string::adjust_size_utf8(
+          unit, get_metrics_col_size(metrics_unit_name)));
+      p.unit(std::move(unit));
+    }
     tmp += t;
     if (*tmp == ';')
       ++tmp;

@@ -341,10 +341,6 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
       log_v2::bbdo()->info(
           "BBDO: received acknowledgement for {} events",
           std::static_pointer_cast<ack const>(d)->acknowledged_events);
-      logging::info(logging::medium)
-          << "BBDO: received acknowledgement for "
-          << std::static_pointer_cast<ack const>(d)->acknowledged_events
-          << " events";
       acknowledge_events(
           std::static_pointer_cast<ack const>(d)->acknowledged_events);
     }

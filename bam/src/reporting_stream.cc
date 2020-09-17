@@ -35,12 +35,14 @@
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
 
 using namespace com::centreon::broker;
@@ -283,15 +285,12 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
        it != end; ++it) {
     time_t end_time;
     {
-      std::ostringstream oss;
-      oss << "SELECT start_time"
-          << "  FROM " << table << "  WHERE " << id << "=" << it->first
-          << "    AND start_time>" << it->second << "  ORDER BY start_time ASC"
-          << "  LIMIT 1";
-
-      std::ostringstream oss_err;
+      std::string query_str(
+          fmt::format("SELECT start_time FROM {} WHERE {}={} AND start_time>{} "
+                      "ORDER BY start_time ASC LIMIT 1",
+                      table, id, it->first, it->second));
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise);
+      _mysql.run_query_and_get_result(query_str, &promise);
       try {
         mysql_result res(promise.get_future().get());
         if (!_mysql.fetch_row(res))
@@ -310,10 +309,11 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
       oss << "UPDATE " << table << "  SET end_time=" << end_time << "  WHERE "
           << id << "=" << it->first << "  AND start_time=" << it->second;
 
-      std::ostringstream oss_err;
-      oss_err << "BAM-BI: could not close inconsistent event of " << event_type
-              << it->first << " starting at " << it->second << ": ";
-      _mysql.run_query(oss.str(), oss_err.str(), true);
+      std::string err_msg(
+          fmt::format("BAM-BI: could not close inconsistent event of {} {} "
+                      "starting at {}: ",
+                      event_type, it->first, it->second));
+      _mysql.run_query(oss.str(), err_msg, true);
     }
   }
 }
@@ -822,8 +822,14 @@ void reporting_stream::_process_dimension_ba(
       << "BAM-BI: processing declaration of BA " << dba.ba_id << " ('"
       << dba.ba_description << "')";
   _dimension_ba_insert.bind_value_as_i32(0, dba.ba_id);
-  _dimension_ba_insert.bind_value_as_str(1, dba.ba_name);
-  _dimension_ba_insert.bind_value_as_str(2, dba.ba_description);
+  _dimension_ba_insert.bind_value_as_str(
+      1, misc::string::truncate(
+             dba.ba_name,
+             get_mod_bam_reporting_ba_col_size(mod_bam_reporting_ba_ba_name)));
+  _dimension_ba_insert.bind_value_as_str(
+      2, misc::string::truncate(dba.ba_description,
+                                get_mod_bam_reporting_ba_col_size(
+                                    mod_bam_reporting_ba_ba_description)));
   _dimension_ba_insert.bind_value_as_f64(3, dba.sla_month_percent_crit);
   _dimension_ba_insert.bind_value_as_f64(4, dba.sla_month_percent_warn);
   _dimension_ba_insert.bind_value_as_f64(5, dba.sla_duration_crit);
@@ -846,11 +852,17 @@ void reporting_stream::_process_dimension_bv(
                                << dbv.bv_id << " ('" << dbv.bv_name << "')";
 
   _dimension_bv_insert.bind_value_as_i32(0, dbv.bv_id);
-  _dimension_bv_insert.bind_value_as_str(1, dbv.bv_name);
-  _dimension_bv_insert.bind_value_as_str(2, dbv.bv_description);
-  std::ostringstream oss;
-  oss << "BAM-BI: could not insert BV " << dbv.bv_id << ": ";
-  _mysql.run_statement(_dimension_bv_insert, oss.str(), true);
+  _dimension_bv_insert.bind_value_as_str(
+      1, misc::string::truncate(
+             dbv.bv_name,
+             get_mod_bam_reporting_bv_col_size(mod_bam_reporting_bv_bv_name)));
+  _dimension_bv_insert.bind_value_as_str(
+      2, misc::string::truncate(dbv.bv_description,
+                                get_mod_bam_reporting_bv_col_size(
+                                    mod_bam_reporting_bv_bv_description)));
+  _mysql.run_statement(
+      _dimension_bv_insert,
+      fmt::format("BAM-BI: could not insert BV {}: ", dbv.bv_id), true);
 }
 
 /**
@@ -867,10 +879,12 @@ void reporting_stream::_process_dimension_ba_bv_relation(
 
   _dimension_ba_bv_relation_insert.bind_value_as_i32(0, dbabv.ba_id);
   _dimension_ba_bv_relation_insert.bind_value_as_i32(1, dbabv.bv_id);
-  std::ostringstream oss;
-  oss << "BAM-BI: could not insert dimension of BA-BV relation " << dbabv.ba_id
-      << "-" << dbabv.bv_id << ": ";
-  _mysql.run_statement(_dimension_ba_bv_relation_insert, oss.str(), true);
+  _mysql.run_statement(
+      _dimension_ba_bv_relation_insert,
+      fmt::format(
+          "BAM-BI: could not insert dimension of BA-BV relation {}-{}: ",
+          dbabv.ba_id, dbabv.bv_id),
+      true);
 }
 
 /**
@@ -1064,29 +1078,50 @@ void reporting_stream::_process_dimension_kpi(
                                << dk.kpi_id << " ('" << kpi_name << "')";
 
   _dimension_kpi_insert.bind_value_as_i32(0, dk.kpi_id);
-  _dimension_kpi_insert.bind_value_as_str(1, kpi_name);
+  _dimension_kpi_insert.bind_value_as_str(
+      1, misc::string::truncate(kpi_name, get_mod_bam_reporting_kpi_col_size(
+                                              mod_bam_reporting_kpi_kpi_name)));
   _dimension_kpi_insert.bind_value_as_i32(2, dk.ba_id);
-  _dimension_kpi_insert.bind_value_as_str(3, dk.ba_name);
+  _dimension_kpi_insert.bind_value_as_str(
+      3,
+      misc::string::truncate(dk.ba_name, get_mod_bam_reporting_kpi_col_size(
+                                             mod_bam_reporting_kpi_ba_name)));
   _dimension_kpi_insert.bind_value_as_i32(4, dk.host_id);
-  _dimension_kpi_insert.bind_value_as_str(5, dk.host_name);
+  _dimension_kpi_insert.bind_value_as_str(
+      5, misc::string::truncate(dk.host_name,
+                                get_mod_bam_reporting_kpi_col_size(
+                                    mod_bam_reporting_kpi_host_name)));
   _dimension_kpi_insert.bind_value_as_i32(6, dk.service_id);
-  _dimension_kpi_insert.bind_value_as_str(7, dk.service_description);
+  _dimension_kpi_insert.bind_value_as_str(
+      7,
+      misc::string::truncate(dk.service_description,
+                             get_mod_bam_reporting_kpi_col_size(
+                                 mod_bam_reporting_kpi_service_description)));
   if (dk.kpi_ba_id)
     _dimension_kpi_insert.bind_value_as_i32(8, dk.kpi_ba_id);
   else
     _dimension_kpi_insert.bind_value_as_null(8);
-  _dimension_kpi_insert.bind_value_as_str(9, dk.kpi_ba_name);
+  _dimension_kpi_insert.bind_value_as_str(
+      9, misc::string::truncate(dk.kpi_ba_name,
+                                get_mod_bam_reporting_kpi_col_size(
+                                    mod_bam_reporting_kpi_kpi_ba_name)));
   _dimension_kpi_insert.bind_value_as_i32(10, dk.meta_service_id);
-  _dimension_kpi_insert.bind_value_as_str(11, dk.meta_service_name);
+  _dimension_kpi_insert.bind_value_as_str(
+      11, misc::string::truncate(dk.meta_service_name,
+                                 get_mod_bam_reporting_kpi_col_size(
+                                     mod_bam_reporting_kpi_meta_service_name)));
   _dimension_kpi_insert.bind_value_as_f64(12, dk.impact_warning);
   _dimension_kpi_insert.bind_value_as_f64(13, dk.impact_critical);
   _dimension_kpi_insert.bind_value_as_f64(14, dk.impact_unknown);
   _dimension_kpi_insert.bind_value_as_i32(15, dk.boolean_id);
-  _dimension_kpi_insert.bind_value_as_str(16, dk.boolean_name);
+  _dimension_kpi_insert.bind_value_as_str(
+      16, misc::string::truncate(dk.boolean_name,
+                                 get_mod_bam_reporting_kpi_col_size(
+                                     mod_bam_reporting_kpi_boolean_name)));
 
-  std::ostringstream oss;
-  oss << "BAM-BI: could not insert dimension of KPI " << dk.kpi_id << ": ";
-  _mysql.run_statement(_dimension_kpi_insert, oss.str(), true);
+  std::string err_msg(
+      fmt::format("BAM-BI: could not insert dimension of KPI {}: ", dk.kpi_id));
+  _mysql.run_statement(_dimension_kpi_insert, err_msg, true);
 }
 
 /**
@@ -1104,18 +1139,41 @@ void reporting_stream::_process_dimension_timeperiod(
       << tp.name << "')";
 
   _dimension_timeperiod_insert.bind_value_as_i32(0, tp.id);
-  _dimension_timeperiod_insert.bind_value_as_str(1, tp.name);
-  _dimension_timeperiod_insert.bind_value_as_str(2, tp.sunday);
-  _dimension_timeperiod_insert.bind_value_as_str(3, tp.monday);
-  _dimension_timeperiod_insert.bind_value_as_str(4, tp.tuesday);
-  _dimension_timeperiod_insert.bind_value_as_str(5, tp.wednesday);
-  _dimension_timeperiod_insert.bind_value_as_str(6, tp.thursday);
-  _dimension_timeperiod_insert.bind_value_as_str(7, tp.friday);
-  _dimension_timeperiod_insert.bind_value_as_str(8, tp.saturday);
-  std::ostringstream oss;
-  oss << "BAM-BI: could not insert timeperiod " << tp.id << " ('" << tp.name
-      << "'): ";
-  _mysql.run_statement(_dimension_timeperiod_insert, oss.str(), true);
+  _dimension_timeperiod_insert.bind_value_as_str(
+      1, misc::string::truncate(tp.name,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_name)));
+  _dimension_timeperiod_insert.bind_value_as_str(
+      2, misc::string::truncate(tp.sunday,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_sunday)));
+  _dimension_timeperiod_insert.bind_value_as_str(
+      3, misc::string::truncate(tp.monday,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_monday)));
+  _dimension_timeperiod_insert.bind_value_as_str(
+      4, misc::string::truncate(tp.tuesday,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_tuesday)));
+  _dimension_timeperiod_insert.bind_value_as_str(
+      5, misc::string::truncate(tp.wednesday,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_wednesday)));
+  _dimension_timeperiod_insert.bind_value_as_str(
+      6, misc::string::truncate(tp.thursday,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_thursday)));
+  _dimension_timeperiod_insert.bind_value_as_str(
+      7, misc::string::truncate(tp.friday,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_friday)));
+  _dimension_timeperiod_insert.bind_value_as_str(
+      8, misc::string::truncate(tp.saturday,
+                                get_mod_bam_reporting_timeperiods_col_size(
+                                    mod_bam_reporting_timeperiods_saturday)));
+  std::string err_msg(fmt::format(
+      "BAM-BI: could not insert timeperiod {} ('{}'): ", tp.id, tp.name));
+  _mysql.run_statement(_dimension_timeperiod_insert, err_msg, true);
   _apply(tp);
 }
 
@@ -1134,13 +1192,21 @@ void reporting_stream::_process_dimension_timeperiod_exception(
 
   _dimension_timeperiod_exception_insert.bind_value_as_i32(0,
                                                            tpe.timeperiod_id);
-  _dimension_timeperiod_exception_insert.bind_value_as_str(1, tpe.daterange);
-  _dimension_timeperiod_exception_insert.bind_value_as_str(2, tpe.timerange);
+  _dimension_timeperiod_exception_insert.bind_value_as_str(
+      1, misc::string::truncate(
+             tpe.daterange,
+             get_mod_bam_reporting_timeperiods_exceptions_col_size(
+                 mod_bam_reporting_timeperiods_exceptions_daterange)));
+  _dimension_timeperiod_exception_insert.bind_value_as_str(
+      2, misc::string::truncate(
+             tpe.timerange,
+             get_mod_bam_reporting_timeperiods_exceptions_col_size(
+                 mod_bam_reporting_timeperiods_exceptions_timerange)));
 
-  std::ostringstream oss;
-  oss << "BAM-BI: could not insert exception of timeperiod "
-      << tpe.timeperiod_id << ": ";
-  _mysql.run_statement(_dimension_timeperiod_exception_insert, oss.str(), true);
+  std::string err_msg(
+      fmt::format("BAM-BI: could not insert exception of timeperiod {}: ",
+                  tpe.timeperiod_id));
+  _mysql.run_statement(_dimension_timeperiod_exception_insert, err_msg, true);
   _apply(tpe);
 }
 
@@ -1162,11 +1228,10 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
                                                            tpe.timeperiod_id);
   _dimension_timeperiod_exclusion_insert.bind_value_as_i32(
       1, tpe.excluded_timeperiod_id);
-  std::ostringstream oss;
-  oss << "BAM-BI: could not insert exclusion of timeperiod "
-      << tpe.excluded_timeperiod_id << " by timeperiod " << tpe.timeperiod_id
-      << ": ";
-  _mysql.run_statement(_dimension_timeperiod_exclusion_insert, oss.str(), true);
+  std::string err_msg(fmt::format(
+      "BAM-BI: could not insert exclusion of timeperiod {} by timeperiod {}: ",
+      tpe.excluded_timeperiod_id, tpe.timeperiod_id));
+  _mysql.run_statement(_dimension_timeperiod_exclusion_insert, err_msg, true);
   _apply(tpe);
 }
 
@@ -1187,10 +1252,10 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
   _dimension_ba_timeperiod_insert.bind_value_as_i32(0, r.ba_id);
   _dimension_ba_timeperiod_insert.bind_value_as_i32(1, r.timeperiod_id);
   _dimension_ba_timeperiod_insert.bind_value_as_bool(2, r.is_default);
-  std::ostringstream oss;
-  oss << "BAM-BI: could not insert relation of BA " << r.ba_id
-      << " to timeperiod " << r.timeperiod_id << ": ";
-  _mysql.run_statement(_dimension_ba_timeperiod_insert, oss.str(), true);
+  std::string err_msg(fmt::format(
+      "BAM-BI: could not insert relation of BA {} to timeperiod {}: ", r.ba_id,
+      r.timeperiod_id));
+  _mysql.run_statement(_dimension_ba_timeperiod_insert, err_msg, true);
   _timeperiods.add_relation(r.ba_id, r.timeperiod_id, r.is_default);
 }
 
@@ -1290,10 +1355,9 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
       query.append(r.bas_to_rebuild);
       query.append(")");
 
-      std::ostringstream oss;
-      oss << "BAM-BI: could not delete BA durations " << r.bas_to_rebuild
-          << ": ";
-      _mysql.run_query(query, oss.str(), true);
+      std::string err_msg(fmt::format(
+          "BAM-BI: could not delete BA durations {}: ", r.bas_to_rebuild));
+      _mysql.run_query(query, err_msg, true);
     }
 
     // Get the ba events.
