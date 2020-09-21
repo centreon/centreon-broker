@@ -42,16 +42,16 @@ using namespace com::centreon::broker::compression;
  *  @param[in] size  Compression buffer size.
  */
 stream::stream(int level, size_t size)
-    : _level(level), _shutdown(false), _size(size) {}
+    : io::stream("compression"), _level(level), _shutdown(false), _size(size) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-stream::stream(stream const& other) : io::stream(other) {
-  _internal_copy(other);
-}
+//stream::stream(stream const& other) : io::stream(other) {
+//  _internal_copy(other);
+//}
 
 /**
  *  Destructor.
@@ -72,13 +72,13 @@ stream::~stream() {
  *
  *  @return This object.
  */
-stream& stream::operator=(stream const& other) {
-  if (this != &other) {
-    io::stream::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
+//stream& stream::operator=(stream const& other) {
+//  if (this != &other) {
+//    io::stream::operator=(other);
+//    _internal_copy(other);
+//  }
+//  return *this;
+//}
 
 /**
  *  Read data.
@@ -224,7 +224,7 @@ int stream::flush() {
  *  @return 1.
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
-  if (!validate(d, "compression"))
+  if (!validate(d, get_name()))
     return 1;
 
   // Check if substream is shutdown.
@@ -328,9 +328,9 @@ void stream::_get_data(int size, time_t deadline) {
  *
  *  @param[in] other  Object to copy.
  */
-void stream::_internal_copy(stream const& other) {
-  _level = other._level;
-  _rbuffer = other._rbuffer;
-  _size = other._size;
-  _wbuffer = other._wbuffer;
-}
+//void stream::_internal_copy(stream const& other) {
+//  _level = other._level;
+//  _rbuffer = other._rbuffer;
+//  _size = other._size;
+//  _wbuffer = other._wbuffer;
+//}

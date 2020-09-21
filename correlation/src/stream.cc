@@ -50,7 +50,9 @@ stream::stream(std::string const& correlation_file,
                std::shared_ptr<persistent_cache> cache,
                bool load_correlation,
                bool passive)
-    : _cache(cache), _correlation_file(correlation_file) {
+    : io::stream("correlation"),
+      _cache(cache),
+      _correlation_file(correlation_file) {
   if (!passive) {
     // Events will be written to publisher.
     _pblsh.reset(new multiplexing::publisher);

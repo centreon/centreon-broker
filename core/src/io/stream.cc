@@ -31,16 +31,16 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-stream::stream() {}
+stream::stream(const std::string& name) : _name(name) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-stream::stream(stream const& other) {
-  _substream = other._substream;
-}
+//stream::stream(stream const& other) {
+//  _substream = other._substream;
+//}
 
 /**
  *  Destructor.
@@ -54,11 +54,11 @@ stream::~stream() {}
  *
  *  @return This object.
  */
-stream& stream::operator=(stream const& other) {
-  if (this != &other)
-    _substream = other._substream;
-  return *this;
-}
+//stream& stream::operator=(stream const& other) {
+//  if (this != &other)
+//    _substream = other._substream;
+//  return *this;
+//}
 
 /**
  *  Flush data.
@@ -86,6 +86,10 @@ std::string stream::peer() const {
  */
 void stream::set_substream(std::shared_ptr<stream> substream) {
   _substream = substream;
+}
+
+std::shared_ptr<stream> stream::get_substream() {
+  return _substream;
 }
 
 /**

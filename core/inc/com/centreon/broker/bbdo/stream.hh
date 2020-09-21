@@ -71,6 +71,7 @@ class stream : public input, public output {
   int write(std::shared_ptr<io::data> const& d) override;
   void acknowledge_events(uint32_t events) override;
   void send_event_acknowledgement();
+  std::list<std::string> get_running_config();
 };
 }  // namespace bbdo
 

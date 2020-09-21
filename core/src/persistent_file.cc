@@ -29,7 +29,8 @@ using namespace com::centreon::broker;
  *
  *  @param[in] path  Path of the persistent file.
  */
-persistent_file::persistent_file(std::string const& path) {
+persistent_file::persistent_file(std::string const& path)
+    : io::stream("persistent_file") {
   // On-disk file.
   file::opener opnr;
   opnr.set_filename(path);

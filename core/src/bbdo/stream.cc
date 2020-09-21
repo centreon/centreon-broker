@@ -42,7 +42,7 @@ using namespace com::centreon::broker::bbdo;
  *  Default constructor.
  */
 stream::stream(bool want_compression, bool want_tls)
-    : _want_compression(want_compression),
+    : io::stream("BBDO"), _want_compression(want_compression),
       _want_tls(want_tls),
       _coarse(false),
       _negotiate(true),
@@ -150,6 +150,9 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Negotiation.
   if (_negotiate) {
+
+    std::list<std::string> running_config = get_running_config();
+
     // Apply negotiated extensions.
     log_v2::bbdo()->info("BBDO: we have extensions '{0}' and peer has '{1}'",
                          _extensions, v->extensions);
@@ -208,6 +211,16 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Stream has now negotiated.
   _negotiated = true;
+}
+
+std::list<std::string> stream::get_running_config() {
+  std::list<std::string> retval;
+  std::shared_ptr<io::stream> substream = get_substream();
+  while (substream) {
+    retval.push_back(substream->get_name());
+    substream = substream->get_substream();
+  }
+  return retval;
 }
 
 /**

@@ -38,9 +38,9 @@ class stream : public io::stream {
   static int const max_data_size = 100000000;
 
   stream(int level = -1, size_t size = 0);
-  stream(stream const& other);
   ~stream();
-  stream& operator=(stream const& other);
+  stream(const stream&) = delete;
+  stream& operator=(const stream&) = delete;
   int flush();
   bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   void statistics(json11::Json::object& tree) const;

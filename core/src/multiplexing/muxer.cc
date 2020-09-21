@@ -34,12 +34,6 @@ using namespace com::centreon::broker::multiplexing;
 
 uint32_t muxer::_event_queue_max_size = std::numeric_limits<uint32_t>::max();
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -49,7 +43,7 @@ uint32_t muxer::_event_queue_max_size = std::numeric_limits<uint32_t>::max();
  *                         unprocessed events in a persistent storage.
  */
 muxer::muxer(std::string const& name, bool persistent)
-    : _events_size(0),
+    : io::stream("muxer"), _events_size(0),
       _name(name),
       _persistent(persistent) {
   // Load head queue file back in memory.

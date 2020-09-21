@@ -49,20 +49,24 @@ namespace io {
  *  information is not available or meaningful, it should always return '1'.
  */
 class stream {
+  const std::string _name;
+
  public:
-  stream();
-  stream(stream const& other);
+  stream(const std::string& name);
   virtual ~stream();
-  stream& operator=(stream const& other);
+  stream(stream const& other) = delete;
+  stream& operator=(stream const& other) = delete;
   virtual int flush();
   virtual std::string peer() const;
   virtual bool read(std::shared_ptr<io::data>& d,
                     time_t deadline = (time_t)-1) = 0;
   virtual void set_substream(std::shared_ptr<stream> substream);
+  std::shared_ptr<stream> get_substream();
   virtual void statistics(json11::Json::object& tree) const;
   virtual void update();
   bool validate(std::shared_ptr<io::data> const& d, std::string const& error);
   virtual int write(std::shared_ptr<data> const& d) = 0;
+  constexpr const std::string& get_name() const { return _name; }
 
  protected:
   std::shared_ptr<stream> _substream;
