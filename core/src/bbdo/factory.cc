@@ -118,13 +118,16 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end())
       keep_retention = config::parser::parse_boolean(it->second);
 
-    // One peer retention mode?
-    bool one_peer_retention_mode =
+    // One peer retention mode? (i.e. keep_retention + reverse_connection)
+    bool reverse_connection =
         cfg.get_io_type() == config::endpoint::output;
+    if (!reverse_connection && keep_retention)
+      log_v2::bbdo()->error("BBDO: Configuration error, the one peer retention mode should be set only when the connection is reversed");
+
     retval =
         new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
-                           one_peer_retention_mode, coarse, ack_limit);
-    if (one_peer_retention_mode && keep_retention)
+                           reverse_connection, coarse, ack_limit);
+    if (reverse_connection && keep_retention)
       is_acceptor = false;
     log_v2::bbdo()->debug("BBDO: new acceptor {}", cfg.name);
   } else {
