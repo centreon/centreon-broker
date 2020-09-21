@@ -63,6 +63,7 @@ find_package(protoc_installer REQUIRED)
 find_package(grpc REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
+find_package(ZLIB REQUIRED)
 
 add_definitions(${spdlog_DEFINITIONS})
 
@@ -72,6 +73,7 @@ include_directories(${spdlog_INCLUDE_DIRS})
 include_directories(${asio_INCLUDE_DIRS})
 include_directories(${protobuf_INCLUDE_DIRS})
 include_directories(${grpc_INCLUDE_DIRS})
+include_directories(${ZLIB_INCLUDE_DIRS})
 
 link_directories(${json11_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
@@ -80,6 +82,7 @@ link_directories(${protobuf_LIB_DIRS})
 link_directories(${grpc_LIB_DIRS})
 link_directories(${c-ares_LIB_DIRS})
 link_directories(${OpenSSL_LIB_DIRS})
+link_directories(${ZLIB_LIB_DIRS})
 
 message(STATUS "Using protobuf ${grpc_VERSION}")
 set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
@@ -138,8 +141,6 @@ include(cmake/tool.cmake)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_definitions("-DASIO_STANDALONE")
 
-# Find zlib.
-find_package(ZLIB REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 # Find MySQL/Mariadb devel package
