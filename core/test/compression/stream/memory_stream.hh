@@ -22,9 +22,14 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/stream.hh"
 
+using namespace com::centreon::broker;
+
 class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
  public:
-  CompressionStreamMemoryStream() : _shutdown(false), _timeout(false) {}
+  CompressionStreamMemoryStream()
+      : io::stream("compression_stream_memory"),
+        _shutdown(false),
+        _timeout(false) {}
 
   std::shared_ptr<com::centreon::broker::io::raw>& get_buffer() {
     return _buffer;

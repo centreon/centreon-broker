@@ -65,7 +65,8 @@ stream::stream(database_config const& dbcfg,
                uint32_t interval_length,
                uint32_t rebuild_check_interval,
                bool store_in_db)
-    : _pending_events(0),
+    : io::stream("storage"),
+      _pending_events(0),
       _rebuilder(dbcfg,
                  rebuild_check_interval,
                  rrd_len ? rrd_len : 15552000,
@@ -138,7 +139,7 @@ void stream::statistics(json11::Json::object& tree) const {
  *  @return Number of events acknowledged.
  */
 int32_t stream::write(std::shared_ptr<io::data> const& data) {
-  if (!validate(data, "storage"))
+  if (!validate(data, get_name()))
     return 0;
   ++_pending_events;
   conflict_manager::instance().send_event(conflict_manager::storage, data);

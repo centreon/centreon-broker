@@ -52,7 +52,8 @@ stream::stream(std::string const& metric_naming,
                unsigned short db_port,
                uint32_t queries_per_transaction,
                std::shared_ptr<persistent_cache> const& cache)
-    : _metric_naming{metric_naming},
+    : io::stream("graphite"),
+      _metric_naming{metric_naming},
       _status_naming{status_naming},
       _db_user{db_user},
       _db_password{db_password},
@@ -170,7 +171,7 @@ void stream::statistics(json11::Json::object& tree) const {
 int stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_queries;
-  if (!validate(data, "graphite"))
+  if (!validate(data, get_name()))
     return (0);
 
   // Give the event to the cache.

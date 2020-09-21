@@ -39,7 +39,7 @@ using namespace com::centreon::broker::misc;
 
 class into_memory : public io::stream {
  public:
-  into_memory() : _memory() {}
+  into_memory() : io::stream("into_memory"), _memory() {}
   ~into_memory() override {}
 
   bool read(std::shared_ptr<io::data>& d,

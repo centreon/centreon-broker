@@ -51,7 +51,8 @@ using namespace com::centreon::broker::tcp;
  */
 stream::stream(std::shared_ptr<asio::ip::tcp::socket> sock,
                std::string const& name)
-    : _name(name),
+    : io::stream("TLS"),
+      _name(name),
       _parent(nullptr),
       _socket(sock),
       _read_timeout(-1),
@@ -175,7 +176,7 @@ void stream::set_write_timeout(int secs) {
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists and should be processed.
-  if (!validate(d, "TCP"))
+  if (!validate(d, get_name()))
     return 1;
 
   if (d->type() == io::raw::static_type()) {

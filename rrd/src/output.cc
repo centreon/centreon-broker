@@ -63,7 +63,8 @@ output::output(std::string const& metrics_path,
                bool ignore_update_errors,
                bool write_metrics,
                bool write_status)
-    : _backend(new lib((!metrics_path.empty() ? metrics_path : status_path),
+    : io::stream("RRD"),
+      _backend(new lib((!metrics_path.empty() ? metrics_path : status_path),
                        cache_size)),
       _ignore_update_errors(ignore_update_errors),
       _metrics_path(metrics_path),
@@ -91,7 +92,7 @@ output::output(std::string const& metrics_path,
                std::string const& local,
                bool write_metrics,
                bool write_status)
-    : _ignore_update_errors(ignore_update_errors),
+    : io::stream("RRD"), _ignore_update_errors(ignore_update_errors),
       _metrics_path(metrics_path),
       _status_path(status_path),
       _write_metrics(write_metrics),
@@ -122,7 +123,7 @@ output::output(std::string const& metrics_path,
                unsigned short port,
                bool write_metrics,
                bool write_status)
-    : _ignore_update_errors(ignore_update_errors),
+    : io::stream("RRD"), _ignore_update_errors(ignore_update_errors),
       _metrics_path(metrics_path),
       _status_path(status_path),
       _write_metrics(write_metrics),
@@ -172,7 +173,7 @@ void output::update() {
 int output::write(std::shared_ptr<io::data> const& d) {
   log_v2::perfdata()->debug("RRD: output::write.");
   // Check that data exists.
-  if (!validate(d, "RRD"))
+  if (!validate(d, get_name()))
     return 1;
 
   switch (d->type()) {
