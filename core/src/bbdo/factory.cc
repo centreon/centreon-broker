@@ -111,14 +111,12 @@ io::endpoint* factory::new_endpoint(
   }
 
   if (is_acceptor) {
-    // One peer retention mode ?
-    //    bool one_peer_retention_mode{false};
-    //    std::map<std::string, std::string>::const_iterator it(
-    //        cfg.params.find("one_peer_retention_mode"));
-    //    if (it != cfg.params.end())
-    //      one_peer_retention_mode = config::parser::parse_boolean(it->second);
-    //    if (one_peer_retention_mode)
-    //      is_acceptor = false;
+    // This flag is just needed to know if we keep the retention or not...
+    // When the connection is made to the map server, no retention is needed, otherwise we want it.
+    bool keep_retention{false};
+    auto it = cfg.params.find("one_peer_retention_mode");
+    if (it != cfg.params.end())
+      keep_retention = config::parser::parse_boolean(it->second);
 
     // One peer retention mode?
     bool one_peer_retention_mode =
@@ -126,7 +124,7 @@ io::endpoint* factory::new_endpoint(
     retval =
         new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
                            one_peer_retention_mode, coarse, ack_limit);
-    if (one_peer_retention_mode)
+    if (one_peer_retention_mode && keep_retention)
       is_acceptor = false;
     log_v2::bbdo()->debug("BBDO: new acceptor {}", cfg.name);
   } else {
