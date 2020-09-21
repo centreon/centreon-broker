@@ -250,7 +250,7 @@ TEST_F(OutputTest, ShortPersistentFile) {
 
   svc->perf_data.reserve(100);
   c = '0';
-  for (uint32_t i = 0; i < svc->perf_data.capacity(); i++) {
+  for (uint32_t i = 0; i < 100; i++) {
     svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';
