@@ -17,18 +17,20 @@
 */
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include <cassert>
-#include <algorithm>
-#include <cstdlib>
 
+#include <algorithm>
+#include <cassert>
+#include <cstdlib>
 #include <list>
 #include <memory>
 #include <vector>
+
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/stringifier.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -36,9 +38,8 @@
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 #include "com/centreon/broker/processing/acceptor.hh"
-#include "com/centreon/broker/processing/failover.hh"
 #include "com/centreon/broker/processing/endpoint.hh"
-#include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/processing/failover.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -208,7 +209,8 @@ void endpoint::discard() {
     std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
     // Send termination requests.
-    for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end; ++it) {
+    for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end;
+         ++it) {
       logging::debug(logging::medium)
           << "endpoint applier: send exit signal on endpoint '"
           << it->second->get_name() << "'";
@@ -350,9 +352,9 @@ processing::failover* endpoint::_create_failover(
           std::find_if(l.begin(), l.end(), failover_match_name(*failover_it));
       if (it == l.end())
         throw exceptions::msg()
-              << "endpoint applier: could not find "
-                 "secondary failover '"
-              << *failover_it << "' for endpoint '" << cfg.name << "'";
+            << "endpoint applier: could not find "
+               "secondary failover '"
+            << *failover_it << "' for endpoint '" << cfg.name << "'";
       bool is_acceptor(false);
       std::shared_ptr<io::endpoint> endp(_create_endpoint(*it, is_acceptor));
       if (is_acceptor) {
@@ -454,7 +456,6 @@ void endpoint::_diff_endpoints(
     std::list<config::endpoint> const& new_endpoints,
     std::list<config::endpoint>& to_create,
     std::list<config::endpoint>& to_delete) {
-
   // Copy some lists that we will modify.
   std::list<config::endpoint> new_ep(new_endpoints);
   for (auto it = current.begin(); it != current.end(); ++it)
@@ -484,9 +485,8 @@ void endpoint::_diff_endpoints(
                                  failover_match_name(failover));
           if (list_it == new_ep.end())
             throw exceptions::msg()
-                  << "endpoint applier: could not find failover '"
-                  << failover << "' for endpoint '" << entry.name
-                  << "'";
+                << "endpoint applier: could not find failover '" << failover
+                << "' for endpoint '" << entry.name << "'";
           entries.push_back(*list_it);
           new_ep.erase(list_it);
         }
