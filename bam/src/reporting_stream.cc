@@ -49,19 +49,13 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 using namespace com::centreon::broker::database;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
  *  @param[in] db_cfg                  BAM DB configuration.
  */
 reporting_stream::reporting_stream(database_config const& db_cfg)
-    : _ack_events(0), _pending_events(0), _mysql(db_cfg) {
+    : io::stream("BAM-BI"), _ack_events(0), _pending_events(0), _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
 

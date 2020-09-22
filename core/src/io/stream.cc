@@ -22,43 +22,18 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
- *  Default constructor.
- */
-stream::stream() {}
-
-/**
- *  Copy constructor.
+ * @brief Constructor. The name is chosen by the developer. This name is
+ * constant.
  *
- *  @param[in] other  Object to copy.
+ * @param name
  */
-stream::stream(stream const& other) {
-  _substream = other._substream;
-}
+stream::stream(const std::string& name) : _name(name) {}
 
 /**
  *  Destructor.
  */
-stream::~stream() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& other) {
-  if (this != &other)
-    _substream = other._substream;
-  return *this;
-}
+stream::~stream() noexcept {}
 
 /**
  *  Flush data.
@@ -86,6 +61,10 @@ std::string stream::peer() const {
  */
 void stream::set_substream(std::shared_ptr<stream> substream) {
   _substream = substream;
+}
+
+std::shared_ptr<stream> stream::get_substream() {
+  return _substream;
 }
 
 /**

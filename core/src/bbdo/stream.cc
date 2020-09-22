@@ -33,17 +33,11 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
 stream::stream()
-    : _coarse(false),
+    : io::stream("BBDO"), _coarse(false),
       _negotiate(true),
       _negotiated(false),
       _timeout(5),
@@ -54,7 +48,7 @@ stream::stream()
 /**
  *  Destructor.
  */
-stream::~stream() {}
+stream::~stream() noexcept {}
 
 /**
  *  Flush stream data.
@@ -163,37 +157,72 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Negotiation.
   if (_negotiate) {
+
+    std::list<std::string> running_config = get_running_config();
+
     // Apply negotiated extensions.
     log_v2::bbdo()->info("BBDO: we have extensions '{}' and peer has '{}'",
                          _extensions, v->extensions);
     std::list<std::string> own_ext(misc::string::split(_extensions, ' '));
     std::list<std::string> peer_ext(misc::string::split(v->extensions, ' '));
-    for (std::list<std::string>::const_iterator it{own_ext.begin()},
-         end{own_ext.end()};
-         it != end; ++it) {
+    for (auto& ext : own_ext) {
       // Find matching extension in peer extension list.
       std::list<std::string>::const_iterator peer_it{
-          std::find(peer_ext.begin(), peer_ext.end(), *it)};
+          std::find(peer_ext.begin(), peer_ext.end(), ext)};
       // Apply extension if found.
       if (peer_it != peer_ext.end()) {
-        log_v2::bbdo()->info("BBDO: applying extension '{}'", *it);
-        for (std::map<std::string, io::protocols::protocol>::const_iterator
-                 proto_it{io::protocols::instance().begin()},
-             proto_end{io::protocols::instance().end()};
-             proto_it != proto_end; ++proto_it)
-          if (proto_it->first == *it) {
-            std::shared_ptr<io::stream> s{
-                proto_it->second.endpntfactry->new_stream(
-                    _substream, neg == negotiate_second, *it)};
-            set_substream(s);
-            break;
+        if (std::find(running_config.begin(), running_config.end(), ext) ==
+            running_config.end()) {
+          log_v2::bbdo()->info("BBDO: applying extension '{}'", ext);
+          for (std::map<std::string, io::protocols::protocol>::const_iterator
+                   proto_it{io::protocols::instance().begin()},
+               proto_end{io::protocols::instance().end()};
+               proto_it != proto_end; ++proto_it)
+            if (proto_it->first == ext) {
+              std::shared_ptr<io::stream> s{
+                  proto_it->second.endpntfactry->new_stream(
+                      _substream, neg == negotiate_second, ext)};
+              set_substream(s);
+              break;
+            }
+        }
+        else
+          log_v2::bbdo()->info("BBDO: extension '{}' already configured", ext);
+      }
+      else if (std::find(running_config.begin(), running_config.end(), *peer_it) !=
+          running_config.end()) {
+        log_v2::bbdo()->info("BBDO: extension '{}' no more needed", *peer_it);
+        auto substream = get_substream();
+        if (substream->get_name() == *peer_it) {
+          auto subsubstream = substream->get_substream();
+          set_substream(subsubstream);
+        }
+        else {
+          while (substream) {
+            auto parent = substream;
+            substream = substream->get_substream();
+            if (substream->get_name() == *peer_it) {
+              parent->set_substream(substream->get_substream());
+              break;
+            }
           }
+        }
       }
     }
   }
 
   // Stream has now negotiated.
   _negotiated = true;
+}
+
+std::list<std::string> stream::get_running_config() {
+  std::list<std::string> retval;
+  std::shared_ptr<io::stream> substream = get_substream();
+  while (substream) {
+    retval.push_back(substream->get_name());
+    substream = substream->get_substream();
+  }
+  return retval;
 }
 
 /**

@@ -52,7 +52,7 @@ stream::stream(std::string const& metric_naming,
                unsigned short db_port,
                uint32_t queries_per_transaction,
                std::shared_ptr<persistent_cache> const& cache)
-    : _metric_naming{metric_naming},
+    : io::stream("graphite"), _metric_naming{metric_naming},
       _status_naming{status_naming},
       _db_user{db_user},
       _db_password{db_password},
@@ -130,7 +130,7 @@ int stream::flush() {
   _actual_query = 0;
   _pending_queries = 0;
   _commit_flag = false;
-  return (ret);
+  return ret;
 }
 
 /**
@@ -170,8 +170,8 @@ void stream::statistics(json11::Json::object& tree) const {
 int stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_queries;
-  if (!validate(data, "graphite"))
-    return (0);
+  if (!validate(data, get_name()))
+    return 0;
 
   // Give the event to the cache.
   _cache.write(data);
@@ -190,9 +190,9 @@ int stream::write(std::shared_ptr<io::data> const& data) {
     _commit_flag = true;
 
   if (_commit_flag)
-    return (flush());
+    return flush();
   else
-    return (0);
+    return 0;
 }
 
 /**************************************
@@ -209,7 +209,7 @@ int stream::write(std::shared_ptr<io::data> const& data) {
 bool stream::_process_metric(storage::metric const& me) {
   std::string to_append = _metric_query.generate_metric(me);
   _query.append(to_append);
-  return (!to_append.empty());
+  return !to_append.empty();
 }
 
 /**
@@ -220,7 +220,7 @@ bool stream::_process_metric(storage::metric const& me) {
 bool stream::_process_status(storage::status const& st) {
   std::string to_append = _status_query.generate_status(st);
   _query.append(to_append);
-  return (!to_append.empty());
+  return !to_append.empty();
 }
 
 /**
