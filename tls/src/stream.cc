@@ -48,7 +48,7 @@ using namespace com::centreon::broker::tls;
  *                   encryption that should be used.
  */
 stream::stream(gnutls_session_t* sess)
-    : _deadline((time_t)-1), _session(sess) {}
+    : io::stream("TLS"), _deadline((time_t)-1), _session(sess) {}
 
 /**
  *  @brief Destructor.
@@ -166,7 +166,7 @@ long long stream::read_encrypted(void* buffer, long long size) {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
-  if (!validate(d, "TLS"))
+  if (!validate(d, get_name()))
     return 1;
 
   // Send data.

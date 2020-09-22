@@ -32,12 +32,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -53,7 +47,8 @@ stream::stream(std::string const& user,
                std::string const& metric_ts,
                std::vector<column> const& metric_cols,
                std::shared_ptr<persistent_cache> const& cache)
-    : _user(user),
+    : io::stream("influxdb"),
+      _user(user),
       _password(passwd),
       _address(addr),
       _db(db),
@@ -124,7 +119,7 @@ void stream::statistics(json11::Json::object& tree) const {
 int stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_queries;
-  if (!validate(data, "influxdb"))
+  if (!validate(data, get_name()))
     return 0;
 
   // Give data to cache.

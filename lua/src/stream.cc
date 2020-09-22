@@ -47,7 +47,8 @@ using namespace com::centreon::broker::lua;
 stream::stream(std::string const& lua_script,
                std::map<std::string, misc::variant> const& conf_params,
                std::shared_ptr<persistent_cache> const& cache)
-    : _cache{cache},
+    : io::stream("lua"),
+      _cache{cache},
       _acks_count{0},
       _stats{{}},
       _stats_it{_stats.begin()},
@@ -56,7 +57,6 @@ stream::stream(std::string const& lua_script,
       _a_min{1},
       _exit{false},
       _flush{false} {
-
   bool fail = false;
   std::string fail_msg;
 
@@ -181,7 +181,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& data) {
-  if (!validate(data, "lua"))
+  if (!validate(data, get_name()))
     return 0;
 
   {

@@ -112,6 +112,8 @@ TEST_F(StatsTest, BuilderWithModules) {
 }
 
 class st : public io::stream {
+  public:
+    st() : io::stream("st") {}
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override {
     (void)deadline;
     d.reset();

@@ -19,6 +19,8 @@
 #ifndef CCB_BBDO_STREAM_HH
 #define CCB_BBDO_STREAM_HH
 
+#include <list>
+
 #include "com/centreon/broker/bbdo/input.hh"
 #include "com/centreon/broker/bbdo/output.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -61,6 +63,7 @@ class stream : public input, public output {
   int write(std::shared_ptr<io::data> const& d) override;
   void acknowledge_events(uint32_t events) override;
   void send_event_acknowledgement();
+  std::list<std::string> get_running_config();
 };
 }  // namespace bbdo
 

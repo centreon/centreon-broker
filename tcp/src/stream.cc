@@ -48,7 +48,8 @@ using namespace com::centreon::broker::tcp;
  * @param read_timeout The read_timeout in seconds or -1 if no timeout.
  */
 stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
-    : _host(host),
+    : io::stream("TCP"),
+      _host(host),
       _port(port),
       _read_timeout(read_timeout),
       _connection(tcp_async::instance().create_connection(host, port)),
@@ -62,7 +63,8 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
  * @param read_timeout A duration in seconds or -1 if no timeout.
  */
 stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
-    : _host(conn->socket().remote_endpoint().address().to_string()),
+    : io::stream("TCP"),
+      _host(conn->socket().remote_endpoint().address().to_string()),
       _port(conn->socket().remote_endpoint().port()),
       _read_timeout(read_timeout),
       _connection(conn),
@@ -71,7 +73,7 @@ stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
 /**
  *  Destructor.
  */
-stream::~stream() {
+stream::~stream() noexcept {
   log_v2::tcp()->trace("stream closed");
   if (_connection->socket().is_open())
     _connection->close();
