@@ -26,6 +26,7 @@
 #include <set>
 #include <string>
 #include <unordered_set>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()

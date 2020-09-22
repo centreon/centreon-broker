@@ -19,10 +19,11 @@
 #ifndef CCB_IO_STREAM_HH
 #define CCB_IO_STREAM_HH
 
-#include <json11.hpp>
 #include <ctime>
+#include <json11.hpp>
 #include <memory>
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/namespace.hh"
 

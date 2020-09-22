@@ -19,6 +19,7 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 
 #include <arpa/inet.h>
+
 #include <algorithm>
 #include <cassert>
 
@@ -26,13 +27,13 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/timeout.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/misc/string.hh"
-#include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/misc/misc.hh"
-#include "com/centreon/broker/exceptions/timeout.hh"
+#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -588,7 +589,6 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Negotiation.
   if (_negotiate) {
-
     std::list<std::string> running_config = get_running_config();
 
     // Apply negotiated extensions.
@@ -616,19 +616,16 @@ void stream::negotiate(stream::negotiation_type neg) {
               set_substream(s);
               break;
             }
-        }
-        else
+        } else
           log_v2::bbdo()->info("BBDO: extension '{}' already configured", ext);
-      }
-      else if (std::find(running_config.begin(), running_config.end(), *peer_it) !=
-          running_config.end()) {
+      } else if (std::find(running_config.begin(), running_config.end(),
+                           *peer_it) != running_config.end()) {
         log_v2::bbdo()->info("BBDO: extension '{}' no more needed", *peer_it);
         auto substream = get_substream();
         if (substream->get_name() == *peer_it) {
           auto subsubstream = substream->get_substream();
           set_substream(subsubstream);
-        }
-        else {
+        } else {
           while (substream) {
             auto parent = substream;
             substream = substream->get_substream();

@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/compression/factory.hh"
+
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/compression/opener.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/parser.hh"
@@ -41,10 +43,10 @@ using namespace com::centreon::broker::compression;
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
   return false;
-//  std::map<std::string, std::string>::const_iterator it{
-//      cfg.params.find("compression")};
-//  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
-//         config::parser::parse_boolean(it->second);
+  //  std::map<std::string, std::string>::const_iterator it{
+  //      cfg.params.find("compression")};
+  //  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
+  //         config::parser::parse_boolean(it->second);
 }
 
 /**

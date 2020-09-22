@@ -157,7 +157,7 @@ std::string factory::_extensions(config::endpoint& cfg) const {
        it != end; ++it) {
     if (it->second.osi_from > 1 && it->second.osi_to < 7 &&
         (it->second.endpntfactry->has_endpoint(cfg) ||
-        !it->second.endpntfactry->has_not_endpoint(cfg))) {
+         !it->second.endpntfactry->has_not_endpoint(cfg))) {
       if (!extensions.empty())
         extensions.append(" ");
       extensions.append(it->first);
