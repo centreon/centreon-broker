@@ -38,6 +38,7 @@
 #include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "com/centreon/broker/processing/endpoint.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
@@ -113,63 +114,78 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   logging::debug(logging::high)
       << "endpoint applier: " << endpoints.size() << " endpoints to apply";
 
+  {
+    std::vector<std::string> eps;
+    for (auto& ep : endpoints)
+      eps.push_back(ep.name);
+    log_v2::core()->debug("endpoint applier: {} endpoints to apply: {}",
+                          endpoints.size(), fmt::join(eps, ", "));
+  }
+
   // Copy endpoint configurations and apply eventual modifications.
   std::list<config::endpoint> tmp_endpoints(endpoints);
-  for (std::map<std::string, io::protocols::protocol>::const_iterator
-           it1(io::protocols::instance().begin()),
-       end1(io::protocols::instance().end());
-       it1 != end1; ++it1) {
-    for (std::list<config::endpoint>::iterator it2(tmp_endpoints.begin()),
-         end2(tmp_endpoints.end());
-         it2 != end2; ++it2)
-      it1->second.endpntfactry->has_endpoint(*it2);
-  }
 
   // Remove old inputs and generate inputs to create.
   std::list<config::endpoint> endp_to_create;
   {
     std::lock_guard<std::timed_mutex> lock(_endpointsm);
-    _diff_endpoints(_endpoints, tmp_endpoints, endp_to_create);
+    std::list<config::endpoint> endp_to_delete;
+    _diff_endpoints(_endpoints, tmp_endpoints, endp_to_create, endp_to_delete);
+
+    // Remove old endpoints.
+    for (auto& ep : endp_to_delete) {
+      // Send only termination request, object will be destroyed by event
+      // loop on termination. But wait for threads because they hold
+      // resources that might be used by other endpoints.
+      auto it = _endpoints.find(ep);
+      if (it != _endpoints.end()) {
+        log_v2::core()->debug("removing old endpoint {}", it->first.name);
+        it->second->exit();
+        delete it->second;
+        _endpoints.erase(it);
+      }
+    }
   }
 
   // Update existing endpoints.
-  for (iterator it(_endpoints.begin()), end(_endpoints.end()); it != end; ++it)
+  for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end; ++it) {
+    log_v2::core()->debug("updating endpoint {}", it->first.name);
     it->second->update();
+  }
 
   // Debug message.
   logging::debug(logging::high) << "endpoint applier: " << endp_to_create.size()
                                 << " endpoints to create";
 
   // Create new endpoints.
-  for (std::list<config::endpoint>::iterator it(endp_to_create.begin()),
-       end(endp_to_create.end());
-       it != end; ++it) {
+  for (config::endpoint& ep : endp_to_create) {
     // Check that output is not a failover.
-    if (it->name.empty() ||
+    if (ep.name.empty() ||
         (std::find_if(endp_to_create.begin(), endp_to_create.end(),
-                      name_match_failover(it->name)) == endp_to_create.end())) {
+                      name_match_failover(ep.name)) == endp_to_create.end())) {
+      log_v2::core()->debug("creating endpoint {}", ep.name);
       // Create subscriber and endpoint.
-      std::shared_ptr<multiplexing::subscriber> s(_create_subscriber(*it));
+      std::shared_ptr<multiplexing::subscriber> s(_create_subscriber(ep));
       bool is_acceptor;
-      std::shared_ptr<io::endpoint> e(_create_endpoint(*it, is_acceptor));
+      std::shared_ptr<io::endpoint> e(_create_endpoint(ep, is_acceptor));
       std::unique_ptr<processing::endpoint> endp;
       if (is_acceptor) {
         std::unique_ptr<processing::acceptor> acceptr(
-            new processing::acceptor(e, it->name));
-        acceptr->set_read_filters(_filters(it->read_filters));
-        acceptr->set_write_filters(_filters(it->write_filters));
+            new processing::acceptor(e, ep.name));
+        acceptr->set_read_filters(_filters(ep.read_filters));
+        acceptr->set_write_filters(_filters(ep.write_filters));
         endp.reset(acceptr.release());
       } else
-        endp.reset(_create_failover(*it, s, e, endp_to_create));
+        endp.reset(_create_failover(ep, s, e, endp_to_create));
       {
         std::lock_guard<std::timed_mutex> lock(_endpointsm);
-        _endpoints[*it] = endp.get();
+        _endpoints[ep] = endp.get();
       }
 
       // Run thread.
       logging::debug(logging::medium) << "endpoint applier: endpoint "
                                          "thread "
-                                      << endp.get() << " of '" << it->name
+                                      << endp.get() << " of '" << ep.name
                                       << "' is registered and ready to run";
       endp.release()->start();
     }
@@ -431,71 +447,58 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
  *  @param[in]  current       Current endpoints.
  *  @param[in]  new_endpoints New endpoints configuration.
  *  @param[out] to_create     Endpoints that should be created.
+ *  @param[out] to_delete     Endpoints that should be deleted.
  */
 void endpoint::_diff_endpoints(
     std::map<config::endpoint, processing::endpoint*> const& current,
     std::list<config::endpoint> const& new_endpoints,
-    std::list<config::endpoint>& to_create) {
+    std::list<config::endpoint>& to_create,
+    std::list<config::endpoint>& to_delete) {
+
   // Copy some lists that we will modify.
   std::list<config::endpoint> new_ep(new_endpoints);
-  std::map<config::endpoint, processing::endpoint*> to_delete(current);
+  for (auto it = current.begin(); it != current.end(); ++it)
+    to_delete.push_back(it->first);
 
   // Loop through new configuration.
   while (!new_ep.empty()) {
     // Find a root entry.
-    std::list<config::endpoint>::iterator list_it(new_ep.begin());
-    while ((list_it != new_ep.end()) && !list_it->name.empty() &&
-           (std::find_if(new_ep.begin(), new_ep.end(),
-                         name_match_failover(list_it->name)) != new_ep.end()))
+    auto list_it = new_ep.begin();
+    while (list_it != new_ep.end() && !list_it->name.empty() &&
+           std::find_if(new_ep.begin(), new_ep.end(),
+                        name_match_failover(list_it->name)) != new_ep.end())
       ++list_it;
     if (list_it == new_ep.end())
-      throw(exceptions::msg() << "endpoint applier: error while "
-                                 "diff'ing new and old configuration");
+      throw exceptions::msg() << "endpoint applier: error while "
+                                 "diff'ing new and old configuration";
     std::list<config::endpoint> entries;
     entries.push_back(*list_it);
     new_ep.erase(list_it);
 
     // Find all subentries.
-    for (std::list<config::endpoint>::iterator it_entries(entries.begin()),
-         it_end(entries.end());
-         it_entries != it_end; ++it_entries) {
+    for (auto& entry : entries) {
       // Find failovers.
-      if (!it_entries->failovers.empty())
-        for (std::list<std::string>::const_iterator
-                 failover_it(it_entries->failovers.begin()),
-             failover_end(it_entries->failovers.end());
-             failover_it != failover_end; ++failover_it) {
+      if (!entry.failovers.empty())
+        for (auto& failover : entry.failovers) {
           list_it = std::find_if(new_ep.begin(), new_ep.end(),
-                                 failover_match_name(*failover_it));
+                                 failover_match_name(failover));
           if (list_it == new_ep.end())
-            throw(exceptions::msg()
+            throw exceptions::msg()
                   << "endpoint applier: could not find failover '"
-                  << *failover_it << "' for endpoint '" << it_entries->name
-                  << "'");
+                  << failover << "' for endpoint '" << entry.name
+                  << "'";
           entries.push_back(*list_it);
           new_ep.erase(list_it);
         }
     }
 
     // Try to find entry and subentries in the endpoints already running.
-    std::map<config::endpoint, processing::endpoint*>::iterator map_it(
-        to_delete.find(entries.front()));
-    if (map_it == to_delete.end())
-      for (std::list<config::endpoint>::iterator it(entries.begin()),
-           end(entries.end());
-           it != end; ++it)
-        to_create.push_back(*it);
+    auto map_it = current.find(entries.front());
+    if (map_it == current.end())
+      for (auto& entry : entries)
+        to_create.push_back(entry);
     else
-      to_delete.erase(map_it);
-  }
-
-  // Remove old endpoints.
-  for (auto it = to_delete.begin(), end = to_delete.end(); it != end; ++it) {
-    // Send only termination request, object will be destroyed by event
-    // loop on termination. But wait for threads because they hold
-    // resources that might be used by other endpoints.
-    it->second->exit();
-    delete it->second;
+      to_delete.remove(map_it->first);
   }
 }
 

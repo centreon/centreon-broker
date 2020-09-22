@@ -66,7 +66,7 @@ class stream {
   virtual void update();
   bool validate(std::shared_ptr<io::data> const& d, std::string const& error);
   virtual int write(std::shared_ptr<data> const& d) = 0;
-  constexpr const std::string& get_name() const { return _name; }
+  const std::string& get_name() const { return _name; }
 
  protected:
   std::shared_ptr<stream> _substream;

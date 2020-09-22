@@ -39,7 +39,7 @@ using namespace com::centreon::broker::simu;
  *  @param[in] port                    port
  */
 stream::stream(std::string const& lua_script,
-               std::map<std::string, misc::variant> const& conf_params) {
+               std::map<std::string, misc::variant> const& conf_params) : io::stream("simu") {
   _luabinding = new luabinding(lua_script, conf_params);
 }
 
