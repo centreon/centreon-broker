@@ -59,7 +59,7 @@ state::~state() {}
 state& state::operator=(state const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -85,7 +85,6 @@ void state::clear() {
   _params.clear();
   _poller_id = 0;
   _poller_name.clear();
-  return;
 }
 
 /**
@@ -93,9 +92,8 @@ void state::clear() {
  *
  *  @param[in] id  Broker ID.
  */
-void state::broker_id(int id) throw() {
+void state::broker_id(int id) noexcept {
   _broker_id = id;
-  return;
 }
 
 /**
@@ -103,8 +101,8 @@ void state::broker_id(int id) throw() {
  *
  *  @return Broker ID.
  */
-int state::broker_id() const throw() {
-  return (_broker_id);
+int state::broker_id() const noexcept {
+  return _broker_id;
 }
 
 /**
@@ -114,7 +112,6 @@ int state::broker_id() const throw() {
  */
 void state::broker_name(std::string const& name) {
   _broker_name = name;
-  return;
 }
 
 /**
@@ -122,8 +119,8 @@ void state::broker_name(std::string const& name) {
  *
  *  @return Broker name.
  */
-std::string const& state::broker_name() const throw() {
-  return (_broker_name);
+std::string const& state::broker_name() const noexcept {
+  return _broker_name;
 }
 
 /**
@@ -135,7 +132,6 @@ void state::cache_directory(std::string const& dir) {
   _cache_directory = dir;
   if (_cache_directory[_cache_directory.size() - 1] != '/')
     _cache_directory.append("/");
-  return;
 }
 
 /**
@@ -143,8 +139,8 @@ void state::cache_directory(std::string const& dir) {
  *
  *  @return Cache directory.
  */
-std::string const& state::cache_directory() const throw() {
-  return (_cache_directory);
+std::string const& state::cache_directory() const noexcept {
+  return _cache_directory;
 }
 
 /**
@@ -154,7 +150,6 @@ std::string const& state::cache_directory() const throw() {
  */
 void state::command_file(std::string const& file) {
   _command_file = file;
-  return;
 }
 
 /**
@@ -162,8 +157,8 @@ void state::command_file(std::string const& file) {
  *
  *  @return  The command file.
  */
-std::string const& state::command_file() const throw() {
-  return (_command_file);
+std::string const& state::command_file() const noexcept {
+  return _command_file;
 }
 
 /**
@@ -180,8 +175,8 @@ void state::command_protocol(std::string const& prot) {
  *
  *  @return  The command protocol.
  */
-std::string const& state::command_protocol() const throw() {
-  return (_command_protocol);
+std::string const& state::command_protocol() const noexcept {
+  return _command_protocol;
 }
 
 /**
@@ -198,8 +193,8 @@ std::list<endpoint>& state::endpoints() noexcept {
  *
  *  @return Endpoint list.
  */
-std::list<endpoint> const& state::endpoints() const throw() {
-  return (_endpoints);
+std::list<endpoint> const& state::endpoints() const noexcept {
+  return _endpoints;
 }
 
 /**
@@ -207,7 +202,7 @@ std::list<endpoint> const& state::endpoints() const throw() {
  *
  *  @param[in] val Size limit.
  */
-void state::event_queue_max_size(int val) throw() {
+void state::event_queue_max_size(int val) noexcept {
   _event_queue_max_size = val;
 }
 
@@ -216,8 +211,8 @@ void state::event_queue_max_size(int val) throw() {
  *
  *  @return The size limit.
  */
-int state::event_queue_max_size() const throw() {
-  return (_event_queue_max_size);
+int state::event_queue_max_size() const noexcept {
+  return _event_queue_max_size;
 }
 
 /**
@@ -225,9 +220,8 @@ int state::event_queue_max_size() const throw() {
  *
  *  @param[in] flush true to automatically flush log files.
  */
-void state::flush_logs(bool flush) throw() {
+void state::flush_logs(bool flush) noexcept {
   _flush_logs = flush;
-  return;
 }
 
 /**
@@ -235,8 +229,8 @@ void state::flush_logs(bool flush) throw() {
  *
  *  @return true if logs must be automatically flushed.
  */
-bool state::flush_logs() const throw() {
-  return (_flush_logs);
+bool state::flush_logs() const noexcept {
+  return _flush_logs;
 }
 
 /**
@@ -244,8 +238,8 @@ bool state::flush_logs() const throw() {
  *
  *  @return Logger list.
  */
-std::list<logger>& state::loggers() throw() {
-  return (_loggers);
+std::list<logger>& state::loggers() noexcept {
+  return _loggers;
 }
 
 /**
@@ -253,9 +247,8 @@ std::list<logger>& state::loggers() throw() {
  *
  *  @param[in] log_id true to log thread IDs.
  */
-void state::log_thread_id(bool log_id) throw() {
+void state::log_thread_id(bool log_id) noexcept {
   _log_thread_id = log_id;
-  return;
 }
 
 /**
@@ -263,8 +256,8 @@ void state::log_thread_id(bool log_id) throw() {
  *
  *  @return true if thread IDs must be logged.
  */
-bool state::log_thread_id() const throw() {
-  return (_log_thread_id);
+bool state::log_thread_id() const noexcept {
+  return _log_thread_id;
 }
 
 /**
@@ -273,9 +266,8 @@ bool state::log_thread_id() const throw() {
  *  @param[in] log_time  Any acceptable value.
  */
 void state::log_timestamp(
-    com::centreon::broker::logging::timestamp_type log_time) throw() {
+    com::centreon::broker::logging::timestamp_type log_time) noexcept {
   _log_timestamp = log_time;
-  return;
 }
 
 /**
@@ -284,8 +276,8 @@ void state::log_timestamp(
  *  @return Any acceptable value.
  */
 com::centreon::broker::logging::timestamp_type state::log_timestamp() const
-    throw() {
-  return (_log_timestamp);
+    noexcept {
+  return _log_timestamp;
 }
 
 /**
@@ -293,9 +285,8 @@ com::centreon::broker::logging::timestamp_type state::log_timestamp() const
  *
  *  @param[in] human_log_time true to log a human readable timestamp.
  */
-void state::log_human_readable_timestamp(bool human_log_time) throw() {
+void state::log_human_readable_timestamp(bool human_log_time) noexcept {
   _log_human_readable_timestamp = human_log_time;
-  return;
 }
 
 /**
@@ -303,8 +294,8 @@ void state::log_human_readable_timestamp(bool human_log_time) throw() {
  *
  *  @return true if a human redable timestamp must be logged.
  */
-bool state::log_human_readable_timestamp() const throw() {
-  return (_log_human_readable_timestamp);
+bool state::log_human_readable_timestamp() const noexcept {
+  return _log_human_readable_timestamp;
 }
 
 /**
@@ -312,8 +303,8 @@ bool state::log_human_readable_timestamp() const throw() {
  *
  *  @return Logger list.
  */
-std::list<logger> const& state::loggers() const throw() {
-  return (_loggers);
+std::list<logger> const& state::loggers() const noexcept {
+  return _loggers;
 }
 
 /**
@@ -321,8 +312,8 @@ std::list<logger> const& state::loggers() const throw() {
  *
  *  @return Module directory.
  */
-std::string const& state::module_directory() const throw() {
-  return (_module_dir);
+std::string const& state::module_directory() const noexcept {
+  return _module_dir;
 }
 
 /**
@@ -332,7 +323,6 @@ std::string const& state::module_directory() const throw() {
  */
 void state::module_directory(std::string const& dir) {
   _module_dir = dir;
-  return;
 }
 
 /**
@@ -340,8 +330,8 @@ void state::module_directory(std::string const& dir) {
  *
  *  @return Modifiable module list.
  */
-std::list<std::string>& state::module_list() throw() {
-  return (_module_list);
+std::list<std::string>& state::module_list() noexcept {
+  return _module_list;
 }
 
 /**
@@ -349,8 +339,8 @@ std::list<std::string>& state::module_list() throw() {
  *
  *  @return Const module list.
  */
-std::list<std::string> const& state::module_list() const throw() {
-  return (_module_list);
+std::list<std::string> const& state::module_list() const noexcept {
+  return _module_list;
 }
 
 /**
@@ -358,8 +348,8 @@ std::list<std::string> const& state::module_list() const throw() {
  *
  *  @return Additional parameters list.
  */
-std::map<std::string, std::string>& state::params() throw() {
-  return (_params);
+std::map<std::string, std::string>& state::params() noexcept {
+  return _params;
 }
 
 /**
@@ -367,8 +357,8 @@ std::map<std::string, std::string>& state::params() throw() {
  *
  *  @return Additional parameters list.
  */
-std::map<std::string, std::string> const& state::params() const throw() {
-  return (_params);
+std::map<std::string, std::string> const& state::params() const noexcept {
+  return _params;
 }
 
 /**
@@ -376,9 +366,8 @@ std::map<std::string, std::string> const& state::params() const throw() {
  *
  *  @param[in] id  Poller ID.
  */
-void state::poller_id(int id) throw() {
+void state::poller_id(int id) noexcept {
   _poller_id = id;
-  return;
 }
 
 /**
@@ -386,8 +375,8 @@ void state::poller_id(int id) throw() {
  *
  *  @return Poller ID.
  */
-int state::poller_id() const throw() {
-  return (_poller_id);
+int state::poller_id() const noexcept {
+  return _poller_id;
 }
 
 /**
@@ -397,7 +386,6 @@ int state::poller_id() const throw() {
  */
 void state::poller_name(std::string const& name) {
   _poller_name = name;
-  return;
 }
 
 /**
@@ -405,8 +393,8 @@ void state::poller_name(std::string const& name) {
  *
  *  @return Poller name.
  */
-std::string const& state::poller_name() const throw() {
-  return (_poller_name);
+std::string const& state::poller_name() const noexcept {
+  return _poller_name;
 }
 
 /**************************************
@@ -438,7 +426,6 @@ void state::_internal_copy(state const& other) {
   _params = other._params;
   _poller_id = other._poller_id;
   _poller_name = other._poller_name;
-  return;
 }
 
 void state::rpc_port(uint16_t port) noexcept {

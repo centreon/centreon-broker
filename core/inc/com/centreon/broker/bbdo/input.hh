@@ -19,8 +19,6 @@
 #ifndef CCB_BBDO_INPUT_HH
 #define CCB_BBDO_INPUT_HH
 
-//#include <memory>
-//#include <mutex>
 #include <deque>
 #include <string>
 

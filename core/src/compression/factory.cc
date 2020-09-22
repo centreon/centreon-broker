@@ -40,10 +40,11 @@ using namespace com::centreon::broker::compression;
  *  @return True if the configuration matches the compression layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  std::map<std::string, std::string>::const_iterator it{
-      cfg.params.find("compression")};
-  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
-         config::parser::parse_boolean(it->second);
+  return false;
+//  std::map<std::string, std::string>::const_iterator it{
+//      cfg.params.find("compression")};
+//  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
+//         config::parser::parse_boolean(it->second);
 }
 
 /**
@@ -57,9 +58,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
   std::map<std::string, std::string>::const_iterator it{
       cfg.params.find("compression")};
-  return (it != cfg.params.end() && strcasecmp(it->second.c_str(), "auto"))
-             ? !has_endpoint(cfg)
-             : false;
+  return it == cfg.params.end() || strcasecmp(it->second.c_str(), "no") == 0;
 }
 
 /**
