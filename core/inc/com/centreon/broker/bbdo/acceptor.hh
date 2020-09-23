@@ -45,7 +45,7 @@ class stream;
  */
 class acceptor : public io::endpoint {
   bool _coarse;
-  std::string _extensions;
+  std::pair<std::string, std::string> _extensions;
   std::string _name;
   bool _negotiate;
   const bool _one_peer_retention_mode;
@@ -55,7 +55,7 @@ class acceptor : public io::endpoint {
  public:
   acceptor(std::string const& name,
            bool negotiate,
-           std::string const& extensions,
+           const std::pair<std::string, std::string>& extensions,
            time_t timeout,
            bool one_peer_retention_mode = false,
            bool coarse = false,

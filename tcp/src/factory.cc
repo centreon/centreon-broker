@@ -38,7 +38,9 @@ using namespace com::centreon::broker::tcp;
  *
  *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+  if (flag)
+    *flag = no;
   return cfg.type == "ip" || cfg.type == "tcp" || cfg.type == "ipv4" ||
          cfg.type == "ipv6";
 }

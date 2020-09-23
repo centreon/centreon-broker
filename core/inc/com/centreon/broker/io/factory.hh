@@ -36,16 +36,30 @@ namespace io {
  */
 class factory {
  public:
+  enum flag {
+    no,
+    maybe,
+    yes,
+  };
   factory() = default;
   virtual ~factory() = default;
   factory(factory const& other) = delete;
   factory& operator=(factory const& other) = delete;
-  virtual bool has_endpoint(
-      com::centreon::broker::config::endpoint& cfg) const = 0;
-  virtual bool has_not_endpoint(
-      com::centreon::broker::config::endpoint& cfg) const;
+  /**
+   * @brief This method has two roles:
+   *   * The first one is to know if this endpoint has to be set on cbd startup.
+   *     This is known with the return value.
+   *   * There is also a flag output value that tells if after negociation, this
+   *     stream should be added to the configuration, surely, maybe or not.
+   *
+   * @param[in] cfg
+   * @param[out] flag
+   *
+   * @return a boolean
+   */
+  virtual bool has_endpoint(config::endpoint& cfg, flag* flag) const = 0;
   virtual endpoint* new_endpoint(
-      com::centreon::broker::config::endpoint& cfg,
+      config::endpoint& cfg,
       bool& is_acceptor,
       std::shared_ptr<persistent_cache> cache =
           std::shared_ptr<persistent_cache>()) const = 0;

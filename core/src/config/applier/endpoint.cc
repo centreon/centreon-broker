@@ -393,8 +393,8 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
            it(io::protocols::instance().begin()),
        end(io::protocols::instance().end());
        it != end; ++it) {
-    if ((it->second.osi_from == 1) &&
-        it->second.endpntfactry->has_endpoint(cfg)) {
+    if (it->second.osi_from == 1 &&
+        it->second.endpntfactry->has_endpoint(cfg, nullptr)) {
       std::shared_ptr<persistent_cache> cache;
       if (cfg.cache_enabled) {
         std::string cache_path(config::applier::state::instance().cache_dir());
@@ -423,7 +423,7 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
         io::protocols::instance().end());
     while (it != end) {
       if ((it->second.osi_from == level) &&
-          (it->second.endpntfactry->has_endpoint(cfg))) {
+          (it->second.endpntfactry->has_endpoint(cfg, nullptr))) {
         std::shared_ptr<io::endpoint> current(
             it->second.endpntfactry->new_endpoint(cfg, is_acceptor));
         current->from(endp);

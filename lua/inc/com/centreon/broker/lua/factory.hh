@@ -33,10 +33,10 @@ namespace lua {
 class factory : public io::factory {
  public:
   factory() = default;
-  factory(factory const& other) = delete;
   ~factory() = default;
-  factory& operator=(factory const& other) = delete;
-  bool has_endpoint(config::endpoint& cfg) const;
+  factory(factory const&) = delete;
+  factory& operator=(factory const&) = delete;
+  bool has_endpoint(config::endpoint& cfg, flag* flag) const;
   io::endpoint* new_endpoint(config::endpoint& cfg,
                              bool& is_acceptor,
                              std::shared_ptr<persistent_cache> cache =

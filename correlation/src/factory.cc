@@ -33,8 +33,10 @@ using namespace com::centreon::broker::correlation;
  *
  *  @return True if configuration matches streams build by this factory.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
   bool is_correlation(!strncasecmp(cfg.type.c_str(), "correlation", 12));
+  if (flag)
+    *flag = no;
   if (is_correlation) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;

@@ -46,8 +46,10 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] name                    The name to build temporary.
  *  @param[in] negotiate               true if feature negotiation is
  *                                     allowed.
- *  @param[in] extensions              List of extensions allowed by
- *                                     this endpoint.
+ *  @param[in] extensions              Pair of two strings with extensions the
+ *                                     one contains those allowed by this
+ *                                     endpoint. The second one contains the
+ *                                     mandatory ones.
  *  @param[in] timeout                 Connection timeout.
  *  @param[in] one_peer_retention_mode True to enable the "one peer
  *                                     retention mode" (TM).
@@ -57,7 +59,7 @@ using namespace com::centreon::broker::bbdo;
  */
 acceptor::acceptor(std::string const& name,
                    bool negotiate,
-                   std::string const& extensions,
+                   std::pair<std::string, std::string> const& extensions,
                    time_t timeout,
                    bool one_peer_retention_mode,
                    bool coarse,
