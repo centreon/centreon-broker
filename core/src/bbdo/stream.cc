@@ -514,14 +514,11 @@ void stream::negotiate(stream::negotiation_type neg) {
   if (neg == negotiate_first) {
     log_v2::bbdo()->debug(
         "BBDO: sending welcome packet (available extensions: {})",
-        (_negotiate ? _extensions : ""));
-    logging::debug(logging::medium)
-        << "BBDO: sending welcome packet (available extensions: "
-        << (_negotiate ? _extensions : "") << ")";
+        _negotiate ? _extensions.first : "");
     std::shared_ptr<version_response> welcome_packet(
         std::make_shared<version_response>());
     if (_negotiate)
-      welcome_packet->extensions = _extensions;
+      welcome_packet->extensions = _extensions.first;
     _write(welcome_packet);
     _substream->flush();
   }
@@ -578,11 +575,11 @@ void stream::negotiate(stream::negotiation_type neg) {
   if (neg == negotiate_second) {
     log_v2::bbdo()->debug(
         "BBDO: sending welcome packet (available extensions: {})",
-        (_negotiate ? _extensions : ""));
+        _negotiate ? _extensions.first : "");
     std::shared_ptr<version_response> welcome_packet(
         std::make_shared<version_response>());
     if (_negotiate)
-      welcome_packet->extensions = _extensions;
+      welcome_packet->extensions = _extensions.first;
     _write(welcome_packet);
     _substream->flush();
   }
@@ -593,8 +590,9 @@ void stream::negotiate(stream::negotiation_type neg) {
 
     // Apply negotiated extensions.
     log_v2::bbdo()->info("BBDO: we have extensions '{}' and peer has '{}'",
-                         _extensions, v->extensions);
-    std::list<std::string> own_ext(misc::string::split(_extensions, ' '));
+                         _extensions.first, v->extensions);
+    std::list<std::string> own_ext(misc::string::split(_extensions.first, ' '));
+    std::list<std::string> own_mandatory(misc::string::split(_extensions.second, ' '));
     std::list<std::string> peer_ext(misc::string::split(v->extensions, ' '));
     for (auto& ext : own_ext) {
       // Find matching extension in peer extension list.
@@ -618,20 +616,26 @@ void stream::negotiate(stream::negotiation_type neg) {
             }
         } else
           log_v2::bbdo()->info("BBDO: extension '{}' already configured", ext);
-      } else if (std::find(running_config.begin(), running_config.end(),
-                           *peer_it) != running_config.end()) {
-        log_v2::bbdo()->info("BBDO: extension '{}' no more needed", *peer_it);
-        auto substream = get_substream();
-        if (substream->get_name() == *peer_it) {
-          auto subsubstream = substream->get_substream();
-          set_substream(subsubstream);
-        } else {
-          while (substream) {
-            auto parent = substream;
-            substream = substream->get_substream();
-            if (substream->get_name() == *peer_it) {
-              parent->set_substream(substream->get_substream());
-              break;
+      } else if (!ext.empty()) {
+        if (std::find(own_mandatory.begin(), own_mandatory.end(), ext) != own_mandatory.end()) {
+          log_v2::bbdo()->error("BBDO: extension '{}' is set to 'yes' in the configuration but cannot be activated because of peer configuration.", ext);
+          logging::error(logging::medium) << "BBDO: extension '" << ext << "' is set to 'yes' in the configuration but cannot be activated because of peer configuration.";
+        }
+        if (std::find(running_config.begin(), running_config.end(),
+                           ext) != running_config.end()) {
+          log_v2::bbdo()->info("BBDO: extension '{}' no more needed", ext);
+          auto substream = get_substream();
+          if (substream->get_name() == ext) {
+            auto subsubstream = substream->get_substream();
+            set_substream(subsubstream);
+          } else {
+            while (substream) {
+              auto parent = substream;
+              substream = substream->get_substream();
+              if (substream->get_name() == ext) {
+                parent->set_substream(substream->get_substream());
+                break;
+              }
             }
           }
         }
@@ -965,7 +969,7 @@ void stream::set_coarse(bool coarse) {
  *  @param[in] negotiate   True if the stream should negotiate features.
  *  @param[in] extensions  Extensions supported by this stream.
  */
-void stream::set_negotiate(bool negotiate, std::string const& extensions) {
+void stream::set_negotiate(bool negotiate, const std::pair<std::string, std::string>& extensions) {
   _negotiate = negotiate;
   _extensions = extensions;
 }

@@ -144,13 +144,10 @@ class fact : public io::factory {
   fact() {}
 
   bool has_endpoint(config::endpoint& cfg
-                    __attribute__((__unused__))) const override {
+                    __attribute__((__unused__)), flag* flag) const override {
+    if (flag)
+      *flag = no;
     return true;
-  }
-
-  bool has_not_endpoint(config::endpoint& cfg
-                        __attribute__((__unused__))) const override {
-    return false;
   }
 
   io::endpoint* new_endpoint(

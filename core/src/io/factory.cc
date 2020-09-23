@@ -22,23 +22,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
-/**
- *  Check if configuration do not have endpoint.
- *
- *  @param[in] cfg       Configuration object.
- *
- *  @return True if configuration do not have endpoint.
- */
-bool factory::has_not_endpoint(config::endpoint& cfg) const {
-  return !has_endpoint(cfg);
-}
-
 /**
  *  @brief Create a new stream.
  *

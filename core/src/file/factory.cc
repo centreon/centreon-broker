@@ -37,8 +37,10 @@ using namespace com::centreon::broker::file;
  *
  *  @return True if configuration matches the file layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
   bool retval;
+  if (flag)
+    *flag = no;
   if (cfg.type == "file") {
     cfg.params["coarse"] = "yes";  // File won't respond to any salutation.
     retval = true;

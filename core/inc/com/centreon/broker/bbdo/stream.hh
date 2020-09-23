@@ -109,7 +109,7 @@ class stream : public io::stream {
   void _read_packet(size_t size, time_t deadline = (time_t)-1);
 
   bool _coarse;
-  std::string _extensions;
+  std::pair<std::string, std::string> _extensions;
   bool _negotiate;
   bool _negotiated;
   int _timeout;
@@ -133,7 +133,7 @@ class stream : public io::stream {
             time_t deadline = (time_t)-1) override;
   void set_ack_limit(uint32_t limit);
   void set_coarse(bool coarse);
-  void set_negotiate(bool negotiate, std::string const& extensions = "");
+  void set_negotiate(bool negotiate, const std::pair<std::string, std::string>& extensions = std::make_pair("", ""));
   void set_timeout(int timeout);
   void statistics(json11::Json::object& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;

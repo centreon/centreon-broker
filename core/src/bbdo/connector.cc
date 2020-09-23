@@ -33,12 +33,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -50,7 +44,7 @@ using namespace com::centreon::broker::bbdo;
  * sent.
  */
 connector::connector(bool negotiate,
-                     std::string const& extensions,
+                     const std::pair<std::string, std::string>& extensions,
                      time_t timeout,
                      bool coarse,
                      uint32_t ack_limit)
@@ -78,12 +72,6 @@ std::shared_ptr<io::stream> connector::open() {
 
   return retval;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Open the connector.
