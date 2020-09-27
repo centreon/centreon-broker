@@ -23,7 +23,9 @@
 
 #include <cstdio>
 #include <cstring>
+#include <deque>
 #include <memory>
+#include <thread>
 
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -133,19 +135,18 @@ static void get_uint(io::data const& t,
  *
  *  @return Serialized event.
  */
-static io::raw* serialize(io::data const& e) {
+static io::raw* serialize(const io::data& e) {
+  std::deque<std::vector<char>> queue;
+
   // Get event info (mapping).
-  io::event_info const* info(io::events::instance().get_event_info(e.type()));
+  const io::event_info* info = io::events::instance().get_event_info(e.type());
   if (info) {
     // Serialization buffer.
-    std::unique_ptr<io::raw> buffer(new io::raw);
-    std::vector<char>& data(buffer->get_buffer());
-
-    // Reserve space for the BBDO header.
-    uint32_t beginning(data.size());
-    data.resize(data.size() + BBDO_HEADER_SIZE);
-    *(reinterpret_cast<uint32_t*>(data.data() + beginning + 4)) =
-        htonl(e.type());
+    queue.emplace_back(std::vector<char>());
+    auto* header = &queue.back();
+    header->resize(BBDO_HEADER_SIZE);
+    queue.emplace_back(std::vector<char>());
+    auto* content = &queue.back();
 
     // Serialize properties of the object.
     for (mapping::entry const* current_entry(info->get_mapping());
@@ -154,29 +155,29 @@ static io::raw* serialize(io::data const& e) {
       if (current_entry->get_serialize())
         switch (current_entry->get_type()) {
           case mapping::source::BOOL:
-            get_boolean(e, *current_entry, data);
+            get_boolean(e, *current_entry, *content);
             break;
           case mapping::source::DOUBLE:
-            get_double(e, *current_entry, data);
+            get_double(e, *current_entry, *content);
             break;
           case mapping::source::INT:
-            get_integer(e, *current_entry, data);
+            get_integer(e, *current_entry, *content);
             break;
           case mapping::source::SHORT:
-            get_short(e, *current_entry, data);
+            get_short(e, *current_entry, *content);
             break;
           case mapping::source::STRING:
-            get_string(e, *current_entry, data);
+            get_string(e, *current_entry, *content);
             break;
           case mapping::source::TIME:
-            get_timestamp(e, *current_entry, data);
+            get_timestamp(e, *current_entry, *content);
             break;
           case mapping::source::UINT:
-            get_uint(e, *current_entry, data);
+            get_uint(e, *current_entry, *content);
             break;
           default:
             log_v2::bbdo()->error(
-                "BBDO: invalid mapping for object of type '{0}': {1} is not a "
+                "BBDO: invalid mapping for object of type '{}': {} is not a "
                 "known type ID",
                 info->get_name(), current_entry->get_type());
             throw exceptions::msg() << "BBDO: invalid mapping for object"
@@ -186,48 +187,46 @@ static io::raw* serialize(io::data const& e) {
         }
 
       // Packet splitting.
-      while (static_cast<uint32_t>(data.size()) >=
-             (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
-        // Set size.
-        *reinterpret_cast<uint16_t*>(data.data() + beginning + 2) = 0xFFFF;
-
-        // Source and destination
-        *reinterpret_cast<uint32_t*>(data.data() + beginning + 8) =
-            htonl(e.source_id);
-
-        *reinterpret_cast<uint32_t*>(data.data() + beginning + 12) =
+      while (content->size() >= 0xffff) {
+        queue.emplace_back(std::vector<char>());
+        auto* new_header = &queue.back();
+        new_header->resize(BBDO_HEADER_SIZE);
+        queue.emplace_back(content->begin() + 0xffff, content->end());
+        content->resize(0xffff);
+        auto* new_content = &queue.back();
+        *(reinterpret_cast<uint16_t*>(header->data() + 2)) = 0xffff;
+        *(reinterpret_cast<uint32_t*>(header->data() + 4)) = htonl(e.type());
+        *(reinterpret_cast<uint32_t*>(header->data() + 8)) = htonl(e.source_id);
+        *(reinterpret_cast<uint32_t*>(header->data() + 12)) =
             htonl(e.destination_id);
 
-        // Set checksum.
-        uint16_t chksum(misc::crc16_ccitt(data.data() + beginning + 2,
-                                          BBDO_HEADER_SIZE - 2));
-        *reinterpret_cast<uint16_t*>(data.data() + beginning) = htons(chksum);
-
-        // Create new header.
-        beginning += BBDO_HEADER_SIZE + 0xFFFF;
-        char header[BBDO_HEADER_SIZE];
-        memset(header, 0, sizeof(header));
-        *reinterpret_cast<uint32_t*>(header + 4) = htonl(e.type());
-        std::vector<char>::iterator it{data.begin() + beginning};
-        data.insert(it, header, header + sizeof(header));
+        *(reinterpret_cast<uint16_t*>(header->data())) =
+            htons(misc::crc16_ccitt(header->data() + 2, BBDO_HEADER_SIZE - 2));
+        content = new_content;
+        header = new_header;
       }
     }
 
-    // Set (last) packet size.
-    *reinterpret_cast<uint16_t*>(data.data() + beginning + 2) =
-        htons(data.size() - beginning - BBDO_HEADER_SIZE);
-
-    // Source and destination.
-    *reinterpret_cast<uint32_t*>(data.data() + beginning + 8) =
-        htonl(e.source_id);
-
-    *reinterpret_cast<uint32_t*>(data.data() + beginning + 12) =
+    *(reinterpret_cast<uint16_t*>(header->data() + 2)) = htons(content->size());
+    *(reinterpret_cast<uint32_t*>(header->data() + 4)) = htonl(e.type());
+    *(reinterpret_cast<uint32_t*>(header->data() + 8)) = htonl(e.source_id);
+    *(reinterpret_cast<uint32_t*>(header->data() + 12)) =
         htonl(e.destination_id);
 
-    // Checksum.
-    uint16_t chksum(
-        misc::crc16_ccitt(data.data() + beginning + 2, BBDO_HEADER_SIZE - 2));
-    *reinterpret_cast<uint16_t*>(data.data() + beginning) = htons(chksum);
+    *(reinterpret_cast<uint16_t*>(header->data())) =
+        htons(misc::crc16_ccitt(header->data() + 2, BBDO_HEADER_SIZE - 2));
+
+    // Finalization: concatenation of all the vectors in the queue.
+    size_t size = 0;
+    for (auto& v : queue)
+      size += v.size();
+
+    // Serialization buffer.
+    std::unique_ptr<io::raw> buffer(new io::raw);
+    std::vector<char>& data(buffer->get_buffer());
+    data.reserve(size);
+    for (auto& v : queue)
+      data.insert(data.end(), v.begin(), v.end());
 
     return buffer.release();
   } else {
@@ -242,12 +241,6 @@ static io::raw* serialize(io::data const& e) {
 
   return nullptr;
 }
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Default constructor.
@@ -293,11 +286,8 @@ int output::write(std::shared_ptr<io::data> const& e) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*e));
   if (serialized) {
-    log_v2::bbdo()->debug("BBDO: serialized event of type {0} to {1} bytes",
+    log_v2::bbdo()->debug("BBDO: serialized event of type {} to {} bytes",
                           e->type(), serialized->size());
-    logging::debug(logging::medium)
-        << "BBDO: serialized event of type " << e->type() << " to "
-        << serialized->size() << " bytes";
     _substream->write(serialized);
   }
 

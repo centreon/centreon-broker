@@ -22,6 +22,7 @@
 #include <ctime>
 #include <list>
 #include <string>
+
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -43,6 +44,14 @@ class stream;
  *  Accept incoming BBDO connections.
  */
 class acceptor : public io::endpoint {
+  bool _coarse;
+  std::string _extensions;
+  std::string _name;
+  bool _negotiate;
+  const bool _one_peer_retention_mode;
+  time_t _timeout;
+  uint32_t _ack_limit;
+
  public:
   acceptor(std::string const& name,
            bool negotiate,
@@ -51,24 +60,17 @@ class acceptor : public io::endpoint {
            bool one_peer_retention_mode = false,
            bool coarse = false,
            uint32_t ack_limit = 1000);
-  acceptor(acceptor const& other);
-  ~acceptor();
-  acceptor& operator=(acceptor const& other);
+  ~acceptor() noexcept;
+  acceptor(acceptor const& other) = delete;
+  acceptor& operator=(acceptor const& other) = delete;
   std::shared_ptr<io::stream> open() override;
   void stats(json11::Json::object& tree) override;
+  bool is_one_peer_retention() const { return _one_peer_retention_mode; }
 
  private:
   uint32_t _negotiate_features(std::shared_ptr<io::stream> stream,
-                                   std::shared_ptr<bbdo::stream> my_bbdo);
+                               std::shared_ptr<bbdo::stream> my_bbdo);
   void _open(std::shared_ptr<io::stream> stream);
-
-  bool _coarse;
-  std::string _extensions;
-  std::string _name;
-  bool _negotiate;
-  bool _one_peer_retention_mode;
-  time_t _timeout;
-  uint32_t _ack_limit;
 };
 }  // namespace bbdo
 

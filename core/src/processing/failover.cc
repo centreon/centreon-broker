@@ -17,9 +17,12 @@
 */
 
 #include "com/centreon/broker/processing/failover.hh"
+
 #include <unistd.h>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -43,7 +46,10 @@ using namespace com::centreon::broker::processing;
 failover::failover(std::shared_ptr<io::endpoint> endp,
                    std::shared_ptr<multiplexing::subscriber> sbscrbr,
                    std::string const& name)
-    : bthread(name),
+    : endpoint(name),
+      _should_exit(false),
+      _started(false),
+      _stopped(false),
       _buffering_timeout(0),
       _endpoint(endp),
       _failover_launched(false),
@@ -73,7 +79,15 @@ void failover::add_secondary_endpoint(std::shared_ptr<io::endpoint> endp) {
  *  Exit failover thread.
  */
 void failover::exit() {
-  bthread::exit();
+  std::unique_lock<std::mutex> lock(_stopped_m);
+  if (_started) {
+    if (!_should_exit) {
+      _should_exit = true;
+      _stopped_cv.wait(lock, [this] { return _stopped; });
+      _thread.join();
+      _started = false;
+    }
+  }
   _subscriber->get_muxer().wake();
 }
 
@@ -132,6 +146,8 @@ void failover::run() {
       set_last_connection_attempt(timestamp::now());
       {
         std::shared_ptr<io::stream> s(_endpoint->open());
+        if (!s)
+          throw exceptions::msg() << "failover: cannot connect endpoint.";
         {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;
@@ -153,7 +169,8 @@ void failover::run() {
 
         // Wait loop.
         // FIXME SGA: condvar should be more elegant...
-        for (ssize_t i = 0; !should_exit() && i < (_buffering_timeout * 10); i++) {
+        for (ssize_t i = 0; !should_exit() && i < (_buffering_timeout * 10);
+             i++) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
@@ -322,6 +339,7 @@ void failover::run() {
     }
     // Some real error occured.
     catch (std::exception const& e) {
+      log_v2::core()->error(e.what());
       logging::error(logging::high) << e.what();
       {
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
@@ -425,7 +443,7 @@ void failover::update() {
  *
  *  @return True if thread exited.
  */
-//bool failover::wait(unsigned long time) {
+// bool failover::wait(unsigned long time) {
 //  // Check that failover finished.
 //  bool finished;
 //  if (_failover)
@@ -514,4 +532,43 @@ void failover::_launch_failover() {
 void failover::_update_status(std::string const& status) {
   std::lock_guard<std::mutex> lock(_status_m);
   _status = status;
+}
+
+uint32_t failover::_get_queued_events() const {
+  return _subscriber->get_muxer().get_event_queue_size();
+}
+
+/**
+ *  Start the internal thread.
+ */
+void failover::start() {
+  std::unique_lock<std::mutex> lock(_started_m);
+  _stopped = false;
+  if (!_started) {
+    _should_exit = false;
+    _thread = std::thread(&failover::_callback, this);
+    _started_cv.wait(lock, [this] { return _started; });
+  }
+}
+
+void failover::_callback() {
+  std::unique_lock<std::mutex> lock_start(_started_m);
+  _started = true;
+  _started_cv.notify_all();
+  lock_start.unlock();
+
+  run();
+
+  std::unique_lock<std::mutex> lock_stop(_stopped_m);
+  _stopped = true;
+  _stopped_cv.notify_all();
+}
+
+/**
+ *  Check if bthread should exit.
+ *
+ *  @return True if bthread should exit.
+ */
+bool failover::should_exit() const {
+  return _should_exit;
 }

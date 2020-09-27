@@ -33,23 +33,6 @@ namespace graphite {
  *  @brief Connect to a graphite stream.
  */
 class connector : public io::endpoint {
- public:
-  connector();
-  connector(connector const& other) = delete;
-  connector& operator=(connector const& other) = delete;
-  ~connector() = default;
-  void connect_to(std::string const& metric_naming,
-                  std::string const& status_naming,
-                  std::string const& escape_string,
-                  std::string const& db_user,
-                  std::string const& db_passwd,
-                  std::string const& db_host,
-                  unsigned short db_port,
-                  uint32_t queries_per_transaction,
-                  std::shared_ptr<persistent_cache> const& cache);
-  std::shared_ptr<io::stream> open();
-
- private:
   std::string _escape_string;
   std::string _metric_naming;
   std::string _status_naming;
@@ -59,6 +42,22 @@ class connector : public io::endpoint {
   unsigned short _port;
   uint32_t _queries_per_transaction;
   std::shared_ptr<persistent_cache> _persistent_cache;
+
+ public:
+  connector();
+  connector(connector const& other) = delete;
+  connector& operator=(connector const& other) = delete;
+  ~connector() noexcept {}
+  void connect_to(std::string const& metric_naming,
+                  std::string const& status_naming,
+                  std::string const& escape_string,
+                  std::string const& db_user,
+                  std::string const& db_passwd,
+                  std::string const& db_host,
+                  unsigned short db_port,
+                  uint32_t queries_per_transaction,
+                  std::shared_ptr<persistent_cache> const& cache);
+  std::shared_ptr<io::stream> open() override;
 };
 }  // namespace graphite
 

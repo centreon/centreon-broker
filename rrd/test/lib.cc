@@ -18,8 +18,11 @@
  */
 
 #include "com/centreon/broker/rrd/lib.hh"
+
 #include <gtest/gtest.h>
+
 #include <fstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;

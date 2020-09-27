@@ -148,24 +148,15 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
           << "could not prepare insertion query for event of type " << _event_id
           << ": event is not registered");
 
-  // Database schema version.
-  bool schema_v2(ms.schema_version() == mysql::v2);
-
   // Build query string.
   std::string insert("INSERT INTO ");
   std::string update(" ON DUPLICATE KEY UPDATE ");
-  if (schema_v2)
     insert.append(info->get_table_v2());
-  else
-    insert.append(info->get_table());
   insert.append(" (");
   mapping::entry const* entries(info->get_mapping());
   for (int i(0); !entries[i].is_null(); ++i) {
     char const* entry_name;
-    if (schema_v2)
       entry_name = entries[i].get_name_v2();
-    else
-      entry_name = entries[i].get_name();
     if (!entry_name || !entry_name[0] ||
         (_excluded.find(entry_name) != _excluded.end()))
       continue;
@@ -179,10 +170,7 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
   int update_size(0);
   for (int i(0); !entries[i].is_null(); ++i) {
     char const* entry_name;
-    if (schema_v2)
       entry_name = entries[i].get_name_v2();
-    else
-      entry_name = entries[i].get_name();
     if (!entry_name || !entry_name[0] ||
         (_excluded.find(entry_name) != _excluded.end()))
       continue;
@@ -242,16 +230,10 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
           << "could not prepare update query for event of type " << _event_id
           << ": event is not registered");
 
-  // Database schema version.
-  bool schema_v2(ms.schema_version() == mysql::v2);
-
   // Build query string.
   std::string query("UPDATE ");
   std::string where(" WHERE ");
-  if (schema_v2)
     query.append(info->get_table_v2());
-  else
-    query.append(info->get_table());
   query.append(" SET ");
   mapping::entry const* entries(info->get_mapping());
   std::string key;
@@ -259,10 +241,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   int where_size(0);
   for (int i(0); !entries[i].is_null(); ++i) {
     char const* entry_name;
-    if (schema_v2)
       entry_name = entries[i].get_name_v2();
-    else
-      entry_name = entries[i].get_name();
     if (!entry_name || !entry_name[0] ||
         (_excluded.find(entry_name) != _excluded.end()))
       continue;

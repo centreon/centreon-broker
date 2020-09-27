@@ -1036,7 +1036,7 @@ void reporting_stream::_process_dimension_truncate_signal(
          end(_dimension_truncate_tables.end());
          it != end; ++it)
       _mysql.run_statement(*it,
-                           "BAM-BI: could not truncate some dimension table");
+                           "BAM-BI: could not truncate some dimension table: ");
 
     _timeperiods.clear();
   }

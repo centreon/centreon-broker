@@ -17,9 +17,11 @@
 */
 
 #include "com/centreon/broker/rrd/connector.hh"
+
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/output.hh"
 
@@ -43,12 +45,10 @@ connector::connector()
       _write_metrics(true),
       _write_status(true) {}
 
-
 /**
  *  Destructor.
  */
 connector::~connector() {}
-
 
 /**
  *  Connect.
@@ -58,18 +58,20 @@ connector::~connector() {}
 std::shared_ptr<io::stream> connector::open() {
   std::shared_ptr<io::stream> retval;
   if (!_cached_local.empty())
-    retval = std::shared_ptr<io::stream>(new output(
-        _metrics_path, _status_path, _cache_size, _ignore_update_errors,
-        _cached_local, _write_metrics, _write_status));
+    retval = std::shared_ptr<io::stream>(
+        new output<cached<asio::local::stream_protocol::socket>>(
+            _metrics_path, _status_path, _cache_size, _ignore_update_errors,
+            _cached_local, _write_metrics, _write_status));
   else if (_cached_port)
-    retval = std::shared_ptr<io::stream>(new output(
-        _metrics_path, _status_path, _cache_size, _ignore_update_errors,
-        _cached_port, _write_metrics, _write_status));
+    retval =
+        std::shared_ptr<io::stream>(new output<cached<asio::ip::tcp::socket>>(
+            _metrics_path, _status_path, _cache_size, _ignore_update_errors,
+            _cached_port, _write_metrics, _write_status));
   else
     retval = std::shared_ptr<io::stream>(
-        new output(_metrics_path, _status_path, _cache_size,
-                   _ignore_update_errors, _write_metrics, _write_status));
-  return (retval);
+        new output<lib>(_metrics_path, _status_path, _cache_size,
+                        _ignore_update_errors, _write_metrics, _write_status));
+  return retval;
 }
 
 /**
@@ -95,7 +97,7 @@ void connector::set_cached_local(std::string const& local_socket) {
  *
  *  @param[in] port rrdcached port.
  */
-void connector::set_cached_net(uint16_t port) throw() {
+void connector::set_cached_net(uint16_t port) noexcept {
   _cached_port = port;
 }
 
@@ -105,7 +107,7 @@ void connector::set_cached_net(uint16_t port) throw() {
  *
  *  @param[in] ignore Set to true to ignore update errors.
  */
-void connector::set_ignore_update_errors(bool ignore) throw() {
+void connector::set_ignore_update_errors(bool ignore) noexcept {
   _ignore_update_errors = ignore;
 }
 
@@ -132,7 +134,7 @@ void connector::set_status_path(std::string const& status_path) {
  *
  *  @param[in] write_metrics true if metrics must be written.
  */
-void connector::set_write_metrics(bool write_metrics) throw() {
+void connector::set_write_metrics(bool write_metrics) noexcept {
   _write_metrics = write_metrics;
 }
 
@@ -141,7 +143,7 @@ void connector::set_write_metrics(bool write_metrics) throw() {
  *
  *  @param[in] write_status true if status must be written.
  */
-void connector::set_write_status(bool write_status) throw() {
+void connector::set_write_status(bool write_status) noexcept {
   _write_status = write_status;
 }
 

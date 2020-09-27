@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_status::kpi_status()
-    : io::data(kpi_status::static_type()), kpi_id(0),
+    : io::data(kpi_status::static_type()),
+      kpi_id(0),
       in_downtime(false),
       level_acknowledgement_hard(0.0),
       level_acknowledgement_soft(0.0),

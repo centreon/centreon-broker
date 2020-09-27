@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/bool_service.hh"
+
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker;

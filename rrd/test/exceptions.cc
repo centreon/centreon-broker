@@ -18,7 +18,9 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <memory>
+
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 
@@ -175,7 +177,7 @@ TEST(RrdExceptions, UpdateThrow) {
       throw(rrd::exceptions::update() << "foobar" << 42 << -789654ll);
       retval |= 1;
     } catch (rrd::exceptions::update const& e) {
-      std::cout << "here"  << std::endl;
+      std::cout << "here" << std::endl;
       retval |= strcmp(e.what(), "foobar42-789654");
     }
   } catch (...) {

@@ -54,23 +54,6 @@ opener::opener(opener const& other)
 opener::~opener() {}
 
 /**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-opener& opener::operator=(opener const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _auto_delete = other._auto_delete;
-    _filename = other._filename;
-    _max_size = other._max_size;
-  }
-  return (*this);
-}
-
-/**
  *  Open a new stream.
  *
  *  @return Opened stream.

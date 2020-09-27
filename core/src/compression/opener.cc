@@ -45,23 +45,7 @@ opener::opener(opener const& o)
 /**
  *  Destructor.
  */
-opener::~opener() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] o Object to copy.
- *
- *  @return This object.
- */
-opener& opener::operator=(opener const& o) {
-  if (this != &o) {
-    io::endpoint::operator=(o);
-    _level = o._level;
-    _size = o._size;
-  }
-  return (*this);
-}
+opener::~opener() noexcept {}
 
 /**
  *  Open a compression stream.
@@ -82,7 +66,6 @@ std::shared_ptr<io::stream> opener::open() {
  */
 void opener::set_level(int level) {
   _level = level;
-  return;
 }
 
 /**
@@ -93,7 +76,6 @@ void opener::set_level(int level) {
  */
 void opener::set_size(uint32_t size) {
   _size = size;
-  return;
 }
 
 /**************************************

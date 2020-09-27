@@ -21,6 +21,7 @@
 
 #include <list>
 #include <stack>
+
 #include "com/centreon/broker/bam/bool_call.hh"
 #include "com/centreon/broker/bam/bool_metric.hh"
 #include "com/centreon/broker/bam/bool_service.hh"

@@ -44,7 +44,7 @@ class acceptor : public io::endpoint {
            std::string const& ca = std::string());
   acceptor(acceptor const& right);
   ~acceptor();
-  acceptor& operator=(acceptor const& right);
+  acceptor& operator=(acceptor const&) = delete;
   std::shared_ptr<io::stream> open();
   std::shared_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 

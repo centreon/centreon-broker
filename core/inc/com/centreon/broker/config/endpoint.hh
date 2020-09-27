@@ -25,6 +25,7 @@
 #include <map>
 #include <set>
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -40,14 +41,27 @@ namespace config {
  */
 class endpoint {
  public:
-  endpoint();
+  enum io_type {
+    input,   // the endpoint is an input (marked as is in the config)
+    output,  // the endpoint is an output (marked as is in the config)
+  };
+
+ private:
+  const io_type _type;
+
+  void _internal_copy(endpoint const& other);
+
+ public:
+  endpoint() = delete;
+  endpoint(io_type way);
   endpoint(endpoint const& other);
-  ~endpoint();
+  ~endpoint() = default;
   endpoint& operator=(endpoint const& other);
   bool operator==(endpoint const& other) const;
   bool operator!=(endpoint const& other) const;
   bool operator<(endpoint const& other) const;
 
+  io_type get_io_type() const { return _type; }
   time_t buffering_timeout;
   std::list<std::string> failovers;
   std::string name;
@@ -59,9 +73,6 @@ class endpoint {
   std::set<std::string> write_filters;
   bool cache_enabled;
   json11::Json cfg;
-
- private:
-  void _internal_copy(endpoint const& other);
 };
 }  // namespace config
 

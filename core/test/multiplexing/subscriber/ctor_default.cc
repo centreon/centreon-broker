@@ -18,7 +18,9 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <cstring>
+
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -28,7 +30,7 @@
 
 using namespace com::centreon::broker;
 
-#define MSG "0123456789abcdef"
+const std::string MSG("0123456789abcdef");
 
 class SubscriberTest : public ::testing::Test {
  public:
@@ -67,7 +69,7 @@ TEST_F(SubscriberTest, DefaultConstructor) {
   ASSERT_TRUE(event);
   ASSERT_EQ(event->type(), io::raw::static_type());
   ASSERT_TRUE(strncmp(std::static_pointer_cast<io::raw>(event)->const_data(),
-                      MSG, sizeof(MSG) - 1) == 0);
+                      MSG.c_str(), MSG.size()) == 0);
 
   // Try reading again.
   s.get_muxer().read(event, 0);

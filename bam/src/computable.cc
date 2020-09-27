@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/computable.hh"
+
 #include <vector>
 
 using namespace com::centreon::broker::bam;

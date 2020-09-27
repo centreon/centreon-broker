@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/kpi_meta.hh"
+
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/meta_service.hh"
@@ -199,7 +200,7 @@ void kpi_meta::_fill_impact(impact_values& impact) {
   impact.set_acknowledgement(0.0);
   impact.set_downtime(0.0);
   impact.set_state(state);
-  return ;
+  return;
 }
 
 /**

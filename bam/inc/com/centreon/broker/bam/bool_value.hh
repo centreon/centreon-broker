@@ -20,6 +20,7 @@
 #define CCB_BAM_BOOL_VALUE_HH
 
 #include <memory>
+
 #include "com/centreon/broker/bam/computable.hh"
 #include "com/centreon/broker/namespace.hh"
 

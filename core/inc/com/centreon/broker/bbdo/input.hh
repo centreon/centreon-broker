@@ -19,9 +19,11 @@
 #ifndef CCB_BBDO_INPUT_HH
 #define CCB_BBDO_INPUT_HH
 
-#include <memory>
+//#include <memory>
+//#include <mutex>
+#include <deque>
 #include <string>
-#include "com/centreon/broker/bbdo/input_buffer.hh"
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -37,20 +39,86 @@ namespace bbdo {
  *  (Broker Binary Data Objects) protocol.
  */
 class input : virtual public io::stream {
+  class buffer {
+    uint32_t _event_id;
+    uint32_t _source_id;
+    uint32_t _dest_id;
+
+    /* All the read data are get in vectors. We chose to not cut those vectors
+     * and just move them into the deque. */
+    std::deque<std::vector<char>> _buf;
+
+   public:
+    buffer(uint32_t event_id,
+           uint32_t source_id,
+           uint32_t dest_id,
+           std::vector<char>&& v)
+        : _event_id(event_id), _source_id(source_id), _dest_id(dest_id) {
+      _buf.push_back(v);
+    }
+    buffer(const buffer&) = delete;
+    buffer(buffer&& other)
+        : _event_id(other._event_id),
+          _source_id(other._source_id),
+          _dest_id(other._dest_id),
+          _buf(std::move(other._buf)) {}
+
+    buffer& operator=(const buffer&) = delete;
+    buffer& operator=(buffer&& other) {
+      if (this != &other) {
+        _event_id = other._event_id;
+        _source_id = other._source_id;
+        _dest_id = other._dest_id;
+        _buf = std::move(other._buf);
+      }
+      return *this;
+    }
+    ~buffer() noexcept = default;
+
+    bool matches(uint32_t event_id, uint32_t source_id, uint32_t dest_id) const
+        noexcept {
+      return event_id == _event_id && source_id == _source_id &&
+             dest_id == _dest_id;
+    }
+
+    std::vector<char> to_vector() {
+      size_t s = 0;
+      for (auto& v : _buf)
+        s += v.size();
+      std::vector<char> retval;
+      retval.reserve(s);
+      for (auto& v : _buf)
+        retval.insert(retval.end(), v.begin(), v.end());
+      _buf.clear();
+      return retval;
+    }
+
+    void push_back(std::vector<char>&& v) { _buf.push_back(v); }
+    uint32_t get_event_id() const { return _event_id; }
+  };
+
+  /* If during a packet reading, we get several ones, this vector is useful
+   * to keep in cache all but the first one. It will be read before a call
+   * to _read_packet(). */
+  std::vector<char> _packet;
+
+  /* We good get parts of BBDO packets in the wrong order, this deque is useful
+   * to paste parts together in the good order. */
+  std::deque<buffer> _buffer;
+  int _skipped;
+
+  // void _buffer_must_have_unprocessed(int bytes, time_t deadline =
+  // (time_t)-1);
+  void _read_packet(size_t size, time_t deadline = (time_t)-1);
+
  public:
   input();
-  input(input const& other);
   virtual ~input();
-  input& operator=(input const& other);
+  input(input const& other) = delete;
+  input& operator=(input const& other) = delete;
   virtual bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   bool read_any(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   virtual void acknowledge_events(uint32_t events) = 0;
-
- private:
-  void _buffer_must_have_unprocessed(int bytes, time_t deadline = (time_t)-1);
-
-  input_buffer _buffer;
-  int _skipped;
 };
 }  // namespace bbdo
 

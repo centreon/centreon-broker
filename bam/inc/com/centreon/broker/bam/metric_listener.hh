@@ -20,6 +20,7 @@
 #define CCB_BAM_METRIC_LISTENER_HH
 
 #include <memory>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 

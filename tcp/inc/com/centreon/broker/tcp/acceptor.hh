@@ -23,6 +23,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -36,31 +37,25 @@ namespace tcp {
  *  Accept TCP connections.
  */
 class acceptor : public io::endpoint {
+  const uint16_t _port;
+  const int32_t _read_timeout;
+
+  std::list<std::string> _children;
+  std::mutex _childrenm;
+  std::shared_ptr<asio::ip::tcp::acceptor> _acceptor;
+
  public:
-  acceptor();
-  ~acceptor();
+  acceptor(uint16_t port, int32_t read_timeout);
+  ~acceptor() noexcept;
 
   acceptor(acceptor const& other) = delete;
   acceptor& operator=(acceptor const& other) = delete;
 
   void add_child(std::string const& child);
-  void listen_on(unsigned short port);
+  void listen();
   std::shared_ptr<io::stream> open();
   void remove_child(std::string const& child);
-  void set_read_timeout(int secs);
-  void set_write_timeout(int secs);
   void stats(json11::Json::object& tree);
-
- private:
-  std::list<std::string> _children;
-  std::mutex _childrenm;
-  std::mutex _mutex;
-  unsigned short _port;
-  bool _binding;
-  int _read_timeout;
-  int _write_timeout;
-  asio::ip::tcp::endpoint _ep;
-  std::unique_ptr<asio::ip::tcp::acceptor> _acceptor;
 };
 }  // namespace tcp
 

@@ -20,6 +20,7 @@
 #define CCB_IO_RAW_HH
 
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -40,6 +41,7 @@ class raw : public data {
  public:
   raw();
   raw(raw const& r);
+  raw(std::vector<char>&& b);
   ~raw();
   raw& operator=(raw const& r);
   constexpr static uint32_t static_type() {
@@ -51,7 +53,11 @@ class raw : public data {
   size_t size() const;
   std::vector<char>& get_buffer();
   bool empty() const;
-  void append(std::string const& msg);
+
+  template <typename T>
+  void append(T const& msg) {
+    _buffer.insert(_buffer.end(), msg.begin(), msg.end());
+  }
 
  public:
   std::vector<char> _buffer;

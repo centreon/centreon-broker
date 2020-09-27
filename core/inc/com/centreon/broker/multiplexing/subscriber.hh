@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@
 
 #include <memory>
 #include <string>
+
+#include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace multiplexing {
-// Forward declaration.
-class muxer;
 
 /**
  *  @class subscriber subscriber.hh
@@ -37,16 +38,29 @@ class muxer;
  *  Handle registration of a muxer against the multiplexing engine.
  */
 class subscriber {
+  muxer _muxer;
+
  public:
-  subscriber(std::string const& name, bool persistent = false);
-  ~subscriber();
-  muxer& get_muxer() const;
+  /**
+   *  Constructor.
+   *
+   *  @param[in] name        Name associated to the muxer.
+   *  @param[in] persistent  Whether or not the muxer is persistent.
+   */
+  subscriber(std::string const& name, bool persistent = false)
+      : _muxer(name, persistent) {
+    multiplexing::engine::instance().subscribe(&_muxer);
+  }
 
- private:
-  subscriber(subscriber const& other);
-  subscriber& operator=(subscriber const& other);
+  /**
+   *  Destructor.
+   */
+  ~subscriber() { multiplexing::engine::instance().unsubscribe(&_muxer); }
 
-  std::unique_ptr<muxer> _muxer;
+  muxer& get_muxer() { return _muxer; }
+  const muxer& get_muxer() const { return _muxer; }
+  subscriber(subscriber const&) = delete;
+  subscriber& operator=(subscriber const&) = delete;
 };
 }  // namespace multiplexing
 

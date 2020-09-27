@@ -18,7 +18,9 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <cstring>
+
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -29,18 +31,14 @@
 
 using namespace com::centreon::broker;
 
-#define MSG1 "0123456789abcdef"
-#define MSG2 "foo bar baz qux"
+const std::string MSG1("0123456789abcdef");
+const std::string MSG2("foo bar baz qux");
 
 class PublisherWrite : public testing::Test {
  public:
-  void SetUp() override {
-    config::applier::init();
-  }
+  void SetUp() override { config::applier::init(); }
 
-  void TearDown() override {
-    config::applier::deinit();
-  }
+  void TearDown() override { config::applier::deinit(); }
 };
 
 /**
@@ -77,15 +75,15 @@ TEST_F(PublisherWrite, Write) {
     }
 
     // Check data.
-    char const* messages[] = {MSG1, MSG2, nullptr};
-    for (uint32_t i = 0; messages[i]; ++i) {
+    std::array<std::string, 2> messages{MSG1, MSG2};
+    for (auto& m : messages) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (!data || data->type() != io::raw::static_type())
         retval |= 1;
       else {
         std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
-        retval |= strncmp(raw->const_data(), messages[i], strlen(messages[i]));
+        retval |= strncmp(raw->const_data(), m.c_str(), m.size());
       }
     }
   }

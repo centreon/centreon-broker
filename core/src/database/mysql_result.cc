@@ -16,8 +16,9 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/database/mysql_result.hh"
+
 #include <cstdlib>
-#include <iostream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;

@@ -19,7 +19,7 @@
 
 #include "com/centreon/broker/tcp/acceptor.hh"
 
-#include <sstream>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
@@ -30,32 +30,26 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 constexpr std::size_t max_pending_connection = 30;
 
 /**
- *  Default constructor.
+ * @brief Acceptor constructor. It needs the port used to listen and a read
+ * timeout duration given in seconds that can be -1 if no timeout is wanted.
+ *
+ * @param port A port.
+ * @param read_timeout A duration in seconds.
  */
-acceptor::acceptor()
-    : io::endpoint(true),
-      _port(0),
-      _binding{false},
-      _read_timeout(-1),
-      _write_timeout(-1),
-      _acceptor(nullptr) {}
+acceptor::acceptor(uint16_t port, int32_t read_timeout)
+    : io::endpoint(true), _port(port), _read_timeout(read_timeout) {}
 
 /**
  *  Destructor.
  */
 acceptor::~acceptor() {
+  log_v2::tcp()->trace("acceptor destroyed");
+  std::error_code ec;
   if (_acceptor) {
-    _acceptor->close();
-    _acceptor.reset(nullptr);
+    tcp_async::instance().stop_acceptor(_acceptor);
   }
 }
 
@@ -70,65 +64,23 @@ void acceptor::add_child(std::string const& child) {
 }
 
 /**
- *  Set the port on which the acceptor will listen.
- *
- *  @param[in] port Port on which the acceptor will listen.
- */
-void acceptor::listen_on(unsigned short port) {
-  _port = port;
-  _binding = false;
-
-  _ep = asio::ip::tcp::endpoint(asio::ip::address_v4::any(), _port);
-  // Step 3. Instantiating and opening an acceptor socket.
-  _acceptor.reset(new asio::ip::tcp::acceptor(
-      tcp_async::instance().get_io_ctx(), _ep.protocol()));
-  asio::socket_base::reuse_address option(true);
-  _acceptor->set_option(option);
-}
-
-/**
  *  Start connection acception.
  *
  */
 std::shared_ptr<io::stream> acceptor::open() {
-  // Listen on port.
-  std::lock_guard<std::mutex> lock(_mutex);
-
-  if (!_acceptor)
-    listen_on(_port);
-
-  std::shared_ptr<asio::ip::tcp::socket> socket{
-      new asio::ip::tcp::socket{tcp_async::instance().get_io_ctx()}};
-  try {
-    if (!_binding) {
-      _acceptor->bind(_ep);
-      _acceptor->listen(max_pending_connection);
-      _binding = true;
-      log_v2::tcp()->info("binding on 0.0.0.0:{}", _port);
-    }
-    if (!tcp_async::instance().wait_for_accept(*socket, *_acceptor,
-                                               std::chrono::seconds{1})) {
-      return std::shared_ptr<stream>();
-    }
-  } catch (std::system_error const& se) {
-    log_v2::tcp()->error(
-        "TCP: error while waiting client on port: {0} err: {1}", _port,
-        se.what());
-    throw exceptions::msg()
-        << "TCP: error while waiting client on port: " << _port << " "
-        << se.what();
+  if (!_acceptor) {
+    _acceptor = tcp_async::instance().create_acceptor(_port);
+    tcp_async::instance().start_acceptor(_acceptor);
   }
-  tcp_async::instance().register_socket(*socket);
 
-  // Accept client.
-  std::shared_ptr<stream> incoming{new stream{socket, ""}};
-
-  log_v2::tcp()->info("TCP: new client connected");
-  logging::info(logging::high) << "TCP: new client connected";
-  incoming->set_parent(this);
-  incoming->set_read_timeout(_read_timeout);
-  incoming->set_write_timeout(_write_timeout);
-  return incoming;
+  /* Timeout in seconds during get_connection */
+  const uint32_t timeout_s = 3;
+  auto conn = tcp_async::instance().get_connection(_acceptor, timeout_s);
+  if (conn) {
+    log_v2::tcp()->debug("acceptor gets a new connection");
+    return std::make_shared<stream>(conn, -1);
+  }
+  return std::shared_ptr<stream>();
 }
 
 /**
@@ -138,34 +90,7 @@ std::shared_ptr<io::stream> acceptor::open() {
  */
 void acceptor::remove_child(std::string const& child) {
   std::lock_guard<std::mutex> lock(_childrenm);
-  for (std::list<std::string>::iterator it(_children.begin()),
-       end(_children.end());
-       it != end; ++it)
-    if (*it == child) {
-      _children.erase(it);
-      break;
-    }
-}
-
-/**
- *  @brief Set read timeout.
- *
- *  If child stream does not provide data frequently enough, it will
- *  time out after some configured seconds.
- *
- *  @param[in] secs  Timeout in seconds.
- */
-void acceptor::set_read_timeout(int secs) {
-  _read_timeout = secs;
-}
-
-/**
- *  Set write timeout on data.
- *
- *  @param[in] secs  Timeout in seconds.
- */
-void acceptor::set_write_timeout(int secs) {
-  _write_timeout = secs;
+  _children.remove(child);
 }
 
 /**
@@ -175,14 +100,7 @@ void acceptor::set_write_timeout(int secs) {
  */
 void acceptor::stats(json11::Json::object& tree) {
   std::lock_guard<std::mutex> children_lock(_childrenm);
-  std::ostringstream oss;
-  oss << _children.size() << ": ";
-  for (std::list<std::string>::const_iterator it(_children.begin()),
-       end(_children.end());
-       it != end; ++it)
-    if (it == _children.begin())
-      oss << *it;
-    else
-      oss << ", " << *it;
-  tree["peers"] = oss.str();
+  std::string out(
+      fmt::format("{}: {}", _children.size(), fmt::join(_children, ", ")));
+  tree["peers"] = out;
 }

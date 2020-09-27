@@ -20,6 +20,7 @@
 #define CCB_BAM_KPI_BA_HH
 
 #include <memory>
+
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/io/stream.hh"

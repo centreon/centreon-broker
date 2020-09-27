@@ -54,13 +54,14 @@ auto _num_kpi_in_dt =
   return num;
 };
 
-auto _every_kpi_in_dt =
-    [](std::unordered_map<kpi*, bam::ba::impact_info>& imp, bool look_for_state = true) -> bool {
+auto _every_kpi_in_dt = [](std::unordered_map<kpi*, bam::ba::impact_info>& imp,
+                           bool look_for_state = true) -> bool {
   if (imp.empty())
     return false;
 
   for (auto it = imp.begin(), end = imp.end(); it != end; ++it) {
-    if ((look_for_state && it->first->ok_state()) || !it->first->in_downtime()) {
+    if ((look_for_state && it->first->ok_state()) ||
+        !it->first->in_downtime()) {
       return false;
     }
   }
@@ -825,7 +826,6 @@ void ba::_unapply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
       if (it->first != kpi_ptr)
         _apply_impact(it->first, it->second);
   }
-
 }
 
 /**
@@ -858,10 +858,9 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   // Check if every impacting child KPIs are in downtime.
   bool every_kpi_in_downtime(!_impacts.empty());
   for (std::unordered_map<kpi*, impact_info>::const_iterator
-         it = _impacts.begin(),
-         end = _impacts.end();
-       it != end;
-       ++it) {
+           it = _impacts.begin(),
+           end = _impacts.end();
+       it != end; ++it) {
     if (!it->first->ok_state() && !it->first->in_downtime()) {
       every_kpi_in_downtime = false;
       break;
@@ -878,17 +877,16 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     _in_downtime = true;
 
     if (visitor)
-      visitor->write(
-        std::shared_ptr<inherited_downtime>(
-                std::make_shared<inherited_downtime>(*_inherited_downtime)));
+      visitor->write(std::shared_ptr<inherited_downtime>(
+          std::make_shared<inherited_downtime>(*_inherited_downtime)));
   }
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
-  else if ((state_ok || !every_kpi_in_downtime)
-           && _inherited_downtime) {
+  else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime) {
     _inherited_downtime.reset();
     if (visitor) {
-      std::shared_ptr<inherited_downtime> dwn(std::make_shared<inherited_downtime>());
+      std::shared_ptr<inherited_downtime> dwn(
+          std::make_shared<inherited_downtime>());
       dwn->ba_id = _id;
       dwn->in_downtime = false;
       visitor->write(dwn);

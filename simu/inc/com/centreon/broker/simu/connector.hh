@@ -33,18 +33,16 @@ namespace simu {
  *  Send events to a lua interpreter.
  */
 class connector : public io::endpoint {
+  std::string _lua_script;
+  std::map<std::string, misc::variant> _conf_params;
+
  public:
   connector();
   connector(connector const& other);
   ~connector();
-  connector& operator=(connector const& other);
   void connect_to(std::string const& lua_script,
                   std::map<std::string, misc::variant> const& cfg_params);
-  std::shared_ptr<io::stream> open();
-
- private:
-  std::string _lua_script;
-  std::map<std::string, misc::variant> _conf_params;
+  std::shared_ptr<io::stream> open() override;
 };
 }  // namespace simu
 

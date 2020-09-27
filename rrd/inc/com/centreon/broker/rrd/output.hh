@@ -23,9 +23,12 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/rrd/backend.hh"
+#include "com/centreon/broker/rrd/cached.hh"
+#include "com/centreon/broker/rrd/lib.hh"
 
 CCB_BEGIN()
 
@@ -36,11 +39,23 @@ namespace rrd {
  *
  *  Write RRD files.
  */
+template <typename T>
 class output : public io::stream {
  public:
   typedef std::unordered_map<std::string, std::list<std::shared_ptr<io::data>>>
       rebuild_cache;
 
+ private:
+  bool _ignore_update_errors;
+  std::string _metrics_path;
+  rebuild_cache _metrics_rebuild;
+  std::string _status_path;
+  rebuild_cache _status_rebuild;
+  bool _write_metrics;
+  bool _write_status;
+  T _backend;
+
+ public:
   output(std::string const& metrics_path,
          std::string const& status_path,
          uint32_t cache_size,
@@ -61,24 +76,14 @@ class output : public io::stream {
          unsigned short port,
          bool write_metrics = true,
          bool write_status = true);
-  ~output();
+  output(output const&) = delete;
+  output& operator=(output const&) = delete;
+  ~output() noexcept {}
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void update();
   int write(std::shared_ptr<io::data> const& d);
-
- private:
-  output(output const& o);
-  output& operator=(output const& o);
-
-  std::unique_ptr<backend> _backend;
-  bool _ignore_update_errors;
-  std::string _metrics_path;
-  rebuild_cache _metrics_rebuild;
-  std::string _status_path;
-  rebuild_cache _status_rebuild;
-  bool _write_metrics;
-  bool _write_status;
 };
+
 }  // namespace rrd
 
 CCB_END()

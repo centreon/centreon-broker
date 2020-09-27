@@ -20,14 +20,15 @@
 #define CCB_TCP_CONNECTOR_HH
 
 #include <asio.hpp>
+
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
-#if ASIO_VERSION < 101200
-namespace asio {
-typedef io_service io_context;
-}
-#endif
+//#if ASIO_VERSION < 101200
+//namespace asio {
+//typedef io_service io_context;
+//}
+//#endif
 
 CCB_BEGIN()
 
@@ -39,25 +40,18 @@ namespace tcp {
  *  Connect to some remote TCP host.
  */
 class connector : public io::endpoint {
+  const std::string _host;
+  const uint16_t _port;
+  const int32_t _read_timeout;
+
  public:
-  connector();
+  connector(const std::string& host, uint16_t port, int32_t read_timeout);
   ~connector();
 
   connector& operator=(connector const& other) = delete;
   connector(connector const& other) = delete;
 
-  void connect_to(std::string const& host, unsigned short port);
   std::shared_ptr<io::stream> open();
-  void set_read_timeout(int secs);
-  void set_write_timeout(int secs);
-
- private:
-  std::string _host;
-  unsigned short _port;
- private:
-  int _read_timeout;
-  int _write_timeout;
-  asio::io_context _io_context;
 };
 }  // namespace tcp
 

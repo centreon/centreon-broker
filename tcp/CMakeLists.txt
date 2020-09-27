@@ -30,6 +30,7 @@ set(SOURCES
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
   "${SRC_DIR}/tcp_async.cc"
+  "${SRC_DIR}/tcp_connection.cc"
 )
 # Headers.
 set(HEADERS

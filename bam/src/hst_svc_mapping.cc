@@ -161,8 +161,8 @@ std::set<uint32_t> hst_svc_mapping::get_metric_ids(
 
   if (host_id != 0 || service_id != 0) {
     std::map<std::pair<uint32_t, uint32_t>,
-             std::map<std::string, uint32_t> >::const_iterator
-        metrics_found = _metrics.find(std::make_pair(host_id, service_id));
+             std::map<std::string, uint32_t> >::const_iterator metrics_found =
+        _metrics.find(std::make_pair(host_id, service_id));
     if (metrics_found == _metrics.end())
       return (retval);
 

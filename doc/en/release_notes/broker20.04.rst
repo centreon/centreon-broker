@@ -1,4 +1,23 @@
 =======================
+Centreon Broker 20.04.9
+=======================
+
+*********
+Bug fixes
+*********
+
+One peer retention
+==================
+A known regression in the 20.04 broker release was that the one peer retention
+did not work correctly. It is fixed with this version.
+
+************
+Enhancements
+************
+The tcp connector should also be largely improved. It is multithreaded now and
+this should improve its performances.
+
+=======================
 Centreon Broker 20.04.8
 =======================
 

@@ -33,6 +33,15 @@ namespace bbdo {
  *  The class converts data to NEB events back and forth.
  */
 class stream : public input, public output {
+  bool _coarse;
+  std::string _extensions;
+  bool _negotiate;
+  bool _negotiated;
+  int _timeout;
+  uint32_t _acknowledged_events;
+  uint32_t _ack_limit;
+  uint32_t _events_received_since_last_ack;
+
  public:
   enum negotiation_type { negotiate_first = 1, negotiate_second, negotiated };
 
@@ -52,16 +61,6 @@ class stream : public input, public output {
   int write(std::shared_ptr<io::data> const& d) override;
   void acknowledge_events(uint32_t events) override;
   void send_event_acknowledgement();
-
- private:
-  bool _coarse;
-  std::string _extensions;
-  bool _negotiate;
-  bool _negotiated;
-  int _timeout;
-  uint32_t _acknowledged_events;
-  uint32_t _ack_limit;
-  uint32_t _events_received_since_last_ack;
 };
 }  // namespace bbdo
 

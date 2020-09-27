@@ -21,6 +21,7 @@
 
 #include <string>
 #include <unordered_map>
+
 #include "com/centreon/broker/bam/computable.hh"
 #include "com/centreon/broker/bam/metric_listener.hh"
 #include "com/centreon/broker/io/stream.hh"

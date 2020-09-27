@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2019-2020 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Check if a configuration supports this protocol.
  *
@@ -45,8 +39,8 @@ using namespace com::centreon::broker::tcp;
  *  @return True if the configuration has this protocol.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  return ((cfg.type == "ip") || (cfg.type == "tcp") || (cfg.type == "ipv4") ||
-          (cfg.type == "ipv6"));
+  return cfg.type == "ip" || cfg.type == "tcp" || cfg.type == "ipv4" ||
+         cfg.type == "ipv6";
 }
 
 /**
@@ -64,7 +58,7 @@ io::endpoint* factory::new_endpoint(
     std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
-  // Find host (if exist).
+  // Find host (if exists).
   std::string host;
   {
     std::map<std::string, std::string>::const_iterator it{
@@ -74,27 +68,18 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Find port (must exist).
-  unsigned short port;
+  uint16_t port;
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("port")};
     if (it == cfg.params.end()) {
-      log_v2::tcp()->error(
-          "TCP: no 'port' defined for endpoint '{}'", cfg.name);
+      log_v2::tcp()->error("TCP: no 'port' defined for endpoint '{}'",
+                           cfg.name);
       throw exceptions::msg() << "TCP: no 'port' defined for "
                                  "endpoint '"
                               << cfg.name << "'";
     }
-    port = static_cast<unsigned short>(std::stol(it->second));
-  }
-
-  // Find TCP socket timeout option.
-  int write_timeout(-1);
-  {
-    std::map<std::string, std::string>::const_iterator it{
-        cfg.params.find("socket_write_timeout")};
-    if (it != cfg.params.end())
-      write_timeout = std::stoul(it->second);
+    port = static_cast<uint16_t>(std::stol(it->second));
   }
 
   int read_timeout(-1);
@@ -109,19 +94,14 @@ io::endpoint* factory::new_endpoint(
   std::unique_ptr<io::endpoint> endp;
   if (host.empty()) {
     is_acceptor = true;
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor);
-    a->set_read_timeout(read_timeout);
-    a->set_write_timeout(write_timeout);
-    a->listen_on(port);
+    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(port, read_timeout));
     endp.reset(a.release());
   }
   // Connector.
   else {
     is_acceptor = false;
-    std::unique_ptr<tcp::connector> c(new tcp::connector);
-    c->set_read_timeout(read_timeout);
-    c->connect_to(host, port);
-    c->set_write_timeout(write_timeout);
+    std::unique_ptr<tcp::connector> c(
+        new tcp::connector(host, port, read_timeout));
     endp.reset(c.release());
   }
   return endp.release();

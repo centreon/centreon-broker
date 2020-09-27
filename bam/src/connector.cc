@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/connector.hh"
+
 #include "com/centreon/broker/bam/monitoring_stream.hh"
 #include "com/centreon/broker/bam/reporting_stream.hh"
 
@@ -47,21 +48,6 @@ connector::connector(connector const& other) : io::endpoint(other) {
  *  Destructor.
  */
 connector::~connector() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Set connection parameters.
@@ -100,21 +86,20 @@ void connector::connect_reporting(database_config const& db_cfg) {
 }
 
 /**
- *  Connect to a DB.
+ * @brief Connect to a DB.
  *
- *  @return BAM connection object.
+ * @return BAM connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  if (_type == bam_reporting_type) {
-    std::shared_ptr<reporting_stream> s(new reporting_stream(_db_cfg));
-    return (std::static_pointer_cast<io::stream>(s));
-  } else {
+  if (_type == bam_reporting_type)
+    return std::make_shared<reporting_stream>(_db_cfg);
+  else {
     database_config storage_db_cfg(_db_cfg);
     storage_db_cfg.set_name(_storage_db_name);
-    std::shared_ptr<monitoring_stream> s(
-        new monitoring_stream(_ext_cmd_file, _db_cfg, storage_db_cfg, _cache));
+    auto s = std::make_shared<monitoring_stream>(_ext_cmd_file, _db_cfg,
+                                                 storage_db_cfg, _cache);
     s->initialize();
-    return (std::static_pointer_cast<io::stream>(s));
+    return s;
   }
 }
 

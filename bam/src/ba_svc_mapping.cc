@@ -59,8 +59,8 @@ ba_svc_mapping& ba_svc_mapping::operator=(ba_svc_mapping const& other) {
  */
 std::pair<std::string, std::string> ba_svc_mapping::get_service(
     uint32_t ba_id) {
-  std::map<uint32_t, std::pair<std::string, std::string> >::const_iterator
-      it(_mapping.find(ba_id));
+  std::map<uint32_t, std::pair<std::string, std::string> >::const_iterator it(
+      _mapping.find(ba_id));
   return ((it != _mapping.end())
               ? it->second
               : std::make_pair(std::string(), std::string()));

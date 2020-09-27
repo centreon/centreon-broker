@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <thread>
 
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
@@ -55,9 +56,9 @@ static uint32_t set_boolean(io::data& t,
                             uint32_t size) {
   if (!size) {
     log_v2::bbdo()->error(
-        "BBDO: cannot extract boolean value: 0 bytes left in "
+        "cannot extract boolean value: 0 bytes left in "
         "packet");
-    throw exceptions::msg() << "BBDO: cannot extract boolean value: "
+    throw exceptions::msg() << "cannot extract boolean value: "
                             << "0 bytes left in packet";
   }
   member.set_bool(t, *static_cast<char const*>(data));
@@ -75,12 +76,12 @@ static uint32_t set_double(io::data& t,
   uint32_t len(strlen(str));
   if (len >= size) {
     log_v2::bbdo()->error(
-        "BBDO: cannot extract double value: not terminating '\0' in remaining "
+        "cannot extract double value: not terminating '\0' in remaining "
         "{} bytes of packet",
         size);
-    throw exceptions::msg() << "BBDO: cannot extract double value: "
-                            << "not terminating '\0' in remaining " << size
-                            << " bytes of packet";
+    throw exceptions::msg()
+        << "cannot extract double value: "
+        << "not terminating '\0' in remaining " << size << " bytes of packet";
   }
   member.set_double(t, strtod(str, nullptr));
   return len + 1;
@@ -95,7 +96,7 @@ static uint32_t set_integer(io::data& t,
                             uint32_t size) {
   if (size < sizeof(uint32_t)) {
     log_v2::bbdo()->error(
-        "BBDO: cannot extract integer value: {} bytes left in packet", size);
+        "cannot extract integer value: {} bytes left in packet", size);
     throw exceptions::msg() << "BBDO: cannot extract integer value: " << size
                             << " bytes left in packet";
   }
@@ -135,9 +136,9 @@ static uint32_t set_string(io::data& t,
         "{} bytes left in packet",
         size);
 
-    throw exceptions::msg() << "BBDO: cannot extract string value: "
-                            << "no terminating '\\0' in remaining " << size
-                            << " bytes of packet";
+    throw exceptions::msg()
+        << "BBDO: cannot extract string value: "
+        << "no terminating '\\0' in remaining " << size << " bytes of packet";
   }
   member.set_string(t, str);
   return len + 1;
@@ -176,8 +177,9 @@ static uint32_t set_uint(io::data& t,
     log_v2::bbdo()->error(
         "BBDO: cannot extract uint32_t integer value: {} bytes left in packet",
         size);
-    throw exceptions::msg() << "BBDO: cannot extract uint32_teger value: "
-                            << size << " bytes left in packet";
+    throw exceptions::msg()
+        << "BBDO: cannot extract uint32_teger value: " << size
+        << " bytes left in packet";
   }
   member.set_uint(t, ntohl(*static_cast<uint32_t const*>(data)));
   return sizeof(uint32_t);
@@ -254,8 +256,8 @@ static io::data* unserialize(uint32_t event_type,
           "BBDO: cannot create object of ID {} whereas it has been registered",
           event_type);
       throw exceptions::msg()
-            << "BBDO: cannot create object of ID " << event_type
-            << " whereas it has been registered";
+          << "BBDO: cannot create object of ID " << event_type
+          << " whereas it has been registered";
     }
   } else {
     log_v2::bbdo()->info(
@@ -282,32 +284,9 @@ static io::data* unserialize(uint32_t event_type,
 input::input() : _skipped(0) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-input::input(input const& other)
-    : io::stream(other), _buffer(other._buffer), _skipped(other._skipped) {}
-
-/**
  *  Destructor.
  */
 input::~input() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-input& input::operator=(input const& other) {
-  if (this != &other) {
-    _buffer = other._buffer;
-    _skipped = other._skipped;
-  }
-  return *this;
-}
 
 /**
  *  @brief Get the next available event.
@@ -323,6 +302,10 @@ input& input::operator=(input const& other) {
 bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
   // Read event.
   d.reset();
+
+  /* This lock is needed because the same stream is used by several threads.
+   * In the case of long events (split in several parts), if two threads read
+   * at the same time, the second one could get a part of the long event... */
   bool timed_out(!read_any(d, deadline));
   uint32_t event_id(!d ? 0 : d->type());
   while (!timed_out && ((event_id >> 16) == io::events::bbdo)) {
@@ -338,13 +321,14 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
             version->bbdo_major, version->bbdo_minor, version->bbdo_patch,
             BBDO_VERSION_MAJOR, BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
         throw exceptions::msg()
-              << "BBDO: peer is using protocol version " << version->bbdo_major
-              << "." << version->bbdo_minor << "." << version->bbdo_patch
-              << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
-              << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
+            << "BBDO: peer is using protocol version " << version->bbdo_major
+            << "." << version->bbdo_minor << "." << version->bbdo_patch
+            << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
+            << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
       }
       log_v2::bbdo()->info(
-          "BBDO: peer is using protocol version {0}.{1}.{2} , we're using version "
+          "BBDO: peer is using protocol version {0}.{1}.{2} , we're using "
+          "version "
           "{3}.{4}.{5}",
           version->bbdo_major, version->bbdo_minor, version->bbdo_patch,
           BBDO_VERSION_MAJOR, BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
@@ -396,132 +380,197 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
     std::unique_ptr<io::data> e;
     d.reset();
 
-    // Get header informations.
-    uint32_t event_id(0);
-    int packet_size;
-    uint32_t source_id;
-    uint32_t destination_id;
-    std::string packet;
-    int raw_size(0);
-    do {
-      // Extract header.
-      std::string header;
-      _buffer_must_have_unprocessed(raw_size + BBDO_HEADER_SIZE, deadline);
-      _buffer.extract(header, raw_size, BBDO_HEADER_SIZE);
+    for (;;) {
+      /* Maybe we have to complete the header. */
+      _read_packet(BBDO_HEADER_SIZE, deadline);
 
-      // Extract header info.
-      uint16_t chksum{ntohs(*reinterpret_cast<uint16_t const*>(header.data()))};
-      packet_size =
-          ntohs(*reinterpret_cast<uint16_t const*>(header.data() + 2));
-      uint32_t current_event_id{
-          ntohl(*reinterpret_cast<uint32_t const*>(header.data() + 4))};
-      uint32_t current_source_id{
-          ntohl(*reinterpret_cast<uint32_t const*>(header.data() + 8))};
-      uint32_t current_dest_id{
-          ntohl(*reinterpret_cast<uint32_t const*>(header.data() + 12))};
-      uint16_t expected{
-          misc::crc16_ccitt(header.data() + 2, BBDO_HEADER_SIZE - 2)};
+      // Packet size is now at least BBDO_HEADER_SIZE and maybe contains
+      // already a full BBDO packet.
 
-      // Initial packet, extract info.
-      if (!event_id) {
-        event_id = current_event_id;
-        source_id = current_source_id;
-        destination_id = current_dest_id;
-      }
+      const char* pack = _packet.data();
+      uint16_t chksum = ntohs(*reinterpret_cast<uint16_t const*>(pack));
+      uint32_t packet_size =
+          ntohs(*reinterpret_cast<uint16_t const*>(pack + 2));
+      uint32_t event_id = ntohl(*reinterpret_cast<uint32_t const*>(pack + 4));
+      uint32_t source_id = ntohl(*reinterpret_cast<uint32_t const*>(pack + 8));
+      uint32_t dest_id = ntohl(*reinterpret_cast<uint32_t const*>(pack + 12));
+      uint16_t expected = misc::crc16_ccitt(pack + 2, BBDO_HEADER_SIZE - 2);
 
-      // Checksum and for multi-packet, assert same event.
-      if (chksum != expected || event_id != current_event_id ||
-          source_id != current_source_id || destination_id != current_dest_id) {
-        if (!_skipped) {  // First corrupted byte.
+      // FIXME DBR: We must check correctly this error.
+      log_v2::bbdo()->trace(
+          "Reading: header eventID {} sourceID {} destID {} checksum {:x} and "
+          "expected {:x}",
+          event_id, source_id, dest_id, chksum, expected);
+
+      if (expected != chksum) {
+        // The packet is corrupted.
+        if (_skipped == 0) {
+          // First corrupted byte.
           log_v2::bbdo()->error(
-              "BBDO: peer {0} is sending corrupted data: {1}", peer(),
-              ((chksum != expected) ? "invalid CRC"
-                                    : "invalid multi-packet event"));
-          logging::error(logging::high)
-              << "BBDO: peer " << peer() << " is sending corrupted data: "
-              << ((chksum != expected) ? "invalid CRC"
-                                       : "invalid multi-packet event");
+              "peer {} is sending corrupted data: invalid CRC: {:04x} != "
+              "{:04x}",
+              peer(), chksum, expected);
         }
         ++_skipped;
-        _buffer.erase(1);
-        event_id = 0;
-        packet.clear();
-        raw_size = 0;
-        packet_size = 0xFFFF;  // Keep the loop running.
+        _packet.erase(_packet.begin());
+        continue;
+      } else if (_skipped) {
+        log_v2::bbdo()->info(
+            "peer {} sent {} corrupted payload bytes, resuming processing",
+            peer(), _skipped);
+        _skipped = 0;
       }
-      // All good, extract packet payload.
-      else {
-        _buffer_must_have_unprocessed(raw_size + BBDO_HEADER_SIZE + packet_size,
-                                      deadline);
-        _buffer.extract(packet, raw_size + BBDO_HEADER_SIZE, packet_size);
-        raw_size += BBDO_HEADER_SIZE + packet_size;
+
+      // It is time to finish to read the packet.
+
+      _read_packet(BBDO_HEADER_SIZE + packet_size, deadline);
+      // Now, _packet contains at least BBDO_HEADER_SIZE + packet_size bytes.
+
+      std::vector<char> content;
+      if (_packet.size() == BBDO_HEADER_SIZE + packet_size) {
+        log_v2::bbdo()->trace(
+            "packet matches header + content => extracting content");
+        // We remove the header from the packet: FIXME DBR this is not
+        // beautiful...
+
+        content = std::vector<char>(_packet.begin() + BBDO_HEADER_SIZE,
+                                    _packet.end());
+        _packet.clear();
+        // The size should be of only packet_size now.
+      } else {
+        /* we have _packet.size() > BBDO_HEADER_SIZE + packet_size */
+
+        size_t previous_packet_size = _packet.size();
+        // packet contains more than one BBDO packet...
+        content =
+            std::vector<char>(_packet.begin() + BBDO_HEADER_SIZE,
+                              _packet.begin() + BBDO_HEADER_SIZE + packet_size);
+        _packet.erase(_packet.begin(),
+                      _packet.begin() + BBDO_HEADER_SIZE + packet_size);
+        log_v2::bbdo()->trace(
+            "packet longer than header + content => splitting the whole of "
+            "size {} to content of size {} and remaining of size {}",
+            previous_packet_size, content.size(), _packet.size());
       }
-    } while (packet_size == 0xFFFF);
 
-    // We now have a complete packet, print summary of corruption.
-    if (_skipped) {
-      log_v2::bbdo()->info(
-          "BBDO: peer {0} sent {1} corrupted payload bytes, resuming "
-          "processing",
-          peer(), _skipped);
-      logging::info(logging::high)
-          << "BBDO: peer " << peer() << " sent " << _skipped
-          << " corrupted payload bytes, resuming processing";
-      _skipped = 0;
+      if (packet_size != 0xffff) {
+        // Cool we can work with it!
+
+        // Is it the next part of an already known input buffer?
+        for (auto it = _buffer.begin(); it != _buffer.end(); ++it) {
+          auto& b = *it;
+          if (b.matches(event_id, source_id, dest_id)) {
+            // Good, we've found it.
+            b.push_back(std::move(content));
+
+            content = b.to_vector();
+            _buffer.erase(it);
+            break;
+          }
+        }
+        /* There is no reason to have this but no one knows. */
+        if (_buffer.size() > 0) {
+          log_v2::bbdo()->error(
+              "There are still {} long BBDO packets that cannot be sent, this "
+              "maybe be due to a corrupted retention file.",
+              _buffer.size());
+          /* In case of too many long events stored in memory, we purge the
+           * oldest ones. */
+          while (_buffer.size() > 3) {
+            log_v2::bbdo()->info(
+                "One too old long event part of type {} removed from memory",
+                _buffer.front().get_event_id());
+            _buffer.pop_front();
+          }
+        }
+
+        pack = content.data();
+
+        // Maybe it is bigger now.
+        packet_size = content.size();
+        d.reset(unserialize(event_id, source_id, dest_id, pack, packet_size));
+        if (d) {
+          log_v2::bbdo()->debug("unserialized {} bytes for event of type {}",
+                                BBDO_HEADER_SIZE + packet_size, event_id);
+        } else {
+          log_v2::bbdo()->error("unknown event type {} event cannot be decoded",
+                                event_id);
+          log_v2::bbdo()->debug("discarded {} bytes",
+                                BBDO_HEADER_SIZE + packet_size);
+
+          logging::error(logging::medium) << "unknown event type " << event_id
+                                          << ": event cannot be decoded";
+          logging::debug(logging::medium)
+              << "discarded " << BBDO_HEADER_SIZE + packet_size << " bytes";
+        }
+        return true;
+      } else {
+        // Is it the next part of an already known input buffer?
+        bool done = false;
+        for (auto it = _buffer.begin(); it != _buffer.end(); ++it) {
+          auto& b = *it;
+          if (b.matches(event_id, source_id, dest_id)) {
+            // Good, we've found it.
+            b.push_back(std::move(content));
+            content.clear();
+            done = true;
+            break;
+          }
+        }
+        if (!done)
+          _buffer.emplace_back(
+              input::buffer(event_id, source_id, dest_id, std::move(content)));
+
+        /* There is no reason to have this but no one knows. */
+        if (_buffer.size() > 1) {
+          log_v2::bbdo()->error(
+              "There are {} long BBDO packets waiting for their missing parts "
+              "in memory, this may be due to a corrupted retention file.",
+              _buffer.size());
+          /* In case of too many long events stored in memory, we purge the
+           * oldest ones. */
+          while (_buffer.size() > 4) {
+            log_v2::bbdo()->info(
+                "One too old long event part of type {} removed from memory",
+                _buffer.front().get_event_id());
+            _buffer.pop_front();
+          }
+        }
+      }
     }
-
-    // Unserialize event.
-    d.reset(unserialize(event_id, source_id, destination_id, packet.data(),
-                        packet.size()));
-    if (d) {
-      log_v2::bbdo()->debug(
-          "BBDO: unserialized {0} bytes for event of type {1}", raw_size,
-          event_id);
-      logging::debug(logging::medium)
-          << "BBDO: unserialized " << raw_size << " bytes for event of type "
-          << event_id;
-    } else {
-      log_v2::bbdo()->error(
-          "BBDO: unknown event type {} event cannot be decoded", event_id);
-      log_v2::bbdo()->debug("BBDO: discarded {} bytes", raw_size);
-
-      logging::error(logging::medium) << "BBDO: unknown event type " << event_id
-                                      << ": event cannot be decoded";
-      logging::debug(logging::medium)
-          << "BBDO: discarded " << raw_size << " bytes";
-    }
-
-    // Mark data as processed.
-    _buffer.erase(raw_size);
-
-    return true;
-  } catch (exceptions::timeout const& e) {
-    (void)e;
+  } catch (const exceptions::timeout& e) {
     return false;
   }
+  return false;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
- *  Expect buffer to have a minimal size.
+ * @brief Fill the internal _packet vector until it reaches the given size. It
+ * may be bigger. The deadline is the limit time after that an exception is
+ * thrown. Even if an exception is thrown the vector may begin to be fill, it is
+ * just not finished, and so no data are lost. Received packets are BBDO packets
+ * or maybe pieces of BBDO packets, so we keep vectors as is because usually a
+ * vector should just represent a packet.
  *
- *  @param[in] bytes     Number of minimal buffer size.
- *  @param[in] deadline  Timeout in seconds.
+ * @param size The wanted final size
+ * @param deadline A time_t.
  */
-void input::_buffer_must_have_unprocessed(int bytes, time_t deadline) {
+void input::_read_packet(size_t size, time_t deadline) {
   // Read as much data as requested.
-  bool timed_out{false};
-  while (!timed_out && _buffer.size() < bytes) {
+  while (_packet.size() < size) {
     std::shared_ptr<io::data> d;
-    timed_out = !_substream->read(d, deadline);
-    if (d && d->type() == io::raw::static_type())
-      _buffer.append(std::static_pointer_cast<io::raw>(d));
+    bool timeout = !_substream->read(d, deadline);
+
+    if (d && d->type() == io::raw::static_type()) {
+      std::vector<char>& new_v = std::static_pointer_cast<io::raw>(d)->_buffer;
+      if (!new_v.empty()) {
+        if (_packet.size() == 0)
+          _packet = std::move(new_v);
+        else
+          _packet.insert(_packet.end(), new_v.begin(), new_v.end());
+      }
+    }
+    if (timeout)
+      throw exceptions::timeout();
   }
-  if (timed_out)
-    throw exceptions::timeout();
 }

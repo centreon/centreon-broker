@@ -47,7 +47,7 @@ class stat_visitable {
   std::string _name;
   mutable std::mutex _stat_mutex;
 
-  //virtual uint32_t _get_queued_events() = 0;
+  virtual uint32_t _get_queued_events() const = 0;
   virtual std::string const& _get_read_filters() const = 0;
   virtual std::string const& _get_write_filters() const = 0;
   virtual void _forward_statistic(json11::Json::object& tree);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2017,2020 Centreon
+** Copyright 2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,29 +16,25 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_BBDO_INTERNAL_HH
-#define CCB_BBDO_INTERNAL_HH
-
-#include <cstdint>
+#ifndef CCB_PROCESSING_ENDPOINT_HH
+#define CCB_PROCESSING_ENDPOINT_HH
 
 #include "com/centreon/broker/namespace.hh"
-
-#define BBDO_VERSION_MAJOR 2
-#define BBDO_VERSION_MINOR 0
-#define BBDO_VERSION_PATCH 0
-constexpr uint32_t BBDO_HEADER_SIZE = 16u;
+#include "com/centreon/broker/processing/stat_visitable.hh"
 
 CCB_BEGIN()
 
-namespace bbdo {
-// Data elements.
-enum { de_version_response = 1, de_ack };
-
-// Load/unload of BBDO protocol.
-void load();
-void unload();
-}  // namespace bbdo
+namespace processing {
+class endpoint : public stat_visitable {
+ public:
+  endpoint(const std::string& name) : stat_visitable(name) {}
+  virtual ~endpoint() noexcept {}
+  virtual void update() {}
+  virtual void start() = 0;
+  virtual void exit() = 0;
+};
+}  // namespace processing
 
 CCB_END()
 
-#endif  // !CCB_BBDO_INTERNAL_HH
+#endif /* CCB_PROCESSING_ENDPOINT_HH */

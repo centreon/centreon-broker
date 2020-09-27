@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,63 +19,274 @@
 #ifndef CCB_RRD_CACHED_HH
 #define CCB_RRD_CACHED_HH
 
+#include <fmt/format.h>
+
 #include <asio.hpp>
-#include <memory>
-#include <string>
+
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/namespace.hh"
-#include "com/centreon/broker/rrd/backend.hh"
+#include "com/centreon/broker/rrd/exceptions/open.hh"
+#include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 
 CCB_BEGIN()
 
 namespace rrd {
-/**
- *  @class cached cached.hh "com/centreon/broker/rrd/cached.hh"
- *  @brief Handle RRD file access through rrdcached.
- *
- *  Handle creation, deletion, tuning and update of an RRD file with
- *  rrdcached. The advantage of rrdcached is to have a batch mode that
- *  allows bulk operations.
- *
- *  @see begin()
- *  @see commit()
- */
+
+template <typename T>
 class cached : public backend {
+  asio::io_context _io_context;
+  bool _batch;
+  lib _lib;
+  T _socket;
+  std::string _filename;
+
  public:
-  enum cached_type { uninitialized, local, tcp };
-  cached(std::string const& tmpl_path, uint32_t cache_size, cached_type type);
-  cached(cached const& c) = delete;
-  cached& operator=(cached const& c) = delete;
-  ~cached() = default;
-  void begin();
-  void clean();
-  void close();
-  void commit();
-  void connect_local(std::string const& name);
-  void connect_remote(std::string const& address, unsigned short port);
-  void open(std::string const& filename);
+  cached(const std::string& tmpl_path, uint32_t cache_size)
+      : _batch{false}, _lib{tmpl_path, cache_size}, _socket{_io_context} {}
+  /**
+   * @brief Open an RRD file which already exists.
+   *
+   * @param filename Path to the RRD file.
+   */
+  void open(const std::string& filename) {
+    // Close previous file.
+    this->close();
+
+    // Check that the file exists.
+    if (access(filename.c_str(), F_OK))
+      throw exceptions::open()
+          << "RRD: file '" << filename << "' does not exist";
+
+    // Remember information for further operations.
+    _filename = filename;
+  }
+
+  /**
+   *  Open a RRD file and create it if it does not exists.
+   *
+   *  @param[in] filename   Path to the RRD file.
+   *  @param[in] length     Duration in seconds that the RRD file should
+   *                        retain.
+   *  @param[in] from       Timestamp of the first record.
+   *  @param[in] step       Time interval between each record.
+   *  @param[in] value_type Type of the metric.
+   */
   void open(std::string const& filename,
             uint32_t length,
             time_t from,
             uint32_t step,
-            short value_type = 0);
-  void remove(std::string const& filename);
-  void update(time_t t, std::string const& value);
+            short value_type = 0) {
+    // Close previous file.
+    this->close();
 
- private:
-  template <typename T>
-  void _send_to_cached(std::string const& command, T const& socket);
+    // Remember informations for further operations.
+    _filename = filename;
 
-  bool _batch;
-  std::string _filename;
-  lib _lib;
-  cached_type _type;
-  asio::io_context _io_context;
-  std::unique_ptr<asio::ip::tcp::socket> _tcp_socket;
-  std::unique_ptr<asio::local::stream_protocol::socket> _local_socket;
+    /* We are unfortunately forced to use librrd to create RRD file as
+    ** rrdcached does not support RRD file creation.
+    */
+    _lib.open(filename, length, from, step, value_type);
+  }
+
+  /**
+   * @brief Close the current RRD file.
+   */
+  void close() {
+    _filename.clear();
+    _batch = false;
+  }
+
+  /**
+   * @brief Clera the template cache.
+   */
+  void clean() { _lib.clean(); }
+
+  /**
+   *  Remove the RRD file.
+   *
+   *  @param[in] filename Path to the RRD file.
+   */
+  void remove(std::string const& filename) {
+    // Build rrdcached command.
+    std::string cmd(fmt::format("FORGET {}\n", filename));
+
+    try {
+      _send_to_cached(cmd);
+    } catch (broker::exceptions::msg const& e) {
+      logging::error(logging::medium) << e.what();
+    }
+
+    if (::remove(filename.c_str()))
+      logging::error(logging::high) << "RRD: could not remove file '"
+                                    << filename << "': " << strerror(errno);
+  }
+
+  /**
+   *  Send data to rrdcached.
+   *
+   *  @param[in] command Command to send.
+   */
+  void _send_to_cached(std::string const& command) {
+    std::error_code err;
+
+    asio::write(_socket, asio::buffer(command), asio::transfer_all(), err);
+
+    if (err)
+      throw broker::exceptions::msg() << "RRD: error while sending "
+                                         "command to rrdcached: "
+                                      << err.message();
+
+    // Read response.
+    if (!_batch) {
+      asio::streambuf stream;
+      std::string line;
+
+      asio::read_until(_socket, stream, '\n', err);
+
+      if (err)
+        throw broker::exceptions::msg() << "RRD: error while getting "
+                                           "response from rrdcached: "
+                                        << err.message();
+
+      std::istream is(&stream);
+      std::getline(is, line);
+
+      int lines;
+      try {
+        lines = std::stoi(line);
+      } catch (...) {
+        lines = -1;
+      }
+
+      if (lines < 0)
+        throw broker::exceptions::msg()
+            << "RRD: rrdcached query failed on file '" << _filename << "' ("
+            << command << "): " << line;
+      while (lines > 0) {
+        asio::read_until(_socket, stream, '\n', err);
+        if (err)
+          throw broker::exceptions::msg()
+              << "RRD: error while getting "
+              << "response from rrdcached for file '" << _filename
+              << "': " << err.message();
+
+        std::istream is(&stream);
+        std::getline(is, line);
+        --lines;
+      }
+    }
+  }
+
+  /**
+   *  Initiates the bulk load of multiple commands.
+   */
+  void begin() {
+    // Send BATCH command to rrdcached.
+    _batch = true;
+    _send_to_cached("BATCH\n");
+  }
+
+  /**
+   *  Connect to a local socket.
+   *
+   *  @param[in] name Socket name.
+   */
+  void connect_local(std::string const& name) {
+    // Create socket object.
+    asio::local::stream_protocol::endpoint ep(name);
+
+    try {
+      _socket.connect(ep);
+    } catch (std::system_error const& se) {
+      broker::exceptions::msg e;
+      e << "RRD: could not connect to local socket '" << name << ": "
+        << se.what();
+      throw e;
+    }
+  }
+
+  /**
+   *  Connect to a remote server.
+   *
+   *  @param[in] address Server address.
+   *  @param[in] port    Port to connect to.
+   */
+  void connect_remote(std::string const& address, unsigned short port) {
+    asio::ip::tcp::resolver resolver{_io_context};
+    asio::ip::tcp::resolver::query query{address, std::to_string(port)};
+
+    try {
+      asio::ip::tcp::resolver::iterator it{resolver.resolve(query)};
+      asio::ip::tcp::resolver::iterator end;
+
+      std::error_code err{std::make_error_code(std::errc::host_unreachable)};
+
+      // it can resolve to multiple addresses like ipv4 and ipv6
+      // we need to try all to find the first available socket
+      while (err && it != end) {
+        _socket.connect(*it, err);
+
+        if (err)
+          _socket.close();
+
+        ++it;
+      }
+
+      if (err) {
+        broker::exceptions::msg e;
+        e << "RRD: could not connect to remote server '" << address << ":"
+          << port << "': " << err.message();
+        throw e;
+      }
+
+      asio::socket_base::keep_alive option{true};
+      _socket.set_option(option);
+    } catch (std::system_error const& se) {
+      broker::exceptions::msg e;
+      e << "RRD: could not resolve remote server '" << address << ":" << port
+        << "': " << se.what();
+      throw e;
+    }
+  }
+
+  /**
+   *  Commit current transaction.
+   */
+  void commit() {
+    if (_batch) {
+      // Send a . on the line to indicate that transaction is over.
+      _batch = false;
+      _send_to_cached(".\n");
+    }
+  }
+
+  /**
+   *  Update the RRD file with new value.
+   *
+   *  @param[in] t     Timestamp of value.
+   *  @param[in] value Associated value.
+   */
+  void update(time_t t, std::string const& value) {
+    // Build rrdcached command.
+    std::string cmd(fmt::format("UPDATE {} {}:{}\n", _filename, t, value));
+
+    // Send command.
+    logging::debug(logging::high)
+        << "RRD: updating file '" << _filename << "' (" << cmd << ")";
+    try {
+      _send_to_cached(cmd);
+    } catch (broker::exceptions::msg const& e) {
+      if (!strstr(e.what(), "illegal attempt to update using time"))
+        throw exceptions::update() << e.what();
+      else
+        logging::error(logging::low) << "RRD: ignored update error in file '"
+                                     << _filename << "': " << e.what() + 5;
+    }
+  }
 };
 }  // namespace rrd
 
 CCB_END()
 
-#endif  // !CCB_RRD_CACHED_HH
+#endif /* !CCB_RRD_CACHED_HH */

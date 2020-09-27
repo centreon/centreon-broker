@@ -67,12 +67,12 @@ void connector::connect_to(std::string const& user,
 }
 
 /**
- *  Connect to an influxdb DB.
+ * @brief Connect to an influxdb DB.
  *
- *  @return Influxdb connection object.
+ * @return An Influxdb connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return (std::shared_ptr<io::stream>(
-      new stream(_user, _password, _addr, _port, _db, _queries_per_transaction,
-                 _status_ts, _status_cols, _metric_ts, _metric_cols, _cache)));
+  return std::make_shared<stream>(
+      _user, _password, _addr, _port, _db, _queries_per_transaction, _status_ts,
+      _status_cols, _metric_ts, _metric_cols, _cache);
 }

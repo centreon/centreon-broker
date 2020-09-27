@@ -17,10 +17,12 @@
 */
 
 #include "com/centreon/broker/bbdo/acceptor.hh"
-#include <cassert>
+
 #include <algorithm>
+#include <cassert>
 #include <memory>
 #include <sstream>
+
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -68,51 +70,15 @@ acceptor::acceptor(std::string const& name,
       _one_peer_retention_mode(one_peer_retention_mode),
       _timeout(timeout),
       _ack_limit(ack_limit) {
-  if ((_timeout == (time_t)-1) || (_timeout == 0))
+  if (_timeout == (time_t)-1 || _timeout == 0)
     _timeout = 3;
 }
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-acceptor::acceptor(acceptor const& other)
-    : io::endpoint(other),
-      _coarse(other._coarse),
-      _extensions(other._extensions),
-      _name(other._name),
-      _negotiate(other._negotiate),
-      _one_peer_retention_mode(other._one_peer_retention_mode),
-      _timeout(other._timeout),
-      _ack_limit(other._ack_limit) {}
-
-/**
  *  Destructor.
  */
-acceptor::~acceptor() {
+acceptor::~acceptor() noexcept {
   _from.reset();
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-acceptor& acceptor::operator=(acceptor const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _coarse = other._coarse;
-    _extensions = other._extensions;
-    _name = other._name;
-    _negotiate = other._negotiate;
-    _one_peer_retention_mode = other._one_peer_retention_mode;
-    _timeout = other._timeout;
-    _ack_limit = other._ack_limit;
-  }
-  return *this;
 }
 
 /**
@@ -153,7 +119,7 @@ std::shared_ptr<io::stream> acceptor::open() {
  *  @param[out] tree Properties tree.
  */
 void acceptor::stats(json11::Json::object& tree) {
-  tree["one_peer_retention_mode"] = _one_peer_retention_mode == true;
+  tree["one_peer_retention_mode"] = _one_peer_retention_mode;
   if (_from)
     _from->stats(tree);
 }
