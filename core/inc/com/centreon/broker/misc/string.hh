@@ -27,6 +27,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/namespace.hh"
 
@@ -50,7 +51,29 @@ std::string& trim(std::string& str) throw();
 std::string base64_encode(std::string const& str);
 bool is_number(const std::string& s);
 std::string check_string_utf8(const std::string& str) noexcept;
-std::string& truncate(std::string& str, size_t s);
+
+/**
+ * @brief This function works almost like the resize method but takes care
+ * of the UTF-8 encoding and avoids to cut a string in the middle of a
+ * character. This function assumes the string to be UTF-8 encoded.
+ *
+ * @param str A string to truncate.
+ * @param s The desired size, maybe the resulting string will contain less
+ * characters.
+ *
+ * @return a reference to the string str.
+ */
+template<typename T>
+fmt::string_view truncate(const T& str, size_t s) {
+  if (s >= str.size())
+    return fmt::string_view(str);
+  if (s > 0)
+    while ((str[s] & 0xc0) == 0x80)
+      s--;
+  return fmt::string_view(str.data(), s);
+}
+
+size_t adjust_size_utf8(const std::string& str, size_t s);
 
 }  // namespace string
 }  // namespace misc

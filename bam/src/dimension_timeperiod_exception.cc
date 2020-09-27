@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -84,9 +86,13 @@ mapping::entry const dimension_timeperiod_exception::entries[] = {
                    "timeperiod_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&bam::dimension_timeperiod_exception::daterange,
-                   "daterange"),
+                   "daterange",
+                   get_mod_bam_reporting_timeperiods_exceptions_col_size(
+                       mod_bam_reporting_timeperiods_exceptions_daterange)),
     mapping::entry(&bam::dimension_timeperiod_exception::timerange,
-                   "timerange"),
+                   "timerange",
+                   get_mod_bam_reporting_timeperiods_exceptions_col_size(
+                       mod_bam_reporting_timeperiods_exceptions_timerange)),
     mapping::entry()};
 
 // Operations.

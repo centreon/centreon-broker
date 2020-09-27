@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/custom_variable_status.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -102,14 +104,18 @@ mapping::entry const custom_variable_status::entries[] = {
                    "host_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&custom_variable_status::modified, "modified"),
-    mapping::entry(&custom_variable_status::name, "name"),
+    mapping::entry(&custom_variable_status::name,
+                   "name",
+                   get_customvariables_col_size(customvariables_name)),
     mapping::entry(&custom_variable_status::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&custom_variable_status::update_time,
                    "update_time",
                    mapping::entry::invalid_on_minus_one),
-    mapping::entry(&custom_variable_status::value, "value"),
+    mapping::entry(&custom_variable_status::value,
+                   "value",
+                   get_customvariables_col_size(customvariables_value)),
     mapping::entry()};
 
 // Operations.

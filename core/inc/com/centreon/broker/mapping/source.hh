@@ -20,6 +20,7 @@
 #define CCB_MAPPING_SOURCE_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
@@ -48,15 +49,23 @@ class source {
     USHORT,
     ULONG
   };
-  source();
-  virtual ~source();
+
+  /**
+   *  Default constructor.
+   */
+  source() {}
+
+  /**
+   *  Destructor.
+   */
+  virtual ~source() noexcept {}
   source(source const&) = delete;
   source& operator=(source const&) = delete;
   virtual bool get_bool(io::data const& d) = 0;
   virtual double get_double(io::data const& d) = 0;
   virtual int get_int(io::data const& d) = 0;
   virtual short get_short(io::data const& d) = 0;
-  virtual std::string const& get_string(io::data const& d) = 0;
+  virtual std::string const& get_string(io::data const& d, size_t* max_len) = 0;
   virtual timestamp const& get_time(io::data const& d) = 0;
   virtual uint32_t get_uint(io::data const& d) = 0;
   virtual unsigned short get_ushort(io::data const& d) = 0;

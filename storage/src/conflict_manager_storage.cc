@@ -16,14 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include <fmt/format.h>
+
 #include <cfloat>
 #include <cstring>
 #include <list>
 #include <sstream>
 
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
@@ -131,10 +135,15 @@ void conflict_manager::_storage_process_service_status(
           "(host_id,host_name,service_id,service_description,must_be_rebuild,"
           "special) VALUES (?,?,?,?,?,?)");
 
+    fmt::string_view hv(misc::string::truncate(
+        ss.host_name, get_index_data_col_size(index_data_host_name)));
+    fmt::string_view sv(misc::string::truncate(
+        ss.service_description,
+        get_index_data_col_size(index_data_service_description)));
     _index_data_insert.bind_value_as_i32(0, host_id);
-    _index_data_insert.bind_value_as_str(1, ss.host_name);
+    _index_data_insert.bind_value_as_str(1, hv);
     _index_data_insert.bind_value_as_i32(2, service_id);
-    _index_data_insert.bind_value_as_str(3, ss.service_description);
+    _index_data_insert.bind_value_as_str(3, sv);
     _index_data_insert.bind_value_as_str(4, "0");
     _index_data_insert.bind_value_as_str(5, special ? "1" : "0");
     std::promise<int> promise;
@@ -183,8 +192,8 @@ void conflict_manager::_storage_process_service_status(
         log_v2::sql()->debug(
             "Updating index_data for host_id={} and service_id={}", host_id,
             service_id);
-        _index_data_update.bind_value_as_str(0, ss.host_name);
-        _index_data_update.bind_value_as_str(1, ss.service_description);
+        _index_data_update.bind_value_as_str(0, hv);
+        _index_data_update.bind_value_as_str(1, sv);
         _index_data_update.bind_value_as_str(2, "0");
         _index_data_update.bind_value_as_str(3, special ? "1" : "0");
         _index_data_update.bind_value_as_i32(4, index_id);

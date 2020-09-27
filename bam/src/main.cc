@@ -50,8 +50,7 @@ char const* bam_module("bam");
 
 template <typename T>
 void register_bam_event(io::events& e, bam::data_element de, const char* name) {
-  e.register_event(io::events::bam, de,
-                   io::event_info(name, &T::operations, T::entries));
+  e.register_event(io::events::bam, de, name, &T::operations, T::entries);
 }
 
 extern "C" {

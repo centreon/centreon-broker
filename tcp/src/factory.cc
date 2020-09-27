@@ -65,6 +65,10 @@ io::endpoint* factory::new_endpoint(
         cfg.params.find("host")};
     if (it != cfg.params.end())
       host = it->second;
+    if (!host.empty() && (std::isspace(host[0]) || std::isspace(host[host.size() - 1]))) {
+      log_v2::tcp()->error("TCP: 'host' must be a string matching a host, not beginning or ending with spaces for endpoint {}, it contains '{}'", cfg.name, host);
+      throw exceptions::msg() << "TCP: invalid host value '" << host << "' defined for endpoint '" << cfg.name << "', it must not begin or end with spaces.";
+    }
   }
 
   // Find port (must exist).
@@ -79,7 +83,12 @@ io::endpoint* factory::new_endpoint(
                                  "endpoint '"
                               << cfg.name << "'";
     }
-    port = static_cast<uint16_t>(std::stol(it->second));
+    try {
+      port = static_cast<uint16_t>(std::stol(it->second));
+    } catch (const std::exception& e) {
+      log_v2::tcp()->error("TCP: 'port' must be an integer and not '{}' for endpoint '{}'", it->second, cfg.name);
+      throw exceptions::msg() << "TCP: invalid port value '" << it->second << "' defined for endpoint '" << cfg.name << "'";
+    }
   }
 
   int read_timeout(-1);

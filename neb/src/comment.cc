@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/comment.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -125,9 +127,13 @@ void comment::_internal_copy(comment const& other) {
 
 // Mapping.
 mapping::entry const comment::entries[] = {
-    mapping::entry(&comment::author, "author"),
+    mapping::entry(&comment::author,
+                   "author",
+                   get_comments_col_size(comments_author)),
     mapping::entry(&comment::comment_type, "type"),
-    mapping::entry(&comment::data, "data"),
+    mapping::entry(&comment::data,
+                   "data",
+                   get_comments_col_size(comments_data)),
     mapping::entry(&comment::deletion_time,
                    "deletion_time",
                    mapping::entry::invalid_on_zero),
@@ -150,8 +156,11 @@ mapping::entry const comment::entries[] = {
     mapping::entry(&comment::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&comment::source, "source"), mapping::entry()};
+    mapping::entry(&comment::source, "source"),
+    mapping::entry()};
 
 // Operations.
-static io::data* new_comment() { return new comment; }
+static io::data* new_comment() {
+  return new comment;
+}
 io::event_info::event_operations const comment::operations = {&new_comment};
