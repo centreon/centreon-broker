@@ -20,7 +20,9 @@
 #define CCB_WATCHDOG_INSTANCE_HH
 
 #include <unistd.h>
+
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
 #include "com/centreon/broker/watchdog/instance_configuration.hh"

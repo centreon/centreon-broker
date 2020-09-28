@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "com/centreon/broker/bam/bool_metric.hh"
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/metric_listener.hh"

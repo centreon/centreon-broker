@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/bam/availability_thread.hh"
+
 #include <ctime>
 #include <sstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
@@ -39,7 +41,7 @@ availability_thread::availability_thread(database_config const& db_cfg,
       _shared_tps(shared_map),
       _mutex{},
       _should_exit(false),
-      _should_rebuild_all(false){}
+      _should_rebuild_all(false) {}
 
 /**
  *  Destructor.
@@ -273,8 +275,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
   _mysql->run_query_and_get_result(query.str(), &promise, thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
-  std::map<std::pair<uint32_t, uint32_t>, availability_builder>
-      builders;
+  std::map<std::pair<uint32_t, uint32_t>, availability_builder> builders;
   try {
     database::mysql_result res(promise.get_future().get());
     while (_mysql->fetch_row(res)) {
@@ -286,9 +287,8 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       if (!tp)
         continue;
       // Find the builder.
-      std::map<std::pair<uint32_t, uint32_t>,
-               availability_builder>::iterator found =
-          builders.find(std::make_pair(ba_id, timeperiod_id));
+      std::map<std::pair<uint32_t, uint32_t>, availability_builder>::iterator
+          found = builders.find(std::make_pair(ba_id, timeperiod_id));
       // No builders found, create one.
       if (found == builders.end())
         found = builders
@@ -336,9 +336,8 @@ void availability_thread::_build_daily_availabilities(int thread_id,
            it != end; ++it) {
         uint32_t tp_id = it->first->get_id();
         // Find the builder.
-        std::map<std::pair<uint32_t, uint32_t>,
-                 availability_builder>::iterator found =
-            builders.find(std::make_pair(ba_id, tp_id));
+        std::map<std::pair<uint32_t, uint32_t>, availability_builder>::iterator
+            found = builders.find(std::make_pair(ba_id, tp_id));
         // No builders found, create one.
         if (found == builders.end())
           found = builders

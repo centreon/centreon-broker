@@ -20,6 +20,7 @@
 #define CCB_BBDO_CONNECTOR_HH
 
 #include <ctime>
+
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -39,9 +40,9 @@ class connector : public io::endpoint {
             time_t timeout,
             bool coarse = false,
             uint32_t ack_limit = 1000);
-  connector(connector const& other);
-  ~connector();
-  connector& operator=(connector const& other);
+  ~connector() noexcept {}
+  connector(connector const&) = delete;
+  connector& operator=(connector const&) = delete;
   std::shared_ptr<io::stream> open();
 
  private:

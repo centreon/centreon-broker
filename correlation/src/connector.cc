@@ -56,23 +56,6 @@ connector::connector(connector const& other)
 connector::~connector() {}
 
 /**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _cache = other._cache;
-    _correlation_file = other._correlation_file;
-    _passive = other._passive;
-  }
-  return (*this);
-}
-
-/**
  *  Open a stream.
  *
  *  @return A newly opened stream.

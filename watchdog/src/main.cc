@@ -20,26 +20,27 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <csignal>
-#include <cstring>
 #include <iostream>
 #include <set>
 #include <unordered_map>
-#include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/file.hh"
-#include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/logging/manager.hh"
+
 #include "com/centreon/broker/watchdog/configuration.hh"
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include "com/centreon/broker/watchdog/instance.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
 
-static char const* help_msg = "USAGE: cbwd configuration_file";
 static char const* config_filename = nullptr;
 static bool should_exit{false};
-static std::shared_ptr<logging::file> log;
+std::unique_ptr<spdlog::logger> logger;
 static configuration config;
 static std::unordered_map<std::string, instance*> instances;
 static bool sighup{false};
@@ -48,7 +49,7 @@ static bool sighup{false};
  *  Print the help.
  */
 static void print_help() {
-  std::cout << help_msg << std::endl;
+  std::cout << "USAGE: cbwd configuration_file" << std::endl;
 }
 
 /**
@@ -57,10 +58,20 @@ static void print_help() {
  * @param cfg The new configuration to set.
  */
 static void apply_new_configuration(configuration const& cfg) {
-  if (config.get_log_filename() != cfg.get_log_filename()) {
-    log.reset(new logging::file(cfg.get_log_filename()));
-    logging::manager::instance().log_on(log);
-  }
+  auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+  console_sink->set_level(spdlog::level::warn);
+  console_sink->set_pattern("[cbwd] [%^%l%$] %v");
+
+  auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+      cfg.get_log_filename(), false);
+  file_sink->set_level(spdlog::level::trace);
+
+  if (config.get_log_filename() != cfg.get_log_filename())
+    logger.reset(new spdlog::logger("cbwd", {console_sink, file_sink}));
+  else
+    logger.reset(new spdlog::logger("cbwd", {console_sink}));
+
+  logger->flush_on(spdlog::level::trace);
 
   std::set<std::string> to_update;
   std::set<std::string> to_delete;
@@ -69,9 +80,8 @@ static void apply_new_configuration(configuration const& cfg) {
   // Old configs that aren't present in the new should be deleted.
   // Old configs that are present in the new should be updated
   // or deleted/recreated.
-  for (configuration::instance_map::const_iterator
-           it(config.get_instances_configuration().begin()),
-       end(config.get_instances_configuration().end());
+  for (auto it = config.get_instances_configuration().begin(),
+            end = config.get_instances_configuration().end();
        it != end; ++it) {
     instance_configuration new_config(
         cfg.get_instance_configuration(it->first));
@@ -80,17 +90,13 @@ static void apply_new_configuration(configuration const& cfg) {
     else if (!it->second.same_child(new_config)) {
       to_delete.insert(it->first);
       to_create.insert(it->first);
-    } else {
+    } else
       to_update.insert(it->first);
-    }
   }
 
   // Delete old processes.
-  for (std::set<std::string>::const_iterator it(to_delete.begin()),
-       end(to_delete.end());
-       it != end; ++it) {
-    std::unordered_map<std::string, instance*>::iterator found(
-        instances.find(*it));
+  for (auto it = to_delete.begin(), end = to_delete.end(); it != end; ++it) {
+    auto found = instances.find(*it);
     if (found != instances.end()) {
       instance* to_remove{found->second};
       instances.erase(found);
@@ -161,8 +167,7 @@ static void set_signal_handlers() {
   if (::sigaction(SIGTERM, &sig, nullptr) < 0 ||
       ::sigaction(SIGINT, &sig, nullptr) < 0 ||
       ::sigaction(SIGHUP, &sig, nullptr) < 0)
-    throw com::centreon::broker::exceptions::msg()
-        << "can't set the signal handlers";
+    throw msg_fmt("can't set the signal handlers");
 }
 
 /**
@@ -175,6 +180,13 @@ static void set_signal_handlers() {
  */
 int main(int argc, char** argv) {
   // Check arguments.
+
+  auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+  console_sink->set_level(spdlog::level::warn);
+  console_sink->set_pattern("[cbwd] [%^%l%$] %v");
+  logger.reset(new spdlog::logger("cbwd", {console_sink}));
+  logger->flush_on(spdlog::level::trace);
+
   if (argc != 2 || ::strcmp(argv[1], "-h") == 0) {
     print_help();
     return 0;
@@ -183,14 +195,13 @@ int main(int argc, char** argv) {
   config_filename = argv[1];
 
   configuration config;
+
   try {
     configuration_parser parser;
     config = parser.parse(config_filename);
   } catch (std::exception const& e) {
-    std::cout << "ERROR: could not parse the configuration file '"
-              << config_filename << "': " << e.what() << '\n';
-    logging::error(logging::medium)
-        << "watchdog: could not parse the new configuration: " << e.what();
+    logger->error("Could not parse the configuration file '{}': {}",
+                  config_filename, e.what());
     return 2;
   }
 
@@ -207,6 +218,8 @@ int main(int argc, char** argv) {
       int status, stopped_pid;
       stopped_pid = waitpid(0, &status, WNOHANG);
       if (stopped_pid > 0) {
+        logger->error("cbd instance with PID {} has stopped, attempt to restart it",
+            stopped_pid);
         for (std::unordered_map<std::string, instance*>::iterator
                  it = instances.begin(),
                  end = instances.end();
@@ -223,9 +236,9 @@ int main(int argc, char** argv) {
          */
         freq++;
         if (freq / instances.size() > 5) {
-          logging::error(logging::medium)
-              << "watchdog: cbd seems to stop too many times, you must look at "
-                 "its configuration. The watchdog loop is slow down";
+          logger->error(
+              "cbd seems to stop too many times, you must look at "
+              "its configuration. The watchdog loop is slow down");
         } else
           timeout = 0;
       } else
@@ -239,9 +252,8 @@ int main(int argc, char** argv) {
           config = parser.parse(config_filename);
           apply_new_configuration(config);
         } catch (std::exception const& e) {
-          logging::error(logging::medium)
-              << "watchdog: could not parse the new configuration: "
-              << e.what();
+          logger->error("Could not parse the new configuration: {}",
+                        e.what());
         }
         sighup = false;
         continue;

@@ -146,41 +146,39 @@ state parser::parse(std::string const& file) {
       else if (object.first == "output") {
         if (object.second.is_array()) {
           for (Json const& node : object.second.array_items()) {
-            endpoint out;
+            endpoint out(endpoint::io_type::output);
             out.read_filters.insert("all");
             out.write_filters.insert("all");
             _parse_endpoint(node, out);
             retval.endpoints().push_back(out);
           }
         } else if (object.second.is_object()) {
-          endpoint out;
+          endpoint out(endpoint::io_type::output);
           out.read_filters.insert("all");
           out.write_filters.insert("all");
           _parse_endpoint(object.second, out);
           retval.endpoints().push_back(out);
-        } else {
+        } else
           throw exceptions::msg() << "config parser: cannot parse key '"
                                   << "'output':  value type must be an object";
-        }
       }
 
       else if (object.first == "input") {
         if (object.second.is_array()) {
           for (Json const& node : object.second.array_items()) {
-            endpoint in;
+            endpoint in(endpoint::io_type::input);
             in.read_filters.insert("all");
             _parse_endpoint(node, in);
             retval.endpoints().push_back(in);
           }
         } else if (object.second.is_object()) {
-          endpoint in;
+          endpoint in(endpoint::io_type::input);
           in.read_filters.insert("all");
           _parse_endpoint(object.second, in);
           retval.endpoints().push_back(in);
-        } else {
+        } else
           throw exceptions::msg() << "config parser: cannot parse key '"
                                   << "'input':  value type must be an object";
-        }
       }
 
       else if (object.first == "logger") {

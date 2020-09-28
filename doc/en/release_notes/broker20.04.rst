@@ -16,13 +16,13 @@ considered as UTF-8 strings whereas they were not.
 Centreon Broker 20.04.7
 =======================
 
-*********
-Bug fixes
-*********
+************
+Enhancements
+************
 
-Contention
-==========
-Conflict manager configuration is easier and more flexible.
+Conflict manager
+================
+Code improved and should be faster during Broker restart.
 
 =======================
 Centreon Broker 20.04.6
@@ -31,6 +31,11 @@ Centreon Broker 20.04.6
 *********
 Bug fixes
 *********
+
+Broker reload with BAM configuration
+====================================
+Centreon broker could not recover if configured with bam, after a restart of the
+database.
 
 Segfault possible during a Mariadb server restart
 =================================================

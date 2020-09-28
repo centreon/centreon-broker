@@ -19,79 +19,52 @@
 #define CENTREON_BROKER_TCP_INC_COM_CENTREON_BROKER_TCP_TCP_ASYNC_HH_
 
 #include <asio.hpp>
+#include <list>
 #include <queue>
 #include <thread>
 #include <unordered_map>
-#include "com/centreon/broker/namespace.hh"
+
+#include "com/centreon/broker/tcp/tcp_connection.hh"
 
 CCB_BEGIN()
 namespace tcp {
 
-typedef std::vector<char> async_buf;
-typedef std::queue<async_buf> async_queue;
-
-struct tcp_con {
-  async_buf _work_buffer;
-  async_queue _buffer_queue;
-  std::unique_ptr<asio::steady_timer> _timer;
-
-  bool _closing;
-  bool _timeout;
-
-  // waiting for data
-  std::condition_variable _wait_socket_event;
-
-  tcp_con() : _timer{nullptr}, _closing{false}, _timeout{false} {};
-};
-
-struct tcp_accept {
-  // waiting for data
-  std::condition_variable _wait_bind_event;
-  std::unique_ptr<asio::steady_timer> _timer;
-  std::system_error _ec;
-
-  std::mutex _acc_lock;
-
-  bool _timeout;
-  bool _accept_ok;
-
-  tcp_accept() : _timer{nullptr}, _timeout{false}, _accept_ok{false} {}
-};
-
 class tcp_async {
   asio::io_context _io_context;
-  asio::io_context::strand _strand;
-  std::thread _async_thread;
+  asio::io_service::work _worker;
+  std::vector<std::thread> _pool;
   std::mutex _m_read_data;
-  std::atomic_bool _closed;
+  std::mutex _closed_m;
+  bool _closed;
 
-  std::unordered_map<int, tcp_con> _read_data;
+  /* The acceptors open by this tcp_async */
+  std::list<std::shared_ptr<asio::ip::tcp::acceptor>> _acceptor;
+
+  /* Connections opened by acceptors not already got by streams */
+  std::mutex _acceptor_con_m;
+  std::condition_variable _acceptor_con_cv;
+  std::unordered_multimap<asio::ip::tcp::acceptor*, tcp_connection::pointer>
+      _acceptor_available_con;
 
   tcp_async();
   ~tcp_async();
-
-  void _async_job();
-  void _async_read_cb(asio::ip::tcp::socket& socket,
-                      int fd,
-                      std::error_code const& ec,
-                      std::size_t bytes);
-  void _async_timeout_cb(int fd, std::error_code const& ec);
-  void _async_accept_cb(std::error_code const& err, std::shared_ptr<tcp_accept> acc_data);
-  void _async_acc_timeout_cb(std::error_code const& ec, std::shared_ptr<tcp_accept> acc_data, asio::ip::tcp::acceptor &acc);
+  void _start();
+  void _stop();
 
  public:
-  void register_socket(asio::ip::tcp::socket& socket);
-  void unregister_socket(asio::ip::tcp::socket& socket, bool sync);
+  std::shared_ptr<asio::ip::tcp::acceptor> create_acceptor(uint16_t port);
+  void start_acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor);
+  void stop_acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor);
 
-  async_buf wait_for_packet(asio::ip::tcp::socket& socket,
-                            time_t deadline,
-                            bool& disconnected,
-                            bool& timeout);
-
-  bool wait_for_accept(asio::ip::tcp::socket& socket, asio::ip::tcp::acceptor& acc,
-                       std::chrono::seconds timeout);
-
-  asio::io_context& get_io_ctx();
+  std::shared_ptr<tcp_connection> create_connection(std::string const& address,
+                                                    uint16_t port);
+  void remove_acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor);
+  void handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
+                     tcp_connection::pointer new_connection,
+                     const asio::error_code& error);
+  tcp_connection::pointer get_connection(
+      std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
+      uint32_t timeout_s);
 
   static tcp_async& instance();
 };

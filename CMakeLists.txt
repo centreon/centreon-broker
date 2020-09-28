@@ -30,6 +30,13 @@ endif ()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 add_definitions("-D_GLIBCXX_USE_CXX11_ABI=0")
 
+# With ASIO DEBUGGING ENABLED
+option(WITH_DEBUG_ASIO "Add the Asio debugging flags." OFF)
+if (WITH_DEBUG_ASIO)
+  set(CMAKE_BUILD_TYPE Debug)
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DASIO_ENABLE_BUFFER_DEBUGGING -DASIO_ENABLE_HANDLER_TRACKING")
+endif ()
+
 # With libasan
 option(WITH_ASAN "Add the libasan to check memory leaks and other memory issues." OFF)
 if (WITH_ASAN)
@@ -376,7 +383,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/bbdo/connector.cc
   ${SRC_DIR}/bbdo/factory.cc
   ${SRC_DIR}/bbdo/input.cc
-  ${SRC_DIR}/bbdo/input_buffer.cc
   ${SRC_DIR}/bbdo/internal.cc
   ${SRC_DIR}/bbdo/output.cc
   ${SRC_DIR}/bbdo/stream.cc
@@ -446,7 +452,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/multiplexing/hooker.cc
   ${SRC_DIR}/multiplexing/muxer.cc
   ${SRC_DIR}/multiplexing/publisher.cc
-  ${SRC_DIR}/multiplexing/subscriber.cc
   ${SRC_DIR}/mysql.cc
   ${SRC_DIR}/database/mysql_bind.cc
   ${SRC_DIR}/database/mysql_column.cc
@@ -474,7 +479,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/bbdo/connector.hh
   ${INC_DIR}/bbdo/factory.hh
   ${INC_DIR}/bbdo/input.hh
-  ${INC_DIR}/bbdo/input_buffer.hh
   ${INC_DIR}/bbdo/internal.hh
   ${INC_DIR}/bbdo/output.hh
   ${INC_DIR}/bbdo/stream.hh

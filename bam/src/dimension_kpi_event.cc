@@ -163,6 +163,8 @@ mapping::entry const dimension_kpi_event::entries[] = {
     mapping::entry()};
 
 // Operations.
-static io::data* new_dimension_kpi_event() { return new dimension_kpi_event; }
+static io::data* new_dimension_kpi_event() {
+  return new dimension_kpi_event;
+}
 io::event_info::event_operations const dimension_kpi_event::operations = {
     &new_dimension_kpi_event};

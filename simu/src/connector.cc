@@ -46,22 +46,6 @@ connector::connector(connector const& other)
 connector::~connector() {}
 
 /**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _lua_script = other._lua_script;
-    _conf_params = other._conf_params;
-  }
-  return (*this);
-}
-
-/**
  *  Set connection parameters.
  *
  *  @param[in] lua_script              The Lua script to load
@@ -81,5 +65,5 @@ void connector::connect_to(
  *  @return a lua connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return std::shared_ptr<io::stream>(new stream(_lua_script, _conf_params));
+  return std::make_shared<stream>(_lua_script, _conf_params);
 }

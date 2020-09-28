@@ -18,9 +18,12 @@
  */
 
 #include "com/centreon/broker/tcp/connector.hh"
+
 #include <gtest/gtest.h>
+
 #include <chrono>
 #include <thread>
+
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -47,25 +50,8 @@ class TcpConnector : public testing::Test {
   std::thread _thread;
 };
 
-TEST_F(TcpConnector, InvalidHost) {
-  tcp::connector connector;
-
-  connector.connect_to("htrekf';kfdsa'", test_port);
-  ASSERT_THROW(connector.open(), exceptions::msg);
-}
-
-TEST_F(TcpConnector, NoConnection) {
-  tcp::connector connector;
-
-  connector.connect_to(test_addr, 2);
-  ASSERT_THROW(connector.open(), exceptions::msg);
-}
-
 TEST_F(TcpConnector, Timeout) {
-  tcp::connector connector;
-
-  connector.connect_to(test_addr, test_port);
-  connector.set_read_timeout(1);
+  tcp::connector connector(test_addr, test_port, 1);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::data> data{new io::raw()};
@@ -74,16 +60,13 @@ TEST_F(TcpConnector, Timeout) {
 }
 
 TEST_F(TcpConnector, Simple) {
-  tcp::connector connector;
-
-  connector.connect_to(test_addr, test_port);
-  connector.set_read_timeout(-1);
+  tcp::connector connector(test_addr, test_port, -1);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::raw> data{new io::raw()};
   std::shared_ptr<io::data> data2{new io::raw()};
 
-  data->append("PING\n");
+  data->append(std::string("PING\n"));
   io->write(data);
 
   ASSERT_TRUE(io->peer() == "tcp://127.0.0.1:4242");
@@ -95,16 +78,13 @@ TEST_F(TcpConnector, Simple) {
 }
 
 TEST_F(TcpConnector, ReadAfterTimeout) {
-  tcp::connector connector;
-
-  connector.connect_to(test_addr, test_port);
-  connector.set_read_timeout(-1);
+  tcp::connector connector(test_addr, test_port, -1);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::raw> data{new io::raw()};
   std::shared_ptr<io::data> data2{new io::raw()};
 
-  data->append("SERV_DELAY\n");
+  data->append(std::string("SERV_DELAY\n"));
   io->write(data);
 
   ASSERT_FALSE(io->read(data2, ::time(nullptr) + 1));
@@ -117,16 +97,13 @@ TEST_F(TcpConnector, ReadAfterTimeout) {
 }
 
 TEST_F(TcpConnector, MultipleSimple) {
-  tcp::connector connector;
-
-  connector.connect_to(test_addr, test_port);
-  connector.set_read_timeout(-1);
+  tcp::connector connector(test_addr, test_port, -1);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::raw> data{new io::raw()};
   std::shared_ptr<io::data> data2{new io::raw()};
 
-  data->append("PING\n");
+  data->append(std::string("PING\n"));
   io->write(data);
 
   ASSERT_TRUE(io->read(data2, ::time(nullptr) + 5));

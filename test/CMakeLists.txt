@@ -59,8 +59,6 @@ target_link_libraries(rpc_client berpc ${grpc_LIBS} ${OpenSSL_LIBS} ${c-ares_LIB
 
 add_executable(ut
   # Core sources.
-  ${TESTS_DIR}/bbdo/input_buffer/erase.cc
-  ${TESTS_DIR}/bbdo/input_buffer/extract.cc
   ${TESTS_DIR}/bbdo/output.cc
   ${TESTS_DIR}/bbdo/read.cc
   ${TESTS_DIR}/ceof/ceof_parser/parse.cc
@@ -93,8 +91,6 @@ add_executable(ut
   ${TESTS_DIR}/multiplexing/publisher/write.cc
   ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
   ${TESTS_DIR}/processing/acceptor.cc
-  ${TESTS_DIR}/processing/temporary_endpoint.cc
-  ${TESTS_DIR}/processing/temporary_stream.cc
   ${TESTS_DIR}/processing/feeder.cc
   ${TESTS_DIR}/processing/thread.cc
   ${TESTS_DIR}/rpc/brokerrpc.cc

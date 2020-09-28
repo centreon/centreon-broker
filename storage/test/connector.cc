@@ -32,7 +32,7 @@ TEST(StorageFactory, Factory) {
   database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
                         "centreon_storage", 5, true, 5);
   std::shared_ptr<persistent_cache> cache;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
 
   storage::factory factory;
@@ -62,7 +62,7 @@ TEST(StorageFactory, FactoryWithFullConf) {
   database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
                         "centreon_storage", 5, true, 5);
   std::shared_ptr<persistent_cache> cache;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
 
   storage::factory factory;

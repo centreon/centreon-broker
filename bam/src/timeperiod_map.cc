@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/timeperiod_map.hh"
+
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -90,8 +91,7 @@ com::centreon::broker::time::timeperiod::ptr timeperiod_map::get_timeperiod(
  *  @param[in] id   The id of the timeperiod.
  *  @param[in] ptr  A ptr to the timeperiod to add.
  */
-void timeperiod_map::add_timeperiod(uint32_t id,
-                                    time::timeperiod::ptr ptr) {
+void timeperiod_map::add_timeperiod(uint32_t id, time::timeperiod::ptr ptr) {
   _map[id] = ptr;
 }
 

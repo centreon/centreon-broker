@@ -27,7 +27,7 @@
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/mysql_manager.hh"
-#include "com/centreon/broker/processing/thread.hh"
+#include "com/centreon/broker/processing/endpoint.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;

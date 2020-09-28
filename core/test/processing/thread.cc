@@ -46,6 +46,7 @@ class DummyThread : public bthread {
   }
 
   bool isRunning() { return is_running(); }
+  uint32_t _get_queued_events() const override { return 0; }
 };
 
 class TestThread : public ::testing::Test {

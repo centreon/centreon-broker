@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,29 +19,34 @@
 
 #include "com/centreon/broker/tcp/connector.hh"
 
+#include <fmt/format.h>
+
 #include <memory>
 #include <sstream>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/stream.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
- *  Default constructor.
+ * @brief Constructor of the connector that will connect to the given host at
+ * the given port. read_timeout is a duration in seconds or -1 if no limit.
+ *
+ * @param host The host to connect to.
+ * @param port The port used for the connection.
+ * @param read_timeout The read timeout in seconds or -1 if no duration.
  */
-connector::connector()
-    : io::endpoint(false), _port(0), _read_timeout(-1), _write_timeout(-1) {}
+connector::connector(const std::string& host,
+                     uint16_t port,
+                     int32_t read_timeout)
+    : io::endpoint(false),
+      _host(host),
+      _port(port),
+      _read_timeout(read_timeout) {}
 
 /**
  *  Destructor.
@@ -49,94 +54,19 @@ connector::connector()
 connector::~connector() {}
 
 /**
- *  Set connection parameters.
+ * @brief Connect to the remote host.
  *
- *  @param[in] host  Host to connect to.
- *  @param[in] port  Port to connect to.
- */
-void connector::connect_to(std::string const& host, unsigned short port) {
-  _host = host;
-  _port = port;
-}
-
-/**
- *  Connect to the remote host.
+ * @return The TCP connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
-  log_v2::tcp()->info("TCP: connecting to {0}:{1}", _host, _port);
-  logging::info(logging::high)
-      << "TCP: connecting to " << _host << ":" << _port;
-  std::string connection_name{_host + ":" + std::to_string(_port)};
-
-  std::shared_ptr<asio::ip::tcp::socket> sock;
+  log_v2::tcp()->info("TCP: connecting to {}:{}", _host, _port);
   try {
-    sock.reset(new asio::ip::tcp::socket(tcp_async::instance().get_io_ctx()));
-    asio::ip::tcp::resolver resolver{tcp_async::instance().get_io_ctx()};
-    asio::ip::tcp::resolver::query query{_host, std::to_string(_port)};
-    asio::ip::tcp::resolver::iterator it{resolver.resolve(query)};
-    asio::ip::tcp::resolver::iterator end;
-
-    std::error_code err{std::make_error_code(std::errc::host_unreachable)};
-
-    // it can resolve to multiple addresses like ipv4 and ipv6
-    // we need to try all to find the first available socket
-    while (err && it != end) {
-      sock->connect(*it, err);
-
-      if (err)
-        sock->close();
-
-      ++it;
-    }
-
-    if (err) {
-      broker::exceptions::msg e;
-      log_v2::tcp()->error("TCP: could not connect to {0}:{1}",
-                                      _host, _port);
-      e << "TCP: could not connect to remote server '" << _host << ":" << _port
-        << "': " << err.message();
-      throw e;
-    }
-
-    asio::socket_base::keep_alive option{true};
-    sock->set_option(option);
-  } catch (std::system_error const& se) {
-    broker::exceptions::msg e;
-    log_v2::tcp()->error("TCP: could not resolve {0}:{1}", _host,
-                                    _port);
-    e << "TCP: could not resolve remote server '" << _host << ":" << _port
-      << "': " << se.what();
-    throw e;
+    std::shared_ptr<stream> retval =
+        std::make_shared<stream>(_host, _port, _read_timeout);
+    return retval;
+  } catch (const std::exception& e) {
+    log_v2::tcp()->debug("Unable to establish the connection: {}", e.what());
+    return std::shared_ptr<stream>();
   }
-  tcp_async::instance().register_socket(*sock);
-
-  log_v2::tcp()->info("TCP: successfully connected to {}",
-                                  connection_name);
-  logging::info(logging::high)
-      << "TCP: successfully connected to " << connection_name;
-
-  // Return stream.
-  std::shared_ptr<stream> s(std::make_shared<stream>(sock, connection_name));
-  s->set_read_timeout(_read_timeout);
-  s->set_write_timeout(_write_timeout);
-  return s;
-}
-
-/**
- *  Set read timeout.
- *
- *  @param[in] secs  Timeout in seconds.
- */
-void connector::set_read_timeout(int secs) {
-  _read_timeout = secs;
-}
-
-/**
- *  Set write timeout.
- *
- *  @param[in] secs  Timeout in seconds.
- */
-void connector::set_write_timeout(int secs) {
-  _write_timeout = secs;
 }

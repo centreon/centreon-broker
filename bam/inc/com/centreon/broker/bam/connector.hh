@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -39,7 +40,7 @@ class connector : public io::endpoint {
   connector();
   connector(connector const& other);
   ~connector();
-  connector& operator=(connector const& other);
+  connector& operator=(connector const&) = delete;
   void connect_monitoring(std::string const& ext_cmd_file,
                           database_config const& db_cfg,
                           std::string const& storage_db_name,

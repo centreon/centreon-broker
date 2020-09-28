@@ -26,7 +26,7 @@ using namespace com::centreon::broker;
 
 TEST(TcpFactory, HasEndpoint) {
   tcp::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
 
   cfg.type = "ip";
   ASSERT_TRUE(fact.has_endpoint(cfg));
@@ -42,7 +42,7 @@ TEST(TcpFactory, HasEndpoint) {
 
 TEST(TcpFactory, Exception) {
   tcp::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 
@@ -51,7 +51,7 @@ TEST(TcpFactory, Exception) {
 
 TEST(TcpFactory, Acceptor) {
   tcp::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 
@@ -68,7 +68,7 @@ TEST(TcpFactory, Acceptor) {
 
 TEST(TcpFactory, Connector) {
   tcp::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 

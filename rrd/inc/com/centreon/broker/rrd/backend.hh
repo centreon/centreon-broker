@@ -21,6 +21,7 @@
 
 #include <ctime>
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()

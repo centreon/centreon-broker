@@ -20,25 +20,27 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/watchdog/inc/com/centreon/broker/watchdog")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/watchdog/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/watchdog/test")
-include_directories("${PROJECT_SOURCE_DIR}/watchdog/inc/")
+include_directories(${PROJECT_SOURCE_DIR}/watchdog/inc/
+                    ${PROJECT_SOURCE_DIR}/neb/inc/
+)
 
 # Watchdog binary.
 set(WATCHDOG "cbwd")
 set(WATCHDOG "${WATCHDOG}" PARENT_SCOPE)
 add_executable("${WATCHDOG}"
   # Sources.
-  "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/configuration.cc"
-  "${SRC_DIR}/configuration_parser.cc"
-  "${SRC_DIR}/instance.cc"
-  "${SRC_DIR}/instance_configuration.cc"
+  ${SRC_DIR}/main.cc
+  ${SRC_DIR}/configuration.cc
+  ${SRC_DIR}/configuration_parser.cc
+  ${SRC_DIR}/instance.cc
+  ${SRC_DIR}/instance_configuration.cc
   # Headers.
-  "${INC_DIR}/configuration.hh"
-  "${INC_DIR}/configuration_parser.hh"
-  "${INC_DIR}/instance.hh"
-  "${INC_DIR}/instance_configuration.hh"
+  ${INC_DIR}/configuration.hh
+  ${INC_DIR}/configuration_parser.hh
+  ${INC_DIR}/instance.hh
+  ${INC_DIR}/instance_configuration.hh
 )
-target_link_libraries("${WATCHDOG}" "roker" ${json11_LIBS})
+target_link_libraries(${WATCHDOG} pthread ${fmt_LIBS} ${spdlog_LIBS} ${json11_LIBS})
 
 if (WITH_WATCHDOG_TESTS)
   # Testing.

@@ -23,6 +23,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 #include "com/centreon/broker/bam/ba_duration_event.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/computable.hh"

@@ -18,8 +18,10 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <cstdlib>
 #include <iostream>
+
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -31,9 +33,9 @@
 
 using namespace com::centreon::broker;
 
-#define MSG1 "0123456789abcdef"
-#define MSG2 "foo bar baz"
-#define MSG3 "last message with qux"
+const std::string MSG1("0123456789abcdef");
+const std::string MSG2("foo bar baz");
+const std::string MSG3("last message with qux");
 
 class Unhook : public testing::Test {
  public:
@@ -105,15 +107,15 @@ TEST_F(Unhook, EngineWorks) {
 
     // Check subscriber content.
     {
-      char const* messages[] = {HOOKMSG1, MSG1, HOOKMSG2, MSG2, nullptr};
-      for (uint32_t i = 0; messages[i]; ++i) {
+      std::array<std::string, 4> messages{HOOKMSG1, MSG1, HOOKMSG2, MSG2};
+      for (auto& m : messages) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
         if (!d || d->type() != io::raw::static_type())
           throw exceptions::msg() << "error at step #2";
         else {
           std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(d));
-          if (strncmp(raw->const_data(), messages[i], strlen(messages[i])))
+          if (strncmp(raw->const_data(), m.c_str(), m.size()))
             throw exceptions::msg() << "error at step #3";
         }
       }

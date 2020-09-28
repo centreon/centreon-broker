@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/io/endpoint.hh"
-#include <iostream>
+
 #include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker::io;
@@ -45,22 +45,7 @@ endpoint::endpoint(endpoint const& other)
 /**
  *  Destructor.
  */
-endpoint::~endpoint() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-endpoint& endpoint::operator=(endpoint const& other) {
-  if (this != &other) {
-  _from = other._from;
-  _is_acceptor = other._is_acceptor;
-  }
-  return *this;
-}
+endpoint::~endpoint() noexcept {}
 
 /**
  *  Set the lower layer endpoint object of this endpoint.
@@ -78,7 +63,7 @@ void endpoint::from(std::shared_ptr<endpoint> endp) {
  *
  *  @return true if endpoint is an acceptor.
  */
-bool endpoint::is_acceptor() const throw() {
+bool endpoint::is_acceptor() const noexcept {
   return _is_acceptor;
 }
 
@@ -87,7 +72,7 @@ bool endpoint::is_acceptor() const throw() {
  *
  *  @return true if endpoint is a connector.
  */
-bool endpoint::is_connector() const throw() {
+bool endpoint::is_connector() const noexcept {
   return !_is_acceptor;
 }
 

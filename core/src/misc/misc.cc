@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/misc/misc.hh"
+
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <array>
 #include <cerrno>
 #include <chrono>
@@ -28,7 +30,9 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <stdexcept>
 #include <thread>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 
@@ -81,9 +85,9 @@ std::string misc::exec(std::string const& cmd) {
   std::string result;
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"),
                                                 pclose);
-  if (!pipe) {
+  if (!pipe)
     throw std::runtime_error("popen() failed!");
-  }
+
   while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
     result += buffer.data();
   }

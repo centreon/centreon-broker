@@ -18,16 +18,18 @@
 
 #include <fcntl.h>
 #include <rrd.h>
+
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <sstream>
 #ifdef __linux__
 #include <sys/sendfile.h>
 #endif  // Linux
+#include <fmt/format.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/creator.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
@@ -65,10 +67,9 @@ void creator::clear() {
        it != end; ++it) {
     tmpl_info info(it->first);
     ::close(it->second.fd);
-    std::ostringstream oss;
-    oss << _tmpl_path << "/tmpl_" << info.length << "_" << info.step << "_"
-        << info.value_type << ".rrd";
-    ::remove(oss.str().c_str());
+    ::remove(fmt::format("{}/tmpl_{}_{}_{}.rrd", _tmpl_path, info.length,
+                         info.step, info.value_type)
+                 .c_str());
   }
   _fds.clear();
 }
@@ -107,10 +108,8 @@ void creator::create(std::string const& filename,
   // Not is the cache, but we have enough space in the cache.
   // Create new entry.
   else if (_fds.size() < _cache_size) {
-    std::ostringstream oss;
-    oss << _tmpl_path << "/tmpl_" << length << "_" << step << "_" << value_type
-        << ".rrd";
-    std::string tmpl_filename(oss.str());
+    std::string tmpl_filename(fmt::format("{}/tmpl_{}_{}_{}.rrd", _tmpl_path,
+                                          length, step, value_type));
 
     // Create new template.
     _open(tmpl_filename, length, from, step, value_type);
@@ -223,41 +222,35 @@ void creator::_open(std::string const& filename,
   // DS.
   std::string ds;
   {
-    std::ostringstream oss;
-    oss << "DS:value:";
+    const char* tt;
     switch (value_type) {
       case storage::perfdata::absolute:
-        oss << "ABSOLUTE";
+        tt = "ABSOLUTE";
         break;
       case storage::perfdata::counter:
-        oss << "COUNTER";
+        tt = "COUNTER";
         break;
       case storage::perfdata::derive:
-        oss << "DERIVE";
+        tt = "DERIVE";
         break;
       default:
-        oss << "GAUGE";
-    };
-    oss << ":" << step * 10 << ":U:U";
-    ds = oss.str();
+        tt = "GAUGE";
+    }
+    ds = fmt::format("DS:value:{}:{}:U:U", tt, step * 10);
     argv[argc++] = ds.c_str();
   }
 
   // Base RRA.
   std::string rra1;
   {
-    std::ostringstream oss;
-    oss << "RRA:AVERAGE:0.5:" << step << ":" << length / step + 1;
-    rra1 = oss.str();
+    rra1 = fmt::format("RRA:AVERAGE:0.5:{}:{}", step, length / step + 1);
     argv[argc++] = rra1.c_str();
   }
 
   // Aggregate RRA.
   std::string rra2;
   if (step < 3600) {
-    std::ostringstream oss;
-    oss << "RRA:AVERAGE:0.5:" << 3600 << ":" << length / 3600 + 1;
-    rra2 = oss.str();
+    rra2 = fmt::format("RRA:AVERAGE:0.5:3600:{}", length / 3600 + 1);
     argv[argc++] = rra2.c_str();
   }
 
@@ -271,8 +264,8 @@ void creator::_open(std::string const& filename,
   // Create RRD file.
   rrd_clear_error();
   if (rrd_create_r(filename.c_str(), 1, from, argc, argv))
-    throw(exceptions::open() << "RRD: could not create file '" << filename
-                             << "': " << rrd_get_error());
+    throw exceptions::open() << "RRD: could not create file '" << filename
+                             << "': " << rrd_get_error();
 }
 
 /**
@@ -290,8 +283,8 @@ void creator::_read_write(int out_fd,
   // Reset position of in_fd.
   if (lseek(in_fd, 0, SEEK_SET) == (off_t)-1) {
     char const* msg(strerror(errno));
-    throw(exceptions::open()
-          << "RRD: could not create file '" << filename << "': " << msg);
+    throw exceptions::open()
+        << "RRD: could not create file '" << filename << "': " << msg;
   }
 
   char buffer[4096];

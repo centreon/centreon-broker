@@ -45,14 +45,16 @@ namespace processing {
  *  Take events from a source and send them to a destination.
  */
 class feeder : public stat_visitable {
+  enum state {
+    stopped,
+    running,
+    finished
+  };
   // Condition variable used when waiting for the thread to finish
   std::thread _thread;
-  bool _started;
-  mutable std::mutex _started_m;
-  std::condition_variable _started_cv;
-  bool _stopped;
-  mutable std::mutex _stopped_m;
-  std::condition_variable _stopped_cv;
+  state _state;
+  mutable std::mutex _state_m;
+  std::condition_variable _state_cv;
 
   std::atomic_bool _should_exit;
 
@@ -78,8 +80,8 @@ class feeder : public stat_visitable {
   feeder(feeder const&) = delete;
   feeder& operator=(feeder const&) = delete;
   bool is_finished() const noexcept;
-  void start();
-  void exit();
+ protected:
+  uint32_t _get_queued_events() const override;
 };
 }  // namespace processing
 

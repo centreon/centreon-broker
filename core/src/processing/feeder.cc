@@ -48,41 +48,48 @@ feeder::feeder(std::string const& name,
                std::unordered_set<uint32_t> const& read_filters,
                std::unordered_set<uint32_t> const& write_filters)
     : stat_visitable(name),
-      _started{false},
-      _stopped{false},
+      _state{feeder::stopped},
       _should_exit{false},
       _client(client),
       _subscriber(name, false) {
+  if (!client)
+    throw exceptions::msg()
+        << "could not process '" << _name << "' with no client stream";
+
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
-  // By default, we assume the feeder is already connected.
+
   set_last_connection_attempt(timestamp::now());
   set_last_connection_success(timestamp::now());
   set_state("connecting");
+  std::unique_lock<std::mutex> lck(_state_m);
+  _thread = std::thread(&feeder::_callback, this);
+  _state_cv.wait(lck, [&state = this->_state] { return state != feeder::stopped; });
 }
 
 /**
  *  Destructor.
  */
 feeder::~feeder() {
-  exit();
-}
-
-void feeder::exit() {
-  std::unique_lock<std::mutex> lock(_stopped_m);
-  if (_started) {
-    if (!_should_exit) {
+  std::unique_lock<std::mutex> lock(_state_m);
+  switch (_state) {
+    case stopped:
+      _state = finished;
+      break;
+    case running:
       _should_exit = true;
-      _stopped_cv.wait(lock, [this] { return _stopped; });
+      _state_cv.wait(lock, [this] { return _state == finished; });
       _thread.join();
-      _started = false;
-    }
+      break;
+    case finished:
+      _thread.join();
+      break;
   }
 }
 
 bool feeder::is_finished() const noexcept {
-  std::lock_guard<std::mutex> lock(_started_m);
-  return !_started && _should_exit;
+  std::lock_guard<std::mutex> lock(_state_m);
+  return !_state && _should_exit;
 }
 
 /**
@@ -117,34 +124,19 @@ void feeder::_forward_statistic(json11::Json::object& tree) {
   _subscriber.get_muxer().statistics(tree);
 }
 
-void feeder::start() {
-  std::unique_lock<std::mutex> lock(_started_m);
-  _stopped = false;
-  if (!_client)
-      throw exceptions::msg()
-            << "could not process '" << _name << "' with no client stream";
-
-  if (!_started) {
-    _should_exit = false;
-    _thread = std::thread(&feeder::_callback, this);
-    _started_cv.wait(lock, [this] { return _started; });
-  }
-}
-
 void feeder::_callback() noexcept {
-  assert(_client);
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' is starting";
   time_t fill_stats_time = time(nullptr);
-  std::unique_lock<std::mutex> lock(_started_m);
+  std::unique_lock<std::mutex> lock(_state_m);
 
   try {
     set_state("connected");
     bool stream_can_read(true);
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
-    _started = true;
-    _started_cv.notify_all();
+    _state = feeder::running;
+    _state_cv.notify_all();
     lock.unlock();
     while (!_should_exit) {
       // Read from stream.
@@ -210,9 +202,9 @@ void feeder::_callback() noexcept {
         << "'";
   }
 
-  std::unique_lock<std::mutex> lock_stop(_stopped_m);
-  _stopped = true;
-  _stopped_cv.notify_all();
+  std::unique_lock<std::mutex> lock_stop(_state_m);
+  _state = feeder::finished;
+  _state_cv.notify_all();
   lock_stop.unlock();
 
   {
@@ -223,4 +215,8 @@ void feeder::_callback() noexcept {
   }
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' will exit";
+}
+
+uint32_t feeder::_get_queued_events() const {
+  return _subscriber.get_muxer().get_event_queue_size();
 }

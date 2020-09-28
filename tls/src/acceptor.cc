@@ -63,21 +63,6 @@ acceptor::acceptor(acceptor const& right) : io::endpoint(right) {
 acceptor::~acceptor() {}
 
 /**
- *  Assignement operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-acceptor& acceptor::operator=(acceptor const& right) {
-  if (this != &right) {
-    io::endpoint::operator=(right);
-    _internal_copy(right);
-  }
-  return (*this);
-}
-
-/**
  *  @brief Try to accept a new connection.
  *
  *  Wait for an incoming client through the underlying acceptor, perform
@@ -100,7 +85,7 @@ std::shared_ptr<io::stream> acceptor::open() {
   std::shared_ptr<io::stream> new_stream;
   if (lower)
     new_stream = open(lower);
-  return (new_stream);
+  return new_stream;
 }
 
 /**

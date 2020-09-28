@@ -61,21 +61,6 @@ connector::connector(connector const& right) : io::endpoint(right) {
 connector::~connector() {}
 
 /**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& right) {
-  if (this != &right) {
-    io::endpoint::operator=(right);
-    _internal_copy(right);
-  }
-  return (*this);
-}
-
-/**
  *  Connect to the remote TLS peer.
  *
  *  @return New connected stream.
@@ -86,7 +71,7 @@ std::shared_ptr<io::stream> connector::open() {
   std::shared_ptr<io::stream> new_stream;
   if (lower)
     new_stream = open(lower);
-  return (new_stream);
+  return new_stream;
 }
 
 /**

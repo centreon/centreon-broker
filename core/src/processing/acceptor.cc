@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@
 
 #include "com/centreon/broker/processing/acceptor.hh"
 #include <unistd.h>
-#include <sstream>
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
@@ -35,7 +35,11 @@ using namespace com::centreon::broker::processing;
  *  @param[in] name       Name of the endpoint.
  */
 acceptor::acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name)
-    : bthread(name), _endp(endp), _retry_interval(30) {}
+    : endpoint(name),
+      _state(stopped),
+      _should_exit(false),
+      _endp(endp),
+      _retry_interval(30) {}
 
 /**
  *  Destructor.
@@ -48,23 +52,15 @@ acceptor::~acceptor() {
  *  Accept a new incoming connection.
  */
 void acceptor::accept() {
-  static uint32_t connection_id(0);
+  static uint32_t connection_id = 0;
 
   // Try to accept connection.
   std::shared_ptr<io::stream> s(_endp->open());
   if (s) {
     // Create feeder thread.
-    std::string name;
-    {
-      std::ostringstream oss;
-      oss << _name << "-" << ++connection_id;
-      name = oss.str();
-    }
+    std::string name(fmt::format("{}-{}", _name, ++connection_id));
     std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
         name, s, _read_filters, _write_filters));
-
-    // Start feeder thread.
-    f->start();
 
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
@@ -75,49 +71,20 @@ void acceptor::accept() {
  *  Exit this thread.
  */
 void acceptor::exit() {
-  bthread::exit();
-}
-
-/**
- *  @brief Main routine.
- *
- *  Acceptors accepts clients and launch feeder threads.
- */
-void acceptor::run() {
-  // Run as long as no exit request was made.
-  while (!should_exit()) {
-    try {
-      _set_listening(true);
-      // Try to accept connection.
-      accept();
-    } catch (std::exception const& e) {
-      _set_listening(false);
-      // Log error.
-      logging::error(logging::high)
-          << "acceptor: endpoint '" << _name
-          << "' could not accept client: " << e.what();
-
-      // Sleep a while before reconnection.
-      logging::info(logging::medium)
-          << "acceptor: endpoint '" << _name << "' will wait "
-          << _retry_interval << "s before attempting to accept a new client";
-      time_t limit{time(nullptr) + _retry_interval};
-      while (!should_exit() && time(nullptr) < limit) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-      }
-    }
-
-    // Check for terminated feeders.
-    {
-      std::lock_guard<std::mutex> lock(_stat_mutex);
-      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;)
-        if ((*it)->is_finished())
-          it = _feeders.erase(it);
-        else
-          ++it;
-    }
+  std::unique_lock<std::mutex> lck(_state_m);
+  switch (_state) {
+    case stopped:
+      _state = finished;
+      break;
+    case running:
+      _should_exit = true;
+      _state_cv.wait(lck,
+                     [this] { return _state == acceptor::finished; });
+      _thread.join();
+      break;
+    case finished:
+      break;
   }
-  _set_listening(false);
 }
 
 /**
@@ -199,4 +166,70 @@ void acceptor::_forward_statistic(json11::Json::object& tree) {
 void acceptor::_set_listening(bool listening) noexcept {
   _listening = listening;
   set_state(listening ? "listening" : "disconnected");
+}
+
+uint32_t acceptor::_get_queued_events() const {
+  return 0;
+}
+
+/**
+ *  Start bthread.
+ */
+void acceptor::start() {
+  std::unique_lock<std::mutex> lock(_state_m);
+  if (_state == stopped) {
+    _should_exit = false;
+    _thread = std::thread(&acceptor::_callback, this);
+    _state_cv.wait(lock,
+                   [this] { return _state == acceptor::running; });
+  }
+}
+
+void acceptor::_callback() noexcept {
+  std::unique_lock<std::mutex> lock(_state_m);
+  _state = running;
+  _state_cv.notify_all();
+  lock.unlock();
+
+  // Run as long as no exit request was made.
+  while (!_should_exit) {
+    try {
+      _set_listening(true);
+      // Try to accept connection.
+      accept();
+    } catch (std::exception const& e) {
+      _set_listening(false);
+      // Log error.
+      logging::error(logging::high)
+          << "acceptor: endpoint '" << _name
+          << "' could not accept client: " << e.what();
+
+      // Sleep a while before reconnection.
+      logging::info(logging::medium)
+          << "acceptor: endpoint '" << _name << "' will wait "
+          << _retry_interval << "s before attempting to accept a new client";
+      time_t limit{time(nullptr) + _retry_interval};
+      while (!_should_exit && time(nullptr) < limit) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
+    }
+
+    // Check for terminated feeders.
+    {
+      std::lock_guard<std::mutex> lock(_stat_mutex);
+      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;)
+        if ((*it)->is_finished()) {
+          log_v2::core()->info("processing acceptor '{}' is finished", _name);
+          it = _feeders.erase(it);
+        }
+        else
+          ++it;
+    }
+  }
+  log_v2::core()->info("processing acceptor '{}' finished", _name);
+  _set_listening(false);
+
+  lock.lock();
+  _state = acceptor::finished;
+  _state_cv.notify_all();
 }

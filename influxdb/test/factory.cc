@@ -25,7 +25,7 @@ using namespace com::centreon::broker;
 
 TEST(InfluxDBFactory, HasEndpoint) {
   influxdb::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
 
   cfg.type = "tcp";
   ASSERT_FALSE(fact.has_endpoint(cfg));
@@ -37,7 +37,7 @@ TEST(InfluxDBFactory, HasEndpoint) {
 
 TEST(InfluxDBFactory, MissingParams) {
   influxdb::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   std::shared_ptr<persistent_cache> cache;
   bool is_acceptor;
 
@@ -64,7 +64,7 @@ TEST(InfluxDBFactory, MissingParams) {
 
 TEST(InfluxDBFactory, StatusException) {
   influxdb::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   std::shared_ptr<persistent_cache> cache;
   bool is_acceptor;
 
@@ -180,7 +180,7 @@ TEST(InfluxDBFactory, StatusException) {
 
 TEST(InfluxDBFactory, MetricException) {
   influxdb::factory fact;
-  config::endpoint cfg;
+  config::endpoint cfg(config::endpoint::io_type::output);
   std::shared_ptr<persistent_cache> cache;
   bool is_acceptor;
 

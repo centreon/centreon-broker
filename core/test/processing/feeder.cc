@@ -31,11 +31,11 @@ using namespace com::centreon::broker::processing;
 
 class TestStream : public io::stream {
  public:
-  bool read(std::shared_ptr<io::data>& d, time_t deadline) {
+  bool read(std::shared_ptr<io::data>&, time_t) {
     return true;
   }
 
-  int write(std::shared_ptr<io::data> const& d) {
+  int write(std::shared_ptr<io::data> const&) {
     return 1;
   }
 };
@@ -65,20 +65,11 @@ class TestFeeder : public ::testing::Test {
   std::unique_ptr<feeder> _feeder;
 };
 
-TEST_F(TestFeeder, ImmediateExit) {
-  ASSERT_NO_THROW(_feeder.reset());
-}
-
 TEST_F(TestFeeder, ImmediateStartExit) {
-  _feeder->start();
   ASSERT_NO_THROW(_feeder.reset());
 }
 
 TEST_F(TestFeeder, isFinished) {
-  // It never began.
-  ASSERT_FALSE(_feeder->is_finished());
-  _feeder->start();
-
   // It began
   ASSERT_FALSE(_feeder->is_finished());
   json11::Json::object tree;

@@ -19,261 +19,215 @@
 
 #include <functional>
 
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
 constexpr std::size_t async_buf_size = 16384;
 
+/**
+ * @brief Return the tcp_async singleton.
+ *
+ * @return A tcp_async singleton.
+ */
 tcp_async& tcp_async::instance() {
   static tcp_async instance;
   return instance;
 }
 
-async_buf tcp_async::wait_for_packet(asio::ip::tcp::socket& socket,
-                                     time_t deadline,
-                                     bool& disconnected,
-                                     bool& timeout) {
-  timeout = false;
-  disconnected = false;
-
-  std::unique_lock<std::mutex> lock(_m_read_data);
-  async_buf buf;
-  {
-    auto it = _read_data.find(socket.native_handle());
-    if (it != _read_data.end()) {
-      disconnected = it->second._closing;
-      // No data present we need to wait for deadline...
-      if (it->second._buffer_queue.empty() && !disconnected) {
-        // deadline passed
-        time_t t{time(nullptr)};
-        if (deadline != -1 && t > deadline) {
-          timeout = true;
-          return buf;
-        } else if (deadline != -1) {
-          it->second._timer.reset(new asio::steady_timer{
-              _io_context, std::chrono::seconds(deadline - t)});
-          it->second._timer->async_wait(std::bind(&tcp_async::_async_timeout_cb,
-                                                  this, socket.native_handle(),
-                                                  std::placeholders::_1));
-        }
-
-        it->second._wait_socket_event.wait(lock, [&]() -> bool {
-          if (it->second._closing) {
-            disconnected = true;
-          }
-
-          if (it->second._timeout)
-            timeout = true;
-
-          if (!it->second._buffer_queue.empty() || disconnected || timeout) {
-            if (it->second._timer) {
-              it->second._timer->cancel();
-              it->second._timer.reset(nullptr);
-            }
-            return true;
-          }
-
-          return false;
-        });
-      }
-
-      if (!it->second._buffer_queue.empty()) {
-        buf = std::move(it->second._buffer_queue.front());
-        it->second._buffer_queue.pop();
-      }
-    } else {
-      disconnected = true;
-    }
-  }
-  return buf;
+/**
+ * @brief tcp_aysnc constructor. It is private and should not be called
+ * directly.
+ */
+tcp_async::tcp_async() : _io_context(), _worker(_io_context), _closed{true} {
+  _start();
 }
 
-void tcp_async::_async_accept_cb(std::error_code const& ec,
-                                 std::shared_ptr<tcp_accept> acc_data) {
-  std::unique_lock<std::mutex> lock(acc_data->_acc_lock);
-  acc_data->_timer->cancel();
-  if (!ec)
-    acc_data->_accept_ok = true;
-  else
-    acc_data->_ec = std::system_error(ec);
-  acc_data->_wait_bind_event.notify_all();
-}
+void tcp_async::_start() {
+  std::lock_guard<std::mutex> lock(_closed_m);
+  if (_closed) {
+    _closed = false;
+    /* We fix the thread pool used by asio to hardware concurrency / 2 and at
+     * least, we want 2 threads. So in case of two sockets, one in and one out,
+     * they should be managed by those two threads. This is empirical, and maybe
+     * will be changed later. */
+    uint32_t count = std::max(std::thread::hardware_concurrency() / 2, 2u);
 
-void tcp_async::_async_acc_timeout_cb(std::error_code const& ec,
-                                      std::shared_ptr<tcp_accept> acc_data,
-                                      asio::ip::tcp::acceptor& acc) {
-  std::unique_lock<std::mutex> lock(acc_data->_acc_lock);
-
-  if (!ec) {
-    acc.cancel();
-    acc_data->_timeout = true;
-  }
-  acc_data->_wait_bind_event.notify_all();
-}
-
-bool tcp_async::wait_for_accept(asio::ip::tcp::socket& socket,
-                                asio::ip::tcp::acceptor& acc,
-                                std::chrono::seconds timeout) {
-  std::shared_ptr<tcp_accept> acc_data{std::make_shared<tcp_accept>()};
-
-  acc_data->_timer.reset(new asio::steady_timer{_io_context, timeout});
-  acc_data->_timer->async_wait(std::bind(&tcp_async::_async_acc_timeout_cb,
-                                         this, std::placeholders::_1, acc_data,
-                                         std::ref(acc)));
-
-  acc.async_accept(socket, std::bind(&tcp_async::_async_accept_cb, this,
-                                     std::placeholders::_1, acc_data));
-
-  std::unique_lock<std::mutex> m(acc_data->_acc_lock);
-  acc_data->_wait_bind_event.wait(m, [&acc_data]() -> bool {
-    if (acc_data->_accept_ok)
-      return true;
-    if (acc_data->_ec.code())
-      return true;
-    if (acc_data->_timeout)
-      return true;
-    return false;
-  });
-
-  if (acc_data->_accept_ok || socket.is_open())
-    return true;
-
-  if (acc_data->_ec.code()) {
-    if (acc_data->_ec.code().value() == ECANCELED)
-      return false;
-    throw acc_data->_ec;
-  }
-
-  return false;
-}
-
-void tcp_async::_async_timeout_cb(int fd, std::error_code const& ec) {
-  if (!ec) {
-    std::unique_lock<std::mutex> lock(_m_read_data);
-    std::unordered_map<int, tcp_con>::iterator it;
-    it = _read_data.find(fd);
-    if (it == _read_data.end())
-      return;
-
-    it->second._timeout = true;
-    it->second._wait_socket_event.notify_all();
+    for (uint32_t i = 0; i < count; i++)
+      _pool.emplace_back([this] { _io_context.run(); });
   }
 }
 
-void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
-                               int fd,
-                               std::error_code const& ec,
-                               std::size_t bytes) {
-  std::unique_lock<std::mutex> lock(_m_read_data);
-  std::unordered_map<int, tcp_con>::iterator it;
-  {
-    it = _read_data.find(fd);
-    if (it == _read_data.end())
-      return;
-  }
-
-  if (!ec) {
-    if (bytes != 0) {
-      log_v2::tcp()->trace(
-          "async_buf::async_read_cb incoming packet size: {}", bytes);
-      it->second._work_buffer.resize(bytes);
-      it->second._buffer_queue.push(std::move(it->second._work_buffer));
-      it->second._wait_socket_event.notify_all();
-
-      // refit buffer for next read
-      it->second._work_buffer.resize(async_buf_size);
-    }
-    socket.async_read_some(
-        asio::buffer(it->second._work_buffer, async_buf_size),
-        std::bind(&tcp_async::_async_read_cb, this, std::ref(socket), fd,
-                  std::placeholders::_1, std::placeholders::_2));
-  } else {
-    if (bytes != 0) {
-      it->second._work_buffer.resize(bytes);
-      it->second._buffer_queue.push(std::move(it->second._work_buffer));
-
-      it->second._work_buffer.resize(0);
-    }
-    log_v2::tcp()->warn(
-        "connection lost for: {0}:{1}",
-        socket.remote_endpoint().address().to_string(),
-        socket.remote_endpoint().port());
-
-    it->second._closing = true;
-    it->second._wait_socket_event.notify_all();
+/**
+ * @brief Stop the thread pool.
+ */
+void tcp_async::_stop() {
+  std::lock_guard<std::mutex> lock(_closed_m);
+  if (!_closed) {
+    _closed = true;
+    _io_context.stop();
+    for (auto& t : _pool)
+      t.join();
   }
 }
 
-void tcp_async::register_socket(asio::ip::tcp::socket& socket) {
-  int fd{socket.native_handle()};
-  {
-    std::unique_lock<std::mutex> lock(_m_read_data);
-    auto& data = _read_data[fd];
-
-    data._work_buffer.resize(async_buf_size);
-
-    socket.async_read_some(
-        asio::buffer(data._work_buffer, async_buf_size),
-        std::bind(&tcp_async::_async_read_cb, this, std::ref(socket),
-                  socket.native_handle(), std::placeholders::_1,
-                  std::placeholders::_2));
-  }
-}
-void tcp_async::unregister_socket(asio::ip::tcp::socket& socket, bool sync) {
-  int fd{socket.native_handle()};
-  if (!sync) {
-    bool done{false};
-
-    std::condition_variable cond;
-    std::mutex mut;
-    std::unique_lock<std::mutex> m(mut);
-
-    _strand.post([&] {
-      socket.shutdown(asio::ip::tcp::socket::shutdown_both);
-      socket.close();
-      std::unique_lock<std::mutex> m(mut);
-      done = true;
-      cond.notify_all();
-      m.unlock();
-    });
-
-    cond.wait(m, [&done]() -> bool { return done; });
-  }
-
-  std::unique_lock<std::mutex> lock(_m_read_data);
-  auto it = _read_data.find(fd);
-  if (it != _read_data.end()) {
-    _read_data.erase(it);
-  }
-}
-
-asio::io_context& tcp_async::get_io_ctx() {
-  return _io_context;
-}
-
-void tcp_async::_async_job() {
-  // Work is needed because we run io_context in a separated thread
-  // cf :
-  // https://www.boost.org/doc/libs/1_65_0/doc/html/boost_asio/reference/io_service__work.html
-  asio::io_service::work work(_io_context);
-
-  while (!_closed) {
-    try {
-      _io_context.run_one();
-    } catch (...) {
-    }
-  }
-}
-
-tcp_async::tcp_async() : _strand{_io_context}, _closed{false} {
-  _async_thread = std::thread(&tcp_async::_async_job, this);
-}
-
+/**
+ * @brief tcp_async destructor.
+ */
 tcp_async::~tcp_async() {
-  _closed = true;
-  _io_context.stop();
-  _async_thread.join();
+  _stop();
+}
+
+/**
+ * @brief If the acceptor given in parameter has established a connection.
+ * This method returns it. Otherwise, it returns an empty connection.
+ *
+ * @param acceptor The acceptor we want a connection to.
+ *
+ * @return A shared_ptr to a connection or nothing.
+ */
+tcp_connection::pointer tcp_async::get_connection(
+    std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
+    uint32_t timeout_s) {
+  std::unique_lock<std::mutex> lck(_acceptor_con_m);
+  if (_acceptor_con_cv.wait_for(lck, std::chrono::seconds(timeout_s),
+                                [this, a = acceptor.get()] {
+                                  return _acceptor_available_con.find(a) !=
+                                             _acceptor_available_con.end() ||
+                                         !a->is_open();
+                                })) {
+    auto found = _acceptor_available_con.find(acceptor.get());
+    if (found != _acceptor_available_con.end()) {
+      tcp_connection::pointer retval = found->second;
+      _acceptor_available_con.erase(found);
+      return retval;
+    }
+  }
+  return nullptr;
+}
+
+/**
+ * @brief Create an ASIO acceptor listening on the given port. Once it is
+ * operational, it begins to accept connections.
+ *
+ * @param port The port to listen on.
+ *
+ * @return The created acceptor as a shared_ptr.
+ */
+std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
+    uint16_t port) {
+  auto retval(std::make_shared<asio::ip::tcp::acceptor>(
+      _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)));
+
+  asio::ip::tcp::acceptor::reuse_address option(true);
+  retval->set_option(option);
+  return retval;
+}
+
+/**
+ * @brief Starts the acceptor given in parameter. To accept the acceptor needs
+ * the IO Context to be running.
+ *
+ * @param acceptor The acceptor that you want it to accept.
+ */
+void tcp_async::start_acceptor(
+    std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
+  std::lock_guard<std::mutex> lock(_closed_m);
+  if (_closed)
+    return;
+
+  tcp_connection::pointer new_connection =
+      std::make_shared<tcp_connection>(_io_context);
+
+  acceptor->async_accept(new_connection->socket(),
+                         std::bind(&tcp_async::handle_accept, this, acceptor,
+                                   new_connection, std::placeholders::_1));
+}
+
+/**
+ * @brief Stop the acceptor.
+ *
+ * @param acceptor The acceptor to stop.
+ */
+void tcp_async::stop_acceptor(
+    std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
+  if (_closed)
+    return;
+
+  std::lock_guard<std::mutex> lck(_acceptor_con_m);
+
+  std::error_code ec;
+  acceptor->cancel(ec);
+  if (ec)
+    log_v2::tcp()->warn("Error while cancelling acceptor: {}", ec.message());
+  acceptor->close(ec);
+  if (ec)
+    log_v2::tcp()->warn("Error while closing acceptor: {}", ec.message());
+  _acceptor_con_cv.notify_all();
+}
+
+/**
+ * @brief The handler called after an async_accept.
+ *
+ * @param acceptor The acceptor accepting a connection.
+ * @param new_connection The established connection.
+ * @param ec An error code if any.
+ */
+void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
+                              tcp_connection::pointer new_connection,
+                              const asio::error_code& ec) {
+  /* If we got a connection, we store it */
+  if (!ec) {
+    std::lock_guard<std::mutex> lck(_acceptor_con_m);
+    _acceptor_available_con.insert(
+        std::make_pair(acceptor.get(), new_connection));
+    _acceptor_con_cv.notify_one();
+    start_acceptor(acceptor);
+  } else
+    log_v2::tcp()->error("acceptor error: {}", ec.message());
+}
+
+/**
+ * @brief Creates a connection to the given host on the given port.
+ *
+ * @param host The host to connect to.
+ * @param port The port to use for the connection.
+ *
+ * @return A shared_ptr to the connection or an empty shared_ptr.
+ */
+tcp_connection::pointer tcp_async::create_connection(std::string const& host,
+                                                     uint16_t port) {
+  log_v2::tcp()->trace("create connection to host {}:{}", host, port);
+  tcp_connection::pointer conn = std::make_shared<tcp_connection>(_io_context);
+  asio::ip::tcp::socket& sock = conn->socket();
+
+  asio::ip::tcp::resolver resolver(_io_context);
+  asio::ip::tcp::resolver::query query(host, std::to_string(port));
+  asio::ip::tcp::resolver::iterator it = resolver.resolve(query), end;
+
+  std::error_code err{std::make_error_code(std::errc::host_unreachable)};
+
+  // it can resolve multiple addresses like ipv4 or ipv6
+  // We need to try all to find the first available socket
+  for (; err && it != end; ++it) {
+    sock.connect(*it, err);
+
+    if (err)
+      sock.close();
+  }
+
+  /* Connection refused */
+  if (err.value() == 111) {
+    log_v2::tcp()->error("TCP: Connection refused to {}:{}", host, port);
+    throw std::system_error(err);
+  } else if (err) {
+    log_v2::tcp()->error("TCP: could not connect to {}:{}", host, port);
+    throw exceptions::msg() << err.message();
+  } else {
+    asio::socket_base::keep_alive option{true};
+    sock.set_option(option);
+    return conn;
+  }
 }

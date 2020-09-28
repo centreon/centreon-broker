@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 

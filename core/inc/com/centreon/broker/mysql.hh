@@ -32,7 +32,6 @@ CCB_BEGIN()
  */
 class mysql {
  public:
-  enum version { v2 = 2, v3 };
   mysql(database_config const& db_cfg);
   ~mysql();
   void prepare_statement(database::mysql_stmt const& stmt);
@@ -78,7 +77,6 @@ class mysql {
 
   bool fetch_row(database::mysql_result& res);
   int get_last_insert_id(int thread_id);
-  version schema_version() const;
   int connections_count() const;
   bool commit_if_needed();
   int choose_connection_by_name(std::string const& name);
@@ -95,7 +93,6 @@ class mysql {
   int _pending_queries;
 
   std::vector<std::shared_ptr<mysql_connection>> _connection;
-  version _version;
   int _current_connection;
   std::unordered_map<std::string, int> _connection_by_name;
 };

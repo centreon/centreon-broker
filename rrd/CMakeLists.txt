@@ -54,7 +54,6 @@ set(RRD "${RRD}" PARENT_SCOPE)
 add_library("${RRD}" SHARED
   # Sources.
   "${SRC_DIR}/backend.cc"
-  "${SRC_DIR}/cached.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/creator.cc"
   "${SRC_DIR}/exceptions/open.cc"
@@ -65,7 +64,6 @@ add_library("${RRD}" SHARED
   "${SRC_DIR}/output.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/rrd/backend.hh"
-  "${INC_DIR}/com/centreon/broker/rrd/cached.hh"
   "${INC_DIR}/com/centreon/broker/rrd/connector.hh"
   "${INC_DIR}/com/centreon/broker/rrd/creator.hh"
   "${INC_DIR}/com/centreon/broker/rrd/exceptions/open.hh"

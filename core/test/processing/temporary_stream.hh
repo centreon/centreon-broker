@@ -22,6 +22,8 @@
 
 #include <mutex>
 #include <queue>
+
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -32,18 +34,77 @@ CCB_BEGIN()
  *  @brief Temporary stream.
  */
 class temporary_stream : public io::stream {
- public:
-  temporary_stream(std::string const& id = "");
-  temporary_stream(temporary_stream const& ss);
-  ~temporary_stream();
-  temporary_stream& operator=(temporary_stream const& ss);
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
   std::queue<std::shared_ptr<io::data>> _events;
-  mutable std::mutex _eventsm;
+  mutable std::mutex _events_m;
   std::string _id;
+
+ public:
+  /**
+   *  Constructor.
+   *
+   *  @param[in] id The temporary id.
+   */
+  temporary_stream(std::string const& id = "") : _id(id) {}
+  /**
+   *  Copy constructor.
+   *
+   *  @param[in] ss Object to copy.
+   */
+  temporary_stream(temporary_stream const& ss)
+      : io::stream(ss), _events(ss._events), _id(ss._id) {}
+  /**
+   *  Destructor.
+   */
+  ~temporary_stream() noexcept {}
+  /**
+   *  Assignment operator.
+   *
+   *  @param[in] ss Object to copy.
+   *
+   *  @return This object.
+   */
+  temporary_stream& operator=(temporary_stream const& ss) {
+    if (this != &ss) {
+      io::stream::operator=(ss);
+      std::lock_guard<std::mutex> lock1(_events_m);
+      std::lock_guard<std::mutex> lock2(ss._events_m);
+      _events = ss._events;
+      _id = ss._id;
+    }
+    return *this;
+  }
+  /**
+   *  Read some data.
+   *
+   *  @param[out] data      Some data.
+   *  @param[in]  deadline  Unused.
+   *
+   *  @return Always return true.
+   */
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) {
+    (void)deadline;
+    std::lock_guard<std::mutex> lock(_events_m);
+    if (_events.empty())
+      throw exceptions::msg()
+          << "temporary stream does not have any more event";
+    else
+      d = _events.front();
+    _events.pop();
+    return true;
+  }
+
+  /**
+   *  Write some data.
+   *
+   *  @param[in] d Data to write.
+   *
+   *  @return Number of elements acknowledged (1).
+   */
+  int write(std::shared_ptr<io::data> const& d) {
+    std::lock_guard<std::mutex> lock(_events_m);
+    _events.push(d);
+    return 1;
+  }
 };
 
 CCB_END()

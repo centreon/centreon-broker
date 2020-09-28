@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/io/raw.hh"
+
 #include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker::io;
@@ -38,6 +39,9 @@ raw::raw() : io::data(raw::static_type()) {}
  *  @param[in] r Object to copy.
  */
 raw::raw(raw const& r) : io::data(r), _buffer{r._buffer} {}
+
+raw::raw(std::vector<char>&& b)
+    : io::data(raw::static_type()), _buffer(std::move(b)) {}
 
 /**
  *  Destructor.
@@ -83,6 +87,6 @@ bool raw::empty() const {
   return _buffer.empty();
 }
 
-void raw::append(std::string const& msg) {
-  _buffer.insert(_buffer.end(), msg.begin(), msg.end());
-}
+// void raw::append(const char* msg) {
+//  _buffer.insert(_buffer.end(), msg, msg + strlen(msg));
+//}

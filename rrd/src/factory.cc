@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/rrd/factory.hh"
+
 #include <memory>
+
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/rrd/connector.hh"

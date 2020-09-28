@@ -54,7 +54,6 @@ class read_thread {
         std::lock_guard<std::mutex> lock(mutex);
         ret = _file->read(_buf.data() + _current, _size - _current);
         _current += ret;
-        std::cout << "ret = " << ret << "\nsize = " << _size << "\ncurrent = " << _current << '\n';
         ASSERT_TRUE(_current <= _size);
       } catch (...) {
       }

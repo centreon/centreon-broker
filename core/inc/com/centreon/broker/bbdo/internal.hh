@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2017 Centreon
+** Copyright 2013,2017,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@
 #ifndef CCB_BBDO_INTERNAL_HH
 #define CCB_BBDO_INTERNAL_HH
 
+#include <cstdint>
+
 #include "com/centreon/broker/namespace.hh"
 
-#define BBDO_HEADER_SIZE 16
 #define BBDO_VERSION_MAJOR 2
 #define BBDO_VERSION_MINOR 0
 #define BBDO_VERSION_PATCH 0
+constexpr uint32_t BBDO_HEADER_SIZE = 16u;
 
 CCB_BEGIN()
 

@@ -186,6 +186,12 @@ TEST(string_check_utf8, chinese) {
   ASSERT_EQ(string::check_string_utf8(txt), txt);
 }
 
+/* A check coming from windows with characters from the cmd console */
+TEST(string_check_utf8, vietnam) {
+  std::string txt("loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong chinese 告警数量 output puté! | '告警数量'=42\navé dé long ouput oçi 还有中国人! Hái yǒu zhòng guó rén!");
+  ASSERT_EQ(string::check_string_utf8(txt), txt);
+}
+
 TEST(truncate, nominal1) {
   std::string str("foobar");
   ASSERT_EQ(string::truncate(str, 3), "foo");

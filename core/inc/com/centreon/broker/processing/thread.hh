@@ -47,19 +47,6 @@ namespace processing {
  *  @see feeder
  */
 class bthread : public stat_visitable {
- public:
-  bthread(std::string const& name = std::string());
-  bthread(bthread const& other) = delete;
-  bthread& operator=(bthread const& other) = delete;
-  virtual ~bthread();
-  virtual void exit();
-  bool should_exit() const;
-  void start();
-  virtual void update();
-  virtual void run() {};
-  bool is_running() const;
-
- private:
   std::atomic_bool _should_exit;
 
   std::thread _thread;
@@ -71,6 +58,18 @@ class bthread : public stat_visitable {
   std::condition_variable _stopped_cv;
 
   void _callback();
+
+ public:
+  bthread(std::string const& name = std::string());
+  bthread(bthread const& other) = delete;
+  bthread& operator=(bthread const& other) = delete;
+  virtual ~bthread();
+  virtual void exit();
+  bool should_exit() const;
+  void start();
+  virtual void update();
+  virtual void run() {};
+  bool is_running() const;
 };
 }  // namespace processing
 }  // namespace broker

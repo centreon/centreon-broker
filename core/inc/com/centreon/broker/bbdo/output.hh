@@ -20,6 +20,7 @@
 #define CCB_BBDO_OUTPUT_HH
 
 #include <memory>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"

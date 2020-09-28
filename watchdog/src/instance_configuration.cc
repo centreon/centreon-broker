@@ -36,13 +36,13 @@ instance_configuration::instance_configuration()
  *  @param[in] should_reload  Should this instance be reloaded on SIGHUP?
  *  @param[in] seconds_per_tentative  The number of seconds between tentatives.
  */
-instance_configuration::instance_configuration(
-    std::string const& name,
-    std::string const& executable,
-    std::string const& config_file,
-    bool should_run,
-    bool should_reload,
-    __attribute__((__unused__))uint32_t seconds_per_tentative)
+instance_configuration::instance_configuration(std::string const& name,
+                                               std::string const& executable,
+                                               std::string const& config_file,
+                                               bool should_run,
+                                               bool should_reload,
+                                               __attribute__((__unused__))
+                                               uint32_t seconds_per_tentative)
     : _name{name},
       _executable{executable},
       _config_file{config_file},
@@ -107,7 +107,7 @@ bool instance_configuration::same_child(
  *
  *  @return  True if empty.
  */
-bool instance_configuration::is_empty() const throw() {
+bool instance_configuration::is_empty() const noexcept {
   return _name.empty();
 }
 
@@ -116,7 +116,7 @@ bool instance_configuration::is_empty() const throw() {
  *
  *  @return[in]  The name of this instance.
  */
-std::string const& instance_configuration::get_name() const throw() {
+std::string const& instance_configuration::get_name() const noexcept {
   return _name;
 }
 
@@ -125,7 +125,7 @@ std::string const& instance_configuration::get_name() const throw() {
  *
  *  @return[in]  The configuration file for this instance.
  */
-std::string const& instance_configuration::get_config_file() const throw() {
+std::string const& instance_configuration::get_config_file() const noexcept {
   return _config_file;
 }
 
@@ -134,7 +134,7 @@ std::string const& instance_configuration::get_config_file() const throw() {
  *
  *  @return[in]  The executable to launch for this instance.
  */
-std::string const& instance_configuration::get_executable() const throw() {
+std::string const& instance_configuration::get_executable() const noexcept {
   return _executable;
 }
 
@@ -143,7 +143,7 @@ std::string const& instance_configuration::get_executable() const throw() {
  *
  *  @return  True if this instance should be run.
  */
-bool instance_configuration::should_run() const throw() {
+bool instance_configuration::should_run() const noexcept {
   return _run;
 }
 
@@ -152,6 +152,6 @@ bool instance_configuration::should_run() const throw() {
  *
  *  @return  True if this instance should be reloaded.
  */
-bool instance_configuration::should_reload() const throw() {
+bool instance_configuration::should_reload() const noexcept {
   return _reload;
 }
