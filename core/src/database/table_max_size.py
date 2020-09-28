@@ -33,7 +33,7 @@ def print_dbg(s):
 
 header_file = sys.argv[1]
 for sql_file in sys.argv[2:]:
-    with open(sql_file, encoding="utf-8") as fp:
+    with open(sql_file, encoding='utf-8') as fp:
         line = fp.readline()
         in_block = False
 

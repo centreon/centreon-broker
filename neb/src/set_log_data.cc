@@ -148,10 +148,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
       le.retry = strtol(log_extract(&lasts), nullptr, 10);
-      if (*lasts)
-        le.output = log_extract(&lasts);
-      else
-        le.output = "";
+      le.output = log_extract(&lasts);
     } else if (!strcmp(datadup, "INITIAL SERVICE STATE")) {
       le.msg_type = log_entry::service_initial_state;
       le.host_name = log_extract_first(lasts, &lasts);
