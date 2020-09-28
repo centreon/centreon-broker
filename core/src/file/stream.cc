@@ -38,7 +38,7 @@ using namespace com::centreon::broker::file;
  *  @param[in] file  Splitted file on which the stream will operate.
  */
 stream::stream(splitter* file)
-    : _file(file), _last_read_offset(0), _last_time(0), _last_write_offset(0) {}
+    : io::stream("file"), _file(file), _last_read_offset(0), _last_time(0), _last_write_offset(0) {}
 
 /**
  *  Destructor.
@@ -160,7 +160,7 @@ void stream::statistics(json11::Json::object& tree) const {
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
-  if (!validate(d, "file"))
+  if (!validate(d, get_name()))
     return 1;
 
   if (d->type() == io::raw::static_type()) {

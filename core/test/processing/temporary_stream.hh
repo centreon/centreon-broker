@@ -44,35 +44,12 @@ class temporary_stream : public io::stream {
    *
    *  @param[in] id The temporary id.
    */
-  temporary_stream(std::string const& id = "") : _id(id) {}
-  /**
-   *  Copy constructor.
-   *
-   *  @param[in] ss Object to copy.
-   */
-  temporary_stream(temporary_stream const& ss)
-      : io::stream(ss), _events(ss._events), _id(ss._id) {}
+  temporary_stream(std::string const& id = "")
+      : io::stream("temporary_stream"), _id(id) {}
   /**
    *  Destructor.
    */
   ~temporary_stream() noexcept {}
-  /**
-   *  Assignment operator.
-   *
-   *  @param[in] ss Object to copy.
-   *
-   *  @return This object.
-   */
-  temporary_stream& operator=(temporary_stream const& ss) {
-    if (this != &ss) {
-      io::stream::operator=(ss);
-      std::lock_guard<std::mutex> lock1(_events_m);
-      std::lock_guard<std::mutex> lock2(ss._events_m);
-      _events = ss._events;
-      _id = ss._id;
-    }
-    return *this;
-  }
   /**
    *  Read some data.
    *

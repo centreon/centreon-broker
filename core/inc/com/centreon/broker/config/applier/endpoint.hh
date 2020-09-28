@@ -26,6 +26,7 @@
 #include <set>
 #include <string>
 #include <unordered_set>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -82,7 +83,8 @@ class endpoint {
   void _diff_endpoints(
       std::map<config::endpoint, processing::endpoint*> const& current,
       std::list<config::endpoint> const& new_endpoints,
-      std::list<config::endpoint>& to_create);
+      std::list<config::endpoint>& to_create,
+      std::list<config::endpoint>& to_delete);
   std::unordered_set<uint32_t> _filters(
       std::set<std::string> const& str_filters);
 

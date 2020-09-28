@@ -52,7 +52,9 @@ static std::string find_param(config::endpoint const& cfg,
  *
  *  @return true if the endpoint match the configuration.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+  if (flag)
+    *flag = no;
   bool is_simu{!strncasecmp(cfg.type.c_str(), "simu", 5)};
   if (is_simu) {
     cfg.params["cache"] = "yes";

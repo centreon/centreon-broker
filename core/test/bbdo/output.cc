@@ -40,7 +40,7 @@ using namespace com::centreon::broker::misc;
 
 class into_memory : public io::stream {
  public:
-  into_memory() : _memory() {}
+  into_memory() : io::stream("into_memory"), _memory() {}
   ~into_memory() override {}
 
   bool read(std::shared_ptr<io::data>& d,
@@ -250,7 +250,7 @@ TEST_F(OutputTest, ShortPersistentFile) {
 
   svc->perf_data.reserve(100);
   c = '0';
-  for (uint32_t i = 0; i < svc->perf_data.capacity(); i++) {
+  for (uint32_t i = 0; i < 100; i++) {
     svc->perf_data.push_back(c++);
     if (c > '9')
       c = '0';

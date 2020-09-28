@@ -43,9 +43,11 @@ using namespace com::centreon::broker::bbdo;
  *
  *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
   std::map<std::string, std::string>::const_iterator it{
       cfg.params.find("protocol")};
+  if (flag)
+    *flag = no;
   return it != cfg.params.end() && it->second == "bbdo";
 }
 
@@ -77,7 +79,7 @@ io::endpoint* factory::new_endpoint(
 
   // Negotiation allowed ?
   bool negotiate = false;
-  std::string extensions;
+  std::pair<std::string, std::string> extensions;
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("negotiation"));
@@ -145,23 +147,35 @@ io::endpoint* factory::new_endpoint(
  **************************************/
 
 /**
- *  Get available extensions for an endpoint.
+ *  Get available extensions for an endpoint. Two strings are returned:
+ *  * the first one contains all the extensions supported by the endpoint.
+ *  * the second one contains the mandatory extensions. This one is needed
+ *    to report errors.
  *
  *  @param[in] cfg  Endpoint configuration.
+ *
+ *  return a pair of two strings, extensions and mandatories.
  */
-std::string factory::_extensions(config::endpoint& cfg) const {
+std::pair<std::string, std::string> factory::_extensions(config::endpoint& cfg) const {
   std::string extensions;
+  std::string mandatory;
   for (std::map<std::string, io::protocols::protocol>::const_iterator
            it{io::protocols::instance().begin()},
        end{io::protocols::instance().end()};
        it != end; ++it) {
+    flag flag;
+    bool has = it->second.endpntfactry->has_endpoint(cfg, &flag);
     if (it->second.osi_from > 1 && it->second.osi_to < 7 &&
-        !it->second.endpntfactry->has_endpoint(cfg) &&
-        !it->second.endpntfactry->has_not_endpoint(cfg)) {
+        (has || flag != io::factory::flag::no)) {
       if (!extensions.empty())
         extensions.append(" ");
       extensions.append(it->first);
+      if (flag == yes) {
+        if (!mandatory.empty())
+          mandatory.append(" ");
+        mandatory.append(it->first);
+      }
     }
   }
-  return extensions;
+  return std::make_pair(extensions, mandatory);
 }

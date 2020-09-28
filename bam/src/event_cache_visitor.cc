@@ -27,7 +27,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-event_cache_visitor::event_cache_visitor() {}
+event_cache_visitor::event_cache_visitor() : io::stream("event_cache_visitor") {}
 
 /**
  *  Destructor.
@@ -73,7 +73,7 @@ bool event_cache_visitor::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @return       Number of event acknowledged.
  */
 int event_cache_visitor::write(std::shared_ptr<io::data> const& d) {
-  if (!validate(d, "event_cache_visitor"))
+  if (!validate(d, get_name()))
     return 1;
 
   if (d->type() ==

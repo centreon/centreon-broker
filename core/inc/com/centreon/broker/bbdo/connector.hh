@@ -36,7 +36,7 @@ namespace bbdo {
 class connector : public io::endpoint {
  public:
   connector(bool negotiate,
-            std::string const& extensions,
+            const std::pair<std::string, std::string>& extensions,
             time_t timeout,
             bool coarse = false,
             uint32_t ack_limit = 1000);
@@ -49,7 +49,7 @@ class connector : public io::endpoint {
   std::shared_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
 
   bool _coarse;
-  std::string _extensions;
+  std::pair<std::string, std::string> _extensions;
   bool _negotiate;
   time_t _timeout;
   uint32_t _ack_limit;

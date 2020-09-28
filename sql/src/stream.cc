@@ -439,7 +439,7 @@ stream::stream(database_config const& dbcfg,
                uint32_t loop_timeout,
                uint32_t instance_timeout,
                bool with_state_events)
-    : _mysql(dbcfg),
+    : io::stream("SQL"), _mysql(dbcfg),
       //      _cleanup_thread(dbcfg.get_type(),
       //                      dbcfg.get_host(),
       //                      dbcfg.get_port(),
@@ -517,7 +517,7 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
 
   assert(data);
-//  if (!validate(data, "SQL"))
+//  if (!validate(data, get_name()))
 //    return 0;
 
   // Process event.

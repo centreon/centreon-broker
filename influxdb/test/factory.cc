@@ -28,9 +28,9 @@ TEST(InfluxDBFactory, HasEndpoint) {
   config::endpoint cfg(config::endpoint::io_type::output);
 
   cfg.type = "tcp";
-  ASSERT_FALSE(fact.has_endpoint(cfg));
+  ASSERT_FALSE(fact.has_endpoint(cfg, nullptr));
   cfg.type = "influxdb";
-  ASSERT_TRUE(fact.has_endpoint(cfg));
+  ASSERT_TRUE(fact.has_endpoint(cfg, nullptr));
   ASSERT_EQ(cfg.cache_enabled, true);
   ASSERT_EQ(cfg.params["cache"], "yes");
 }

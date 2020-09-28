@@ -109,7 +109,9 @@ static uint32_t get_uint_param(config::endpoint const& cfg,
  *
  *  @return true if the configuration matches the storage layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+  if (flag)
+    *flag = no;
   bool is_gpdb{!strncasecmp(cfg.type.c_str(), "graphite", 9)};
   if (is_gpdb) {
     cfg.params["cache"] = "yes";

@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/compression/factory.hh"
+
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/compression/opener.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/parser.hh"
@@ -36,30 +38,25 @@ using namespace com::centreon::broker::compression;
  *  Check if an endpoint configuration match the compression layer.
  *
  *  @param[in] cfg  Configuration object.
+ *  @param[out] flag Returns no, maybe or yes, corresponding to the no, auto,
+ *                   yes configured in the configuration file.
  *
- *  @return True if the configuration matches the compression layer.
+ *  @return False everytime because the compression layer must not be set at
+ *  the broker configuration. This avoids the compression while the negotiation
+ *  is running. We will be able to add this endpoint later, following the flag
+ *  value.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
-  std::map<std::string, std::string>::const_iterator it{
-      cfg.params.find("compression")};
-  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
-         config::parser::parse_boolean(it->second);
-}
-
-/**
- *  Check if endpoint configuration do not match the compression layer.
- *
- *  @param[in] cfg  Configuration object.
- *
- *  @return True if the configuration does not match the compression
- *          layer.
- */
-bool factory::has_not_endpoint(config::endpoint& cfg) const {
-  std::map<std::string, std::string>::const_iterator it{
-      cfg.params.find("compression")};
-  return (it != cfg.params.end() && strcasecmp(it->second.c_str(), "auto"))
-             ? !has_endpoint(cfg)
-             : false;
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+  if (flag) {
+    auto it = cfg.params.find("compression");
+    if (it == cfg.params.end() || strncasecmp(it->second.c_str(), "no", 3) == 0)
+      *flag = no;
+    else if (strncasecmp(it->second.c_str(), "auto", 5) == 0)
+      *flag = maybe;
+    else if (strncasecmp(it->second.c_str(), "yes", 4) == 0)
+      *flag = yes;
+  }
+  return false;
 }
 
 /**

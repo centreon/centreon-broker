@@ -19,10 +19,11 @@
 #ifndef CCB_IO_STREAM_HH
 #define CCB_IO_STREAM_HH
 
-#include <json11.hpp>
 #include <ctime>
+#include <json11.hpp>
 #include <memory>
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -49,20 +50,24 @@ namespace io {
  *  information is not available or meaningful, it should always return '1'.
  */
 class stream {
+  const std::string _name;
+
  public:
-  stream();
-  stream(stream const& other);
-  virtual ~stream();
-  stream& operator=(stream const& other);
+  stream(const std::string& name);
+  virtual ~stream() noexcept;
+  stream(const stream&) = delete;
+  stream& operator=(const stream&) = delete;
   virtual int flush();
   virtual std::string peer() const;
   virtual bool read(std::shared_ptr<io::data>& d,
                     time_t deadline = (time_t)-1) = 0;
   virtual void set_substream(std::shared_ptr<stream> substream);
+  std::shared_ptr<stream> get_substream();
   virtual void statistics(json11::Json::object& tree) const;
   virtual void update();
   bool validate(std::shared_ptr<io::data> const& d, std::string const& error);
   virtual int write(std::shared_ptr<data> const& d) = 0;
+  const std::string& get_name() const { return _name; }
 
  protected:
   std::shared_ptr<stream> _substream;

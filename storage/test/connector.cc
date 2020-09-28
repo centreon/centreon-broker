@@ -43,7 +43,7 @@ TEST(StorageFactory, Factory) {
                exceptions::config);
   cfg.params["db_type"] = "mysql";
   cfg.params["db_name"] = "centreon";
-  ASSERT_FALSE(factory.has_endpoint(cfg));
+  ASSERT_FALSE(factory.has_endpoint(cfg, nullptr));
   cfg.type = "storage";
   storage::connector* endp = static_cast<storage::connector*>(
       factory.new_endpoint(cfg, is_acceptor, cache));
@@ -51,7 +51,7 @@ TEST(StorageFactory, Factory) {
   storage::connector con;
   con.connect_to(dbcfg, 42, 60, 300, true);
 
-  ASSERT_TRUE(factory.has_endpoint(cfg));
+  ASSERT_TRUE(factory.has_endpoint(cfg, nullptr));
   ASSERT_EQ(cfg.read_timeout, -1);
   ASSERT_EQ(cfg.params["read_timeout"], "");
 
@@ -76,7 +76,7 @@ TEST(StorageFactory, FactoryWithFullConf) {
   cfg.params["interval"] = "43";
   cfg.params["rebuild_check_interval"] = "44";
   cfg.params["store_in_data_bin"] = "0";
-  ASSERT_FALSE(factory.has_endpoint(cfg));
+  ASSERT_FALSE(factory.has_endpoint(cfg, nullptr));
   cfg.type = "storage";
   storage::connector* endp = static_cast<storage::connector*>(
       factory.new_endpoint(cfg, is_acceptor, cache));
@@ -84,7 +84,7 @@ TEST(StorageFactory, FactoryWithFullConf) {
   storage::connector con;
   con.connect_to(dbcfg, 42, 43, 44, false);
 
-  ASSERT_TRUE(factory.has_endpoint(cfg));
+  ASSERT_TRUE(factory.has_endpoint(cfg, nullptr));
   ASSERT_EQ(cfg.read_timeout, -1);
   ASSERT_EQ(cfg.params["read_timeout"], "");
 
