@@ -144,14 +144,15 @@ void mysql_column::set_length(int len) {
     vector[i] = static_cast<char*>(realloc(vector[i], _str_size));
 }
 
-void mysql_column::set_value(std::string const& str) {
+void mysql_column::set_value(const fmt::string_view& str) {
   assert(_type == MYSQL_TYPE_STRING);
   size_t size = str.size();
   if (size >= _str_size)
     set_length(size);
   _length[0] = size;
   char** vector = static_cast<char**>(_vector);
-  strncpy(vector[0], str.c_str(), _length[0] + 1);
+  strncpy(vector[0], str.data(), size);
+  vector[0][size] = 0;
 }
 
 bool mysql_column::is_null() const {

@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/bam/dimension_timeperiod.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -101,14 +103,38 @@ mapping::entry const dimension_timeperiod::entries[] = {
     mapping::entry(&bam::dimension_timeperiod::id,
                    "tp_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&bam::dimension_timeperiod::name, "name"),
-    mapping::entry(&bam::dimension_timeperiod::monday, "monday"),
-    mapping::entry(&bam::dimension_timeperiod::tuesday, "tuesday"),
-    mapping::entry(&bam::dimension_timeperiod::wednesday, "wednesday"),
-    mapping::entry(&bam::dimension_timeperiod::thursday, "thursday"),
-    mapping::entry(&bam::dimension_timeperiod::friday, "friday"),
-    mapping::entry(&bam::dimension_timeperiod::saturday, "saturday"),
-    mapping::entry(&bam::dimension_timeperiod::sunday, "sunday"),
+    mapping::entry(&bam::dimension_timeperiod::name,
+                   "name",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_name)),
+    mapping::entry(&bam::dimension_timeperiod::monday,
+                   "monday",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_monday)),
+    mapping::entry(&bam::dimension_timeperiod::tuesday,
+                   "tuesday",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_tuesday)),
+    mapping::entry(&bam::dimension_timeperiod::wednesday,
+                   "wednesday",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_wednesday)),
+    mapping::entry(&bam::dimension_timeperiod::thursday,
+                   "thursday",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_thursday)),
+    mapping::entry(&bam::dimension_timeperiod::friday,
+                   "friday",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_friday)),
+    mapping::entry(&bam::dimension_timeperiod::saturday,
+                   "saturday",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_saturday)),
+    mapping::entry(&bam::dimension_timeperiod::sunday,
+                   "sunday",
+                   get_mod_bam_reporting_timeperiods_col_size(
+                       mod_bam_reporting_timeperiods_sunday)),
     mapping::entry()};
 
 // Operations.

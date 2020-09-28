@@ -210,7 +210,7 @@ static io::data* unserialize(uint32_t event_type,
       t->source_id = source_id;
       t->destination_id = destination_id;
       // Browse all mapping to unserialize the object.
-      for (mapping::entry const* current_entry(info->get_mapping());
+      for (const mapping::entry* current_entry = info->get_mapping();
            !current_entry->is_null(); ++current_entry)
         // Skip entries that should not be serialized.
         if (current_entry->get_serialize()) {
@@ -341,10 +341,6 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
       log_v2::bbdo()->info(
           "BBDO: received acknowledgement for {} events",
           std::static_pointer_cast<ack const>(d)->acknowledged_events);
-      logging::info(logging::medium)
-          << "BBDO: received acknowledgement for "
-          << std::static_pointer_cast<ack const>(d)->acknowledged_events
-          << " events";
       acknowledge_events(
           std::static_pointer_cast<ack const>(d)->acknowledged_events);
     }

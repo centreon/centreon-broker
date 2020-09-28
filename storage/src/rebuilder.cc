@@ -414,7 +414,10 @@ void rebuilder::_send_rebuild_event(bool end, uint32_t id, bool is_index) {
  *  @param[in] state     Rebuild state (0, 1 or 2).
  */
 void rebuilder::_set_index_rebuild(mysql& ms, uint32_t index_id, short state) {
-  std::string query(fmt::format("UPDATE index_data SET must_be_rebuild='{}' WHERE id={}", state, index_id));
-  std::string err(fmt::format("storage: rebuilder: cannot update state of index {}: ", index_id));
-  ms.run_query(query, err, false);
+  std::string query(
+      fmt::format("UPDATE index_data SET must_be_rebuild='{}' WHERE id={}",
+                  state, index_id));
+  std::string err_msg(fmt::format(
+      "storage: rebuilder: cannot update state of index {}: ", index_id));
+  ms.run_query(query, err_msg, false);
 }

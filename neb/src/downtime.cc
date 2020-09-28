@@ -17,6 +17,8 @@
 */
 
 #include "com/centreon/broker/neb/downtime.hh"
+
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
@@ -160,7 +162,9 @@ mapping::entry const downtime::entries[] = {
     mapping::entry(&downtime::actual_start_time,
                    "actual_start_time",
                    mapping::entry::invalid_on_minus_one),
-    mapping::entry(&downtime::author, "author"),
+    mapping::entry(&downtime::author,
+                   "author",
+                   get_downtimes_col_size(downtimes_author)),
     mapping::entry(&downtime::downtime_type, "type"),
     mapping::entry(&downtime::deletion_time,
                    "deletion_time",
@@ -191,13 +195,9 @@ mapping::entry const downtime::entries[] = {
                    mapping::entry::invalid_on_zero),
     mapping::entry(&downtime::was_cancelled, "cancelled"),
     mapping::entry(&downtime::was_started, "started"),
-    mapping::entry(&downtime::comment, "comment_data"),
-    mapping::entry(&downtime::is_recurring,
-                   "is_recurring",
-                   mapping::entry::invalid_on_v2),
-    mapping::entry(&downtime::recurring_timeperiod,
-                   "recurring_timeperiod",
-                   mapping::entry::invalid_on_v2),
+    mapping::entry(&downtime::comment,
+                   "comment_data",
+                   get_downtimes_col_size(downtimes_comment_data)),
     mapping::entry(&downtime::come_from, ""),
     mapping::entry()};
 

@@ -1,8 +1,8 @@
-# /usr/bin/python3
+#!/usr/bin/python3
 """
 ** Copyright 2019-2020 Centreon
 **
-** Licensed under the Apache License, Version 2.0 (the "License");
+** Licensed under the Apache License, Version 2.0(the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
 **
@@ -21,8 +21,8 @@ import sys
 import re
 
 dico = {}
-pattern_ct = re.compile('CREATE TABLE `(.*)`')
-column_ct = re.compile('\s*`(.*)` (varchar\(([0-9]*)\)|text)')
+pattern_ct = re.compile('CREATE TABLE( IF NOT EXISTS)? (@.*@\.)?`?([^`]*)`? \(')
+column_ct = re.compile('\s*`?([^`]*)`? (varchar\(([0-9]*)\)|text)')
 end_ct = re.compile('^\)')
 
 debug = False
@@ -33,7 +33,7 @@ def print_dbg(s):
 
 header_file = sys.argv[1]
 for sql_file in sys.argv[2:]:
-    with open(sql_file) as fp:
+    with open(sql_file, encoding="utf-8") as fp:
         line = fp.readline()
         in_block = False
 
@@ -41,8 +41,8 @@ for sql_file in sys.argv[2:]:
             if not in_block:
                 m = pattern_ct.match(line)
                 if m:
-                    print_dbg("New table {}".format(m.group(1)))
-                    current_table = m.group(1)
+                    print_dbg("New table {}".format(m.group(3)))
+                    current_table = m.group(3)
                     in_block = True
             else:
                 if end_ct.match(line):
@@ -80,7 +80,7 @@ for t,content in dico.items():
 
 """.format(t, t, t)
 
-with open(header_file, 'w') as fp:
+with open(header_file, 'w', encoding="utf-8") as fp:
     fp.write("""/*
 ** Copyright 2020 Centreon
 **
@@ -106,9 +106,8 @@ with open(header_file, 'w') as fp:
 
 CCB_BEGIN()
 
-namespace storage {
 """)
 
     #fp.write(enum)
     fp.write(cols)
-    fp.write("\n}\n\nCCB_END()\n\n#endif /* __TABLE_MAX_SIZE_HH__ */")
+    fp.write("\n\nCCB_END()\n\n#endif /* __TABLE_MAX_SIZE_HH__ */")

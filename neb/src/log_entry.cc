@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/log_entry.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -118,32 +120,35 @@ mapping::entry const log_entry::entries[] = {
     mapping::entry(&log_entry::host_id,
                    "host_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&log_entry::host_name, "host_name"),
-    mapping::entry(&log_entry::poller_name, "instance_name"),
+    mapping::entry(&log_entry::host_name,
+                   "host_name",
+                   get_logs_col_size(logs_host_name)),
+    mapping::entry(&log_entry::poller_name,
+                   "instance_name",
+                   get_logs_col_size(logs_instance_name)),
     mapping::entry(&log_entry::issue_start_time,
                    "",
                    mapping::entry::invalid_on_minus_one),
     mapping::entry(&log_entry::log_type, "type"),
     mapping::entry(&log_entry::msg_type, "msg_type"),
     mapping::entry(&log_entry::notification_cmd,
-                   nullptr,
-                   mapping::entry::always_valid,
-                   true,
-                   "notification_cmd"),
+                   "notification_cmd",
+                   get_logs_col_size(logs_notification_cmd)),
     mapping::entry(&log_entry::notification_contact,
-                   nullptr,
-                   mapping::entry::always_valid,
-                   true,
-                   "notification_contact"),
+                   "notification_contact",
+                   get_logs_col_size(logs_notification_contact)),
     mapping::entry(&log_entry::retry, "retry"),
     mapping::entry(&log_entry::service_description,
                    "service_description",
+                   get_logs_col_size(logs_service_description),
                    mapping::entry::invalid_on_zero),
     mapping::entry(&log_entry::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&log_entry::status, "status"),
-    mapping::entry(&log_entry::output, "output"),
+    mapping::entry(&log_entry::output,
+                   "output",
+                   get_logs_col_size(logs_output)),
     mapping::entry()};
 
 // Operations.

@@ -33,7 +33,7 @@ namespace mapping {
  */
 template <typename T>
 class property : public source {
- private:
+ protected:
   union {
     bool T::*b;
     double T::*d;
@@ -51,121 +51,65 @@ class property : public source {
    *  Boolean constructor.
    *
    *  @param[in]  b Boolean property.
-   *  @param[out] t If not NULL, set to BOOL.
    */
-  property(bool(T::*b), source_type* t) {
-    _prop.b = b;
-    if (t)
-      *t = BOOL;
-  }
+  property(bool(T::*b)) { _prop.b = b; }
 
   /**
    *  Double constructor.
    *
    *  @param[in]  d Double property.
-   *  @param[out] t If not NULL, set to DOUBLE.
    */
-  property(double(T::*d), source_type* t) {
-    _prop.d = d;
-    if (t)
-      *t = DOUBLE;
-  }
+  property(double(T::*d)) { _prop.d = d; }
 
   /**
    *  integer constructor.
    *
    *  @param[in]  i integer property.
-   *  @param[out] t if not null, set to int.
    */
-  property(int(T::*i), source_type* t) {
-    _prop.i = i;
-    if (t)
-      *t = INT;
-  }
+  property(int32_t(T::*i)) { _prop.i = i; }
 
   /**
    *  Short constructor.
    *
    *  @param[in]  s Short property.
-   *  @param[out] t If not NULL, set to SHORT.
    */
-  property(short(T::*s), source_type* t) {
-    _prop.s = s;
-    if (t)
-      *t = SHORT;
-  }
-
-  /**
-   *  String constructor.
-   *
-   *  @param[in]  q String property.
-   *  @param[out] t If not NULL, set to STRING.
-   */
-  property(std::string(T::*q), source_type* t) {
-    _prop.q = q;
-    if (t)
-      *t = STRING;
-  }
+  property(short(T::*s)) { _prop.s = s; }
 
   /**
    *  Time constructor.
    *
    *  @param[in]  tt Time property.
-   *  @param[out] t  If not NULL, set to TIME.
    */
-  property(timestamp(T::*ts), source_type* t) {
-    _prop.t = ts;
-    if (t)
-      *t = TIME;
-  }
+  property(timestamp(T::*ts)) { _prop.t = ts; }
+
+  /**
+   *  String constructor.
+   *
+   *  @param[in]  q String property.
+   */
+  property(std::string(T::*q)) { _prop.q = q; }
 
   /**
    *  Unsigned integer constructor.
    *
    *  @param[in]  I Unsigned integer property.
-   *  @param[out] t If not NULL, set to UINT.
    */
-  property(uint32_t(T::*I), source_type* t) {
-    _prop.I = I;
-    if (t)
-      *t = UINT;
-  }
+  property(uint32_t(T::*I)) { _prop.I = I; }
 
   /**
    *  Unsigned short constructor.
    *
    *  @param[in]  S Unsigned short property.
-   *  @param[out] t If not NULL, set to USHORT.
    */
-  property(unsigned short(T::*S), source_type* t) {
-    _prop.S = S;
-    if (t)
-      *t = USHORT;
-  }
-
-  /**
-   *  Copy constructor.
-   *
-   *  @param[in] other Object to copy.
-   */
-  property(property const& other) : source(other), _prop(other._prop) {}
+  property(unsigned short(T::*S)) { _prop.S = S; }
 
   /**
    *  Destructor.
    */
-  ~property() {}
+  ~property() noexcept {}
 
-  /**
-   *  Assignment operator.
-   *
-   *  @param[in] other Object to copy.
-   *
-   *  @return This object.
-   */
-  property& operator=(property const& other) {
-    _prop = other._prop;
-    return (*this);
-  }
+  property& operator=(property const&) = delete;
+  property(const property&) = delete;
 
   /**
    *  Get a boolean property.
@@ -175,7 +119,7 @@ class property : public source {
    *  @return Boolean property.
    */
   bool get_bool(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.b));
+    return static_cast<T const*>(&d)->*(_prop.b);
   }
 
   /**
@@ -186,7 +130,7 @@ class property : public source {
    *  @return Double property.
    */
   double get_double(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.d));
+    return static_cast<T const*>(&d)->*(_prop.d);
   }
 
   /**
@@ -197,7 +141,7 @@ class property : public source {
    *  @return Integer property.
    */
   int get_int(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.i));
+    return static_cast<T const*>(&d)->*(_prop.i);
   }
 
   /**
@@ -208,7 +152,7 @@ class property : public source {
    *  @return Short property.
    */
   short get_short(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.s));
+    return static_cast<T const*>(&d)->*(_prop.s);
   }
 
   /**
@@ -218,8 +162,9 @@ class property : public source {
    *
    *  @return String property.
    */
-  std::string const& get_string(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.q));
+  std::string const& get_string(io::data const& d,
+                                size_t* max_len __attribute__((unused))) {
+    return static_cast<T const*>(&d)->*(_prop.q);
   }
 
   /**
@@ -230,7 +175,7 @@ class property : public source {
    *  @return Time property.
    */
   timestamp const& get_time(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.t));
+    return static_cast<T const*>(&d)->*(_prop.t);
   }
 
   /**
@@ -241,7 +186,7 @@ class property : public source {
    *  @return Unsigned integer property.
    */
   uint32_t get_uint(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.I));
+    return static_cast<T const*>(&d)->*(_prop.I);
   }
 
   /**
@@ -252,7 +197,7 @@ class property : public source {
    *  @return Unsigned short property.
    */
   unsigned short get_ushort(io::data const& d) {
-    return (static_cast<T const*>(&d)->*(_prop.S));
+    return static_cast<T const*>(&d)->*(_prop.S);
   }
 
   /**
@@ -335,6 +280,37 @@ class property : public source {
     static_cast<T*>(&d)->*(_prop.S) = value;
   }
 };
+
+template <typename T>
+class sproperty : public property<T> {
+  const size_t _max_len;
+
+ public:
+  /**
+   *  String constructor.
+   *
+   *  @param[in]  q String property.
+   *  @param[in]  max_len This value is used for serialization. If the string
+   *  is longer, it will be truncated to be stored in the database unless the
+   *  value is 0.
+   */
+  sproperty(std::string(T::*q), size_t max_len)
+      : property<T>(q), _max_len(max_len) {}
+
+  /**
+   *  Get a string property.
+   *
+   *  @param[in] d Object to get from.
+   *
+   *  @return String property.
+   */
+  std::string const& get_string(io::data const& d, size_t* max_len) {
+    if (max_len)
+      *max_len = _max_len;
+    return property<T>::get_string(d, max_len);
+  }
+};
+
 }  // namespace mapping
 
 CCB_END()

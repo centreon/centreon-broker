@@ -21,7 +21,7 @@
 
 #include <mysql.h>
 #include <cmath>
-#include <string>
+#include <fmt/format.h>
 #include <vector>
 #include "com/centreon/broker/namespace.hh"
 
@@ -45,7 +45,7 @@ class mysql_column {
     vector[0] = value;
   }
 
-  void set_value(std::string const& str);
+  void set_value(const fmt::string_view& str);
   my_bool* is_null_buffer();
   bool is_null() const;
   my_bool* error_buffer();

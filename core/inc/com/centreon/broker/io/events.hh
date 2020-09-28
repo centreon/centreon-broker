@@ -20,6 +20,7 @@
 #define CCB_IO_EVENTS_HH
 
 #include <unordered_map>
+
 #include "com/centreon/broker/io/event_info.hh"
 
 CCB_BEGIN()
@@ -38,8 +39,7 @@ class events {
     std::string name;
     events_container events;
   };
-  typedef std::unordered_map<unsigned short, category_info>
-      categories_container;
+  typedef std::unordered_map<uint16_t, category_info> categories_container;
   // Reserved categories, for reference.
   enum data_category {
     neb = 1,
@@ -60,7 +60,7 @@ class events {
     de_command_result,
   };
 
-  template <unsigned short category, unsigned short element>
+  template <uint16_t category, uint16_t element>
   struct data_type {
     enum { value = static_cast<uint32_t>(category << 16 | element) };
   };
@@ -71,26 +71,28 @@ class events {
   static void unload();
 
   // Category.
-  unsigned short register_category(std::string const& name,
-                                   unsigned short hint = 0);
-  void unregister_category(unsigned short category_id);
+  uint16_t register_category(std::string const& name, uint16_t hint = 0);
+  void unregister_category(uint16_t category_id);
 
   // Events.
-  uint32_t register_event(unsigned short category_id,
-                              unsigned short event_id,
-                              event_info const& info);
+  uint32_t register_event(uint16_t category_id,
+                          uint16_t event_id,
+                          std::string const& name = std::string(),
+                          event_info::event_operations const* ops = nullptr,
+                          mapping::entry const* entries = nullptr,
+                          std::string const& table_v2 = std::string());
   void unregister_event(uint32_t type_id);
 
   // ID manipulations.
-  static unsigned short category_of_type(uint32_t type) throw() {
-    return (static_cast<unsigned short>(type >> 16));
+  static uint16_t category_of_type(uint32_t type) noexcept {
+    return static_cast<uint16_t>(type >> 16);
   }
-  static unsigned short element_of_type(uint32_t type) throw() {
-    return (static_cast<unsigned short>(type));
+  static uint16_t element_of_type(uint32_t type) noexcept {
+    return static_cast<uint16_t>(type);
   }
-  static uint32_t make_type(unsigned short category_id,
-                                unsigned short element_id) throw() {
-    return ((static_cast<uint32_t>(category_id) << 16) | element_id);
+  static uint32_t make_type(uint16_t category_id,
+                            uint16_t element_id) noexcept {
+    return (static_cast<uint32_t>(category_id) << 16) | element_id;
   }
 
   // Event browsing.

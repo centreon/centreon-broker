@@ -82,27 +82,23 @@ void broker_module_init(void const* arg) {
 
     // Register events.
     {
-      e.register_event(io::events::storage, storage::de_metric,
-                       io::event_info("metric", &storage::metric::operations,
-                                      storage::metric::entries, "rt_metrics"));
-      e.register_event(io::events::storage, storage::de_rebuild,
-                       io::event_info("rebuild", &storage::rebuild::operations,
-                                      storage::rebuild::entries));
-      e.register_event(
-          io::events::storage, storage::de_remove_graph,
-          io::event_info("remove_graph", &storage::remove_graph::operations,
-                         storage::remove_graph::entries));
-      e.register_event(io::events::storage, storage::de_status,
-                       io::event_info("status", &storage::status::operations,
-                                      storage::status::entries));
-      e.register_event(
-          io::events::storage, storage::de_index_mapping,
-          io::event_info("index_mapping", &storage::index_mapping::operations,
-                         storage::index_mapping::entries));
-      e.register_event(
-          io::events::storage, storage::de_metric_mapping,
-          io::event_info("metric_mapping", &storage::metric_mapping::operations,
-                         storage::metric_mapping::entries));
+      e.register_event(io::events::storage, storage::de_metric, "metric",
+                       &storage::metric::operations, storage::metric::entries,
+                       "rt_metrics");
+      e.register_event(io::events::storage, storage::de_rebuild, "rebuild",
+                       &storage::rebuild::operations,
+                       storage::rebuild::entries);
+      e.register_event(io::events::storage, storage::de_remove_graph,
+                       "remove_graph", &storage::remove_graph::operations,
+                       storage::remove_graph::entries);
+      e.register_event(io::events::storage, storage::de_status, "status",
+                       &storage::status::operations, storage::status::entries);
+      e.register_event(io::events::storage, storage::de_index_mapping,
+                       "index_mapping", &storage::index_mapping::operations,
+                       storage::index_mapping::entries);
+      e.register_event(io::events::storage, storage::de_metric_mapping,
+                       "metric_mapping", &storage::metric_mapping::operations,
+                       storage::metric_mapping::entries);
     }
 
     // Register storage layer.

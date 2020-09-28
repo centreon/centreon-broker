@@ -33,48 +33,17 @@ using namespace com::centreon::broker::bbdo;
 ack::ack() : io::data(ack::static_type()), acknowledged_events(0) {}
 
 /**
- *  Copy constructor.
+ *  Constructor.
  *
- *  @param[in] other  Object to copy.
+ * @param acknowledged_events How many events to acknowledge.
  */
-ack::ack(ack const& other) : io::data(other) {
-  _internal_copy(other);
-}
+ack::ack(uint32_t acknowledged_events)
+    : io::data(ack::static_type()), acknowledged_events(acknowledged_events) {}
 
 /**
  *  Destructor.
  */
 ack::~ack() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-ack& ack::operator=(ack const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void ack::_internal_copy(ack const& other) {
-  acknowledged_events = other.acknowledged_events;
-}
 
 /**************************************
  *                                     *

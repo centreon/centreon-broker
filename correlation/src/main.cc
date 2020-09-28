@@ -88,27 +88,22 @@ void broker_module_init(void const* arg) {
 
     // Register events.
     {
-      e.register_event(
-          io::events::correlation, correlation::de_engine_state,
-          io::event_info("engine_state", &correlation::engine_state::operations,
-                         correlation::engine_state::entries));
-      e.register_event(
-          io::events::correlation, correlation::de_state,
-          io::event_info("state", &correlation::state::operations,
-                         correlation::state::entries, "rt_servicestateevents"));
-      e.register_event(
-          io::events::correlation, correlation::de_issue,
-          io::event_info("issue", &correlation::issue::operations,
-                         correlation::issue::entries, "rt_issues", "issues"));
-      e.register_event(
-          io::events::correlation, correlation::de_issue_parent,
-          io::event_info("issue_parent", &correlation::issue_parent::operations,
-                         correlation::issue_parent::entries,
-                         "rt_issues_issues_parents", "issues_issues_parents"));
-      e.register_event(
-          io::events::correlation, correlation::de_log_issue,
-          io::event_info("log_issue", &correlation::log_issue::operations,
-                         correlation::log_issue::entries, "log_logs", "logs"));
+      e.register_event(io::events::correlation, correlation::de_engine_state,
+                       "engine_state", &correlation::engine_state::operations,
+                       correlation::engine_state::entries);
+      e.register_event(io::events::correlation, correlation::de_state, "state",
+                       &correlation::state::operations,
+                       correlation::state::entries);
+      e.register_event(io::events::correlation, correlation::de_issue, "issue",
+                       &correlation::issue::operations,
+                       correlation::issue::entries, "issues");
+      e.register_event(io::events::correlation, correlation::de_issue_parent,
+                       "issue_parent", &correlation::issue_parent::operations,
+                       correlation::issue_parent::entries,
+                       "issues_issues_parents");
+      e.register_event(io::events::correlation, correlation::de_log_issue,
+                       "log_issue", &correlation::log_issue::operations,
+                       correlation::log_issue::entries, "logs");
     }
   }
 }

@@ -83,7 +83,7 @@ void rebuild::_internal_copy(rebuild const& other) {
 
 // Mapping.
 mapping::entry const rebuild::entries[] = {
-    mapping::entry(&bam::rebuild::bas_to_rebuild, "bas_to_rebuild"),
+    mapping::entry(&bam::rebuild::bas_to_rebuild, "bas_to_rebuild", 0),
     mapping::entry()};
 
 // Operations.

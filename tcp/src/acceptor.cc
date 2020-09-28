@@ -45,7 +45,7 @@ acceptor::acceptor(uint16_t port, int32_t read_timeout)
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {
+acceptor::~acceptor() noexcept {
   log_v2::tcp()->trace("acceptor destroyed");
   std::error_code ec;
   if (_acceptor) {

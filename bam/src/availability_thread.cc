@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 
@@ -66,12 +67,10 @@ void availability_thread::run() {
       // Calculate the duration until next midnight.
       time_t midnight = _compute_next_midnight();
       unsigned long wait_for = std::difftime(midnight, ::time(nullptr));
-      logging::debug(logging::medium)
-          << "BAM-BI: availability thread sleeping for " << wait_for
-          << " seconds.";
+      log_v2::bam()->debug(
+          "BAM-BI: availability thread sleeping for {} seconds.", wait_for);
       _wait.wait_for(lock, std::chrono::seconds(wait_for));
-      logging::debug(logging::medium)
-          << "BAM-BI: availability thread waking up ";
+      log_v2::bam()->debug("BAM-BI: availability thread waking up ");
 
       // Termination asked.
       if (_should_exit)
@@ -147,15 +146,14 @@ void availability_thread::rebuild_availabilities(
  *  Delete all the availabilities.
  */
 void availability_thread::_delete_all_availabilities() {
-  logging::debug(logging::low)
-      << "BAM-BI: availability thread deleting availabilities";
+  log_v2::bam()->debug("BAM-BI: availability thread deleting availabilities");
 
   // Prepare the query.
-  std::stringstream query;
-  query << "DELETE FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN ("
-        << _bas_to_rebuild << ")";
+  std::string query_str(fmt::format(
+      "DELETE FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN ({})",
+      _bas_to_rebuild));
 
-  _mysql->run_query(query.str(),
+  _mysql->run_query(query_str,
                     "BAM-BI: availability thread could not delete the "
                     "BA availabilities from the reporting database");
 }
@@ -170,20 +168,21 @@ void availability_thread::_delete_all_availabilities() {
 void availability_thread::_build_availabilities(time_t midnight) {
   time_t first_day = 0;
   time_t last_day = midnight;
-  std::stringstream query;
+  std::string query_str;
   int thread_id;
 
   // Get the first day of rebuilding. If a complete rebuilding was asked,
   // it's the day of the chronogically first event to rebuild.
   // If not, it's the day following the chronogically last availability.
   if (_should_rebuild_all) {
-    query << "SELECT MIN(start_time), MAX(end_time), MIN(IFNULL(end_time, '0'))"
-             "  FROM mod_bam_reporting_ba_events"
-             "  WHERE ba_id IN ("
-          << _bas_to_rebuild << ")";
+    query_str = fmt::format(
+        "SELECT MIN(start_time), MAX(end_time), MIN(IFNULL(end_time, '0'))"
+        "  FROM mod_bam_reporting_ba_events"
+        "  WHERE ba_id IN ({})",
+        _bas_to_rebuild);
     try {
       std::promise<database::mysql_result> promise;
-      thread_id = _mysql->run_query_and_get_result(query.str(), &promise);
+      thread_id = _mysql->run_query_and_get_result(query_str, &promise);
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
         throw(exceptions::msg() << "no events matching BAs to rebuild");
@@ -205,11 +204,12 @@ void availability_thread::_build_availabilities(time_t midnight) {
     }
 
   } else {
-    query << "SELECT MAX(time_id)"
-             "  FROM mod_bam_reporting_ba_availabilities";
+    query_str =
+        "SELECT MAX(time_id)"
+        " FROM mod_bam_reporting_ba_availabilities";
     try {
       std::promise<database::mysql_result> promise;
-      thread_id = _mysql->run_query_and_get_result(query.str(), &promise);
+      thread_id = _mysql->run_query_and_get_result(query_str, &promise);
       // FIXME DBR: to finish...
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
@@ -226,9 +226,9 @@ void availability_thread::_build_availabilities(time_t midnight) {
     }
   }
 
-  logging::debug(logging::medium)
-      << "BAM-BI: availability thread writing availabilities from: "
-      << first_day << " to " << last_day;
+  log_v2::bam()->debug(
+      "BAM-BI: availability thread writing availabilities from: {} to {}",
+      first_day, last_day);
 
   // Write the availabilities day after day.
   while (first_day < last_day) {
@@ -384,29 +384,27 @@ void availability_thread::_write_availability(
     uint32_t ba_id,
     time_t day_start,
     uint32_t timeperiod_id) {
-  logging::debug(logging::low)
-      << "BAM-BI: availability thread writing availability for "
-         "BA "
-      << ba_id << " at day " << day_start << " (timeperiod " << timeperiod_id
-      << ")";
-  std::stringstream query;
-  query << "INSERT INTO mod_bam_reporting_ba_availabilities "
-        << "  (ba_id, time_id, timeperiod_id, timeperiod_is_default,"
-           "   available, unavailable, degraded,"
-           "   unknown, downtime, alert_unavailable_opened,"
-           "   alert_degraded_opened, alert_unknown_opened,"
-           "   nb_downtime)"
-           "  VALUES ("
-        << ba_id << ", " << day_start << ", " << timeperiod_id << ", "
-        << builder.get_timeperiod_is_default() << ", "
-        << builder.get_available() << ", " << builder.get_unavailable() << ", "
-        << builder.get_degraded() << ", " << builder.get_unknown() << ", "
-        << builder.get_downtime() << ", " << builder.get_unavailable_opened()
-        << ", " << builder.get_degraded_opened() << ", "
-        << builder.get_unknown_opened() << ", " << builder.get_downtime_opened()
-        << ")";
+  log_v2::bam()->debug(
+      "BAM-BI: availability thread writing availability for BA {} at day {} "
+      "(timeperiod {})",
+      ba_id, day_start, timeperiod_id);
+
+  std::string query_str(fmt::format(
+      "INSERT INTO mod_bam_reporting_ba_availabilities "
+      "  (ba_id, time_id, timeperiod_id, timeperiod_is_default,"
+      "   available, unavailable, degraded,"
+      "   unknown, downtime, alert_unavailable_opened,"
+      "   alert_degraded_opened, alert_unknown_opened,"
+      "   nb_downtime)"
+      "  VALUES ({},{},{},{},{},{},{},{},{},{},{},{},{})",
+      ba_id, day_start, timeperiod_id, builder.get_timeperiod_is_default(),
+      builder.get_available(), builder.get_unavailable(),
+      builder.get_degraded(), builder.get_unknown(), builder.get_downtime(),
+      builder.get_unavailable_opened(), builder.get_degraded_opened(),
+      builder.get_unknown_opened(), builder.get_downtime_opened()));
+
   _mysql->run_query(
-      query.str(),
+      query_str,
       "BAM-BI: availability thread could not insert an availability: ", true,
       thread_id);
 }

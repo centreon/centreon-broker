@@ -56,12 +56,11 @@ void bbdo::load() {
   }
 
   // Register BBDO events.
-  e.register_event(
-      io::events::bbdo, bbdo::de_version_response,
-      io::event_info("version_response", &version_response::operations,
-                     version_response::entries));
-  e.register_event(io::events::bbdo, bbdo::de_ack,
-                   io::event_info("ack", &ack::operations, ack::entries));
+  e.register_event(io::events::bbdo, bbdo::de_version_response,
+                   "version_response", &version_response::operations,
+                   version_response::entries);
+  e.register_event(io::events::bbdo, bbdo::de_ack, "ack", &ack::operations,
+                   ack::entries);
 
   // Register BBDO protocol.
   io::protocols::instance().reg("BBDO", std::make_shared<bbdo::factory>(), 7,

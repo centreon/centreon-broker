@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/host_dependency.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -55,7 +57,7 @@ host_dependency::~host_dependency() {}
  */
 host_dependency& host_dependency::operator=(host_dependency const& other) {
   dependency::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**************************************
@@ -66,22 +68,26 @@ host_dependency& host_dependency::operator=(host_dependency const& other) {
 
 // Mapping.
 mapping::entry const host_dependency::entries[] = {
-    mapping::entry(&host_dependency::dependency_period, "dependency_period"),
+    mapping::entry(&host_dependency::dependency_period,
+                   "dependency_period",
+                   get_hosts_hosts_dependencies_col_size(
+                       hosts_hosts_dependencies_dependency_period)),
     mapping::entry(&host_dependency::dependent_host_id,
                    "dependent_host_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&host_dependency::enabled, ""),
     mapping::entry(&host_dependency::execution_failure_options,
-                   "execution_failure_options"),
+                   "execution_failure_options",
+                   get_hosts_hosts_dependencies_col_size(
+                       hosts_hosts_dependencies_execution_failure_options)),
     mapping::entry(&host_dependency::inherits_parent, "inherits_parent"),
     mapping::entry(&host_dependency::host_id,
                    "host_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&host_dependency::notification_failure_options,
-                   nullptr,
-                   mapping::entry::always_valid,
-                   true,
-                   "notification_failure_options"),
+                   "notification_failure_options",
+                   get_hosts_hosts_dependencies_col_size(
+                       hosts_hosts_dependencies_notification_failure_options)),
     mapping::entry()};
 
 // Operations.

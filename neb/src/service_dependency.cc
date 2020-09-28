@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/service_dependency.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -90,7 +92,10 @@ void service_dependency::_internal_copy(service_dependency const& sd) {
 
 // Mapping.
 mapping::entry const service_dependency::entries[] = {
-    mapping::entry(&service_dependency::dependency_period, "dependency_period"),
+    mapping::entry(&service_dependency::dependency_period,
+                   "dependency_period",
+                   get_services_services_dependencies_col_size(
+                       services_services_dependencies_dependency_period)),
     mapping::entry(&service_dependency::dependent_host_id,
                    "dependent_host_id",
                    mapping::entry::invalid_on_zero),
@@ -98,17 +103,20 @@ mapping::entry const service_dependency::entries[] = {
                    "dependent_service_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&service_dependency::enabled, ""),
-    mapping::entry(&service_dependency::execution_failure_options,
-                   "execution_failure_options"),
+    mapping::entry(
+        &service_dependency::execution_failure_options,
+        "execution_failure_options",
+        get_services_services_dependencies_col_size(
+            services_services_dependencies_execution_failure_options)),
     mapping::entry(&service_dependency::host_id,
                    "host_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&service_dependency::inherits_parent, "inherits_parent"),
-    mapping::entry(&service_dependency::notification_failure_options,
-                   nullptr,
-                   mapping::entry::always_valid,
-                   true,
-                   "notification_failure_options"),
+    mapping::entry(
+        &service_dependency::notification_failure_options,
+        "notification_failure_options",
+        get_services_services_dependencies_col_size(
+            services_services_dependencies_notification_failure_options)),
     mapping::entry(&service_dependency::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),

@@ -17,6 +17,8 @@
 */
 
 #include "com/centreon/broker/neb/acknowledgement.hh"
+
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -124,8 +126,13 @@ void acknowledgement::_internal_copy(acknowledgement const& other) {
 // Mapping.
 mapping::entry const acknowledgement::entries[] = {
     mapping::entry(&acknowledgement::acknowledgement_type, "type"),
-    mapping::entry(&acknowledgement::author, "author"),
-    mapping::entry(&acknowledgement::comment, "comment_data"),
+    mapping::entry(&acknowledgement::author,
+                   "author",
+                   get_acknowledgements_col_size(acknowledgements_author)),
+    mapping::entry(
+        &acknowledgement::comment,
+        "comment_data",
+        get_acknowledgements_col_size(acknowledgements_comment_data)),
     mapping::entry(&acknowledgement::deletion_time,
                    "deletion_time",
                    mapping::entry::invalid_on_minus_one),

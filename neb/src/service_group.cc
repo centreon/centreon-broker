@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/service_group.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -75,7 +77,9 @@ mapping::entry const service_group::entries[] = {
     mapping::entry(&service_group::id,
                    "servicegroup_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&service_group::name, "name"),
+    mapping::entry(&service_group::name,
+                   "name",
+                   get_servicegroups_col_size(servicegroups_name)),
     mapping::entry(&service_group::enabled, nullptr),
     mapping::entry(&service_group::poller_id,
                    nullptr,

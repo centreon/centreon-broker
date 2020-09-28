@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/misc/string.hh"
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cassert>
 #include <fstream>
@@ -322,9 +324,9 @@ std::string string::check_string_utf8(std::string const& str) noexcept {
 }
 
 /**
- * @brief This function works almost like the resize method but takes care
- * of the UTF-8 encoding and avoids to cut a string in the middle of a
- * character. This function assumes the string to be UTF-8 encoded.
+ * @brief This function makes a copy of the first s bytes of the given string
+ * but it takes care of the UTF-8 encoding and avoids to cut the string in the
+ * middle of a character. This function assumes the string to be UTF-8 encoded.
  *
  * @param str A string to truncate.
  * @param s The desired size, maybe the resulting string will contain less
@@ -332,15 +334,14 @@ std::string string::check_string_utf8(std::string const& str) noexcept {
  *
  * @return a reference to the string str.
  */
-std::string& string::truncate(std::string& str, size_t s) {
+size_t string::adjust_size_utf8(const std::string& str, size_t s) {
   if (s >= str.size())
-    return str;
+    return str.size();
   if (s == 0)
-    str.resize(0);
+    return s;
   else {
     while ((str[s] & 0xc0) == 0x80)
       s--;
-    str.resize(s);
+    return s;
   }
-  return str;
 }

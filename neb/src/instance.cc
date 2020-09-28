@@ -18,6 +18,8 @@
 
 #include "com/centreon/broker/neb/instance.hh"
 
+#include "com/centreon/broker/database/table_max_size.hh"
+
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
@@ -105,11 +107,15 @@ void instance::_internal_copy(instance const& other) {
 
 // Mapping.
 mapping::entry const instance::entries[] = {
-    mapping::entry(&instance::engine, "engine"),
+    mapping::entry(&instance::engine,
+                   "engine",
+                   get_instances_col_size(instances_engine)),
     mapping::entry(&instance::poller_id,
                    "instance_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&instance::name, "name"),
+    mapping::entry(&instance::name,
+                   "name",
+                   get_instances_col_size(instances_name)),
     mapping::entry(&instance::is_running, "running"),
     mapping::entry(&instance::pid, "pid"),
     mapping::entry(&instance::program_end,
@@ -118,7 +124,9 @@ mapping::entry const instance::entries[] = {
     mapping::entry(&instance::program_start,
                    "start_time",
                    mapping::entry::invalid_on_minus_one),
-    mapping::entry(&instance::version, "version"),
+    mapping::entry(&instance::version,
+                   "version",
+                   get_instances_col_size(instances_version)),
     mapping::entry()};
 
 // Operations.
