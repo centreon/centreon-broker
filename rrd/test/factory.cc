@@ -33,9 +33,9 @@ TEST(RRDFactory, HasEndpoint) {
   config::endpoint cfg(config::endpoint::io_type::output);
 
   cfg.type = "ip";
-  ASSERT_FALSE(fact.has_endpoint(cfg));
+  ASSERT_FALSE(fact.has_endpoint(cfg, nullptr));
   cfg.type = "rrd";
-  ASSERT_TRUE(fact.has_endpoint(cfg));
+  ASSERT_TRUE(fact.has_endpoint(cfg, nullptr));
 }
 
 TEST(RRDFactory, Exception) {

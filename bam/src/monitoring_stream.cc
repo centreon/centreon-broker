@@ -73,7 +73,7 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
                                      database_config const& db_cfg,
                                      database_config const& storage_db_cfg,
                                      std::shared_ptr<persistent_cache> cache)
-    : _ext_cmd_file(ext_cmd_file),
+    : io::stream("BAM"), _ext_cmd_file(ext_cmd_file),
       _mysql(db_cfg),
       _pending_events(0),
       _storage_db_cfg(storage_db_cfg),
@@ -178,7 +178,7 @@ void monitoring_stream::update() {
 int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
-  if (!validate(data, "BAM"))
+  if (!validate(data, get_name()))
     return 0;
   log_v2::bam()->trace("BAM: {} pending events", _pending_events);
 

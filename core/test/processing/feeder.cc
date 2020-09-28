@@ -31,6 +31,7 @@ using namespace com::centreon::broker::processing;
 
 class TestStream : public io::stream {
  public:
+  TestStream() : io::stream("TestStream") {}
   bool read(std::shared_ptr<io::data>&, time_t) {
     return true;
   }

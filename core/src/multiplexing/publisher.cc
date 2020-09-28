@@ -34,7 +34,7 @@ using namespace com::centreon::broker::multiplexing;
 /**
  *  Default constructor.
  */
-publisher::publisher() {}
+publisher::publisher() : io::stream("publisher") {}
 
 /**
  *  Destructor.

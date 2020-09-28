@@ -16,7 +16,9 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/simu/stream.hh"
+
 #include <sstream>
+
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -39,7 +41,8 @@ using namespace com::centreon::broker::simu;
  *  @param[in] port                    port
  */
 stream::stream(std::string const& lua_script,
-               std::map<std::string, misc::variant> const& conf_params) {
+               std::map<std::string, misc::variant> const& conf_params)
+    : io::stream("simu") {
   _luabinding = new luabinding(lua_script, conf_params);
 }
 
@@ -71,6 +74,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  *
  *  @return This method will throw.
  */
-bool stream::read(std::shared_ptr<io::data>& d, time_t deadline __attribute__((unused))) {
+bool stream::read(std::shared_ptr<io::data>& d,
+                  time_t deadline __attribute__((unused))) {
   return _luabinding->read(d);
 }

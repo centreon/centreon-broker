@@ -112,6 +112,8 @@ TEST_F(StatsTest, BuilderWithModules) {
 }
 
 class st : public io::stream {
+  public:
+    st() : io::stream("st") {}
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override {
     (void)deadline;
     d.reset();
@@ -142,13 +144,10 @@ class fact : public io::factory {
   fact() {}
 
   bool has_endpoint(config::endpoint& cfg
-                    __attribute__((__unused__))) const override {
+                    __attribute__((__unused__)), flag* flag) const override {
+    if (flag)
+      *flag = no;
     return true;
-  }
-
-  bool has_not_endpoint(config::endpoint& cfg
-                        __attribute__((__unused__))) const override {
-    return false;
   }
 
   io::endpoint* new_endpoint(

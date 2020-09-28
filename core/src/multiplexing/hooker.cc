@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Centreon
+** Copyright 2011,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,21 +21,15 @@
 
 using namespace com::centreon::broker::multiplexing;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
-hooker::hooker() : _registered{false} {}
+hooker::hooker() : io::stream("hooker"), _registered{false} {}
 
 /**
  *  Destructor.
  */
-hooker::~hooker() {}
+hooker::~hooker() noexcept {}
 
 /**
  *  Enable or disable hooking.

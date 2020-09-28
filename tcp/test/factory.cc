@@ -29,15 +29,15 @@ TEST(TcpFactory, HasEndpoint) {
   config::endpoint cfg(config::endpoint::io_type::output);
 
   cfg.type = "ip";
-  ASSERT_TRUE(fact.has_endpoint(cfg));
+  ASSERT_TRUE(fact.has_endpoint(cfg, nullptr));
   cfg.type = "tcp";
-  ASSERT_TRUE(fact.has_endpoint(cfg));
+  ASSERT_TRUE(fact.has_endpoint(cfg, nullptr));
   cfg.type = "ipv4";
-  ASSERT_TRUE(fact.has_endpoint(cfg));
+  ASSERT_TRUE(fact.has_endpoint(cfg, nullptr));
   cfg.type = "ipv6";
-  ASSERT_TRUE(fact.has_endpoint(cfg));
+  ASSERT_TRUE(fact.has_endpoint(cfg, nullptr));
   cfg.type = "udp";
-  ASSERT_FALSE(fact.has_endpoint(cfg));
+  ASSERT_FALSE(fact.has_endpoint(cfg, nullptr));
 }
 
 TEST(TcpFactory, Exception) {
@@ -101,7 +101,7 @@ TEST(TcpFactory, Connector) {
   cfg.params["port"] = "4444";
   cfg.params["host"] = "127.0.0.1";
   std::unique_ptr<io::factory> f{new tcp::factory};
-  ASSERT_TRUE(f->has_endpoint(cfg));
+  ASSERT_TRUE(f->has_endpoint(cfg, nullptr));
   std::unique_ptr<io::endpoint> endp{fact.new_endpoint(cfg, is_acceptor, cache)};
 
   ASSERT_FALSE(is_acceptor);
