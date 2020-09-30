@@ -19,6 +19,7 @@ core/inc/com/centreon/broker/database/table_max_size.hh
 core/inc/com/centreon/broker/vars.hh
 core/inc/com/centreon/broker/version.hh
 doc/_build
+doc/devel-doc
 libgtest*.a
 libnebbase.a
 libroker.a
