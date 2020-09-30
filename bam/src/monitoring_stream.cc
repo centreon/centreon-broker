@@ -314,7 +314,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
             "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;{};1;0;;Centreon "
             "Broker BAM Module;Automatic downtime triggered by BA downtime "
             "inheritance",
-            now, config::applier::state::instance().poller_id(), dwn.ba_id, now,
+            now, config::applier::state::instance().poller_id(), dwn.ba_id,
             std::numeric_limits<int32_t>::max());
       _write_external_command(cmd);
     } break;
