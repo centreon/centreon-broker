@@ -89,9 +89,7 @@ stream::~stream() noexcept {
  */
 std::string stream::peer() const {
   return fmt::format(
-      "tcp://{}:{}",
-      _connection->socket().remote_endpoint().address().to_string(),
-      _connection->socket().remote_endpoint().port());
+      "tcp://{}", _connection->peer());
 }
 
 /**
