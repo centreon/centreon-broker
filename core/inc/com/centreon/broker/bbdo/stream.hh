@@ -109,6 +109,10 @@ class stream : public io::stream {
   void _read_packet(size_t size, time_t deadline = (time_t)-1);
 
   bool _coarse;
+  /**
+   * the first string contains all the supported extensions.
+   * the second one contains the activated extensions.
+   */
   std::pair<std::string, std::string> _extensions;
   bool _negotiate;
   bool _negotiated;

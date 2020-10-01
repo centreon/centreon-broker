@@ -28,7 +28,7 @@ using namespace com::centreon::broker::bbdo;
  **************************************/
 
 /**
- *  Default constructor.
+ * @brief The default constructor
  */
 version_response::version_response()
     : io::data(version_response::static_type()),
@@ -37,14 +37,28 @@ version_response::version_response()
       bbdo_patch(BBDO_VERSION_PATCH) {}
 
 /**
+ * @brief The constructor
+ *
+ * @param extensions A string with extensions asked for.
+ */
+version_response::version_response(const std::string& extensions)
+    : io::data(version_response::static_type()),
+      bbdo_major(BBDO_VERSION_MAJOR),
+      bbdo_minor(BBDO_VERSION_MINOR),
+      bbdo_patch(BBDO_VERSION_PATCH),
+      extensions(extensions) {}
+
+/**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
 version_response::version_response(version_response const& other)
-    : io::data(other) {
-  _internal_copy(other);
-}
+    : io::data(other),
+bbdo_major(other.bbdo_major),
+bbdo_minor(other.bbdo_minor),
+bbdo_patch(other.bbdo_patch),
+  extensions(other.extensions) {}
 
 /**
  *  Destructor.
@@ -58,13 +72,13 @@ version_response::~version_response() {}
  *
  *  @return This object.
  */
-version_response& version_response::operator=(version_response const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
+//version_response& version_response::operator=(version_response const& other) {
+//  if (this != &other) {
+//    io::data::operator=(other);
+//    _internal_copy(other);
+//  }
+//  return *this;
+//}
 
 /**************************************
  *                                     *
@@ -77,12 +91,12 @@ version_response& version_response::operator=(version_response const& other) {
  *
  *  @param[in] other  Object to copy.
  */
-void version_response::_internal_copy(version_response const& other) {
-  bbdo_major = other.bbdo_major;
-  bbdo_minor = other.bbdo_minor;
-  bbdo_patch = other.bbdo_patch;
-  extensions = other.extensions;
-}
+//void version_response::_internal_copy(version_response const& other) {
+//  bbdo_major = other.bbdo_major;
+//  bbdo_minor = other.bbdo_minor;
+//  bbdo_patch = other.bbdo_patch;
+//  extensions = other.extensions;
+//}
 
 /**************************************
  *                                     *
