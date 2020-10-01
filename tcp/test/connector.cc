@@ -69,7 +69,7 @@ TEST_F(TcpConnector, Simple) {
   data->append(std::string("PING\n"));
   io->write(data);
 
-  ASSERT_TRUE(io->peer() == "tcp://127.0.0.1:4242");
+  ASSERT_EQ(io->peer(), "tcp://127.0.0.1:4242");
   ASSERT_TRUE(io->read(data2, ::time(nullptr) + 5));
 
   std::vector<char> vec{std::static_pointer_cast<io::raw>(data2)->get_buffer()};
