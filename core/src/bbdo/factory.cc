@@ -83,10 +83,9 @@ io::endpoint* factory::new_endpoint(
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("negotiation"));
-    if (it == cfg.params.end() || it->second != "no") {
+    if (it == cfg.params.end() || it->second != "no")
       negotiate = true;
-      extensions = _extensions(cfg);
-    }
+    extensions = _extensions(cfg);
   }
 
   // Ack limit.
