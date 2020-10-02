@@ -63,9 +63,6 @@ class version_response : public io::data {
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  // void _internal_copy(version_response const& right);
 };
 }  // namespace bbdo
 
