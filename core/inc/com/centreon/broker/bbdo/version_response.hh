@@ -61,12 +61,11 @@ class version_response : public io::data {
                                  bbdo::de_version_response>::value;
   }
 
-
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
 
  private:
-  //void _internal_copy(version_response const& right);
+  // void _internal_copy(version_response const& right);
 };
 }  // namespace bbdo
 

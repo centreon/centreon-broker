@@ -53,7 +53,9 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
  public:
   typedef std::shared_ptr<tcp_connection> pointer;
-  tcp_connection(asio::io_context& io_context, const std::string& host = "", uint16_t port = 0);
+  tcp_connection(asio::io_context& io_context,
+                 const std::string& host = "",
+                 uint16_t port = 0);
   ~tcp_connection() noexcept;
 
   pointer ptr();

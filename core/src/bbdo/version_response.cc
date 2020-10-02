@@ -55,10 +55,10 @@ version_response::version_response(const std::string& extensions)
  */
 version_response::version_response(version_response const& other)
     : io::data(other),
-bbdo_major(other.bbdo_major),
-bbdo_minor(other.bbdo_minor),
-bbdo_patch(other.bbdo_patch),
-  extensions(other.extensions) {}
+      bbdo_major(other.bbdo_major),
+      bbdo_minor(other.bbdo_minor),
+      bbdo_patch(other.bbdo_patch),
+      extensions(other.extensions) {}
 
 /**
  *  Destructor.
@@ -72,7 +72,8 @@ version_response::~version_response() {}
  *
  *  @return This object.
  */
-//version_response& version_response::operator=(version_response const& other) {
+// version_response& version_response::operator=(version_response const& other)
+// {
 //  if (this != &other) {
 //    io::data::operator=(other);
 //    _internal_copy(other);
@@ -91,7 +92,7 @@ version_response::~version_response() {}
  *
  *  @param[in] other  Object to copy.
  */
-//void version_response::_internal_copy(version_response const& other) {
+// void version_response::_internal_copy(version_response const& other) {
 //  bbdo_major = other.bbdo_major;
 //  bbdo_minor = other.bbdo_minor;
 //  bbdo_patch = other.bbdo_patch;
