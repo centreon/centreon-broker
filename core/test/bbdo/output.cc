@@ -100,7 +100,7 @@ TEST_F(OutputTest, WriteService) {
   svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
 
   std::shared_ptr<io::stream> stream;
-  std::shared_ptr<into_memory> memory_stream(new into_memory());
+  std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
   stm.set_substream(memory_stream);
   stm.set_coarse(false);

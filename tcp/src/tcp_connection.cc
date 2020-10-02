@@ -28,15 +28,23 @@ using namespace com::centreon::broker::tcp;
  * @brief tcp_connection constructor.
  *
  * @param io_context The io_context needed to use the socket.
+ * @param host The peer host the socket is connected to. If empty, the
+ *        connection is on an acceptor side and no connection has been
+ *        established yet.
+ * @param port The port on the peer side. If 0, the connection is on an acceptor
+ *        side and no connection has been established yet.
  */
-tcp_connection::tcp_connection(asio::io_context& io_context)
+tcp_connection::tcp_connection(asio::io_context& io_context,
+                               const std::string& host,
+                               uint16_t port)
     : _socket(io_context),
       _strand(io_context),
       _writing(false),
       _acks(0),
       _reading(false),
       _closing(false),
-      _closed(false) {}
+      _closed(false),
+      _peer(fmt::format("{}:{}", host, port)) {}
 
 /**
  * @brief Destructor
@@ -287,7 +295,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
         retval = std::move(_read_queue.front());
         _read_queue.pop();
       } else
-        throw exceptions::msg() << "Attempt to read data on a closing socket";
+        throw exceptions::msg() << "Attempt to read data from peer " << _peer
+                                << " on a closing socket";
 
     } else {
       time_t now;
@@ -303,7 +312,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
           retval = std::move(_read_queue.front());
           _read_queue.pop();
         } else
-          throw exceptions::msg() << "Attempt to read data on a closing socket";
+          throw exceptions::msg() << "Attempt to read data from peer " << _peer
+                                  << " on a closing socket";
 
       } else {
         log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
@@ -322,4 +332,16 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
  */
 bool tcp_connection::is_closed() const {
   return _closed;
+}
+
+const std::string& tcp_connection::peer() const {
+  return _peer;
+}
+
+void tcp_connection::update_peer() {
+  if (_socket.is_open()) {
+    _peer =
+        fmt::format("{}:{}", _socket.remote_endpoint().address().to_string(),
+                    _socket.remote_endpoint().port());
+  }
 }
