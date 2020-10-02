@@ -65,46 +65,6 @@ version_response::version_response(version_response const& other)
  */
 version_response::~version_response() {}
 
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-// version_response& version_response::operator=(version_response const& other)
-// {
-//  if (this != &other) {
-//    io::data::operator=(other);
-//    _internal_copy(other);
-//  }
-//  return *this;
-//}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-// void version_response::_internal_copy(version_response const& other) {
-//  bbdo_major = other.bbdo_major;
-//  bbdo_minor = other.bbdo_minor;
-//  bbdo_patch = other.bbdo_patch;
-//  extensions = other.extensions;
-//}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
-
 // Mapping.
 mapping::entry const version_response::entries[] = {
     mapping::entry(&version_response::bbdo_major, "major"),
