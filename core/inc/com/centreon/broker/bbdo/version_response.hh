@@ -40,10 +40,16 @@ namespace bbdo {
  */
 class version_response : public io::data {
  public:
+  short bbdo_major;
+  short bbdo_minor;
+  short bbdo_patch;
+  std::string extensions;
+
   version_response();
+  version_response(const std::string& extensions);
   version_response(version_response const& other);
   ~version_response();
-  version_response& operator=(version_response const& other);
+  version_response& operator=(version_response const& other) = delete;
 
   /**
    *  Get the event type.
@@ -55,16 +61,8 @@ class version_response : public io::data {
                                  bbdo::de_version_response>::value;
   }
 
-  short bbdo_major;
-  short bbdo_minor;
-  short bbdo_patch;
-  std::string extensions;
-
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(version_response const& right);
 };
 }  // namespace bbdo
 

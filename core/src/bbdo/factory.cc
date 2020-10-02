@@ -83,10 +83,9 @@ io::endpoint* factory::new_endpoint(
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("negotiation"));
-    if (it == cfg.params.end() || it->second != "no") {
+    if (it == cfg.params.end() || it->second != "no")
       negotiate = true;
-      extensions = _extensions(cfg);
-    }
+    extensions = _extensions(cfg);
   }
 
   // Ack limit.
@@ -114,17 +113,19 @@ io::endpoint* factory::new_endpoint(
 
   if (is_acceptor) {
     // This flag is just needed to know if we keep the retention or not...
-    // When the connection is made to the map server, no retention is needed, otherwise we want it.
+    // When the connection is made to the map server, no retention is needed,
+    // otherwise we want it.
     bool keep_retention{false};
     auto it = cfg.params.find("one_peer_retention_mode");
     if (it != cfg.params.end())
       keep_retention = config::parser::parse_boolean(it->second);
 
     // One peer retention mode? (i.e. keep_retention + reverse_connection)
-    bool reverse_connection =
-        cfg.get_io_type() == config::endpoint::output;
+    bool reverse_connection = cfg.get_io_type() == config::endpoint::output;
     if (!reverse_connection && keep_retention)
-      log_v2::bbdo()->error("BBDO: Configuration error, the one peer retention mode should be set only when the connection is reversed");
+      log_v2::bbdo()->error(
+          "BBDO: Configuration error, the one peer retention mode should be "
+          "set only when the connection is reversed");
 
     retval =
         new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
@@ -156,7 +157,8 @@ io::endpoint* factory::new_endpoint(
  *
  *  return a pair of two strings, extensions and mandatories.
  */
-std::pair<std::string, std::string> factory::_extensions(config::endpoint& cfg) const {
+std::pair<std::string, std::string> factory::_extensions(
+    config::endpoint& cfg) const {
   std::string extensions;
   std::string mandatory;
   for (std::map<std::string, io::protocols::protocol>::const_iterator

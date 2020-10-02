@@ -47,12 +47,15 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
   std::queue<std::vector<char>> _read_queue;
 
   std::atomic_bool _closed;
+  std::string _peer;
 
   std::condition_variable _is_writing_cv;
 
  public:
   typedef std::shared_ptr<tcp_connection> pointer;
-  tcp_connection(asio::io_context& io_context);
+  tcp_connection(asio::io_context& io_context,
+                 const std::string& host = "",
+                 uint16_t port = 0);
   ~tcp_connection() noexcept;
 
   pointer ptr();
@@ -71,6 +74,8 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
   void close();
 
   bool is_closed() const;
+  const std::string& peer() const;
+  void update_peer();
 };
 
 }  // namespace tcp

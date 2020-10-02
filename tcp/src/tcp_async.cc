@@ -180,6 +180,7 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
                               const asio::error_code& ec) {
   /* If we got a connection, we store it */
   if (!ec) {
+    new_connection->update_peer();
     std::lock_guard<std::mutex> lck(_acceptor_con_m);
     _acceptor_available_con.insert(
         std::make_pair(acceptor.get(), new_connection));
@@ -200,7 +201,8 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
 tcp_connection::pointer tcp_async::create_connection(std::string const& host,
                                                      uint16_t port) {
   log_v2::tcp()->trace("create connection to host {}:{}", host, port);
-  tcp_connection::pointer conn = std::make_shared<tcp_connection>(_io_context);
+  tcp_connection::pointer conn =
+      std::make_shared<tcp_connection>(_io_context, host, port);
   asio::ip::tcp::socket& sock = conn->socket();
 
   asio::ip::tcp::resolver resolver(_io_context);
