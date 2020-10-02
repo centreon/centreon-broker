@@ -34,7 +34,9 @@ using namespace com::centreon::broker::tcp;
  * @param port The port on the peer side. If 0, the connection is on an acceptor
  *        side and no connection has been established yet.
  */
-tcp_connection::tcp_connection(asio::io_context& io_context, const std::string& host, uint16_t port)
+tcp_connection::tcp_connection(asio::io_context& io_context,
+                               const std::string& host,
+                               uint16_t port)
     : _socket(io_context),
       _strand(io_context),
       _writing(false),
@@ -293,7 +295,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
         retval = std::move(_read_queue.front());
         _read_queue.pop();
       } else
-        throw exceptions::msg() << "Attempt to read data from peer " << _peer << " on a closing socket";
+        throw exceptions::msg() << "Attempt to read data from peer " << _peer
+                                << " on a closing socket";
 
     } else {
       time_t now;
@@ -309,7 +312,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
           retval = std::move(_read_queue.front());
           _read_queue.pop();
         } else
-          throw exceptions::msg() << "Attempt to read data from peer " << _peer << " on a closing socket";
+          throw exceptions::msg() << "Attempt to read data from peer " << _peer
+                                  << " on a closing socket";
 
       } else {
         log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
@@ -336,8 +340,8 @@ const std::string& tcp_connection::peer() const {
 
 void tcp_connection::update_peer() {
   if (_socket.is_open()) {
-    _peer = fmt::format("{}:{}",
-        _socket.remote_endpoint().address().to_string(),
-        _socket.remote_endpoint().port());
+    _peer =
+        fmt::format("{}:{}", _socket.remote_endpoint().address().to_string(),
+                    _socket.remote_endpoint().port());
   }
 }
