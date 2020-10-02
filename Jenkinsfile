@@ -49,7 +49,7 @@ try {
         }
       }
     },
-/*    'centos8': {
+    'centos8': {
       node {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos8"
@@ -62,7 +62,7 @@ try {
           tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
         ])
       }
-    },*/
+    },
     'debian10': {
       node {
         sh 'setup_centreon_build.sh'
@@ -89,12 +89,12 @@ try {
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
       }
     },
-/*    'centos8': {
+    'centos8': {
       node {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
       }
-    },*/
+    },
     'debian10': {
       node {
         sh 'setup_centreon_build.sh'
