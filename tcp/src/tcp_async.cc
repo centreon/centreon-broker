@@ -26,6 +26,17 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
 constexpr std::size_t async_buf_size = 16384;
+size_t tcp_async::_pool_size = 0;
+
+/**
+ * @brief Static method to set the pool thread size.
+ *
+ * @param size The size. By default it is 0, case where the pool size is at least
+ * 2 or the CPUs count / 2.
+ */
+void tcp_async::set_size(size_t size) {
+  _pool_size = size;
+}
 
 /**
  * @brief Return the tcp_async singleton.
@@ -45,6 +56,10 @@ tcp_async::tcp_async() : _io_context(), _worker(_io_context), _closed{true} {
   _start();
 }
 
+/**
+ * @brief Start the thread pool used for the tcp connections.
+ *
+ */
 void tcp_async::_start() {
   std::lock_guard<std::mutex> lock(_closed_m);
   if (_closed) {
@@ -53,8 +68,10 @@ void tcp_async::_start() {
      * least, we want 2 threads. So in case of two sockets, one in and one out,
      * they should be managed by those two threads. This is empirical, and maybe
      * will be changed later. */
-    uint32_t count = std::max(std::thread::hardware_concurrency() / 2, 2u);
+    size_t count = _pool_size == 0 ?
+      std::max(std::thread::hardware_concurrency() / 2, 2u) : _pool_size;
 
+    log_v2::tcp()->info("Starting the TCP thread pool with {} threads", count);
     for (uint32_t i = 0; i < count; i++)
       _pool.emplace_back([this] { _io_context.run(); });
   }
