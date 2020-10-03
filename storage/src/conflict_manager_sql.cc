@@ -544,7 +544,7 @@ void conflict_manager::_process_custom_variable_status(
  */
 void conflict_manager::_process_downtime(std::shared_ptr<io::data> d) {
   int conn = _mysql.choose_best_connection(neb::downtime::static_type());
-  _finish_action(-1, actions::hosts | actions::instances |
+  _finish_action(-1, actions::hosts | actions::instances | actions::downtimes |
                          actions::host_parents | actions::host_dependencies |
                          actions::service_dependencies);
 
