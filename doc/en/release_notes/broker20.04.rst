@@ -11,11 +11,43 @@ One peer retention
 A known regression in the 20.04 broker release was that the one peer retention
 did not work correctly. It is fixed with this version.
 
+Columns contents too large
+==========================
+In case of strings too large to be inserted in database, strings are now
+truncated as if the database was configured in non strict mode.
+
+Negotiations
+============
+Compression and TLS could fail between engine and broker, because of issues in
+the negotiation between them. This is ow fixed. If you mix previous 20.04.x
+cbmod/cbd with this new one, you may continue to have issue on this subject.
+We recommend you to do the upgrade of cbmod / cbd on all of your pollers.
+
+Database deadlock
+=================
+When the database connectors are configured with several connections, a host
+downtime could make a deadlock on the database. This is fixed now.
+
+INITIAL HOST STATE
+==================
+Ig you use bam, there was an issue on the reporting that could fail because of
+a missing initial host state. This is fixed now.
+
 ************
 Enhancements
 ************
+
+TCP connector
+=============
 The tcp connector should also be largely improved. It is multithreaded now and
 this should improve its performances.
+
+TCP connections
+===============
+TCP connections are managed by a thread pool. When not configured, this thread
+pool contains at least 2 threads and can increase up to half the number of
+server CPUs. Otherwise, it is possible to configure it in the TCP endpoint with
+the 'pool_size' label.
 
 =======================
 Centreon Broker 20.04.8
