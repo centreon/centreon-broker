@@ -101,16 +101,6 @@ std::string stream::peer() const {
  */
 
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  static uint32_t thread_id = 0;
-  std::hash<std::thread::id> hasher;
-  uint32_t current_thread_id = hasher(std::this_thread::get_id());
-  if (thread_id == 0)
-    thread_id = current_thread_id;
-  if (thread_id != current_thread_id) {
-    log_v2::tcp()->trace("thread {} != thread {} and stream = {}", thread_id,
-                         current_thread_id, reinterpret_cast<uint64_t>(this));
-  }
-
   log_v2::tcp()->trace("read on stream");
 
   // Set deadline.

@@ -22,6 +22,7 @@
 #include <list>
 #include <map>
 #include <string>
+
 #include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/config/logger.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -38,11 +39,31 @@ namespace config {
  *  along with object definitions.
  */
 class state {
+  int _broker_id;
+  uint16_t _rpc_port;
+  std::string _broker_name;
+  std::string _cache_directory;
+  std::string _command_file;
+  std::string _command_protocol;
+  std::list<endpoint> _endpoints;
+  int _event_queue_max_size;
+  bool _flush_logs;
+  bool _log_thread_id;
+  logging::timestamp_type _log_timestamp;
+  bool _log_human_readable_timestamp;
+  std::list<logger> _loggers;
+  std::string _module_dir;
+  std::list<std::string> _module_list;
+  std::map<std::string, std::string> _params;
+  int _poller_id;
+  std::string _poller_name;
+  size_t _pool_size;
+
  public:
   state();
   state(state const& other);
   ~state();
-  state& operator=(state const& other);
+  state& operator=(state const&);
   void broker_id(int id) noexcept;
   int broker_id() const noexcept;
   void rpc_port(uint16_t port) noexcept;
@@ -78,30 +99,10 @@ class state {
   std::map<std::string, std::string> const& params() const noexcept;
   void poller_id(int id) noexcept;
   int poller_id() const noexcept;
+  void pool_size(int size) noexcept;
+  int pool_size() const noexcept;
   void poller_name(std::string const& name);
   std::string const& poller_name() const noexcept;
-
- private:
-  void _internal_copy(state const& other);
-
-  int _broker_id;
-  uint16_t _rpc_port;
-  std::string _broker_name;
-  std::string _cache_directory;
-  std::string _command_file;
-  std::string _command_protocol;
-  std::list<endpoint> _endpoints;
-  int _event_queue_max_size;
-  bool _flush_logs;
-  bool _log_thread_id;
-  logging::timestamp_type _log_timestamp;
-  bool _log_human_readable_timestamp;
-  std::list<logger> _loggers;
-  std::string _module_dir;
-  std::list<std::string> _module_list;
-  std::map<std::string, std::string> _params;
-  int _poller_id;
-  std::string _poller_name;
 };
 }  // namespace config
 

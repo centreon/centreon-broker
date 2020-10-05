@@ -21,22 +21,10 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/pool.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
-
-constexpr std::size_t async_buf_size = 16384;
-size_t tcp_async::_pool_size = 0;
-
-/**
- * @brief Static method to set the pool thread size.
- *
- * @param size The size. By default it is 0, case where the pool size is at least
- * 2 or the CPUs count / 2.
- */
-void tcp_async::set_size(size_t size) {
-  _pool_size = size;
-}
 
 /**
  * @brief Return the tcp_async singleton.
@@ -52,7 +40,7 @@ tcp_async& tcp_async::instance() {
  * @brief tcp_aysnc constructor. It is private and should not be called
  * directly.
  */
-tcp_async::tcp_async() : _io_context(), _worker(_io_context), _closed{true} {
+tcp_async::tcp_async() : _closed{true} {
   _start();
 }
 
@@ -62,19 +50,8 @@ tcp_async::tcp_async() : _io_context(), _worker(_io_context), _closed{true} {
  */
 void tcp_async::_start() {
   std::lock_guard<std::mutex> lock(_closed_m);
-  if (_closed) {
+  if (_closed)
     _closed = false;
-    /* We fix the thread pool used by asio to hardware concurrency / 2 and at
-     * least, we want 2 threads. So in case of two sockets, one in and one out,
-     * they should be managed by those two threads. This is empirical, and maybe
-     * will be changed later. */
-    size_t count = _pool_size == 0 ?
-      std::max(std::thread::hardware_concurrency() / 2, 2u) : _pool_size;
-
-    log_v2::tcp()->info("Starting the TCP thread pool with {} threads", count);
-    for (uint32_t i = 0; i < count; i++)
-      _pool.emplace_back([this] { _io_context.run(); });
-  }
 }
 
 /**
@@ -84,9 +61,7 @@ void tcp_async::_stop() {
   std::lock_guard<std::mutex> lock(_closed_m);
   if (!_closed) {
     _closed = true;
-    _io_context.stop();
-    for (auto& t : _pool)
-      t.join();
+    // FIXME DBR: We must wait for the pool to be stopped.
   }
 }
 
@@ -136,7 +111,7 @@ tcp_connection::pointer tcp_async::get_connection(
 std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
     uint16_t port) {
   auto retval(std::make_shared<asio::ip::tcp::acceptor>(
-      _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)));
+      pool::io_context(), asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)));
 
   asio::ip::tcp::acceptor::reuse_address option(true);
   retval->set_option(option);
@@ -156,7 +131,7 @@ void tcp_async::start_acceptor(
     return;
 
   tcp_connection::pointer new_connection =
-      std::make_shared<tcp_connection>(_io_context);
+      std::make_shared<tcp_connection>(pool::io_context());
 
   acceptor->async_accept(new_connection->socket(),
                          std::bind(&tcp_async::handle_accept, this, acceptor,
@@ -219,10 +194,10 @@ tcp_connection::pointer tcp_async::create_connection(std::string const& host,
                                                      uint16_t port) {
   log_v2::tcp()->trace("create connection to host {}:{}", host, port);
   tcp_connection::pointer conn =
-      std::make_shared<tcp_connection>(_io_context, host, port);
+      std::make_shared<tcp_connection>(pool::io_context(), host, port);
   asio::ip::tcp::socket& sock = conn->socket();
 
-  asio::ip::tcp::resolver resolver(_io_context);
+  asio::ip::tcp::resolver resolver(pool::io_context());
   asio::ip::tcp::resolver::query query(host, std::to_string(port));
   asio::ip::tcp::resolver::iterator it = resolver.resolve(query), end;
 

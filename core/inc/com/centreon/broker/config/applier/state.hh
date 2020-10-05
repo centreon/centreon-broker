@@ -34,18 +34,6 @@ namespace applier {
  *  Apply some configuration state.
  */
 class state {
- public:
-  ~state();
-  void apply(config::state const& s, bool run_mux = true);
-  std::string const& cache_dir() const noexcept;
-  static state& instance();
-  static void load();
-  uint32_t rpc_port() const noexcept;
-  uint32_t poller_id() const noexcept;
-  std::string const& poller_name() const noexcept;
-  static void unload();
-
- private:
   state();
   state(state const& other);
   state& operator=(state const& other);
@@ -54,6 +42,19 @@ class state {
   uint32_t _poller_id;
   uint32_t _rpc_port;
   std::string _poller_name;
+  size_t _pool_size;
+
+ public:
+  ~state();
+  void apply(config::state const& s, bool run_mux = true);
+  std::string const& cache_dir() const noexcept;
+  static state& instance();
+  static void load();
+  uint32_t rpc_port() const noexcept;
+  uint32_t poller_id() const noexcept;
+  size_t pool_size() const noexcept;
+  std::string const& poller_name() const noexcept;
+  static void unload();
 };
 }  // namespace applier
 }  // namespace config

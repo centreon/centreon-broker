@@ -40,9 +40,25 @@ state::state() {
  *
  *  @param[in] other  Object to copy.
  */
-state::state(state const& other) {
-  _internal_copy(other);
-}
+state::state(const state& other)
+    : _broker_id(other._broker_id),
+      _rpc_port(other._rpc_port),
+      _broker_name(other._broker_name),
+      _cache_directory(other._cache_directory),
+      _command_file(other._command_file),
+      _command_protocol(other._command_protocol),
+      _endpoints(other._endpoints),
+      _event_queue_max_size(other._event_queue_max_size),
+      _log_thread_id(other._log_thread_id),
+      _log_timestamp(other._log_timestamp),
+      _log_human_readable_timestamp(other._log_human_readable_timestamp),
+      _loggers(other._loggers),
+      _module_dir(other._module_dir),
+      _module_list(other._module_list),
+      _params(other._params),
+      _poller_id(other._poller_id),
+      _poller_name(other._poller_name),
+      _pool_size(other._pool_size) {}
 
 /**
  *  Destructor.
@@ -57,8 +73,26 @@ state::~state() {}
  *  @return This object.
  */
 state& state::operator=(state const& other) {
-  if (this != &other)
-    _internal_copy(other);
+  if (this != &other) {
+    _broker_id = other._broker_id;
+    _rpc_port = other._rpc_port;
+    _broker_name = other._broker_name;
+    _cache_directory = other._cache_directory;
+    _command_file = other._command_file;
+    _command_protocol = other._command_protocol;
+    _endpoints = other._endpoints;
+    _event_queue_max_size = other._event_queue_max_size;
+    _log_thread_id = other._log_thread_id;
+    _log_timestamp = other._log_timestamp;
+    _log_human_readable_timestamp = other._log_human_readable_timestamp;
+    _loggers = other._loggers;
+    _module_dir = other._module_dir;
+    _module_list = other._module_list;
+    _params = other._params;
+    _poller_id = other._poller_id;
+    _poller_name = other._poller_name;
+    _pool_size = other._pool_size;
+  }
   return *this;
 }
 
@@ -85,6 +119,7 @@ void state::clear() {
   _params.clear();
   _poller_id = 0;
   _poller_name.clear();
+  _pool_size = 0;
 }
 
 /**
@@ -380,6 +415,27 @@ int state::poller_id() const noexcept {
 }
 
 /**
+ * @brief Set the pool thread size. This pool is used at the moment by the tcp
+ * connector, but should be used by others very soon.
+ *
+ * @param size A non negative integer. If 0, the pool size will be computed
+ * automatically with max(2, number of CPUs / 2).
+ */
+void state::pool_size(int size) noexcept {
+  _pool_size = size;
+}
+
+/**
+ * @brief Get the pool thread size. This pool is used at the moment by the TCP
+ * connector, but should be used by others very soon.
+ *
+ * @return a int integer.
+ */
+int state::pool_size() const noexcept {
+  return _pool_size;
+}
+
+/**
  *  Set the poller name.
  *
  *  @param[in] name  Poller name.
@@ -395,37 +451,6 @@ void state::poller_name(std::string const& name) {
  */
 std::string const& state::poller_name() const noexcept {
   return _poller_name;
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void state::_internal_copy(state const& other) {
-  _broker_id = other._broker_id;
-  _rpc_port = other._rpc_port;
-  _broker_name = other._broker_name;
-  _cache_directory = other._cache_directory;
-  _command_file = other._command_file;
-  _command_protocol = other._command_protocol;
-  _endpoints = other._endpoints;
-  _event_queue_max_size = other._event_queue_max_size;
-  _log_thread_id = other._log_thread_id;
-  _log_timestamp = other._log_timestamp;
-  _log_human_readable_timestamp = other._log_human_readable_timestamp;
-  _loggers = other._loggers;
-  _module_dir = other._module_dir;
-  _module_list = other._module_list;
-  _params = other._params;
-  _poller_id = other._poller_id;
-  _poller_name = other._poller_name;
 }
 
 void state::rpc_port(uint16_t port) noexcept {

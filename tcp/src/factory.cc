@@ -94,25 +94,6 @@ io::endpoint* factory::new_endpoint(
     }
   }
 
-  // Find the thread pool size.
-  uint16_t pool_size = 0;
-  {
-    auto it = cfg.params.find("pool_size");
-    if (it == cfg.params.end()) {
-      log_v2::tcp()->trace("TCP: no 'pool_size' specified. It will be set to the number of CPUs divided by 2 and at least 2");
-    }
-    else {
-      try {
-        pool_size = static_cast<size_t>(std::stol(it->second));
-      } catch (const std::exception& e) {
-        log_v2::tcp()->error("TCP: 'pool_size' must be an integer and not '{}' for endpoint '{}'", it->second, cfg.name);
-        throw exceptions::msg() << "TCP: invalid pool_size value '" << it->second << "' defined for endpoint '" << cfg.name << "'";
-      }
-    }
-  }
-
-  tcp_async::set_size(pool_size);
-
   int read_timeout(-1);
   {
     std::map<std::string, std::string>::const_iterator it{

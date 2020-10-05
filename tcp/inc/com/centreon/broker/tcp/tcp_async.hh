@@ -30,10 +30,6 @@ CCB_BEGIN()
 namespace tcp {
 
 class tcp_async {
-  static size_t _pool_size;
-  asio::io_context _io_context;
-  asio::io_service::work _worker;
-  std::vector<std::thread> _pool;
   std::mutex _m_read_data;
   std::mutex _closed_m;
   bool _closed;
@@ -68,7 +64,6 @@ class tcp_async {
       uint32_t timeout_s);
 
   static tcp_async& instance();
-  static void set_size(size_t size);
 };
 }  // namespace tcp
 

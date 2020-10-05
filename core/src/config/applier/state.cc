@@ -64,33 +64,33 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   static char const* const allowed_chars(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_");
   if (!s.poller_id() || s.poller_name().empty())
-    throw(exceptions::msg()
+    throw exceptions::msg()
           << "state applier: poller information are "
-          << "not set: please fill poller_id and poller_name");
+          << "not set: please fill poller_id and poller_name";
   if (!s.broker_id() || s.broker_name().empty())
-    throw(exceptions::msg()
+    throw exceptions::msg()
           << "state applier: instance information "
-          << "are not set: please fill broker_id and broker_name");
+          << "are not set: please fill broker_id and broker_name";
   for (std::string::const_iterator it(s.broker_name().begin()),
        end(s.broker_name().end());
        it != end; ++it)
     if (!strchr(allowed_chars, *it))
-      throw(exceptions::msg()
+      throw exceptions::msg()
             << "state applier: broker_name is not "
-            << " valid: allowed characters are " << allowed_chars);
+            << " valid: allowed characters are " << allowed_chars;
   for (std::list<config::endpoint>::const_iterator it(s.endpoints().begin()),
        end(s.endpoints().end());
        it != end; ++it) {
     if (it->name.empty())
-      throw(exceptions::msg() << "state applier: endpoint name is not set: "
-                              << "please fill name of all endpoints");
+      throw exceptions::msg() << "state applier: endpoint name is not set: "
+                              << "please fill name of all endpoints";
     for (std::string::const_iterator it_name(it->name.begin()),
          end_name(it->name.end());
          it_name != end_name; ++it_name)
       if (!strchr(allowed_chars, *it_name))
-        throw(exceptions::msg()
+        throw exceptions::msg()
               << "state applier: endpoint name '" << *it_name
-              << "' is not valid: allowed characters are " << allowed_chars);
+              << "' is not valid: allowed characters are " << allowed_chars;
   }
 
   // Set Broker instance ID.
@@ -100,6 +100,9 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   _poller_id = s.poller_id();
   _poller_name = s.poller_name();
   _rpc_port = s.rpc_port();
+
+  // Thread pool size.
+  _pool_size = s.pool_size();
 
   // Set cache directory.
   _cache_dir = s.cache_directory();
@@ -219,6 +222,16 @@ uint32_t state::poller_id() const throw() {
  */
 std::string const& state::poller_name() const noexcept {
   return _poller_name;
+}
+
+/**
+ * @brief Get the thread pool size.
+ *
+ * @return Number of threads in the pool or 0 which means the number of threads
+ * will be computed as max(2, number of CPUs / 2).
+ */
+size_t state::pool_size() const noexcept {
+  return _pool_size;
 }
 
 /**

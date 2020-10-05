@@ -37,14 +37,14 @@ mysql::mysql(database_config const& db_cfg)
   mysql_manager& mgr(mysql_manager::instance());
   _connection = mgr.get_connections(db_cfg);
   log_v2::sql()->info("mysql connector configured with {} connection(s)",
-                      _connection.size());
+                      db_cfg.get_connections_count());
 }
 
 /**
  *  Destructor
  */
 mysql::~mysql() {
-  log_v2::sql()->debug("mysql: destruction");
+  log_v2::sql()->trace("mysql: destruction");
   try {
     commit();
   } catch (const std::exception& e) {
@@ -54,7 +54,7 @@ mysql::~mysql() {
   }
   _connection.clear();
   mysql_manager::instance().update_connections();
-  logging::info(logging::low) << "mysql: mysql library closed.";
+  log_v2::sql()->trace("mysql object destroyed");
 }
 
 /**
