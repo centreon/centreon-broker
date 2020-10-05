@@ -29,7 +29,6 @@
 CCB_BEGIN()
 
 class log_v2 {
- private:
   std::shared_ptr<spdlog::logger> _core_log;
   std::shared_ptr<spdlog::logger> _tcp_log;
   std::shared_ptr<spdlog::logger> _bbdo_log;

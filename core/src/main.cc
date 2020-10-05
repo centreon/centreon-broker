@@ -33,6 +33,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
 
@@ -299,6 +300,8 @@ int main(int argc, char* argv[]) {
             rpc->shutdown();
             delete rpc;
           });
+
+      pool::set_size(gl_state.pool_size());
 
       // Launch event loop.
       if (!check)
