@@ -36,8 +36,8 @@ mysql::mysql(database_config const& db_cfg)
       _current_connection(0) {
   mysql_manager& mgr(mysql_manager::instance());
   _connection = mgr.get_connections(db_cfg);
-  log_v2::sql()->info("mysql connector configured with {} connection(s)",
-                      db_cfg.get_connections_count());
+  log_v2::sql()->trace("mysql connector configured with {} connection(s)",
+                       db_cfg.get_connections_count());
 }
 
 /**

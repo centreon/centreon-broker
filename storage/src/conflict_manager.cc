@@ -366,6 +366,8 @@ void conflict_manager::_callback() {
     _broken = true;
   }
 
+  log_v2::sql()->info("conflict manager configured to use {} connections",
+                      _mysql.connections_count());
   do {
     /* Are there index_data to remove? */
     try {
