@@ -78,6 +78,8 @@ class state {
   std::map<std::string, std::string> const& params() const noexcept;
   void poller_id(int id) noexcept;
   int poller_id() const noexcept;
+  void pool_size(int size) noexcept;
+  int pool_size() const noexcept;
   void poller_name(std::string const& name);
   std::string const& poller_name() const noexcept;
 
@@ -102,6 +104,7 @@ class state {
   std::map<std::string, std::string> _params;
   int _poller_id;
   std::string _poller_name;
+  size_t _pool_size;
 };
 }  // namespace config
 

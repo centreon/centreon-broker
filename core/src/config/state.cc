@@ -85,6 +85,7 @@ void state::clear() {
   _params.clear();
   _poller_id = 0;
   _poller_name.clear();
+  _pool_size = 0;
 }
 
 /**
@@ -377,6 +378,27 @@ void state::poller_id(int id) noexcept {
  */
 int state::poller_id() const noexcept {
   return _poller_id;
+}
+
+/**
+ * @brief Set the pool thread size. This pool is used at the moment by the tcp
+ * connector, but should be used by others very soon.
+ *
+ * @param size A non negative integer. If 0, the pool size will be computed
+ * automatically with max(2, number of CPUs / 2).
+ */
+void state::pool_size(int size) noexcept {
+  _pool_size = size;
+}
+
+/**
+ * @brief Get the pool thread size. This pool is used at the moment by the TCP
+ * connector, but should be used by others very soon.
+ *
+ * @return a int integer.
+ */
+int state::pool_size() const noexcept {
+  return _pool_size;
 }
 
 /**

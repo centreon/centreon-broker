@@ -126,6 +126,10 @@ state parser::parse(std::string const& file) {
                    object, "cache_directory", retval, &state::cache_directory,
                    &Json::is_string, &Json::string_value))
         ;
+      else if (get_conf<int, state>(
+                   object, "pool_size", retval, &state::pool_size,
+                   &Json::is_number, &Json::int_value))
+        ;
       else if (get_conf<std::string const&, state>(
                    object, "command_file", retval, &state::command_file,
                    &Json::is_string, &Json::string_value))
