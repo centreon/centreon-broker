@@ -16,17 +16,15 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/tcp/tcp_async.hh"
-#include "com/centreon/broker/pool.hh"
 
 #include <functional>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/pool.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
-
-constexpr std::size_t async_buf_size = 16384;
 
 /**
  * @brief Return the tcp_async singleton.
@@ -63,7 +61,7 @@ void tcp_async::_stop() {
   std::lock_guard<std::mutex> lock(_closed_m);
   if (!_closed) {
     _closed = true;
-    //FIXME DBR: We must wait for the pool to be stopped.
+    // FIXME DBR: We must wait for the pool to be stopped.
   }
 }
 
