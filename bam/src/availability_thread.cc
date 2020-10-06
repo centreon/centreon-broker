@@ -62,7 +62,7 @@ void availability_thread::run() {
   if (_should_exit)
     return;
 
-  while (true) {
+  for (;;) {
     try {
       // Calculate the duration until next midnight.
       time_t midnight = _compute_next_midnight();
@@ -118,13 +118,17 @@ void availability_thread::wait() {
 }
 
 /**
- *  Lock the main mutex of the availability thread.
- *
- *  @return  A unique_lock<std::mutex> locking the main mutex.
+ *  @brief Lock the main mutex of the availability thread.
  */
-std::unique_ptr<std::unique_lock<std::mutex>> availability_thread::lock() {
-  return std::unique_ptr<std::unique_lock<std::mutex>>(
-      new std::unique_lock<std::mutex>(_mutex));
+void availability_thread::lock() {
+  _mutex.lock();
+}
+
+/**
+ * @brief Unlock the main mutex of the availability thread.
+ */
+void availability_thread::unlock() {
+  _mutex.unlock();
 }
 
 /**
@@ -415,8 +419,8 @@ void availability_thread::_write_availability(
  *  @return  The next midnight.
  */
 time_t availability_thread::_compute_next_midnight() {
-  return (time::timeperiod::add_round_days_to_midnight(
-      _compute_start_of_day(::time(nullptr)), 3600 * 24));
+  return time::timeperiod::add_round_days_to_midnight(
+      _compute_start_of_day(::time(nullptr)), 3600 * 24);
 }
 
 /**

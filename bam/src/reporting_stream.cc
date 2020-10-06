@@ -314,19 +314,17 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
 
 void reporting_stream::_close_all_events() {
   time_t now(::time(nullptr));
-  std::ostringstream query;
+  std::string query(
+      fmt::format("UPDATE mod_bam_reporting_ba_events SET end_time={} WHERE "
+                  "end_time IS NULL",
+                  now));
+  _mysql.run_query(query, "BAM-BI: could not close all ba events");
 
-  query << "UPDATE mod_bam_reporting_ba_events"
-           " SET end_time="
-        << now << " WHERE end_time IS NULL";
-  _mysql.run_query(query.str(), "BAM-BI: could not close all ba events");
-
-  query.str("");
-  query << "UPDATE mod_bam_reporting_kpi_events"
-           "  SET end_time="
-        << now << "  WHERE end_time IS NULL";
-
-  _mysql.run_query(query.str(), "BAM-BI, could not close all kpi events");
+  query = fmt::format(
+      "UPDATE mod_bam_reporting_kpi_events SET end_time={} WHERE end_time IS "
+      "NULL",
+      now);
+  _mysql.run_query(query, "BAM-BI, could not close all kpi events");
 }
 
 /**
@@ -900,8 +898,7 @@ void reporting_stream::_process_dimension(std::shared_ptr<io::data> const& e) {
 
     if (!dtts.update_started) {
       // Lock the availability thread.
-      std::unique_ptr<std::unique_lock<std::mutex>> lock(
-          _availabilities->lock());
+      std::unique_lock<availability_thread> lock(*_availabilities);
 
       // XXX : dimension event acknowledgement might not work !!!
       //       For this reason, ignore any db error. We wouldn't
@@ -1329,25 +1326,22 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
   rebuild const& r = *std::static_pointer_cast<rebuild const>(e);
   if (r.bas_to_rebuild.empty())
     return;
-  logging::debug(logging::low) << "BAM-BI: processing rebuild signal";
+  log_v2::bam()->debug("BAM-BI: processing rebuild signal");
 
   _update_status("rebuilding: querying ba events");
 
   // We block the availability thread to prevent it waking
   // up on truncated event durations.
   try {
-    std::unique_ptr<std::unique_lock<std::mutex>> lock(_availabilities->lock());
+    std::unique_lock<availability_thread> lock(*_availabilities);
 
     // Delete obsolete ba events durations.
     {
       std::string query(
-          "DELETE a"
-          "  FROM mod_bam_reporting_ba_events_durations as a"
-          "    INNER JOIN mod_bam_reporting_ba_events as b"
-          "      ON a.ba_event_id = b.ba_event_id"
-          "  WHERE b.ba_id IN (");
-      query.append(r.bas_to_rebuild);
-      query.append(")");
+          fmt::format("DELETE a FROM mod_bam_reporting_ba_events_durations as "
+                      "a INNER JOIN mod_bam_reporting_ba_events as b ON "
+                      "a.ba_event_id = b.ba_event_id WHERE b.ba_id IN ({})",
+                      r.bas_to_rebuild));
 
       std::string err_msg(fmt::format(
           "BAM-BI: could not delete BA durations {}: ", r.bas_to_rebuild));
@@ -1358,13 +1352,10 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
     std::vector<std::shared_ptr<ba_event>> ba_events;
     {
       std::string query(
-          "SELECT ba_id, start_time, end_time, "
-          "       status, in_downtime boolean"
-          "  FROM mod_bam_reporting_ba_events"
-          "  WHERE end_time IS NOT NULL"
-          "    AND ba_id IN (");
-      query.append(r.bas_to_rebuild);
-      query.append(")");
+          fmt::format("SELECT ba_id, start_time, end_time, status, in_downtime "
+                      "boolean FROM mod_bam_reporting_ba_events WHERE end_time "
+                      "IS NOT NULL AND ba_id IN ({})",
+                      r.bas_to_rebuild));
       std::promise<mysql_result> promise;
       _mysql.run_query_and_get_result(query, &promise);
       try {
