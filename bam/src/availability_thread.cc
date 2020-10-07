@@ -217,7 +217,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
       // FIXME DBR: to finish...
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
-        throw(exceptions::msg() << "no availability in table");
+        throw exceptions::msg() << "no availability in table";
       first_day = res.value_as_i32(0);
       first_day =
           time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
@@ -262,18 +262,11 @@ void availability_thread::_build_daily_availabilities(int thread_id,
 
   // Build the availabilities tied to event durations (event finished)
   std::stringstream query;
-  query << "SELECT a.ba_event_id, b.ba_id, a.start_time, a.end_time,"
-           "       a.duration, a.sla_duration, a.timeperiod_id,"
-           "       a.timeperiod_is_default, b.status, b.in_downtime"
-           "  FROM mod_bam_reporting_ba_events_durations AS a"
-           "    INNER JOIN mod_bam_reporting_ba_events AS b"
-           "  ON a.ba_event_id = b.ba_event_id"
-           "  WHERE ";
+  query << "SELECT a.ba_event_id, b.ba_id, a.start_time, a.end_time, a.duration, a.sla_duration, a.timeperiod_id, a.timeperiod_is_default, b.status, b.in_downtime FROM mod_bam_reporting_ba_events_durations AS a INNER JOIN mod_bam_reporting_ba_events AS b ON a.ba_event_id = b.ba_event_id WHERE ";
   if (_should_rebuild_all)
     query << "(b.ba_id IN (" << _bas_to_rebuild << ")) AND ";
-  query << "((a.start_time BETWEEN " << day_start << " AND " << day_end - 1
-        << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end - 1
-        << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
+  query << "(a.start_time < " << day_end
+        << " AND a.end_time >= " << day_start << ")";
 
   std::promise<database::mysql_result> promise;
   _mysql->run_query_and_get_result(query.str(), &promise, thread_id);
@@ -288,18 +281,23 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       // Find the timeperiod.
       time::timeperiod::ptr tp = _shared_tps.get_timeperiod(timeperiod_id);
       // No timeperiod found, skip.
-      if (!tp)
+      if (!tp) {
+        log_v2::bam()->debug("no timeperiod found with id {}", timeperiod_id);
         continue;
+      }
       // Find the builder.
       std::map<std::pair<uint32_t, uint32_t>, availability_builder>::iterator
           found = builders.find(std::make_pair(ba_id, timeperiod_id));
       // No builders found, create one.
-      if (found == builders.end())
+      if (found == builders.end()) {
+        log_v2::bam()->debug("no builder found for ba id {} and timeperiod id {}: Adding it",
+            ba_id, timeperiod_id);
         found = builders
                     .insert(std::make_pair(
                         std::make_pair(ba_id, timeperiod_id),
                         availability_builder(day_end, day_start)))
                     .first;
+      }
       // Add the event to the builder.
       found->second.add_event(res.value_as_i32(8),   // Status
                               res.value_as_i32(2),   // Start time
@@ -314,12 +312,11 @@ void availability_thread::_build_daily_availabilities(int thread_id,
         << "BAM-BI: availability thread could not build the data" << e.what();
   }
 
+  log_v2::bam()->debug("{} builders of availabilities created", builders.size());
+
   // Build the availabilities tied to event not finished.
   query.str("");
-  query << "SELECT ba_event_id, ba_id, start_time, end_time,"
-           "       status, in_downtime"
-           "  FROM mod_bam_reporting_ba_events"
-           "  WHERE ";
+  query << "SELECT ba_event_id, ba_id, start_time, end_time, status, in_downtime FROM mod_bam_reporting_ba_events WHERE ";
   if (_should_rebuild_all)
     query << "(ba_id IN (" << _bas_to_rebuild << ")) AND ";
   query << "(start_time < " << day_end << " AND end_time IS NULL)";
@@ -334,21 +331,20 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       // Get all the timeperiods associated with the ba of this event.
       std::vector<std::pair<time::timeperiod::ptr, bool>> tps =
           _shared_tps.get_timeperiods_by_ba_id(ba_id);
-      for (std::vector<std::pair<time::timeperiod::ptr, bool>>::const_iterator
-               it(tps.begin()),
-           end(tps.end());
-           it != end; ++it) {
+      int count = 0;
+      for (auto it = tps.begin(), end = tps.end(); it != end; ++it) {
         uint32_t tp_id = it->first->get_id();
         // Find the builder.
-        std::map<std::pair<uint32_t, uint32_t>, availability_builder>::iterator
-            found = builders.find(std::make_pair(ba_id, tp_id));
+        auto found = builders.find(std::make_pair(ba_id, tp_id));
         // No builders found, create one.
-        if (found == builders.end())
+        if (found == builders.end()) {
           found = builders
                       .insert(std::make_pair(
                           std::make_pair(ba_id, tp_id),
                           availability_builder(day_end, day_start)))
                       .first;
+          count++;
+        }
         // Add the event to the builder.
         found->second.add_event(res.value_as_i32(4),   // Status
                                 res.value_as_i32(2),   // Start time
@@ -358,17 +354,16 @@ void availability_thread::_build_daily_availabilities(int thread_id,
         // Add the timeperiod is default flag.
         found->second.set_timeperiod_is_default(it->second);
       }
+      log_v2::bam()->debug("{} builder(s) were missing for ba {}", count, ba_id);
     }
   } catch (std::exception const& e) {
     throw exceptions::msg()
         << "BAM-BI: availability thread could not build the data: " << e.what();
   }
 
+  log_v2::bam()->debug("{} builder(s) to write availabilities", builders.size());
   // For each builder, write the availabilities.
-  for (std::map<std::pair<uint32_t, uint32_t>,
-                availability_builder>::const_iterator it = builders.begin(),
-                                                      end = builders.end();
-       it != end; ++it)
+  for (auto it = builders.begin(), end = builders.end(); it != end; ++it)
     _write_availability(thread_id, it->second, it->first.first, day_start,
                         it->first.second);
 }

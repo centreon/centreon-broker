@@ -381,16 +381,8 @@ void monitoring_stream::_rebuild() {
   logging::debug(logging::medium)
       << "BAM: rebuild asked, sending the rebuild signal";
 
-  std::shared_ptr<rebuild> r(new rebuild);
-  {
-    std::ostringstream oss;
-    for (std::vector<uint32_t>::const_iterator it(bas_to_rebuild.begin()),
-         end(bas_to_rebuild.end());
-         it != end; ++it)
-      oss << *it << ", ";
-    r->bas_to_rebuild = oss.str();
-    r->bas_to_rebuild.resize(r->bas_to_rebuild.size() - 2);
-  }
+  std::shared_ptr<rebuild> r(std::make_shared<rebuild>());
+  r->bas_to_rebuild = fmt::format("{}", fmt::join(bas_to_rebuild, ", "));
   std::unique_ptr<io::stream> out(new multiplexing::publisher);
   out->write(r);
 
