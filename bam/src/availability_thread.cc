@@ -189,7 +189,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
       thread_id = _mysql->run_query_and_get_result(query_str, &promise);
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
-        throw(exceptions::msg() << "no events matching BAs to rebuild");
+        throw exceptions::msg() << "no events matching BAs to rebuild";
       first_day = res.value_as_i32(0);
       first_day = _compute_start_of_day(first_day);
       // If there is opened events, rebuild until midnight of this day.
@@ -255,10 +255,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
 void availability_thread::_build_daily_availabilities(int thread_id,
                                                       time_t day_start,
                                                       time_t day_end) {
-  logging::info(logging::medium)
-      << "BAM-BI: availability thread writing daily availability for "
-         "day : "
-      << day_start << "-" << day_end;
+  log_v2::bam()->info("BAM-BI: availability thread writing daily availability for day : {}-{}", day_start, day_end);
 
   // Build the availabilities tied to event durations (event finished)
   std::stringstream query;

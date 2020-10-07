@@ -588,10 +588,9 @@ void reporting_stream::_prepare() {
  */
 void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
   bam::ba_event const& be = *std::static_pointer_cast<bam::ba_event const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing event of BA " << be.ba_id << " (start time "
-      << be.start_time << ", end time " << be.end_time << ", status "
-      << be.status << ", in downtime " << be.in_downtime << ")";
+  log_v2::bam()->debug(
+      "BAM-BI: processing event of BA {} (start time {}, end time {}, status {}, in downtime {})",
+      be.ba_id, be.start_time, be.end_time, be.status, be.in_downtime);
 
   // Try to update event.
   if (be.end_time.is_null())
@@ -676,11 +675,8 @@ void reporting_stream::_process_ba_duration_event(
     std::shared_ptr<io::data> const& e) {
   bam::ba_duration_event const& bde =
       *std::static_pointer_cast<bam::ba_duration_event const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing BA duration event of BA " << bde.ba_id
-      << " (start time " << bde.start_time << ", end time " << bde.end_time
-      << ", duration " << bde.duration << ", sla duration " << bde.sla_duration
-      << ")";
+  log_v2::bam()->debug(
+      "BAM-BI: processing BA duration event of BA {} (start time {}, end time {}, duration {}, sla duration {})", bde.ba_id, bde.start_time, bde.end_time, bde.duration, bde.sla_duration);
 
   // Try to update first.
   _ba_duration_event_update.bind_value_as_u64(
@@ -731,10 +727,9 @@ void reporting_stream::_process_ba_duration_event(
  */
 void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
   bam::kpi_event const& ke = *std::static_pointer_cast<bam::kpi_event const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing event of KPI " << ke.kpi_id << " (start time "
-      << ke.start_time << ", end time " << ke.end_time << ", state "
-      << ke.status << ", in downtime " << ke.in_downtime << ")";
+  log_v2::bam()->debug(
+      "BAM-BI: processing event of KPI {} (start time {}, end time {}, state {}, in downtime {})",
+      ke.kpi_id, ke.start_time, ke.end_time, ke.status, ke.in_downtime);
 
   // Try to update kpi.
   if (ke.end_time.is_null())
@@ -810,9 +805,7 @@ void reporting_stream::_process_dimension_ba(
     std::shared_ptr<io::data> const& e) {
   bam::dimension_ba_event const& dba =
       *std::static_pointer_cast<bam::dimension_ba_event const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing declaration of BA " << dba.ba_id << " ('"
-      << dba.ba_description << "')";
+  log_v2::bam()->debug("BAM-BI: processing declaration of BA {} ('{}')", dba.ba_id, dba.ba_description);
   _dimension_ba_insert.bind_value_as_i32(0, dba.ba_id);
   _dimension_ba_insert.bind_value_as_str(
       1, misc::string::truncate(
@@ -840,8 +833,8 @@ void reporting_stream::_process_dimension_bv(
     std::shared_ptr<io::data> const& e) {
   bam::dimension_bv_event const& dbv =
       *std::static_pointer_cast<bam::dimension_bv_event const>(e);
-  logging::debug(logging::low) << "BAM-BI: processing declaration of BV "
-                               << dbv.bv_id << " ('" << dbv.bv_name << "')";
+  log_v2::bam()->debug("BAM-BI: processing declaration of BV {} ('{}')",
+                       dbv.bv_id, dbv.bv_name);
 
   _dimension_bv_insert.bind_value_as_i32(0, dbv.bv_id);
   _dimension_bv_insert.bind_value_as_str(
@@ -866,8 +859,8 @@ void reporting_stream::_process_dimension_ba_bv_relation(
     std::shared_ptr<io::data> const& e) {
   bam::dimension_ba_bv_relation_event const& dbabv =
       *std::static_pointer_cast<bam::dimension_ba_bv_relation_event const>(e);
-  logging::debug(logging::low) << "BAM-BI: processing relation between BA "
-                               << dbabv.ba_id << " and BV " << dbabv.bv_id;
+  log_v2::bam()->debug("BAM-BI: processing relation between BA {} and BV {}",
+      dbabv.ba_id, dbabv.bv_id);
 
   _dimension_ba_bv_relation_insert.bind_value_as_i32(0, dbabv.ba_id);
   _dimension_ba_bv_relation_insert.bind_value_as_i32(1, dbabv.bv_id);
@@ -1033,8 +1026,8 @@ void reporting_stream::_process_dimension_truncate_signal(
       *std::static_pointer_cast<dimension_truncate_table_signal const>(e);
 
   if (dtts.update_started) {
-    logging::debug(logging::low)
-        << "BAM-BI: processing table truncation signal";
+    log_v2::bam()->debug(
+        "BAM-BI: processing table truncation signal");
 
     for (std::vector<mysql_stmt>::iterator
              it(_dimension_truncate_tables.begin()),
@@ -1065,8 +1058,8 @@ void reporting_stream::_process_dimension_kpi(
     kpi_name = dk.boolean_name;
   else if (!dk.meta_service_name.empty())
     kpi_name = dk.meta_service_name;
-  logging::debug(logging::low) << "BAM-BI: processing declaration of KPI "
-                               << dk.kpi_id << " ('" << kpi_name << "')";
+  log_v2::bam()->debug("BAM-BI: processing declaration of KPI {} ('{}')",
+                               dk.kpi_id, kpi_name);
 
   _dimension_kpi_insert.bind_value_as_i32(0, dk.kpi_id);
   _dimension_kpi_insert.bind_value_as_str(
@@ -1125,9 +1118,9 @@ void reporting_stream::_process_dimension_timeperiod(
     std::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod const& tp =
       *std::static_pointer_cast<bam::dimension_timeperiod const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing declaration of timeperiod " << tp.id << " ('"
-      << tp.name << "')";
+  log_v2::bam()->debug(
+      "BAM-BI: processing declaration of timeperiod {} ('{}')",
+      tp.id, tp.name);
 
   _dimension_timeperiod_insert.bind_value_as_i32(0, tp.id);
   _dimension_timeperiod_insert.bind_value_as_str(
@@ -1178,8 +1171,8 @@ void reporting_stream::_process_dimension_timeperiod_exception(
     std::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod_exception const& tpe =
       *std::static_pointer_cast<bam::dimension_timeperiod_exception const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing exception of timeperiod " << tpe.timeperiod_id;
+  log_v2::bam()->debug(
+      "BAM-BI: processing exception of timeperiod {}", tpe.timeperiod_id);
 
   _dimension_timeperiod_exception_insert.bind_value_as_i32(0,
                                                            tpe.timeperiod_id);
@@ -1211,9 +1204,9 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
     std::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod_exclusion const& tpe =
       *std::static_pointer_cast<bam::dimension_timeperiod_exclusion const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing exclusion of timeperiod "
-      << tpe.excluded_timeperiod_id << " by timeperiod " << tpe.timeperiod_id;
+  log_v2::bam()->debug(
+      "BAM-BI: processing exclusion of timeperiod {} by timeperiod {}",
+      tpe.excluded_timeperiod_id, tpe.timeperiod_id);
 
   _dimension_timeperiod_exclusion_insert.bind_value_as_i32(0,
                                                            tpe.timeperiod_id);
@@ -1236,9 +1229,8 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
     std::shared_ptr<io::data> const& e) {
   bam::dimension_ba_timeperiod_relation const& r =
       *std::static_pointer_cast<bam::dimension_ba_timeperiod_relation const>(e);
-  logging::debug(logging::low)
-      << "BAM-BI: processing relation of BA " << r.ba_id << " to timeperiod "
-      << r.timeperiod_id;
+  log_v2::bam()->debug(
+      "BAM-BI: processing relation of BA {} to timeperiod {}", r.ba_id, r.timeperiod_id);
 
   _dimension_ba_timeperiod_insert.bind_value_as_i32(0, r.ba_id);
   _dimension_ba_timeperiod_insert.bind_value_as_i32(1, r.timeperiod_id);
@@ -1265,19 +1257,18 @@ void reporting_stream::_compute_event_durations(
   if (!ev || !visitor)
     return;
 
-  logging::info(logging::medium)
-      << "BAM-BI: computing durations of event started at " << ev->start_time
-      << " and ended at " << ev->end_time << " on BA " << ev->ba_id;
+  log_v2::bam()->info(
+      "BAM-BI: computing durations of event started at {} and ended at {} on BA {}",
+      ev->start_time,
+      ev->end_time, ev->ba_id);
 
   // Find the timeperiods associated with this ba.
   std::vector<std::pair<time::timeperiod::ptr, bool>> timeperiods =
       _timeperiods.get_timeperiods_by_ba_id(ev->ba_id);
 
   if (timeperiods.empty()) {
-    logging::debug(logging::medium)
-        << "BAM-BI: no reporting period defined for event started at "
-        << ev->start_time << " and ended at " << ev->end_time << " on BA "
-        << ev->ba_id;
+    log_v2::bam()->debug(
+        "BAM-BI: no reporting period defined for event started at {} and ended at {} on BA {}", ev->start_time, ev->end_time, ev->ba_id);
     return;
   }
 
@@ -1301,18 +1292,16 @@ void reporting_stream::_compute_event_durations(
           tp->duration_intersect(dur_ev->start_time, dur_ev->end_time);
       dur_ev->timeperiod_id = tp->get_id();
       dur_ev->timeperiod_is_default = is_default;
-      logging::debug(logging::low)
-          << "BAM-BI: durations of event started at " << ev->start_time
-          << " and ended at " << ev->end_time << " on BA " << ev->ba_id
-          << " were computed for timeperiod " << tp->get_name()
-          << ", duration is " << dur_ev->duration << "s, SLA duration is "
-          << dur_ev->sla_duration;
+      log_v2::bam()->debug(
+          "BAM-BI: durations of event started at {} and ended at {} on BA {} were computed for timeperiod {}, duration is {}s, SLA duration is {}",
+          ev->start_time, ev->end_time, ev->ba_id, tp->get_name(), dur_ev->duration, dur_ev->sla_duration);
       visitor->write(std::static_pointer_cast<io::data>(dur_ev));
     } else
-      logging::debug(logging::medium)
-          << "BAM-BI: event started at " << ev->start_time << " and ended at "
-          << ev->end_time << " on BA " << ev->ba_id
-          << " has no duration on timeperiod " << tp->get_name();
+      log_v2::bam()->debug(
+          "BAM-BI: event started at {} and ended at {} on BA {} has no duration on timeperiod {}",
+          ev->start_time,
+          ev->end_time, ev->ba_id,
+          tp->get_name());
   }
 }
 
@@ -1369,8 +1358,8 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
           baev->status = res.value_as_i32(3);
           baev->in_downtime = res.value_as_bool(4);
           ba_events.push_back(baev);
-          logging::debug(logging::low)
-              << "BAM-BI: got events of BA " << baev->ba_id;
+          log_v2::bam()->debug(
+              "BAM-BI: got events of BA {}", baev->ba_id);
         }
       } catch (std::exception const& e) {
         throw exceptions::msg() << "BAM-BI: could not get BA events of "
@@ -1378,8 +1367,8 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
       }
     }
 
-    logging::info(logging::medium)
-        << "BAM-BI: will now rebuild the event durations";
+    log_v2::bam()->info(
+        "BAM-BI: will now rebuild the event durations");
 
     size_t ba_events_num = ba_events.size();
     size_t ba_events_curr = 0;
@@ -1387,13 +1376,10 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
 
     // Generate new ba events durations for each ba events.
     {
-      for (std::vector<std::shared_ptr<ba_event>>::const_iterator
-               it(ba_events.begin()),
-           end(ba_events.end());
+      for (auto it = ba_events.begin(), end = ba_events.end();
            it != end; ++it, ++ba_events_curr) {
-        ss.str("");
-        ss << "rebuilding: ba event " << ba_events_curr << "/" << ba_events_num;
-        _update_status(ss.str());
+        std::string s(fmt::format("rebuilding: ba event {}/{}", ba_events_curr, ba_events_num));
+        _update_status(s);
         _compute_event_durations(*it, this);
       }
     }
@@ -1402,8 +1388,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
     throw;
   }
 
-  logging::info(logging::medium) << "BAM-BI: event durations rebuild finished, "
-                                    " will rebuild availabilities now";
+  log_v2::bam()->info("BAM-BI: event durations rebuild finished, will rebuild availabilities now");
 
   // Ask for the availabilities thread to recompute the availabilities.
   _availabilities->rebuild_availabilities(r.bas_to_rebuild);
