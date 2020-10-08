@@ -219,8 +219,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
       std::promise<database::mysql_result> promise;
       thread_id = _mysql->run_query_and_get_result(query_str, &promise);
       database::mysql_result res(promise.get_future().get());
-      if (!_mysql->fetch_row(res))
+      if (!_mysql->fetch_row(res)) {
+        log_v2::bam()->error("no availability in table");
         throw exceptions::msg() << "no availability in table";
+      }
       first_day = res.value_as_i32(0);
       first_day =
           time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
