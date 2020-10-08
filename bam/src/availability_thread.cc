@@ -76,17 +76,21 @@ void availability_thread::run() {
       if (_should_exit)
         break;
 
+      log_v2::bam()->debug("BAM-BI: opening database");
       // Open the database.
       _open_database();
 
+      log_v2::bam()->debug("BAM-BI: build availabilities");
       _build_availabilities(_compute_start_of_day(::time(nullptr)));
       _should_rebuild_all = false;
       _bas_to_rebuild.clear();
 
       // Close the database.
       _close_database();
-    } catch (std::exception const& e) {
+      log_v2::bam()->debug("BAM-BI: database closed");
+    } catch (const std::exception& e) {
       // Something bad happened. Wait for the next loop.
+      log_v2::bam()->error("BAM-BI: Something went wrong: {}", e.what());
       logging::error(logging::medium) << e.what();
       _close_database();
     }
@@ -197,10 +201,12 @@ void availability_thread::_build_availabilities(time_t midnight) {
       if (res.value_as_i32(2) != 0)
         last_day = _compute_start_of_day(res.value_as_f64(1));
 
-      // FIXME DBR: why this line?
-      _mysql->fetch_row(res);
       _delete_all_availabilities();
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
+      log_v2::bam()->error(
+          "BAM-BI: availability thread could not select the BA durations from "
+          "the reporting database: {}",
+          e.what());
       throw exceptions::msg()
           << "BAM-BI: availability thread could not select the BA durations "
              "from the reporting database: "
@@ -208,21 +214,23 @@ void availability_thread::_build_availabilities(time_t midnight) {
     }
 
   } else {
-    query_str =
-        "SELECT MAX(time_id)"
-        " FROM mod_bam_reporting_ba_availabilities";
+    query_str = "SELECT MAX(time_id) FROM mod_bam_reporting_ba_availabilities";
     try {
       std::promise<database::mysql_result> promise;
       thread_id = _mysql->run_query_and_get_result(query_str, &promise);
-      // FIXME DBR: to finish...
       database::mysql_result res(promise.get_future().get());
-      if (!_mysql->fetch_row(res))
+      if (!_mysql->fetch_row(res)) {
+        log_v2::bam()->error("no availability in table");
         throw exceptions::msg() << "no availability in table";
+      }
       first_day = res.value_as_i32(0);
       first_day =
           time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
-      _mysql->fetch_row(res);
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
+      log_v2::bam()->error(
+          "BAM-BI: availability thread could not select the BA availabilities "
+          "from the reporting database: {}",
+          e.what());
       throw exceptions::msg() << "BAM-BI: availability thread "
                                  "could not select the BA availabilities "
                                  "from the reporting database: "
@@ -312,7 +320,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       // Add the timeperiod is default flag.
       found->second.set_timeperiod_is_default(res.value_as_bool(7));
     }
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     throw exceptions::msg()
         << "BAM-BI: availability thread could not build the data" << e.what();
   }
@@ -364,7 +372,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       log_v2::bam()->debug("{} builder(s) were missing for ba {}", count,
                            ba_id);
     }
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     throw exceptions::msg()
         << "BAM-BI: availability thread could not build the data: " << e.what();
   }
@@ -411,6 +419,7 @@ void availability_thread::_write_availability(
       builder.get_unavailable_opened(), builder.get_degraded_opened(),
       builder.get_unknown_opened(), builder.get_downtime_opened()));
 
+  log_v2::bam()->debug("Query: {}", query_str);
   _mysql->run_query(
       query_str,
       "BAM-BI: availability thread could not insert an availability: ", true,
@@ -450,7 +459,7 @@ void availability_thread::_open_database() {
   // Add database connection.
   try {
     _mysql.reset(new mysql(_db_cfg));
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     throw exceptions::msg()
         << "BAM-BI: availability thread could not connect to "
            "reporting database '"

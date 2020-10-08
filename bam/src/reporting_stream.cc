@@ -1319,7 +1319,7 @@ void reporting_stream::_compute_event_durations(
  *  @param[in] e  The event.
  */
 void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
-  rebuild const& r = *std::static_pointer_cast<rebuild const>(e);
+  const rebuild& r = *std::static_pointer_cast<const rebuild>(e);
   if (r.bas_to_rebuild.empty())
     return;
   log_v2::bam()->debug("BAM-BI: processing rebuild signal");
