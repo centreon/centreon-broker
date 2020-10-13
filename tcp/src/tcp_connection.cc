@@ -49,7 +49,10 @@ tcp_connection::tcp_connection(asio::io_context& io_context,
 /**
  * @brief Destructor
  */
-tcp_connection::~tcp_connection() noexcept {}
+tcp_connection::~tcp_connection() noexcept {
+  log_v2::tcp()->trace("Connection to {} destroyed.", _peer);
+  close();
+}
 
 /**
  * @brief A tcp_connection manages its own shared_ptr. This method is common to
@@ -248,8 +251,14 @@ void tcp_connection::handle_read(const asio::error_code& ec,
  * @brief Shutdown the socket.
  */
 void tcp_connection::close() {
-  std::error_code ec;
-  _socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+  if (!_closed) {
+    _closed = true;
+    std::error_code ec;
+    _socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    log_v2::tcp()->trace("socket shutdown with message: {}", ec.message());
+    _socket.close(ec);
+    log_v2::tcp()->trace("socket closed with message: {}", ec.message());
+  }
 }
 
 /**
