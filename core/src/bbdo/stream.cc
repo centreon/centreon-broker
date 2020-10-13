@@ -538,7 +538,7 @@ void stream::negotiate(stream::negotiation_type neg) {
     deadline = time(nullptr) + _timeout;
 
   // FIXME DBR
-  _read_any(d, -1 /*deadline*/);
+  _read_any(d, deadline);
   if (!d || d->type() != version_response::static_type()) {
     std::string msg;
     if (d)
