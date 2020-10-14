@@ -62,7 +62,8 @@ class tcp_async {
   tcp_connection::pointer get_connection(
       std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
       uint32_t timeout_s);
-  bool contains_available_acceptor_connections(asio::ip::tcp::acceptor* acceptor) const;
+  bool contains_available_acceptor_connections(
+      asio::ip::tcp::acceptor* acceptor) const;
 
   static tcp_async& instance();
 };

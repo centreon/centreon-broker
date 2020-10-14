@@ -79,15 +79,16 @@ std::shared_ptr<io::stream> acceptor::open() {
   auto conn = tcp_async::instance().get_connection(_acceptor, timeout_s);
   if (conn) {
     log_v2::tcp()->debug("acceptor gets a new connection from {}:{}",
-      conn->socket().remote_endpoint().address().to_string(),
-      conn->socket().remote_endpoint().port());
+                         conn->socket().remote_endpoint().address().to_string(),
+                         conn->socket().remote_endpoint().port());
     return std::make_shared<stream>(conn, -1);
   }
   return std::shared_ptr<stream>();
 }
 
 bool acceptor::is_ready() const {
-  return tcp_async::instance().contains_available_acceptor_connections(_acceptor.get());
+  return tcp_async::instance().contains_available_acceptor_connections(
+      _acceptor.get());
 }
 
 /**

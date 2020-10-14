@@ -373,7 +373,8 @@ void failover::run() {
     // Sleep a while before attempting a reconnection.
     _update_status("sleeping before reconnection");
 
-    for (ssize_t i = 0; !_endpoint->is_ready() && !should_exit() && i < _retry_interval; i++)
+    for (ssize_t i = 0;
+         !_endpoint->is_ready() && !should_exit() && i < _retry_interval; i++)
       std::this_thread::sleep_for(std::chrono::seconds(1));
 
     _update_status("");

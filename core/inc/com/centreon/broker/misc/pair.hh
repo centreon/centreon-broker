@@ -20,6 +20,7 @@
 #define CCB_NEB_STRING_PAIR_HH
 
 #include <functional>
+#include <string>
 
 namespace std {
 template <>
