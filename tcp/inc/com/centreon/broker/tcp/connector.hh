@@ -41,7 +41,7 @@ class connector : public io::endpoint {
   /* How many consecutive calls to is_ready() */
   mutable int16_t _is_ready_count;
   /* The time of the last call to is_ready() */
-  std::time_t _is_ready_now;
+  mutable std::time_t _is_ready_now;
 
  public:
   connector(const std::string& host, uint16_t port, int32_t read_timeout);
