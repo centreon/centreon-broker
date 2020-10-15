@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/processing/acceptor.hh"
 #include <unistd.h>
 #include "com/centreon/broker/misc/misc.hh"
@@ -59,11 +60,13 @@ void acceptor::accept() {
   if (s) {
     // Create feeder thread.
     std::string name(fmt::format("{}-{}", _name, ++connection_id));
+    log_v2::core()->info("New incoming connection '{}'", name);
     std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
         name, s, _read_filters, _write_filters));
 
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
+    log_v2::core()->trace("Currently {} connections to acceptor '{}'", _feeders.size(), _name);
   }
 }
 
@@ -217,13 +220,17 @@ void acceptor::_callback() noexcept {
     // Check for terminated feeders.
     {
       std::lock_guard<std::mutex> lock(_stat_mutex);
-      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;)
+      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;) {
+	log_v2::core()->trace("acceptor '{}' feeder '{}' state {}", _name, (*it)->get_name(), (*it)->get_state());
+        if (!(*it)->is_finished() && (*it)->get_state() == "finished")
+          assert(1==0);
         if ((*it)->is_finished()) {
-          log_v2::core()->info("processing acceptor '{}' is finished", _name);
+          log_v2::core()->info("removing '{}' from acceptor '{}'", (*it)->get_name(), _name);
           it = _feeders.erase(it);
         }
         else
           ++it;
+      }
     }
   }
   log_v2::core()->info("processing acceptor '{}' finished", _name);

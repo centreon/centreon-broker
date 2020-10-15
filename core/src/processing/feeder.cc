@@ -25,6 +25,7 @@
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -89,7 +90,7 @@ feeder::~feeder() {
 
 bool feeder::is_finished() const noexcept {
   std::lock_guard<std::mutex> lock(_state_m);
-  return !_state && _should_exit;
+  return _state == finished && _should_exit;
 }
 
 /**
@@ -191,6 +192,7 @@ void feeder::_callback() noexcept {
   } catch (exceptions::shutdown const& e) {
     // Normal termination.
     (void)e;
+    log_v2::core()->info("feeder '{}' shut down", get_name());
   } catch (std::exception const& e) {
     logging::error(logging::medium)
         << "feeder: error occured while processing client '" << _name
@@ -202,6 +204,9 @@ void feeder::_callback() noexcept {
         << "'";
   }
 
+  /* If we are here, that is because the loop is finished, and if we want is_finished()
+   * to return true, we have to set _should_exit to true. */
+  _should_exit = true;
   std::unique_lock<std::mutex> lock_stop(_state_m);
   _state = feeder::finished;
   _state_cv.notify_all();
@@ -219,4 +224,16 @@ void feeder::_callback() noexcept {
 
 uint32_t feeder::_get_queued_events() const {
   return _subscriber.get_muxer().get_event_queue_size();
+}
+
+const std::string feeder::get_state() const {
+  switch (_state) {
+    case stopped:
+      return "stopped";
+    case running:
+      return "running";
+    case finished:
+      return "finished";
+  }
+  return "unknown";
 }

@@ -44,7 +44,7 @@ class stat_visitable {
   std::atomic<uint32_t> _queued_events;
 
  protected:
-  std::string _name;
+  const std::string _name;
   mutable std::mutex _stat_mutex;
 
   virtual uint32_t _get_queued_events() const = 0;
