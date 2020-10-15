@@ -17,12 +17,14 @@
 */
 
 #include "com/centreon/broker/processing/feeder.hh"
+
 #include <unistd.h>
-#include <cassert>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 
@@ -64,7 +66,8 @@ feeder::feeder(std::string const& name,
   set_state("connecting");
   std::unique_lock<std::mutex> lck(_state_m);
   _thread = std::thread(&feeder::_callback, this);
-  _state_cv.wait(lck, [&state = this->_state] { return state != feeder::stopped; });
+  _state_cv.wait(lck,
+                 [& state = this->_state] { return state != feeder::stopped; });
 }
 
 /**
@@ -89,7 +92,7 @@ feeder::~feeder() {
 
 bool feeder::is_finished() const noexcept {
   std::lock_guard<std::mutex> lock(_state_m);
-  return !_state && _should_exit;
+  return _state == finished && _should_exit;
 }
 
 /**
@@ -191,6 +194,7 @@ void feeder::_callback() noexcept {
   } catch (exceptions::shutdown const& e) {
     // Normal termination.
     (void)e;
+    log_v2::core()->info("feeder '{}' shut down", get_name());
   } catch (std::exception const& e) {
     logging::error(logging::medium)
         << "feeder: error occured while processing client '" << _name
@@ -202,6 +206,9 @@ void feeder::_callback() noexcept {
         << "'";
   }
 
+  /* If we are here, that is because the loop is finished, and if we want
+   * is_finished() to return true, we have to set _should_exit to true. */
+  _should_exit = true;
   std::unique_lock<std::mutex> lock_stop(_state_m);
   _state = feeder::finished;
   _state_cv.notify_all();
@@ -219,4 +226,16 @@ void feeder::_callback() noexcept {
 
 uint32_t feeder::_get_queued_events() const {
   return _subscriber.get_muxer().get_event_queue_size();
+}
+
+const char* feeder::get_state() const {
+  switch (_state) {
+    case stopped:
+      return "stopped";
+    case running:
+      return "running";
+    case finished:
+      return "finished";
+  }
+  return "unknown";
 }
