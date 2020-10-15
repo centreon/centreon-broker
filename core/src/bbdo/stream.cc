@@ -953,7 +953,7 @@ void stream::_read_packet(size_t size, time_t deadline) {
     }
     if (timeout) {
       log_v2::bbdo()->trace("_read_packet timeout!!, size = {}, deadline = {}",
-          size, deadline);
+                            size, deadline);
       throw exceptions::timeout();
     }
   }
