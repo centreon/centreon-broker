@@ -27,6 +27,7 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -228,6 +229,11 @@ uint32_t feeder::_get_queued_events() const {
   return _subscriber.get_muxer().get_event_queue_size();
 }
 
+/**
+ * @brief Get the feeder state as a string. Interesting for logs.
+ *
+ * @return a const char* with the current state.
+ */
 const char* feeder::get_state() const {
   switch (_state) {
     case stopped:
