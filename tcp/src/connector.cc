@@ -62,14 +62,17 @@ connector::~connector() {}
  */
 std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
-  _is_ready_count = 0;
   log_v2::tcp()->info("TCP: connecting to {}:{}", _host, _port);
   try {
     std::shared_ptr<stream> retval =
         std::make_shared<stream>(_host, _port, _read_timeout);
+    _is_ready_count = 0;
     return retval;
   } catch (const std::exception& e) {
-    log_v2::tcp()->debug("Unable to establish the connection: {}", e.what());
+    if (_is_ready_count < 30)
+      _is_ready_count++;
+    log_v2::tcp()->debug("Unable to establish the connection to {}:{} (attempt {}): {}",
+                         _host, _port, _is_ready_count, e.what());
     return std::shared_ptr<stream>();
   }
 }
@@ -86,9 +89,9 @@ std::shared_ptr<io::stream> connector::open() {
 bool connector::is_ready() const {
   time_t now;
   std::time(&now);
-  if (_is_ready_count < 30)
-    _is_ready_count++;
-  if (now - _is_ready_now > (1 << _is_ready_count))
+  if (now - _is_ready_now > (1 << _is_ready_count)) {
+    _is_ready_now = now;
     return true;
+  }
   return false;
 }

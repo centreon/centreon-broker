@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/misc/misc.hh"
+#include <stdexcept>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <array>
