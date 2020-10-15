@@ -20,11 +20,12 @@
 #define CCB_PROCESSING_FEEDER_HH
 
 #include <atomic>
-#include <condition_variable>
-#include <thread>
 #include <climits>
+#include <condition_variable>
 #include <memory>
 #include <string>
+#include <thread>
+
 #include "com/centreon/broker/misc/shared_mutex.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -45,11 +46,7 @@ namespace processing {
  *  Take events from a source and send them to a destination.
  */
 class feeder : public stat_visitable {
-  enum state {
-    stopped,
-    running,
-    finished
-  };
+  enum state { stopped, running, finished };
   // Condition variable used when waiting for the thread to finish
   std::thread _thread;
   state _state;
@@ -80,6 +77,8 @@ class feeder : public stat_visitable {
   feeder(feeder const&) = delete;
   feeder& operator=(feeder const&) = delete;
   bool is_finished() const noexcept;
+  const char* get_state() const;
+
  protected:
   uint32_t _get_queued_events() const override;
 };

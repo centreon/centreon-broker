@@ -17,11 +17,13 @@
 */
 
 #include "com/centreon/broker/processing/acceptor.hh"
+
 #include <unistd.h>
-#include "com/centreon/broker/misc/misc.hh"
+
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
@@ -59,11 +61,14 @@ void acceptor::accept() {
   if (s) {
     // Create feeder thread.
     std::string name(fmt::format("{}-{}", _name, ++connection_id));
+    log_v2::core()->info("New incoming connection '{}'", name);
     std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
         name, s, _read_filters, _write_filters));
 
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
+    log_v2::core()->trace("Currently {} connections to acceptor '{}'",
+                          _feeders.size(), _name);
   }
 }
 
@@ -78,8 +83,7 @@ void acceptor::exit() {
       break;
     case running:
       _should_exit = true;
-      _state_cv.wait(lck,
-                     [this] { return _state == acceptor::finished; });
+      _state_cv.wait(lck, [this] { return _state == acceptor::finished; });
       _thread.join();
       break;
     case finished:
@@ -180,8 +184,7 @@ void acceptor::start() {
   if (_state == stopped) {
     _should_exit = false;
     _thread = std::thread(&acceptor::_callback, this);
-    _state_cv.wait(lock,
-                   [this] { return _state == acceptor::running; });
+    _state_cv.wait(lock, [this] { return _state == acceptor::running; });
   }
 }
 
@@ -217,13 +220,16 @@ void acceptor::_callback() noexcept {
     // Check for terminated feeders.
     {
       std::lock_guard<std::mutex> lock(_stat_mutex);
-      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;)
+      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;) {
+        log_v2::core()->trace("acceptor '{}' feeder '{}' state {}", _name,
+                              (*it)->get_name(), (*it)->get_state());
         if ((*it)->is_finished()) {
-          log_v2::core()->info("processing acceptor '{}' is finished", _name);
+          log_v2::core()->info("removing '{}' from acceptor '{}'",
+                               (*it)->get_name(), _name);
           it = _feeders.erase(it);
-        }
-        else
+        } else
           ++it;
+      }
     }
   }
   log_v2::core()->info("processing acceptor '{}' finished", _name);
