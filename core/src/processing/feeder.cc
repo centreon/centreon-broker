@@ -27,7 +27,6 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;

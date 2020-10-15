@@ -78,6 +78,7 @@ class feeder : public stat_visitable {
   feeder& operator=(feeder const&) = delete;
   bool is_finished() const noexcept;
   const char* get_state() const;
+
  protected:
   uint32_t _get_queued_events() const override;
 };

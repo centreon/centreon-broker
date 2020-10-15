@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cassert>
 #include "com/centreon/broker/processing/acceptor.hh"
 
 #include <unistd.h>
