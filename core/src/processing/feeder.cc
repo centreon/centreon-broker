@@ -17,15 +17,16 @@
 */
 
 #include "com/centreon/broker/processing/feeder.hh"
+
 #include <unistd.h>
-#include <cassert>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -65,7 +66,8 @@ feeder::feeder(std::string const& name,
   set_state("connecting");
   std::unique_lock<std::mutex> lck(_state_m);
   _thread = std::thread(&feeder::_callback, this);
-  _state_cv.wait(lck, [&state = this->_state] { return state != feeder::stopped; });
+  _state_cv.wait(lck,
+                 [& state = this->_state] { return state != feeder::stopped; });
 }
 
 /**
@@ -204,8 +206,8 @@ void feeder::_callback() noexcept {
         << "'";
   }
 
-  /* If we are here, that is because the loop is finished, and if we want is_finished()
-   * to return true, we have to set _should_exit to true. */
+  /* If we are here, that is because the loop is finished, and if we want
+   * is_finished() to return true, we have to set _should_exit to true. */
   _should_exit = true;
   std::unique_lock<std::mutex> lock_stop(_state_m);
   _state = feeder::finished;
@@ -226,7 +228,7 @@ uint32_t feeder::_get_queued_events() const {
   return _subscriber.get_muxer().get_event_queue_size();
 }
 
-const std::string feeder::get_state() const {
+const char* feeder::get_state() const {
   switch (_state) {
     case stopped:
       return "stopped";

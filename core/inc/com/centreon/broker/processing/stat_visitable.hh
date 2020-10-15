@@ -24,6 +24,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_set>
+
 #include "com/centreon/broker/misc/processing_speed_computer.hh"
 #include "com/centreon/broker/timestamp.hh"
 
