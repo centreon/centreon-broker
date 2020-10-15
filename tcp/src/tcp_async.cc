@@ -100,6 +100,10 @@ tcp_connection::pointer tcp_async::get_connection(
   return nullptr;
 }
 
+bool tcp_async::contains_available_acceptor_connections(asio::ip::tcp::acceptor* acceptor) const {
+  std::lock_guard<std::mutex> lck(_acceptor_con_m);
+  return _acceptor_available_con.find(acceptor) != _acceptor_available_con.end();
+}
 /**
  * @brief Create an ASIO acceptor listening on the given port. Once it is
  * operational, it begins to accept connections.

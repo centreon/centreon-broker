@@ -40,9 +40,10 @@ namespace bam {
 class rebuild : public io::data {
  public:
   rebuild();
-  ~rebuild();
+  rebuild(const std::string& lst);
+  ~rebuild() noexcept = default;
   rebuild(rebuild const&);
-  rebuild& operator=(rebuild const&);
+  rebuild& operator=(rebuild const&) = delete;
   bool operator==(rebuild const& other) const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam, bam::de_rebuild>::value;
@@ -52,9 +53,6 @@ class rebuild : public io::data {
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(rebuild const& other);
 };
 }  // namespace bam
 

@@ -41,9 +41,9 @@ namespace bam {
 class availability_builder {
  public:
   availability_builder(time_t ending_point, time_t starting_point = 0);
-  availability_builder(availability_builder const& other);
   ~availability_builder();
-  availability_builder& operator=(availability_builder const& other);
+  availability_builder(availability_builder const& other);
+  availability_builder& operator=(availability_builder const& other) = delete;
 
   void add_event(short status,
                  time_t start,

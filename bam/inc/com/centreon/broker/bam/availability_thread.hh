@@ -50,19 +50,21 @@ class availability_thread {
   availability_thread(database_config const& db_cfg,
                       timeperiod_map& shared_map);
   ~availability_thread();
+  availability_thread(availability_thread const& other) = delete;
+  availability_thread& operator=(availability_thread const& other) const =
+      delete;
+
   virtual void run();
   void terminate();
   void start_and_wait();
 
-  std::unique_ptr<std::unique_lock<std::mutex>> lock();
+  void lock();
+  void unlock();
 
   void rebuild_availabilities(std::string const& bas_to_rebuild);
   void wait();
 
  private:
-  availability_thread(availability_thread const& other);
-  availability_thread& operator=(availability_thread const& other) const;
-
   void _delete_all_availabilities();
   void _build_availabilities(time_t midnight);
   void _build_daily_availabilities(int thread_id,

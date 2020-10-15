@@ -68,6 +68,7 @@ void acceptor::add_child(std::string const& child) {
  *
  */
 std::shared_ptr<io::stream> acceptor::open() {
+  log_v2::tcp()->debug("tcp::acceptor open...");
   if (!_acceptor) {
     _acceptor = tcp_async::instance().create_acceptor(_port);
     tcp_async::instance().start_acceptor(_acceptor);
@@ -77,10 +78,16 @@ std::shared_ptr<io::stream> acceptor::open() {
   const uint32_t timeout_s = 3;
   auto conn = tcp_async::instance().get_connection(_acceptor, timeout_s);
   if (conn) {
-    log_v2::tcp()->debug("acceptor gets a new connection");
+    log_v2::tcp()->debug("acceptor gets a new connection from {}:{}",
+      conn->socket().remote_endpoint().address().to_string(),
+      conn->socket().remote_endpoint().port());
     return std::make_shared<stream>(conn, -1);
   }
   return std::shared_ptr<stream>();
+}
+
+bool acceptor::is_ready() const {
+  return tcp_async::instance().contains_available_acceptor_connections(_acceptor.get());
 }
 
 /**
