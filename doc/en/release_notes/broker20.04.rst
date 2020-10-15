@@ -28,6 +28,21 @@ Database deadlock
 When the database connectors are configured with several connections, a host
 downtime could make a deadlock on the database. This is fixed now.
 
+Map server connection
+=====================
+When the Map server is restarted, there is no more duplicated connections from
+centreon-broker.
+
+Bam reporting
+=============
+Bam availability reporting could miss Bas during its availabilities
+computations. This is fixed.
+
+TCP acceptors
+=============
+Sometimes tcp acceptor could badly close sockets. This could lead to
+difficulties to reopen connections.
+
 INITIAL HOST STATE
 ==================
 Ig you use bam, there was an issue on the reporting that could fail because of
