@@ -59,35 +59,19 @@ availability_builder::~availability_builder() {}
  *
  *  @param[in] other  The object to copy.
  */
-availability_builder::availability_builder(availability_builder const& other) {
-  availability_builder::operator=(other);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  The object to copy.
- *
- *  @return  A reference to this object.
- */
-availability_builder& availability_builder::operator=(
-    availability_builder const& other) {
-  if (this != &other) {
-    _start = other._start;
-    _end = other._end;
-    _available = other._available;
-    _unavailable = other._unavailable;
-    _degraded = other._degraded;
-    _unknown = other._unknown;
-    _downtime = other._downtime;
-    _alert_unavailable_opened = other._alert_unavailable_opened;
-    _alert_degraded_opened = other._alert_degraded_opened;
-    _alert_unknown_opened = other._alert_unknown_opened;
-    _nb_downtime = other._nb_downtime;
-    _timeperiods_is_default = other._timeperiods_is_default;
-  }
-  return (*this);
-}
+availability_builder::availability_builder(const availability_builder& other)
+    : _start(other._start),
+      _end(other._end),
+      _available(other._available),
+      _unavailable(other._unavailable),
+      _degraded(other._degraded),
+      _unknown(other._unknown),
+      _downtime(other._downtime),
+      _alert_unavailable_opened(other._alert_unavailable_opened),
+      _alert_degraded_opened(other._alert_degraded_opened),
+      _alert_unknown_opened(other._alert_unknown_opened),
+      _nb_downtime(other._nb_downtime),
+      _timeperiods_is_default(other._timeperiods_is_default) {}
 
 /**
  *  Add an event to the builder.
@@ -153,7 +137,7 @@ void availability_builder::add_event(short status,
  *  @return  The duration in second when the BA was ok.
  */
 int availability_builder::get_available() const {
-  return (_available);
+  return _available;
 }
 
 /**
@@ -162,7 +146,7 @@ int availability_builder::get_available() const {
  *  @return  The duration in second when the BA was critical.
  */
 int availability_builder::get_unavailable() const {
-  return (_unavailable);
+  return _unavailable;
 }
 
 /**
@@ -171,7 +155,7 @@ int availability_builder::get_unavailable() const {
  *  @return  The duration in second when the BA was in a warning state.
  */
 int availability_builder::get_degraded() const {
-  return (_degraded);
+  return _degraded;
 }
 
 /**
@@ -180,7 +164,7 @@ int availability_builder::get_degraded() const {
  * @return The duration in second when the BA was in an unknown state.
  */
 int availability_builder::get_unknown() const {
-  return (_unknown);
+  return _unknown;
 }
 
 /**
@@ -189,7 +173,7 @@ int availability_builder::get_unknown() const {
  *  @return  The duration in second when the BA was in downtime.
  */
 int availability_builder::get_downtime() const {
-  return (_downtime);
+  return _downtime;
 }
 
 /**
@@ -198,7 +182,7 @@ int availability_builder::get_downtime() const {
  *  @return  The number of unavailable event opened.
  */
 int availability_builder::get_unavailable_opened() const {
-  return (_alert_unavailable_opened);
+  return _alert_unavailable_opened;
 }
 
 /**
@@ -207,7 +191,7 @@ int availability_builder::get_unavailable_opened() const {
  *  @return  The number of degraded event opened.
  */
 int availability_builder::get_degraded_opened() const {
-  return (_alert_degraded_opened);
+  return _alert_degraded_opened;
 }
 
 /**
@@ -216,7 +200,7 @@ int availability_builder::get_degraded_opened() const {
  *  @return  The number of unknown event opened.
  */
 int availability_builder::get_unknown_opened() const {
-  return (_alert_unknown_opened);
+  return _alert_unknown_opened;
 }
 
 /**
@@ -225,7 +209,7 @@ int availability_builder::get_unknown_opened() const {
  *  @return  The number of downtime event opened.
  */
 int availability_builder::get_downtime_opened() const {
-  return (_nb_downtime);
+  return _nb_downtime;
 }
 
 /**
@@ -243,5 +227,5 @@ void availability_builder::set_timeperiod_is_default(bool val) {
  *  @param[in] val  True if the timeperiod is default.
  */
 bool availability_builder::get_timeperiod_is_default() const {
-  return (_timeperiods_is_default);
+  return _timeperiods_is_default;
 }

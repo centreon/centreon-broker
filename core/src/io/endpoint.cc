@@ -100,3 +100,14 @@ void endpoint::set_filter(std::set<uint32_t> const& filter) {
   if (_from)
     _from->set_filter(filter);
 }
+
+/**
+ * @brief Return True if the call to open() should work.
+ *
+ * @return A boolean.
+ */
+bool endpoint::is_ready() const {
+  if (_from)
+    return _from->is_ready();
+  return false;
+}

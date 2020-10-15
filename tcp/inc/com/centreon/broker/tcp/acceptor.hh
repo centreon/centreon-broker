@@ -56,6 +56,7 @@ class acceptor : public io::endpoint {
   std::shared_ptr<io::stream> open();
   void remove_child(std::string const& child);
   void stats(json11::Json::object& tree);
+  bool is_ready() const override;
 };
 }  // namespace tcp
 

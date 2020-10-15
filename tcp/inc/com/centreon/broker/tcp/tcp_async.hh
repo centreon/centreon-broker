@@ -38,7 +38,7 @@ class tcp_async {
   std::list<std::shared_ptr<asio::ip::tcp::acceptor>> _acceptor;
 
   /* Connections opened by acceptors not already got by streams */
-  std::mutex _acceptor_con_m;
+  mutable std::mutex _acceptor_con_m;
   std::condition_variable _acceptor_con_cv;
   std::unordered_multimap<asio::ip::tcp::acceptor*, tcp_connection::pointer>
       _acceptor_available_con;
@@ -62,6 +62,7 @@ class tcp_async {
   tcp_connection::pointer get_connection(
       std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
       uint32_t timeout_s);
+  bool contains_available_acceptor_connections(asio::ip::tcp::acceptor* acceptor) const;
 
   static tcp_async& instance();
 };

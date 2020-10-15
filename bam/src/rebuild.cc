@@ -22,38 +22,26 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ * @brief The default constructor
  */
 rebuild::rebuild() : io::data(rebuild::static_type()) {}
+
+/**
+ * @brief The best constructor with the ba ids to rebuild in a string
+ *
+ * @param lst A string containing the list of bas to rebuild (separated by
+ * commas)
+ */
+rebuild::rebuild(const std::string& lst)
+    : io::data(rebuild::static_type()), bas_to_rebuild(lst) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-rebuild::rebuild(rebuild const& other) : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-rebuild::~rebuild() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-rebuild& rebuild::operator=(rebuild const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
+rebuild::rebuild(rebuild const& other)
+    : io::data(other), bas_to_rebuild(other.bas_to_rebuild) {}
 
 /**
  *  Equality test operator.
@@ -65,21 +53,6 @@ rebuild& rebuild::operator=(rebuild const& other) {
 bool rebuild::operator==(rebuild const& other) const {
   return bas_to_rebuild == other.bas_to_rebuild;
 }
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void rebuild::_internal_copy(rebuild const& other) {
-  bas_to_rebuild = other.bas_to_rebuild;
-}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const rebuild::entries[] = {

@@ -508,8 +508,7 @@ int stream::flush() {
  *  @param[in] neg  Negotiation type.
  */
 void stream::negotiate(stream::negotiation_type neg) {
-  assert(!_negotiated && !_coarse);
-
+  log_v2::bbdo()->trace("BBDO: negotiate");
   std::string* extensions;
   if (!_negotiate) {
     log_v2::bbdo()->info("BBDO: negotiation disabled.");
@@ -526,7 +525,7 @@ void stream::negotiate(stream::negotiation_type neg) {
     std::shared_ptr<version_response> welcome_packet(
         std::make_shared<version_response>(*extensions));
     _write(welcome_packet);
-    _substream->flush();
+    //_substream->flush();
   }
 
   // Read peer packet.
@@ -539,19 +538,18 @@ void stream::negotiate(stream::negotiation_type neg) {
     deadline = time(nullptr) + _timeout;
 
   // FIXME DBR
-  _read_any(d, -1 /*deadline*/);
+  _read_any(d, deadline);
   if (!d || d->type() != version_response::static_type()) {
     std::string msg;
     if (d)
       msg = fmt::format(
           "BBDO: invalid protocol header, aborting connection: waiting for "
-          "message of type {} but received type is {}",
-          version_response::static_type(), d->type());
+          "message of type 'version_response' but received type is {}",
+          d->type());
     else
       msg = fmt::format(
           "BBDO: invalid protocol header, aborting connection: waiting for "
-          "message of type {} but nothing received",
-          version_response::static_type());
+          "message of type 'version_response' but nothing received");
     log_v2::bbdo()->error(msg);
     throw exceptions::msg() << msg;
   }
@@ -656,6 +654,7 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Stream has now negotiated.
   _negotiated = true;
+  log_v2::bbdo()->trace("Negotiation done.");
 }
 
 std::list<std::string> stream::get_running_config() {
@@ -952,10 +951,14 @@ void stream::_read_packet(size_t size, time_t deadline) {
           _packet.insert(_packet.end(), new_v.begin(), new_v.end());
       }
     }
-    if (timeout)
+    if (timeout) {
+      log_v2::bbdo()->trace("_read_packet timeout!!, size = {}, deadline = {}",
+          size, deadline);
       throw exceptions::timeout();
+    }
   }
 }
+
 /**
  *  Set the limit of events received before an ack should be sent.
  *

@@ -46,7 +46,9 @@ connector::connector(const std::string& host,
     : io::endpoint(false),
       _host(host),
       _port(port),
-      _read_timeout(read_timeout) {}
+      _read_timeout(read_timeout),
+      _is_ready_count(0),
+      _is_ready_now(0) {}
 
 /**
  *  Destructor.
@@ -60,6 +62,7 @@ connector::~connector() {}
  */
 std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
+  _is_ready_count = 0;
   log_v2::tcp()->info("TCP: connecting to {}:{}", _host, _port);
   try {
     std::shared_ptr<stream> retval =
@@ -69,4 +72,23 @@ std::shared_ptr<io::stream> connector::open() {
     log_v2::tcp()->debug("Unable to establish the connection: {}", e.what());
     return std::shared_ptr<stream>();
   }
+}
+
+/**
+ * @brief Return true when it is time to attempt a new connection. The idea is
+ * to increase the duration between two calls each time this function is called
+ * without connection between. So if now server is available, we should not
+ * try to connect too often, but if the connection failed one time, it should
+ * be fast to connect again.
+ *
+ * @return a boolean.
+ */
+bool connector::is_ready() const {
+  time_t now;
+  std::time(&now);
+  if (_is_ready_count < 30)
+    _is_ready_count++;
+  if (now - _is_ready_now > (1 << _is_ready_count))
+    return true;
+  return false;
 }
