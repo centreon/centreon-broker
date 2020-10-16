@@ -228,6 +228,11 @@ uint32_t feeder::_get_queued_events() const {
   return _subscriber.get_muxer().get_event_queue_size();
 }
 
+/**
+ * @brief Get the feeder state as a string. Interesting for logs.
+ *
+ * @return a const char* with the current state.
+ */
 const char* feeder::get_state() const {
   switch (_state) {
     case stopped:
