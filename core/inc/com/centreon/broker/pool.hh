@@ -31,7 +31,7 @@ class pool {
   asio::io_service::work _worker;
   std::vector<std::thread> _pool;
   bool _closed;
-  std::mutex _closed_m;
+  mutable std::mutex _closed_m;
 
   pool();
   void _start();
@@ -45,6 +45,7 @@ class pool {
   static void set_size(size_t size) noexcept;
   static pool& instance();
   static asio::io_context& io_context();
+  size_t get_current_size() const;
 };
 
 CCB_END()

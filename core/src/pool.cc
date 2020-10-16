@@ -53,15 +53,15 @@ void pool::_start() {
   std::lock_guard<std::mutex> lock(_closed_m);
   if (_closed) {
     _closed = false;
-    /* We fix the thread pool used by asio to hardware concurrency / 2 and at
+    /* We fix the thread pool used by asio to hardware concurrency and at
      * least, we want 2 threads. So in case of two sockets, one in and one out,
      * they should be managed by those two threads. This is empirical, and maybe
      * will be changed later. */
     size_t count = _pool_size == 0
-                       ? std::max(std::thread::hardware_concurrency() / 2, 2u)
+                       ? std::max(std::thread::hardware_concurrency(), 2u)
                        : _pool_size;
 
-    log_v2::core()->info("Starting the TCP thread pool with {} threads", count);
+    log_v2::core()->info("Starting the TCP thread pool of {} threads", count);
     for (uint32_t i = 0; i < count; i++)
       _pool.emplace_back([this] { _io_context.run(); });
   }
@@ -95,4 +95,14 @@ void pool::_stop() {
  */
 void pool::set_size(size_t size) noexcept {
   _pool_size = size;
+}
+
+/**
+ * @brief Returns the number of threads used in the pool.
+ *
+ * @return a size.
+ */
+size_t pool::get_current_size() const {
+  std::lock_guard<std::mutex> lock(_closed_m);
+  return _pool.size();
 }
