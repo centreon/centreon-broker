@@ -64,13 +64,18 @@ io::endpoint* factory::new_endpoint(
   // Find host (if exists).
   std::string host;
   {
-    std::map<std::string, std::string>::const_iterator it{
-        cfg.params.find("host")};
+    auto it = cfg.params.find("host");
     if (it != cfg.params.end())
       host = it->second;
-    if (!host.empty() && (std::isspace(host[0]) || std::isspace(host[host.size() - 1]))) {
-      log_v2::tcp()->error("TCP: 'host' must be a string matching a host, not beginning or ending with spaces for endpoint {}, it contains '{}'", cfg.name, host);
-      throw exceptions::msg() << "TCP: invalid host value '" << host << "' defined for endpoint '" << cfg.name << "', it must not begin or end with spaces.";
+    if (!host.empty() &&
+        (std::isspace(host[0]) || std::isspace(host[host.size() - 1]))) {
+      log_v2::tcp()->error(
+          "TCP: 'host' must be a string matching a host, not beginning or "
+          "ending with spaces for endpoint {}, it contains '{}'",
+          cfg.name, host);
+      throw exceptions::msg()
+          << "TCP: invalid host value '" << host << "' defined for endpoint '"
+          << cfg.name << "', it must not begin or end with spaces.";
     }
   }
 
@@ -89,8 +94,11 @@ io::endpoint* factory::new_endpoint(
     try {
       port = static_cast<uint16_t>(std::stol(it->second));
     } catch (const std::exception& e) {
-      log_v2::tcp()->error("TCP: 'port' must be an integer and not '{}' for endpoint '{}'", it->second, cfg.name);
-      throw exceptions::msg() << "TCP: invalid port value '" << it->second << "' defined for endpoint '" << cfg.name << "'";
+      log_v2::tcp()->error(
+          "TCP: 'port' must be an integer and not '{}' for endpoint '{}'",
+          it->second, cfg.name);
+      throw exceptions::msg() << "TCP: invalid port value '" << it->second
+                              << "' defined for endpoint '" << cfg.name << "'";
     }
   }
 
@@ -116,5 +124,6 @@ io::endpoint* factory::new_endpoint(
         new tcp::connector(host, port, read_timeout));
     endp.reset(c.release());
   }
+
   return endp.release();
 }

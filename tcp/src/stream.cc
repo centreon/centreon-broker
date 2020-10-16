@@ -32,11 +32,14 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
+
+size_t stream::_total_tcp_count{0};
 
 /**
  * @brief Stream constructor used by a connector. The stream establishes a
@@ -53,7 +56,12 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
       _port(port),
       _read_timeout(read_timeout),
       _connection(tcp_async::instance().create_connection(host, port)),
-      _parent(nullptr) {}
+      _parent(nullptr) {
+  _total_tcp_count++;
+  log_v2::tcp()->info(
+      "{} TCP streams are configured on a thread pool of {} threads",
+      _total_tcp_count, pool::instance().get_current_size());
+}
 
 /**
  * @brief Stream constructor for a server. The connection is already running.
@@ -68,12 +76,22 @@ stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
       _port(conn->socket().remote_endpoint().port()),
       _read_timeout(read_timeout),
       _connection(conn),
-      _parent(nullptr) {}
+      _parent(nullptr) {
+  _total_tcp_count++;
+  log_v2::tcp()->info(
+      "{} TCP streams are configured on a thread pool of {} threads",
+      _total_tcp_count, pool::instance().get_current_size());
+}
 
 /**
  *  Destructor.
  */
 stream::~stream() noexcept {
+  _total_tcp_count--;
+  log_v2::tcp()->info(
+      "TCP stream destroyed. Still {} configured on a thread pool of {} "
+      "threads",
+      _total_tcp_count, pool::instance().get_current_size());
   log_v2::tcp()->trace("stream closed");
   if (_connection->socket().is_open())
     _connection->close();
