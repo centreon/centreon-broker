@@ -55,7 +55,8 @@ Enhancements
 TCP connector
 =============
 The tcp connector should also be largely improved. It is multithreaded now and
-this should improve its performances.
+this should improve its performances. A new field in the broker configuration
+file allows to set how many threads run in the pool.
 
 TCP connections
 ===============
