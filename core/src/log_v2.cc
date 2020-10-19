@@ -109,9 +109,16 @@ bool log_v2::load(std::string const& file,
         }
       }
 
+      _core_log = std::make_shared<logger>("core", sinks.begin(), sinks.end());
+      _core_log->set_level(level::info);
+      _core_log->flush_on(level::info);
+      _core_log->info("{} : log started", broker_name);
+
       for (auto& entry : js["loggers"].array_items()) {
         std::shared_ptr<logger>* l;
-        if (entry["name"].string_value() == "tls")
+        if (entry["name"].string_value() == "core")
+          l = &_core_log;
+        else if (entry["name"].string_value() == "tls")
           l = &_tls_log;
         else if (entry["name"].string_value() == "tcp")
           l = &_tcp_log;
@@ -133,11 +140,6 @@ bool log_v2::load(std::string const& file,
         (*l)->set_level(dbg_lvls[entry["level"].string_value()]);
         (*l)->flush_on(dbg_lvls[entry["level"].string_value()]);
       }
-
-      _core_log = std::make_shared<logger>("core", sinks.begin(), sinks.end());
-      _core_log->set_level(level::trace);
-      _core_log->flush_on(level::trace);
-      _core_log->info("{} : log started", broker_name);
 
       return true;
     }
