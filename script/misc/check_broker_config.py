@@ -42,6 +42,9 @@ class Input:
         return self.__msg_log
     def is_matched(self):
         return len(self.__output_matched) > 0
+    def print_childs(self):
+        for o in self.__output_matched:
+           print(self.__json["name"] + " has " + o.get_name() + " for child ") 
     
 class Output:
     def __init__(self, json_output):
@@ -78,6 +81,9 @@ class Output:
         return self.__msg_log
     def is_matched(self):
         return len(self.__input_matched) > 0
+    def print_childs(self):
+        for o in self.__input_matched:
+           print(self.__json["name"] + " has " + o.get_name() + " for child ") 
    
 #read all json files
 def read_json():
@@ -251,5 +257,4 @@ if __name__ == "__main__":
     remove_useless_json()
     io = match_input_output()
     check_input_output(io)
-    data[1]["centreonBroker"]["output"][0]['test'] = "yes"
 
