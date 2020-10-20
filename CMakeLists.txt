@@ -74,8 +74,9 @@ find_package(grpc REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
 find_package(ZLIB REQUIRED)
+find_package(mysql-connector-c REQUIRED)
 
-add_definitions(${spdlog_DEFINITIONS})
+add_definitions(${spdlog_DEFINITIONS} ${mysql-connector-c_DEFINITIONS})
 
 include_directories(${json11_INCLUDE_DIRS})
 include_directories(${fmt_INCLUDE_DIRS})
@@ -84,6 +85,7 @@ include_directories(${asio_INCLUDE_DIRS})
 include_directories(${protobuf_INCLUDE_DIRS})
 include_directories(${grpc_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
+include_directories(${mysql-connector-c_INCLUDE_DIRS})
 
 link_directories(${json11_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
@@ -93,6 +95,7 @@ link_directories(${grpc_LIB_DIRS})
 link_directories(${c-ares_LIB_DIRS})
 link_directories(${OpenSSL_LIB_DIRS})
 link_directories(${ZLIB_LIB_DIRS})
+link_directories(${mysql-connector-c_LIB_DIRS})
 
 message(STATUS "Using protobuf ${grpc_VERSION}")
 set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
@@ -152,31 +155,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_definitions("-DASIO_STANDALONE")
 
 find_package(PkgConfig REQUIRED)
-
-# Find MySQL/Mariadb devel package
-pkg_check_modules(_libmariadb libmariadb)
-if (_libmariadb_FOUND)
-  set(MYSQL_CFLAGS ${_libmariadb_CFLAGS})
-  set(MYSQL_LIBS ${_libmariadb_LDFLAGS})
-else ()
-  pkg_check_modules(_mariadb mariadb)
-  if (_mariadb_FOUND)
-    set(MYSQL_CFLAGS ${_mariadb_CFLAGS})
-    set(MYSQL_LIBS ${_mariadb_LDFLAGS})
-  else ()
-    pkg_check_modules(_mysql mysql)
-    if (_mysql_FOUND)
-      set(MYSQL_CFLAGS ${_mysql_CFLAGS})
-      set(MYSQL_LIBS ${_mysql_LDFLAGS})
-    else ()
-      message(SEND_ERROR "MariaDB devel package is not installed")
-    endif ()
-  endif ()
-endif ()
-
-string(REPLACE "-" " -" MYSQL_CFLAGS ${MYSQL_CFLAGS})
-message(STATUS ${MYSQL_CFLAGS})
-message(STATUS ${MYSQL_LIBS})
 
 #
 # Get distributions name
@@ -604,13 +582,13 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
-set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
-target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${MYSQL_LIBS}  pthread dl berpc)
+set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "-fPIC")
+target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} pthread dl berpc)
 
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS} grpc++_reflection)
+target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${grpc_LIBS} grpc++_reflection)
 
 # Standalone binary.
 set(DAEMON cbd)
@@ -618,7 +596,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-  "-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS} )
+	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${mysql-connector-c_LIBS} ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${grpc_LIBS} )
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)

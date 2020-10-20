@@ -180,9 +180,9 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/service_listener.hh"
   "${INC_DIR}/timeperiod_map.hh"
 )
-set_target_properties("${BAM}" PROPERTIES
-    PREFIX ""
-    COMPILE_FLAGS "${MYSQL_CFLAGS}")
+#set_target_properties("${BAM}" PROPERTIES
+#    PREFIX ""
+#    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 # Testing.
 if (WITH_SQL_TESTS)

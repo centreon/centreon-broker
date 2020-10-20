@@ -40,9 +40,9 @@ add_library("${STATS}" SHARED
   ${INC_DIR}/worker_pool.hh
 
 )
-set_target_properties("${STATS}" PROPERTIES
-    PREFIX ""
-    COMPILE_FLAGS "${MYSQL_CFLAGS}")
+#set_target_properties("${STATS}" PROPERTIES
+#    PREFIX ""
+#    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 # Testing.
 if (WITH_TESTING)

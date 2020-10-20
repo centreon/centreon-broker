@@ -45,7 +45,7 @@ add_library("${SQL}" SHARED
 
 set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
-    COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
+    COMPILE_FLAGS "-fPIC")
 
 # Install rule.
 install(TARGETS "${SQL}"
