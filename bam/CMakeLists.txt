@@ -184,6 +184,9 @@ add_library("${BAM}" SHARED
 #    PREFIX ""
 #    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
+set_target_properties("${BAM}" PROPERTIES
+    PREFIX "")
+
 # Testing.
 if (WITH_SQL_TESTS)
     set(TESTS_SOURCES ${TESTS_SOURCES} ${TEST_DIR}/monitoring_stream.cc)

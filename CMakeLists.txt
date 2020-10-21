@@ -583,7 +583,7 @@ set(LIBROKER_SOURCES
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
 set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "-fPIC")
-target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} pthread dl berpc)
+target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${mariadb-connector-c_LIBS} pthread dl berpc)
 
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
@@ -596,7 +596,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${mariadb-connector-c_LIBS} ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${grpc_LIBS} )
+	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${grpc_LIBS} )
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)
