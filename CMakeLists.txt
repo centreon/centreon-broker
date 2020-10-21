@@ -74,9 +74,9 @@ find_package(grpc REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(mysql-connector-c REQUIRED)
+find_package(mariadb-connector-c REQUIRED)
 
-add_definitions(${spdlog_DEFINITIONS} ${mysql-connector-c_DEFINITIONS})
+add_definitions(${spdlog_DEFINITIONS} ${mariadb-connector-c_DEFINITIONS})
 
 include_directories(${json11_INCLUDE_DIRS})
 include_directories(${fmt_INCLUDE_DIRS})
@@ -85,7 +85,7 @@ include_directories(${asio_INCLUDE_DIRS})
 include_directories(${protobuf_INCLUDE_DIRS})
 include_directories(${grpc_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
-include_directories(${mysql-connector-c_INCLUDE_DIRS})
+include_directories(${mariadb-connector-c_INCLUDE_DIRS}/mysql)
 
 link_directories(${json11_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
@@ -95,7 +95,7 @@ link_directories(${grpc_LIB_DIRS})
 link_directories(${c-ares_LIB_DIRS})
 link_directories(${OpenSSL_LIB_DIRS})
 link_directories(${ZLIB_LIB_DIRS})
-link_directories(${mysql-connector-c_LIB_DIRS})
+link_directories(${mariadb-connector-c_LIB_DIRS})
 
 message(STATUS "Using protobuf ${grpc_VERSION}")
 set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
@@ -596,7 +596,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${mysql-connector-c_LIBS} ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${grpc_LIBS} )
+	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${mariadb-connector-c_LIBS} ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${grpc_LIBS} )
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)
