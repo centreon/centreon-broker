@@ -40,6 +40,7 @@ add_executable("${WATCHDOG}"
   ${INC_DIR}/instance.hh
   ${INC_DIR}/instance_configuration.hh
 )
+
 target_link_libraries(${WATCHDOG} pthread ${fmt_LIBS} ${spdlog_LIBS} ${json11_LIBS})
 
 if (WITH_WATCHDOG_TESTS)

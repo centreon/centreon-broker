@@ -41,8 +41,7 @@ add_library("${STATS}" SHARED
 
 )
 set_target_properties("${STATS}" PROPERTIES
-    PREFIX ""
-    COMPILE_FLAGS "${MYSQL_CFLAGS}")
+    PREFIX "")
 
 # Testing.
 if (WITH_TESTING)

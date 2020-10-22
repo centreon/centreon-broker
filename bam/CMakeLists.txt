@@ -181,8 +181,7 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/timeperiod_map.hh"
 )
 set_target_properties("${BAM}" PROPERTIES
-    PREFIX ""
-    COMPILE_FLAGS "${MYSQL_CFLAGS}")
+    PREFIX "")
 
 # Testing.
 if (WITH_SQL_TESTS)
