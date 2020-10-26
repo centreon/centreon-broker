@@ -51,7 +51,7 @@ static std::vector<std::string> gl_mainconfigfiles;
 static config::state gl_state;
 
 static struct option long_options[] = {
-  {"thread-size", required_argument, 0, 't'},
+  {"pool-size",   required_argument, 0, 'p'},
   {"check",       no_argument,       0, 'c'},
   {"debug",       no_argument,       0, 'd'},
   {"diagnose",    no_argument,       0, 'D'},
@@ -168,10 +168,10 @@ int main(int argc, char* argv[]) {
     bool help(false);
     bool version(false);
 
-    opt = getopt_long (argc, argv, "t:cdDvh",
+    opt = getopt_long (argc, argv, "p:cdDvh",
                         long_options, &option_index);
     switch(opt) {
-      case 't':
+      case 'p':
         n_thread = atoi(optarg);
         break;
       case 'c':
