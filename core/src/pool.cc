@@ -15,6 +15,7 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <asio.hpp>
 #include "com/centreon/broker/pool.hh"
 
 #include "com/centreon/broker/log_v2.hh"
@@ -41,8 +42,9 @@ asio::io_context& pool::io_context() {
  * @brief Default constructor. Hidden, is called throw the static instance()
  * method.
  */
-pool::pool() : _io_context(_pool_size), _worker(_io_context), _closed(true) {
+pool::pool() : _io_context(_pool_size), _worker(_io_context), _closed(true), _timer(_io_context) {
   _start();
+  check_latency();
 }
 
 /**
@@ -105,4 +107,17 @@ void pool::set_size(size_t size) noexcept {
 size_t pool::get_current_size() const {
   std::lock_guard<std::mutex> lock(_closed_m);
   return _pool.size();
+}
+
+void pool::check_latency() {
+  std::chrono::time_point<std::chrono::system_clock> start =
+    std::chrono::system_clock::now();
+  asio::post(_io_context, [start, this] {
+    std::chrono::time_point<std::chrono::system_clock> end =
+      std::chrono::system_clock::now();
+    _latency = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    log_v2::core()->trace("Thread pool latency at {}ms", _latency);
+  });
+  _timer.expires_after(std::chrono::seconds(30));
+  _timer.async_wait(std::bind(&pool::check_latency, this));
 }

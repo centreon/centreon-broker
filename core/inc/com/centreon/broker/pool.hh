@@ -25,13 +25,25 @@
 
 CCB_BEGIN()
 
+/**
+ * @brief The Broker's thread pool.
+ *
+ * At the origin, this thread pool is configured to be used by ASIO. Each thread
+ * in this pool runs an io_context that allows any part in Broker to post
+ * a work to be done.
+ */
 class pool {
   static size_t _pool_size;
   asio::io_context _io_context;
   asio::io_service::work _worker;
   std::vector<std::thread> _pool;
   bool _closed;
+  asio::steady_timer _timer;
+
   mutable std::mutex _closed_m;
+  /* Latency in milliseconds between the call of check_latency and its real
+   * execution. */
+  std::atomic<uint32_t> _latency;
 
   pool();
   void _start();
@@ -46,6 +58,7 @@ class pool {
   static pool& instance();
   static asio::io_context& io_context();
   size_t get_current_size() const;
+  void check_latency();
 };
 
 CCB_END()
