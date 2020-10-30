@@ -21,12 +21,13 @@
 #include <asio.hpp>
 #include <json11.hpp>
 
-#include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
+#include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/mysql_manager.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/processing/endpoint.hh"
 
 using namespace com::centreon::broker;
@@ -44,6 +45,10 @@ void com::centreon::broker::stats::get_generic_stats(
       .append(".")
       .append(std::to_string(ASIO_VERSION % 100));
   object["asio_version"] = asio_version;
+  json11::Json::object pool;
+  pool["size"] = static_cast<int32_t>(pool::instance().get_current_size());
+  pool["latency"] = fmt::format("{:.3f}ms", pool::instance().get_latency());
+  object["thread_pool"] = pool;
 }
 
 void com::centreon::broker::stats::get_mysql_stats(
@@ -71,8 +76,7 @@ void com::centreon::broker::stats::get_loaded_module_stats(
     object.emplace_back(subtree);
   }
 }
-bool stats::get_endpoint_stats(
-    std::vector<json11::Json::object>& object) {
+bool stats::get_endpoint_stats(std::vector<json11::Json::object>& object) {
   // Endpoint applier.
   config::applier::endpoint& endp_applier(
       config::applier::endpoint::instance());
@@ -83,14 +87,17 @@ bool stats::get_endpoint_stats(
         std::chrono::milliseconds(100)));
     try {
       if (locked)
-        for (auto it(endp_applier.endpoints_begin()), end(endp_applier.endpoints_end());
+        for (auto it(endp_applier.endpoints_begin()),
+             end(endp_applier.endpoints_end());
              it != end; ++it) {
           json11::Json::object subtree;
           subtree["name"] = it->second->get_name();
           subtree["queue_file_path"] =
-              com::centreon::broker::multiplexing::muxer::queue_file(it->second->get_name());
+              com::centreon::broker::multiplexing::muxer::queue_file(
+                  it->second->get_name());
           subtree["memory_file_path"] =
-              com::centreon::broker::multiplexing::muxer::memory_file(it->second->get_name());
+              com::centreon::broker::multiplexing::muxer::memory_file(
+                  it->second->get_name());
           it->second->stats(subtree);
           object.emplace_back(subtree);
         }

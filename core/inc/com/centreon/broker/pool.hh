@@ -43,11 +43,12 @@ class pool {
   mutable std::mutex _closed_m;
   /* Latency in milliseconds between the call of check_latency and its real
    * execution. */
-  std::atomic<uint32_t> _latency;
+  std::atomic<double> _latency;
 
   pool();
   void _start();
   void _stop();
+  void _check_latency();
 
  public:
   ~pool() noexcept;
@@ -58,7 +59,7 @@ class pool {
   static pool& instance();
   static asio::io_context& io_context();
   size_t get_current_size() const;
-  void check_latency();
+  double get_latency() const;
 };
 
 CCB_END()
