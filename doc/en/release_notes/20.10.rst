@@ -1,4 +1,25 @@
 =======================
+Centreon Broker 20.10.2
+=======================
+
+************
+Enhancements
+************
+
+Command line argument
+=====================
+It is now possible to set the cbd pool size directly on the command line with
+the --pool_size X argument or -s X.
+
+Statistics
+==========
+The threa pool has now its own statistics. For now, we have two informations
+that are the number of threads it contains and its latency in milliseconds that
+is the duration we have to wait to see a task executed. We post a task to the
+thread pool at time T1, it is executed by the thread pool at time T2, the
+latency is T2 - T1.
+
+=======================
 Centreon Broker 20.10.1
 =======================
 
