@@ -25,6 +25,11 @@ using namespace com::centreon::broker;
 
 size_t pool::_pool_size(0);
 
+/**
+ * @brief The way to access to the pool.
+ *
+ * @return a reference to the pool.
+ */
 pool& pool::instance() {
   static pool instance;
   return instance;
@@ -74,6 +79,9 @@ void pool::_start() {
   }
 }
 
+/**
+ * @brief Destructor
+ */
 pool::~pool() noexcept {
   _stop();
 }
