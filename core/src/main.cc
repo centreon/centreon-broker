@@ -24,6 +24,7 @@
 #include <cstring>
 #include <exception>
 #include <thread>
+#include <getopt.h>
 
 #include "com/centreon/broker/brokerrpc.hh"
 #include "com/centreon/broker/config/applier/init.hh"
@@ -48,6 +49,16 @@ using namespace com::centreon::broker;
 // Main config file.
 static std::vector<std::string> gl_mainconfigfiles;
 static config::state gl_state;
+
+static struct option long_options[] = {
+  {"pool-size",   required_argument, 0, 'p'},
+  {"check",       no_argument,       0, 'c'},
+  {"debug",       no_argument,       0, 'd'},
+  {"diagnose",    no_argument,       0, 'D'},
+  {"version",     no_argument,       0, 'v'},
+  {"help",        no_argument,       0, 'h'},
+  {0, 0, 0, 0}
+};
 
 /**
  *  Function called when updating configuration (when program receives
@@ -141,6 +152,7 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
  */
 int main(int argc, char* argv[]) {
   // Initialization.
+  int opt, option_index = 0, n_thread = 0; 
   config::applier::init();
   std::string broker_name = "unknown";
   uint16_t default_port{51000};
@@ -155,21 +167,37 @@ int main(int argc, char* argv[]) {
     bool diagnose(false);
     bool help(false);
     bool version(false);
-    if (argc >= 2) {
-      for (int i(1); i < argc; ++i)
-        if (!strcmp(argv[i], "-c") || !strcmp(argv[i], "--check"))
-          check = true;
-        else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--debug"))
-          debug = true;
-        else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--diagnose"))
-          diagnose = true;
-        else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
-          help = true;
-        else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version"))
-          version = true;
-        else
-          gl_mainconfigfiles.push_back(argv[i]);
+
+    opt = getopt_long (argc, argv, "p:cdDvh",
+                        long_options, &option_index);
+    switch(opt) {
+      case 'p':
+        n_thread = atoi(optarg);
+        break;
+      case 'c':
+        check = true;
+        break;
+      case 'd':
+        debug = true;
+        break;
+      case 'D':
+        diagnose = true;
+        break;
+      case 'h':
+        help = true;
+        break;
+      case 'v':
+        version = true;
+        break;
+      default:
+        break;
     }
+
+    if (optind < argc)
+      while (optind < argc)
+        gl_mainconfigfiles.push_back(argv[optind++]);
+      
+    
 
     // Apply default configuration.
     config::state default_state;
@@ -209,7 +237,8 @@ int main(int argc, char* argv[]) {
       diag.generate(gl_mainconfigfiles);
     } else if (help) {
       logging::info(logging::high)
-          << "USAGE: " << argv[0] << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
+          << "USAGE: " << argv[0] << " [-t] [-c] [-d] [-D] [-h] [-v] [<configfile>]";
+      logging::info(logging::high) << "  -t  Set x threads.";
       logging::info(logging::high) << "  -c  Check configuration file.";
       logging::info(logging::high) << "  -d  Enable debug mode.";
       logging::info(logging::high) << "  -D  Generate a diagnostic file.";
@@ -228,8 +257,8 @@ int main(int argc, char* argv[]) {
       retval = 0;
     } else if (gl_mainconfigfiles.empty()) {
       logging::error(logging::high)
-          << "USAGE: " << argv[0] << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
-      retval = 1;
+          << "USAGE: " << argv[0] << " [-c] [-d] [-D] [-h] [-v] [<configfile>]\n\n";
+        return 1;
     } else {
       logging::info(logging::medium)
           << "Centreon Broker " << CENTREON_BROKER_VERSION;
@@ -301,7 +330,10 @@ int main(int argc, char* argv[]) {
             delete rpc;
           });
 
-      pool::set_size(gl_state.pool_size());
+      if (n_thread > 0 && n_thread < 100) 
+        pool::set_size(n_thread);
+      else 
+        pool::set_size(gl_state.pool_size());
 
       // Launch event loop.
       if (!check)
