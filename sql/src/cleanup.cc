@@ -17,9 +17,12 @@
 */
 
 #include "com/centreon/broker/sql/cleanup.hh"
+
 #include <unistd.h>
+
 #include <ctime>
 #include <sstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql.hh"
@@ -61,7 +64,6 @@ cleanup::cleanup(std::string const& db_type,
       _start_stop_m{},
       _started{false},
       _should_exit{false} {}
-
 
 /**
  *  Destructor.

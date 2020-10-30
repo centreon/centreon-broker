@@ -16,8 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cassert>
 #include "com/centreon/broker/processing/thread.hh"
+
+#include <cassert>
 
 using namespace com::centreon::broker::processing;
 

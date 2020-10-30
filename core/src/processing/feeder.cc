@@ -128,8 +128,8 @@ void feeder::_forward_statistic(json11::Json::object& tree) {
 }
 
 void feeder::_callback() noexcept {
-  logging::info(logging::medium)
-      << "feeder: thread of client '" << _name << "' is starting";
+  log_v2::processing()->info("feeder: thread of client '{}' is starting",
+                             _name);
   time_t fill_stats_time = time(nullptr);
   std::unique_lock<std::mutex> lock(_state_m);
 
@@ -159,6 +159,8 @@ void feeder::_callback() noexcept {
           stream_can_read = false;
         }
         if (d) {
+          log_v2::processing()->trace(
+              "feeder '{}': sending 1 event from stream to muxer", _name);
           {
             misc::read_lock lock(_client_m);
             _subscriber.get_muxer().write(d);
@@ -178,6 +180,8 @@ void feeder::_callback() noexcept {
           muxer_can_read = false;
         }
       if (d) {
+        log_v2::processing()->trace(
+            "feeder '{}': sending 1 event from muxer to client", _name);
         {
           misc::read_lock lock(_client_m);
           _client->write(d);
@@ -188,8 +192,12 @@ void feeder::_callback() noexcept {
 
       // If both timed out, sleep a while.
       d.reset();
-      if (timed_out_stream && timed_out_muxer)
+      if (timed_out_stream && timed_out_muxer) {
+        log_v2::processing()->trace(
+            "feeder '{}': timeout on stream and muxer, waiting for 100000µs",
+            _name);
         ::usleep(100000);
+      }
     }
   } catch (exceptions::shutdown const& e) {
     // Normal termination.
@@ -220,8 +228,7 @@ void feeder::_callback() noexcept {
     set_state("disconnected");
     _subscriber.get_muxer().remove_queue_files();
   }
-  logging::info(logging::medium)
-      << "feeder: thread of client '" << _name << "' will exit";
+  log_v2::processing()->info("feeder: thread of client '{}' will exit", _name);
 }
 
 uint32_t feeder::_get_queued_events() const {

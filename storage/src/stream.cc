@@ -65,7 +65,8 @@ stream::stream(database_config const& dbcfg,
                uint32_t interval_length,
                uint32_t rebuild_check_interval,
                bool store_in_db)
-    : io::stream("storage"), _pending_events(0),
+    : io::stream("storage"),
+      _pending_events(0),
       _rebuilder(dbcfg,
                  rebuild_check_interval,
                  rrd_len ? rrd_len : 15552000,
@@ -141,18 +142,9 @@ void stream::statistics(json11::Json::object& tree) const {
  */
 int32_t stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
+
   assert(data);
-  //  if (!validate(data, get_name()))
-  //    return 0;
-  //  uint32_t type = data->type();
-  //  if (io::events::category_of_type(type) == io::events::neb &&
-  //  io::events::element_of_type(type) == neb::service_status::static_type()) {
-  //    neb::service_status const& ss =
-  //    *static_cast<neb::service_status*>(data.get());
-  //    assert(ss.perf_data.size() < 189576 || ss.perf_data.find("8=0%", 189570)
-  //    == std::string::npos);
-  //  }
-  //
+
   int32_t ack =
       conflict_manager::instance().send_event(conflict_manager::storage, data);
   _pending_events -= ack;

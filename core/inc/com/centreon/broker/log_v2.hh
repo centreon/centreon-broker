@@ -36,6 +36,7 @@ class log_v2 {
   std::shared_ptr<spdlog::logger> _sql_log;
   std::shared_ptr<spdlog::logger> _perfdata_log;
   std::shared_ptr<spdlog::logger> _lua_log;
+  std::shared_ptr<spdlog::logger> _processing_log;
   std::shared_ptr<spdlog::logger> _bam_log;
   std::mutex _load_m;
 
@@ -55,6 +56,7 @@ class log_v2 {
   static std::shared_ptr<spdlog::logger> sql();
   static std::shared_ptr<spdlog::logger> perfdata();
   static std::shared_ptr<spdlog::logger> lua();
+  static std::shared_ptr<spdlog::logger> processing();
   static std::shared_ptr<spdlog::logger> bam();
 };
 

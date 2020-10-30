@@ -123,8 +123,8 @@ time_t failover::get_retry_interval() const throw() {
  */
 void failover::run() {
   // Initial log.
-  logging::debug(logging::high)
-      << "failover: thread of endpoint '" << _name << "' is starting";
+  log_v2::processing()->debug("failover: thread of endpoint '{}' is starting",
+                              _name);
 
   // Check endpoint.
   if (!_endpoint) {
@@ -162,9 +162,9 @@ void failover::run() {
       // Buffering.
       if (_buffering_timeout > 0) {
         // Status.
-        logging::debug(logging::medium)
-            << "failover: buffering data for endpoint '" << _name << "' ("
-            << _buffering_timeout << "s)";
+        log_v2::processing()->debug(
+            "failover: buffering data for endpoint '{}' ({}s)", _name,
+            _buffering_timeout);
         _update_status("buffering data");
 
         // Wait loop.
@@ -275,15 +275,17 @@ void failover::run() {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
             should_commit = should_commit || d;
           } catch (exceptions::shutdown const& e) {
-            logging::debug(logging::medium)
-                << "failover: muxer of endpoint '" << _name
-                << "' shutdown while reading: " << e.what();
+            log_v2::processing()->debug(
+                "failover: muxer of endpoint '{}' "
+                "shutdown while reading: {}",
+                _name, e.what());
             muxer_can_read = false;
           }
           if (d) {
-            logging::debug(logging::low) << "failover: writing event of "
-                                            "multiplexing engine to endpoint '"
-                                         << _name << "'";
+            log_v2::processing()->debug(
+                "failover: writing event of multiplexing engine to endpoint "
+                "'{}'",
+                _name);
             _update_status("writing event to stream");
             int we(0);
 
@@ -291,9 +293,10 @@ void failover::run() {
               std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
               we = _stream->write(d);
             } catch (exceptions::shutdown const& e) {
-              logging::debug(logging::medium)
-                  << "failover: stream of endpoint '" << _name
-                  << "' shutdown while writing: " << e.what();
+              log_v2::processing()->debug(
+                  "failover: stream of endpoint '{}' shutdown while writing: "
+                  "{}",
+                  _name, e.what());
               muxer_can_read = false;
             }
             _subscriber->get_muxer().ack_events(we);

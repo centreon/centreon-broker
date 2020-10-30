@@ -32,6 +32,38 @@ CCB_BEGIN()
  *  @brief Prepare database queries.
  *
  *  Prepare queries using event mappings.
+ *
+ *  A query preparator is attached to a BBDO type element. It is constructed
+ *  with the BBDO static type.
+ *
+ *  A second important point is the event_unique object that is used by the
+ *  query preparator to know the unique key to use for inserts, updates...
+ *  It is also provided in the constructor and if it is not defined, we use
+ *  an empty one.
+ *
+ *  Once, the query preparator constructed, we can use it to prepare:
+ *  * an insert statement
+ *  * an update statement
+ *  * an insert or update statement: which tries to insert the row and on
+ *    duplication, updates it.
+ *  * a delete statement.
+ *
+ *
+ *  Here is an example of the query preparator usage:
+ *
+ *   query_preparator::event_unique unique;
+ *   unique.insert("hostgroup_id");
+ *   query_preparator qp(neb::host_group::static_type(), unique);
+ *   auto host_group_insupdate = qp.prepare_update(_mysql);
+ *
+ *  In that example, we prepare a statement for a neb::host_group BBDO object.
+ *  The prepared query is an update with a WHERE condition on hostgroup_id.
+ *
+ *  To use it, we can just do something like this:
+ *
+ *   host_group_insupdate << hg;
+ *
+ *   Where hg is of type neb::host_group.
  */
 class query_preparator {
  public:

@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/file/factory.hh"
+
 #include <memory>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/opener.hh"
 

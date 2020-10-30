@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2017 Centreon
+** Copyright 2009-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -1336,7 +1336,8 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->acknowledgement_type = h->get_acknowledgement_type();
     host_status->active_checks_enabled = h->get_checks_enabled();
     if (!h->get_check_command().empty())
-      host_status->check_command = misc::string::check_string_utf8(h->get_check_command());
+      host_status->check_command =
+          misc::string::check_string_utf8(h->get_check_command());
     host_status->check_interval = h->get_check_interval();
     if (!h->get_check_period().empty())
       host_status->check_period = h->get_check_period();
@@ -1347,7 +1348,8 @@ int neb::callback_host_status(int callback_type, void* data) {
                                    : 4);  // Pending state.
     host_status->downtime_depth = h->get_scheduled_downtime_depth();
     if (!h->get_event_handler().empty())
-      host_status->event_handler = misc::string::check_string_utf8(h->get_event_handler());
+      host_status->event_handler =
+          misc::string::check_string_utf8(h->get_event_handler());
     host_status->event_handler_enabled = h->get_event_handler_enabled();
     host_status->execution_time = h->get_execution_time();
     host_status->flap_detection_enabled = h->get_flap_detection_enabled();
@@ -1379,15 +1381,18 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->notifications_enabled = h->get_notifications_enabled();
     host_status->obsess_over = h->get_obsess_over();
     if (!h->get_plugin_output().empty()) {
-      host_status->output = misc::string::check_string_utf8(h->get_plugin_output());
+      host_status->output =
+          misc::string::check_string_utf8(h->get_plugin_output());
       host_status->output.append("\n");
     }
     if (!h->get_long_plugin_output().empty())
-      host_status->output.append(misc::string::check_string_utf8(h->get_long_plugin_output()));
+      host_status->output.append(
+          misc::string::check_string_utf8(h->get_long_plugin_output()));
     host_status->passive_checks_enabled = h->get_accept_passive_checks();
     host_status->percent_state_change = h->get_percent_state_change();
     if (!h->get_perf_data().empty())
-      host_status->perf_data = misc::string::check_string_utf8(h->get_perf_data());
+      host_status->perf_data =
+          misc::string::check_string_utf8(h->get_perf_data());
     host_status->retry_interval = h->get_retry_interval();
     host_status->should_be_scheduled = h->get_should_be_scheduled();
     host_status->state_type =

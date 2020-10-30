@@ -114,7 +114,6 @@ void muxer::ack_events(int count) {
   if (count) {
     std::lock_guard<std::mutex> lock(_mutex);
     for (int i = 0; i < count && !_events.empty(); ++i) {
-      assert(_events.begin() != _pos);
       if (_events.begin() == _pos) {
         logging::error(logging::high) << "multiplexing: attempt to acknowledge "
                                          "more events than available in "
