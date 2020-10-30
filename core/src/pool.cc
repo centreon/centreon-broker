@@ -23,6 +23,11 @@ using namespace com::centreon::broker;
 
 size_t pool::_pool_size(0);
 
+/**
+ * @brief The way to access to the pool.
+ *
+ * @return a reference to the pool.
+ */
 pool& pool::instance() {
   static pool instance;
   return instance;
@@ -41,8 +46,13 @@ asio::io_context& pool::io_context() {
  * @brief Default constructor. Hidden, is called throw the static instance()
  * method.
  */
-pool::pool() : _io_context(_pool_size), _worker(_io_context), _closed(true) {
+pool::pool()
+    : _io_context(_pool_size),
+      _worker(_io_context),
+      _closed(true),
+      _timer(_io_context) {
   _start();
+  _check_latency();
 }
 
 /**
@@ -67,6 +77,9 @@ void pool::_start() {
   }
 }
 
+/**
+ * @brief Destructor
+ */
 pool::~pool() noexcept {
   _stop();
 }
@@ -105,4 +118,34 @@ void pool::set_size(size_t size) noexcept {
 size_t pool::get_current_size() const {
   std::lock_guard<std::mutex> lock(_closed_m);
   return _pool.size();
+}
+
+/**
+ * @brief The function whose role is to compute the latency. It makes the
+ * computation every 10s.
+ *
+ */
+void pool::_check_latency() {
+  auto start = std::chrono::system_clock::now();
+  asio::post(_io_context, [start, this] {
+    auto end = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration<double, std::milli>(end - start);
+    _latency = duration.count();
+    log_v2::core()->trace("Thread pool latency at {}ms", _latency);
+  });
+  _timer.expires_after(std::chrono::seconds(10));
+  _timer.async_wait(std::bind(&pool::_check_latency, this));
+}
+
+/**
+ * @brief Get the pool latency in ms. This value is computed
+ * every 10s and represents the duration between the time point we tell the
+ * thread pool to execute a task and the time point when it really executes this
+ * task. A latency of 0ms means the pool has enough free threads to execute
+ * tasks immediatly.
+ *
+ * @return A duration in ms.
+ */
+double pool::get_latency() const {
+  return _latency;
 }
