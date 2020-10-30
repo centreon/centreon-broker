@@ -17,8 +17,6 @@
 */
 #include "com/centreon/broker/pool.hh"
 
-#include <asio.hpp>
-
 #include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
