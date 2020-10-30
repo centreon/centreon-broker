@@ -51,7 +51,7 @@ static std::vector<std::string> gl_mainconfigfiles;
 static config::state gl_state;
 
 static struct option long_options[] = {
-  {"pool-size",   required_argument, 0, 'p'},
+  {"pool_size",   required_argument, 0, 's'},
   {"check",       no_argument,       0, 'c'},
   {"debug",       no_argument,       0, 'd'},
   {"diagnose",    no_argument,       0, 'D'},
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 
     opt = getopt_long (argc, argv, "p:cdDvh",
                         long_options, &option_index);
-    switch(opt) {
+    switch (opt) {
       case 'p':
         n_thread = atoi(optarg);
         break;
@@ -285,6 +285,11 @@ int main(int argc, char* argv[]) {
           conf.loggers().push_back(default_state.loggers().front());
         }
 
+        if (n_thread > 0 && n_thread < 100) 
+          pool::set_size(n_thread);
+        else 
+          pool::set_size(conf.pool_size());
+
         // Add debug output if in debug mode.
         if (debug)
           conf.loggers().insert(conf.loggers().end(),
@@ -329,11 +334,6 @@ int main(int argc, char* argv[]) {
             rpc->shutdown();
             delete rpc;
           });
-
-      if (n_thread > 0 && n_thread < 100) 
-        pool::set_size(n_thread);
-      else 
-        pool::set_size(gl_state.pool_size());
 
       // Launch event loop.
       if (!check)
