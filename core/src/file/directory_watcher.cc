@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/file/directory_watcher.hh"
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include <memory>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 

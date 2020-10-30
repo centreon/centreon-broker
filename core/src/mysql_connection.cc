@@ -144,11 +144,18 @@ void mysql_connection::_commit(mysql_task* t) {
     res = 0;
 
   if (res) {
-    exceptions::msg e;
-    e << err_msg;
-    task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
+    std::string err_msg(
+        fmt::format("Error during commit: {}", ::mysql_error(_conn)));
+    log_v2::sql()->error("mysql_connection: {}", err_msg);
+    set_error_message(err_msg);
+    if (--task->count == 0)
+      task->promise->set_value(true);
   } else {
+    /* No more queries are waiting for a commit now. */
     _need_commit = false;
+
+    /* Commit is done on each connection. If task->count is 0, then we are on
+     * the last one. It's time to release the future boolean. */
     if (--task->count == 0)
       task->promise->set_value(true);
   }
@@ -529,11 +536,17 @@ void mysql_connection::_run() {
   _result_condition.notify_all();
 
   while (!_finished) {
+    std::list<std::shared_ptr<database::mysql_task>> tasks_list;
     std::unique_lock<std::mutex> locker(_list_mutex);
     if (!_tasks_list.empty()) {
-      std::shared_ptr<mysql_task> task(_tasks_list.front());
-      _tasks_list.pop_front();
+      std::swap(_tasks_list, tasks_list);
       locker.unlock();
+    } else {
+      _tasks_count = 0;
+      _tasks_condition.wait(locker);
+      continue;
+    }
+    for (auto task : tasks_list) {
       --_tasks_count;
       if (_task_processing_table[task->type])
         (this->*(_task_processing_table[task->type]))(task.get());
@@ -541,9 +554,6 @@ void mysql_connection::_run() {
         logging::error(logging::medium)
             << "mysql_connection: Error type not managed...";
       }
-    } else {
-      _tasks_count = 0;
-      _tasks_condition.wait(locker);
     }
   }
   for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),
@@ -562,14 +572,15 @@ void mysql_connection::_run() {
 mysql_connection::mysql_connection(database_config const& db_cfg)
     : _conn(nullptr),
       _finished(false),
+      _tasks_count(0),
+      _need_commit(false),
       _host(db_cfg.get_host()),
       _user(db_cfg.get_user()),
       _pwd(db_cfg.get_password()),
       _name(db_cfg.get_name()),
       _port(db_cfg.get_port()),
       _started(false),
-      _qps(db_cfg.get_queries_per_transaction()),
-      _need_commit(false) {
+      _qps(db_cfg.get_queries_per_transaction()) {
   std::unique_lock<std::mutex> locker(_result_mutex);
   _thread.reset(new std::thread(&mysql_connection::_run, this));
   while (!_started)
@@ -577,7 +588,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
 }
 
 mysql_connection::~mysql_connection() {
-  logging::info(logging::low) << "mysql_connection: finished";
+  log_v2::sql()->info("mysql_connection: finished");
   finish();
   _thread->join();
 }

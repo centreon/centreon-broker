@@ -19,6 +19,8 @@
 #ifndef CCB_MISC_STRING_HH
 #define CCB_MISC_STRING_HH
 
+#include <fmt/format.h>
+
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
@@ -27,7 +29,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <fmt/format.h>
 
 #include "com/centreon/broker/namespace.hh"
 
@@ -63,7 +64,7 @@ std::string check_string_utf8(const std::string& str) noexcept;
  *
  * @return a reference to the string str.
  */
-template<typename T>
+template <typename T>
 fmt::string_view truncate(const T& str, size_t s) {
   if (s >= str.size())
     return fmt::string_view(str);
@@ -74,6 +75,7 @@ fmt::string_view truncate(const T& str, size_t s) {
 }
 
 size_t adjust_size_utf8(const std::string& str, size_t s);
+std::string escape(const std::string& str, size_t s);
 
 }  // namespace string
 }  // namespace misc

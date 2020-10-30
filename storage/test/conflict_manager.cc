@@ -16,9 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/conflict_manager.hh"
+
 #include <gtest/gtest.h>
+
 #include <cstdio>
 #include <fstream>
+
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/modules/loader.hh"
@@ -27,7 +31,6 @@
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/module.hh"
 #include "com/centreon/broker/neb/service.hh"
-#include "com/centreon/broker/storage/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
@@ -41,13 +44,11 @@ class ConflictManagerTest : public ::testing::Test {
       (void)e;
     }
   }
-  void TearDown() override {
-    config::applier::deinit();
-  }
+  void TearDown() override { config::applier::deinit(); }
 };
 
 TEST_F(ConflictManagerTest, OpenClose) {
-  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                         "centreon_storage", 5, true, 5);
   uint32_t loop_timeout = 5;
   uint32_t instance_timeout = 5;
@@ -64,8 +65,8 @@ TEST_F(ConflictManagerTest, InstCVConflict) {
   l.load_file("./neb/10-neb.so");
   uint32_t loop_timeout = 5;
   uint32_t instance_timeout = 5;
-  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
-                         "centreon_storage", 5, true, 5);
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
+                        "centreon_storage", 5, true, 5);
   ASSERT_NO_THROW(
       conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout));
 
@@ -117,7 +118,8 @@ TEST_F(ConflictManagerTest, InstCVConflict) {
 
   conflict_manager::instance().send_event(conflict_manager::sql, s);
 
-  std::shared_ptr<neb::custom_variable> cv{std::make_shared<neb::custom_variable>()};
+  std::shared_ptr<neb::custom_variable> cv{
+      std::make_shared<neb::custom_variable>()};
   cv->service_id = 498;
   cv->update_time = time(nullptr);
   cv->modified = false;

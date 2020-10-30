@@ -43,6 +43,7 @@ class perfdata {
   perfdata(perfdata&&) = default;
   ~perfdata() noexcept;
   perfdata& operator=(perfdata const& pd);
+  perfdata& operator=(perfdata&& pd);
   double critical() const noexcept;
   void critical(double c) noexcept;
   double critical_low() const noexcept;

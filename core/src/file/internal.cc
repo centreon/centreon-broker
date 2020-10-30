@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/file/internal.hh"
+
 #include "com/centreon/broker/file/factory.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
