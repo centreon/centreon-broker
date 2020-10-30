@@ -51,6 +51,7 @@ log_v2::log_v2() {
   _sql_log = std::make_shared<logger>("sql", null_sink);
   _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
   _lua_log = std::make_shared<logger>("lua", null_sink);
+  _processing_log = std::make_shared<logger>("processing", null_sink);
   _bam_log = std::make_shared<logger>("bam", null_sink);
 }
 
@@ -130,6 +131,8 @@ bool log_v2::load(std::string const& file,
           l = &_perfdata_log;
         else if (entry["name"].string_value() == "lua")
           l = &_lua_log;
+        else if (entry["name"].string_value() == "processing")
+          l = &_processing_log;
         else if (entry["name"].string_value() == "bam")
           l = &_bam_log;
         else
@@ -178,6 +181,10 @@ std::shared_ptr<spdlog::logger> log_v2::perfdata() {
 
 std::shared_ptr<spdlog::logger> log_v2::lua() {
   return instance()._lua_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::processing() {
+  return instance()._processing_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::bam() {

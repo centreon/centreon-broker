@@ -35,6 +35,9 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
   std::mutex _data_m;
   asio::error_code _current_error;
+
+  std::mutex _exposed_write_queue_m;
+  std::queue<std::vector<char>> _exposed_write_queue;
   std::queue<std::vector<char>> _write_queue;
   std::atomic_bool _writing;
 
@@ -42,6 +45,7 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
   std::atomic_bool _reading;
   std::atomic_bool _closing;
   std::array<char, async_buf_size> _read_buffer;
+  std::queue<std::vector<char>> _exposed_read_queue;
   std::mutex _read_queue_m;
   std::condition_variable _read_queue_cv;
   std::queue<std::vector<char>> _read_queue;
@@ -64,6 +68,7 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
   int32_t flush();
 
+  void writing();
   void handle_write(const asio::error_code& ec);
   int32_t write(const std::vector<char>& v);
 

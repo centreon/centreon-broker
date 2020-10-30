@@ -17,9 +17,11 @@
 */
 
 #include "com/centreon/broker/file/cfile.hh"
+
 #include <cassert>
 #include <cerrno>
 #include <cstring>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 
@@ -73,8 +75,8 @@ void cfile::_open() {
   _stream = fopen(_path.c_str(), cfile_mode);
   if (!_stream) {
     char const* msg(strerror(errno));
-    throw exceptions::msg() << "cannot open '" << _path << "' (mode "
-                            << cfile_mode << "): " << msg;
+    throw exceptions::msg()
+        << "cannot open '" << _path << "' (mode " << cfile_mode << "): " << msg;
   }
 }
 
@@ -176,7 +178,7 @@ long cfile::write(void const* buffer, long size) {
   if (ferror(_stream)) {
     char const* msg(strerror(errno));
     throw exceptions::msg()
-          << "cannot write " << size << " bytes to file: " << msg;
+        << "cannot write " << size << " bytes to file: " << msg;
   }
   return retval;
 }

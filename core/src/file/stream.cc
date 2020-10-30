@@ -17,9 +17,11 @@
 */
 
 #include "com/centreon/broker/file/stream.hh"
+
 #include <cstdio>
 #include <limits>
 #include <sstream>
+
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/misc/string.hh"
 
@@ -38,7 +40,11 @@ using namespace com::centreon::broker::file;
  *  @param[in] file  Splitted file on which the stream will operate.
  */
 stream::stream(splitter* file)
-    : io::stream("file"), _file(file), _last_read_offset(0), _last_time(0), _last_write_offset(0) {}
+    : io::stream("file"),
+      _file(file),
+      _last_read_offset(0),
+      _last_time(0),
+      _last_write_offset(0) {}
 
 /**
  *  Destructor.
@@ -99,7 +105,7 @@ void stream::statistics(json11::Json::object& tree) const {
   // Easy to print.
   tree["file_read_path"] = rid;
   tree["file_read_offset"] = static_cast<double>(roffset);
-  tree["file_write_path"] =  wid;
+  tree["file_write_path"] = wid;
   tree["file_write_offset"] = static_cast<double>(woffset);
   if (max_file_size != std::numeric_limits<long>::max())
     tree["file_max_size"] = static_cast<double>(max_file_size);
@@ -110,7 +116,7 @@ void stream::statistics(json11::Json::object& tree) const {
   bool write_time_expected(false);
   long long froffset(roffset + rid * static_cast<long long>(max_file_size));
   long long fwoffset(woffset + wid * static_cast<long long>(max_file_size));
-  if (((rid != wid) && max_file_size == std::numeric_limits<long>::max()) ||
+  if ((rid != wid && max_file_size == std::numeric_limits<long>::max()) ||
       !fwoffset) {
     tree["file_percent_processed"] = "unknown";
   } else {
@@ -120,7 +126,7 @@ void stream::statistics(json11::Json::object& tree) const {
   if (write_time_expected) {
     time_t now(time(nullptr));
 
-    if (_last_time && (now != _last_time)) {
+    if (_last_time && now != _last_time) {
       time_t eta(0);
       {
         unsigned long long div(froffset + _last_write_offset -
@@ -130,14 +136,14 @@ void stream::statistics(json11::Json::object& tree) const {
               "file not processed fast enough to terminate";
         else {
           eta = now + (fwoffset - froffset) * (now - _last_time) / div;
-          tree["file_expected_terminated_at"] = static_cast<double >(eta);
+          tree["file_expected_terminated_at"] = static_cast<double>(eta);
         }
       }
 
       if (max_file_size == std::numeric_limits<long>::max()) {
         tree["file_expected_max_size"] = static_cast<double>(
-            fwoffset + (fwoffset - _last_write_offset) * (eta - now) /
-                              (now - _last_time));
+            fwoffset +
+            (fwoffset - _last_write_offset) * (eta - now) / (now - _last_time));
       }
     }
 
@@ -145,8 +151,6 @@ void stream::statistics(json11::Json::object& tree) const {
     _last_read_offset = froffset;
     _last_write_offset = fwoffset;
   }
-
-  return;
 }
 
 /**

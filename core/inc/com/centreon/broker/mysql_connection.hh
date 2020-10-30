@@ -132,6 +132,7 @@ class mysql_connection {
   std::atomic<bool> _finished;
   std::list<std::shared_ptr<database::mysql_task>> _tasks_list;
   std::atomic_int _tasks_count;
+  bool _need_commit;
 
   std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
 
@@ -151,7 +152,6 @@ class mysql_connection {
   int _port;
   bool _started;
   uint32_t _qps;
-  bool _need_commit;
 
   /* mutex to protect the string access in _error */
   mutable std::mutex _error_m;

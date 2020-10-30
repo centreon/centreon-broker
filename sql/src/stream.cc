@@ -439,7 +439,8 @@ stream::stream(database_config const& dbcfg,
                uint32_t loop_timeout,
                uint32_t instance_timeout,
                bool with_state_events)
-    : io::stream("SQL"), _mysql(dbcfg),
+    : io::stream("SQL"),
+      _mysql(dbcfg),
       //      _cleanup_thread(dbcfg.get_type(),
       //                      dbcfg.get_host(),
       //                      dbcfg.get_port(),
@@ -480,7 +481,7 @@ int stream::flush() {
   _pending_events -= retval;
 
   // Event acknowledgement.
-  log_v2::sql()->debug("SQL: {} events have not yet been acknowledged",
+  log_v2::sql()->debug("SQL: {} / {} events acknowledged", retval,
                        _pending_events);
   return retval;
 }
@@ -517,8 +518,6 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
 
   assert(data);
-//  if (!validate(data, get_name()))
-//    return 0;
 
   // Process event.
   int32_t ack = storage::conflict_manager::instance().send_event(

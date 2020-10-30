@@ -17,8 +17,11 @@
 */
 
 #include "com/centreon/broker/bam/reporting_stream.hh"
+
 #include <gtest/gtest.h>
+
 #include <memory>
+
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
 #include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #include "com/centreon/broker/persistent_cache.hh"
@@ -28,16 +31,14 @@ using namespace com::centreon::broker::bam;
 
 class BamReportingStream : public testing::Test {
  public:
-  //void SetUp() override { multiplexing::engine::load(); };
-  //void TearDown() override { multiplexing::engine::unload(); };
 };
 
 TEST_F(BamReportingStream, WriteKpi) {
-  database_config cfg("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config cfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                       "centreon");
-  database_config storage("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config storage("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                           "centreon_storage");
-  ;
+
   std::shared_ptr<persistent_cache> cache;
   std::unique_ptr<reporting_stream> rs;
 

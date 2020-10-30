@@ -39,7 +39,7 @@ std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
 void (conflict_manager::*const conflict_manager::_neb_processing_table[])(
-    std::shared_ptr<io::data>) = {
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>&) = {
     nullptr,
     &conflict_manager::_process_acknowledgement,
     &conflict_manager::_process_comment,
@@ -87,9 +87,11 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _rrd_len{0},
       _interval_length{0},
       _max_perfdata_queries{0},
-      _still_pending_events{0},
-      _loop_duration{},
+      _max_metrics_queries{0},
+      _max_cv_queries{0},
+      _events_handled{0},
       _speed{},
+      _stats_count_pos{0},
       _ref_count{0},
       _oldest_timestamp{std::numeric_limits<time_t>::max()} {
   log_v2::sql()->debug("conflict_manager: class instanciation");
@@ -130,6 +132,8 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_rrd_len = rrd_len;
       _singleton->_interval_length = interval_length;
       _singleton->_max_perfdata_queries = queries_per_transaction;
+      _singleton->_max_metrics_queries = queries_per_transaction;
+      _singleton->_max_cv_queries = queries_per_transaction;
       _singleton->_ref_count++;
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
@@ -302,6 +306,7 @@ void conflict_manager::_load_caches() {
   {
     std::lock_guard<std::mutex> lock(_metric_cache_m);
     _metric_cache.clear();
+    _metrics.clear();
 
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
@@ -377,11 +382,19 @@ void conflict_manager::_callback() {
       _broken = true;
       break;
     }
+    size_t pos = 0;
+    std::deque<std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>> events;
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread
          * that fill this queue. */
         _insert_perfdatas();
+
+        /* Time to send metrics to database */
+        _update_metrics();
+
+        /* Time to send customvariables to database */
+        _update_customvariables();
 
         log_v2::sql()->trace(
             "conflict_manager: main loop initialized with a timeout of {} "
@@ -400,6 +413,9 @@ void conflict_manager::_callback() {
          * stuffs. We make then a timer cadenced at 1000ms. */
         int32_t duration = 1000;
 
+        time_t next_insert_perfdatas = time(nullptr);
+        time_t next_update_metrics = next_insert_perfdatas;
+        time_t next_update_cv = next_insert_perfdatas;
         /* During this loop, connectors still fill the queue when they receive
          * new events.
          * The loop is hold by three conditions that are:
@@ -411,67 +427,90 @@ void conflict_manager::_callback() {
          * it it is necessary for cleanup operations.
          */
         while (count < _max_pending_queries && timeout < timeout_limit) {
-          auto* tpl = _fifo.first_event();
-          if (!tpl) {
-            // We wait for a tuple only if it was impossible to get it
-            // immediatly
-            tpl = _fifo.first_event_wait(std::chrono::seconds(1));
-            if (!tpl) {
-              log_v2::sql()->trace(
-                  "conflict_manager: timeout reached while waiting for "
-                  "events.");
-              std::lock_guard<std::mutex> lk(_stat_m);
-              _still_pending_events = _fifo.get_events().size();
-              _loop_duration = 0;
-              _speed = 0;
-              break;
-            } else
-              log_v2::sql()->trace(
-                  "conflict_manager: new events to send to the database.");
+          if (events.empty())
+            events = _fifo.first_events();
+          if (events.empty()) {
+            // Let's wait for 500ms.
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            continue;
           }
-          std::shared_ptr<io::data>& d = std::get<0>(*tpl);
-          uint32_t type{d->type()};
-          uint16_t cat{io::events::category_of_type(type)};
-          uint16_t elem{io::events::element_of_type(type)};
-          if (std::get<1>(*tpl) == sql && cat == io::events::neb)
-            (this->*(_neb_processing_table[elem]))(d);
-          else if (std::get<1>(*tpl) == storage && cat == io::events::neb &&
-                   type == neb::service_status::static_type())
-            _storage_process_service_status(d);
-          else
-            log_v2::sql()->trace(
-                "conflict_manager: event of type {} thrown away ; no need to "
-                "store it in the database.",
-                type);
+          while (!events.empty()) {
+            auto tpl = events.front();
+            events.pop_front();
+            std::shared_ptr<io::data>& d = std::get<0>(tpl);
+            uint32_t type{d->type()};
+            uint16_t cat{io::events::category_of_type(type)};
+            uint16_t elem{io::events::element_of_type(type)};
+            if (std::get<1>(tpl) == sql && cat == io::events::neb)
+              (this->*(_neb_processing_table[elem]))(tpl);
+            else if (std::get<1>(tpl) == storage && cat == io::events::neb &&
+                     type == neb::service_status::static_type())
+              _storage_process_service_status(tpl);
+            else {
+              log_v2::sql()->trace(
+                  "conflict_manager: event of type {} thrown away ; no need to "
+                  "store it in the database.",
+                  type);
+              *std::get<2>(tpl) = true;
+            }
 
-          ++count;
-          *std::get<2>(*tpl) = true;
-          _fifo.pop();
+            ++count;
+            _stats_count[pos]++;
 
-          std::chrono::system_clock::time_point now1 =
-              std::chrono::system_clock::now();
+            std::chrono::system_clock::time_point now1 =
+                std::chrono::system_clock::now();
 
-          timeout =
-              std::chrono::duration_cast<std::chrono::milliseconds>(now1 - now0)
-                  .count();
-
-          /* Get some stats each second */
-          if (timeout >= duration) {
             /* If there are too many perfdata to send, let's send them... */
-            if (_perfdata_queue.size() > _max_perfdata_queries)
+            if (std::chrono::system_clock::to_time_t(now1) >=
+                    next_insert_perfdatas &&
+                _perfdata_queue.size() > _max_perfdata_queries) {
+              next_insert_perfdatas =
+                  std::chrono::system_clock::to_time_t(now1) + 10;
               _insert_perfdatas();
+            }
 
-            do {
-              duration += 1000;
-            } while (timeout > duration);
+            /* If there are too many metrics to send, let's send them... */
+            if (std::chrono::system_clock::to_time_t(now1) >=
+                    next_update_metrics &&
+                _metrics.size() > _max_metrics_queries) {
+              next_update_metrics =
+                  std::chrono::system_clock::to_time_t(now1) + 10;
+              _update_metrics();
+            }
 
-            std::lock_guard<std::mutex> lk(_stat_m);
-            _still_pending_events = _fifo.get_events().size();
-            _loop_duration = timeout;
-            _speed = (count * 1000.0) / _loop_duration;
+            /* Time to send customvariables to database */
+            if (std::chrono::system_clock::to_time_t(now1) >= next_update_cv &&
+                _cv_queue.size() > _max_cv_queries) {
+              next_update_cv = std::chrono::system_clock::to_time_t(now1) + 10;
+              _update_customvariables();
+            }
+
+            timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          now1 - now0)
+                          .count();
+
+            /* Get some stats each second */
+            if (timeout >= duration) {
+              do {
+                duration += 1000;
+                pos++;
+                if (pos >= _stats_count.size())
+                  pos = 0;
+                _stats_count[pos] = 0;
+              } while (timeout > duration);
+
+              _events_handled = events.size();
+              float s = 0.0f;
+              for (auto it = _stats_count.begin(); it != _stats_count.end();
+                   ++it)
+                s += *it;
+
+              std::lock_guard<std::mutex> lk(_stat_m);
+              _speed = s / _stats_count.size();
+            }
           }
         }
-
+        log_v2::sql()->debug("{} new events to treat", count);
         /* Here, just before looping, we commit. */
         _finish_actions();
         if (_fifo.get_pending_elements() == 0)
@@ -485,19 +524,10 @@ void conflict_manager::_callback() {
         /* Are there unresonsive instances? */
         _update_hosts_and_services_of_unresponsive_instances();
 
-        std::chrono::system_clock::time_point now2 =
-            std::chrono::system_clock::now();
         /* Get some stats */
         {
           std::lock_guard<std::mutex> lk(_stat_m);
-          _still_pending_events = _fifo.get_events().size();
-          _loop_duration =
-              std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now0)
-                  .count();
-          if (_loop_duration > 0)
-            _speed = count * 1000.0 / _loop_duration;
-          else
-            _speed = 0;
+          _events_handled = events.size();
         }
       }
     } catch (std::exception const& e) {
@@ -565,6 +595,9 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
  * @return the number of events to ack.
  */
 int32_t conflict_manager::get_acks(stream_type c) {
+  if (_broken)
+    throw exceptions::msg() << "conflict_manager: events loop interrupted";
+
   return _fifo.get_acks(c);
 }
 
@@ -593,12 +626,13 @@ void conflict_manager::_finish_action(int32_t conn, uint32_t action) {
 }
 
 /**
- *  The main objective of this method is to commit queries sent to the db.
+ *  The main goal of this method is to commit queries sent to the db.
  *  When the commit is done (all the connections commit), we count how
  *  many events can be acknowledged. So we can also update the number of pending
  *  events.
  */
 void conflict_manager::_finish_actions() {
+  log_v2::sql()->trace("conflict_manager: finish actions");
   _mysql.commit();
   for (uint32_t& v : _action)
     v = actions::none;
@@ -638,15 +672,17 @@ void conflict_manager::__exit() {
 
 json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
-  std::lock_guard<std::mutex> lk(_stat_m);
   retval["max pending events"] = static_cast<int32_t>(_max_pending_queries);
   retval["max perfdata events"] = static_cast<int32_t>(_max_perfdata_queries);
   retval["loop timeout"] = static_cast<int32_t>(_loop_timeout);
-  retval["pending events"] = _still_pending_events;
-  retval["sql"] = static_cast<int32_t>(_fifo.get_timeline(sql).size());
-  retval["storage"] = static_cast<int32_t>(_fifo.get_timeline(storage).size());
-  retval["stats interval"] = fmt::format("{} ms", _loop_duration);
-  retval["speed"] = fmt::format("{} events/s", _speed);
+  if (auto lock = std::unique_lock<std::mutex>(_stat_m, std::try_to_lock)) {
+    retval["waiting_events"] = static_cast<int32_t>(_fifo.get_events().size());
+    retval["events_handled"] = _events_handled;
+    retval["sql"] = static_cast<int32_t>(_fifo.get_timeline(sql).size());
+    retval["storage"] =
+        static_cast<int32_t>(_fifo.get_timeline(storage).size());
+    retval["speed"] = fmt::format("{} events/s", _speed);
+  }
   return retval;
 }
 

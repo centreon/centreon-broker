@@ -73,7 +73,7 @@ TEST(TcpAcceptor, Nominal) {
     std::shared_ptr<io::data> data_read;
     while (!data_read ||
            std::static_pointer_cast<io::raw>(data_read)->size() < 10000)
-      s_cbd->read(data_read, static_cast<time_t>(-1));
+      ASSERT_NO_THROW(s_cbd->read(data_read, static_cast<time_t>(-1)));
 
     std::vector<char> vec(
         std::static_pointer_cast<io::raw>(data_read)->get_buffer());

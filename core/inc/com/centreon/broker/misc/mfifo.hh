@@ -73,41 +73,15 @@ class mfifo {
    *
    * @return A pointer to the tuple or nullptr if none found.
    */
-  std::tuple<T, uint32_t, bool*>* first_event() {
+  std::deque<std::tuple<T, uint32_t, bool*>> first_events() {
+    std::deque<std::tuple<T, uint32_t, bool*>> retval;
     std::lock_guard<std::mutex> lk(_fifo_m);
-    if (_events.empty())
-      return nullptr;
-    else
-      return &_events.front();
+    std::swap(_events, retval);
+    return retval;
   }
 
   /**
-   * @brief Returns a pointer to th first tuple contained in the fifo. This
-   * methods wait a duration of d if no element is available.
-   *
-   * @param d The duration to wait for.
-   *
-   * @return A pointer to the tuple or nullptr if none found at the end of the
-   * duration.
-   */
-  std::tuple<T, uint32_t, bool*>* first_event_wait(
-      const std::chrono::seconds& d) {
-    std::unique_lock<std::mutex> lk(_fifo_m);
-    if (_fifo_cv.wait_for(lk, d, [this] { return !_events.empty(); }))
-      return &_events.front();
-    else
-      return nullptr;
-  }
-  /**
-   * @brief Remove the first element of the fifo.
-   */
-  void pop() {
-    std::lock_guard<std::mutex> lk(_fifo_m);
-    assert(!_events.empty());
-    _events.pop_front();
-  }
-  /**
-   * @brief Push a new element on this fifo comming from idx input source and
+   * @brief Push a new element on this fifo coming from idx input source and
    * returns the number of elements already acknowledged.
    *
    * @param idx The input source
@@ -131,8 +105,9 @@ class mfifo {
     _ack[idx] = 0;
     return retval;
   }
+
   /**
-   * @brief Count for an input source how many consecutive elements have been
+   * @brief Count for an input source how many consecutive elements have been.
    * treated, remove them and returns that count.
    *
    * @param idx The input source index.
