@@ -27,7 +27,7 @@ the --pool_size X argument or -s X.
 
 Statistics
 ==========
-The threa pool has now its own statistics. For now, we have two informations
+The thread pool has now its own statistics. For now, we have two informations
 that are the number of threads it contains and its latency in milliseconds that
 is the duration we have to wait to see a task executed. We post a task to the
 thread pool at time T1, it is executed by the thread pool at time T2, the
