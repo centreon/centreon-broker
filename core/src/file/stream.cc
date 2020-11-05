@@ -67,9 +67,7 @@ std::string stream::peer() const {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
 
-  // Lock mutex.
   d.reset();
-  std::lock_guard<std::mutex> lock(_mutex);
 
   // Build data array.
   std::unique_ptr<io::raw> data(new io::raw);
@@ -164,9 +162,6 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     return 1;
 
   if (d->type() == io::raw::static_type()) {
-    // Lock mutex.
-    std::lock_guard<std::mutex> lock(_mutex);
-
     // Get data.
     char const* memory;
     uint32_t size;

@@ -49,7 +49,6 @@ class stream : public io::stream {
  private:
 
   std::unique_ptr<splitter> _file;
-  mutable std::mutex _mutex;
   mutable long long _last_read_offset;
   mutable time_t _last_time;
   mutable long long _last_write_offset;

@@ -17,9 +17,11 @@
  *
  */
 #include <gtest/gtest.h>
+
 #include <cstdlib>
 #include <mutex>
 #include <thread>
+
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
@@ -34,9 +36,13 @@ using namespace com::centreon::broker::file;
 #define RETENTION_DIR "/tmp/"
 #define RETENTION_FILE "test-concurrent-queue"
 
-static std::mutex mutex;
-
 class read_thread {
+  std::thread _thread;
+  file::splitter* _file;
+  int _current;
+  std::vector<uint8_t> _buf;
+  int _size;
+
  public:
   read_thread(file::splitter* f, int size)
       : _file(f), _current(0), _buf(size, '\0'), _size(size) {
@@ -51,7 +57,6 @@ class read_thread {
 
     do {
       try {
-        std::lock_guard<std::mutex> lock(mutex);
         ret = _file->read(_buf.data() + _current, _size - _current);
         _current += ret;
         ASSERT_TRUE(_current <= _size);
@@ -60,16 +65,13 @@ class read_thread {
       usleep(100);
     } while (_current < _size);
   }
-
- private:
-  std::thread _thread;
-  file::splitter* _file;
-  int _current;
-  std::vector<uint8_t> _buf;
-  int _size;
 };
 
 class write_thread {
+  std::thread _thread;
+  file::splitter* _file;
+  int _size;
+
  public:
   write_thread(file::splitter* f, int size) : _file(f), _size(size) {
     _thread = std::thread(&write_thread::callback, this);
@@ -84,25 +86,17 @@ class write_thread {
 
     int wb = 0;
     for (int j(0); j < _size; j += wb) {
-      std::unique_lock<std::mutex> lock(mutex);
       wb = _file->write(buf + j, 100);
-      lock.unlock();
       usleep(rand() % 100);
     }
 
     delete[] buf;
   }
-
- private:
-  std::thread _thread;
-  file::splitter* _file;
-  int _size;
 };
 
 class FileSplitterConcurrent : public ::testing::Test {
  public:
   void SetUp() override {
-
     _path = RETENTION_DIR RETENTION_FILE;
     _remove_files();
 
@@ -169,7 +163,7 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
 
   // Then
   _file->remove_all_files();
-  std::list<std::string> entries =
-      misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE "*");
+  std::list<std::string> entries = misc::filesystem::dir_content_with_filter(
+      RETENTION_DIR, RETENTION_FILE "*");
   ASSERT_EQ(entries.size(), 0u);
 }
