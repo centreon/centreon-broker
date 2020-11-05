@@ -35,6 +35,35 @@ namespace file {
  *
  *  Handle logical file splitting across multiple real files to
  *  provide easier file management.
+ *
+ *  How does it work.
+ *  A splitter is made of several files. They all have the same base name but
+ *  from the second one, this name is follow by a number which is incremented
+ *  each time a new file is created.
+ *
+ *  We don't want to lock accesses to those files each time a reading or a
+ *  writing is done. But we must lock access when we read and write on the same
+ *  file. To aquieve this, we introduce two mutexes, _mutex1 and _mutex2. At
+ *  the beginning, when the splitter is open for an action (read or write),
+ *  there are two cases:
+ *  * The file we want is not already open, so we open it and we associate one
+ *    mutex to it (for reading, mutex1 is chosen and we set its pointer to
+ *    _rmutex, whereas for writing, mutex2 is chosen and set to _wmutex).
+ *  * The file to access is already open. We get the same file and we get the
+ *    same mutex pointer.
+ *
+ *  _rid and _wid are indexes to the current files, _rid for reading and _wid
+ *  for writing., _rfile and _wfile are shared pointers to FILE structs.
+ *
+ *  _base_path is the base name of files, it may be followed by a number that
+ *  is _rid or _wid.
+ *
+ *  _woffset and _roffset are offsets from the files begin to write or read.
+ *
+ *  A third mutex id_m is set essentially when it is time to open a file. It
+ *  is the _wid and _rid lock. _rmutex and _wmutex are set while it is locked.
+ *
+ *  FIXME: Maybe a better algorithm would allow us to avoid it.
  */
 class splitter : public fs_file {
   bool _auto_delete;
