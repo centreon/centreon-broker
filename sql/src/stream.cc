@@ -517,8 +517,6 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
 
   assert(data);
-//  if (!validate(data, get_name()))
-//    return 0;
 
   // Process event.
   int32_t ack = storage::conflict_manager::instance().send_event(

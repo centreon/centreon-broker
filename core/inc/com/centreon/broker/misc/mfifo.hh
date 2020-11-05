@@ -107,7 +107,7 @@ class mfifo {
     _events.pop_front();
   }
   /**
-   * @brief Push a new element on this fifo comming from idx input source and
+   * @brief Push a new element on this fifo coming from idx input source and
    * returns the number of elements already acknowledged.
    *
    * @param idx The input source
