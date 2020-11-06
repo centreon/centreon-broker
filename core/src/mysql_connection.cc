@@ -140,6 +140,7 @@ void mysql_connection::_commit(mysql_task* t) {
       log_v2::sql()->error("mysql_connection: {}", err_msg);
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+    log_v2::sql()->trace("mysql_connection: commit done");
   } else
     res = 0;
 
@@ -588,9 +589,12 @@ void mysql_connection::_push(std::shared_ptr<mysql_task> const& q) {
         << "This connection is closed and does not accept any query";
 
   std::lock_guard<std::mutex> locker(_list_mutex);
-  _tasks_list.push_back(q);
-  ++_tasks_count;
-  _tasks_condition.notify_all();
+  // No need to send commits one after the other
+  if (q->type != mysql_task::COMMIT || (_tasks_list.empty() || _tasks_list.back()->type != mysql_task::COMMIT)) {
+    _tasks_list.push_back(q);
+    ++_tasks_count;
+    _tasks_condition.notify_all();
+  }
 }
 
 /**

@@ -472,6 +472,7 @@ void conflict_manager::_callback() {
           }
         }
 
+        log_v2::sql()->debug("{} new events to treat", count);
         /* Here, just before looping, we commit. */
         _finish_actions();
         if (_fifo.get_pending_elements() == 0)
@@ -593,13 +594,15 @@ void conflict_manager::_finish_action(int32_t conn, uint32_t action) {
 }
 
 /**
- *  The main objective of this method is to commit queries sent to the db.
+ *  The main goal of this method is to commit queries sent to the db.
  *  When the commit is done (all the connections commit), we count how
  *  many events can be acknowledged. So we can also update the number of pending
  *  events.
  */
 void conflict_manager::_finish_actions() {
+  log_v2::sql()->trace("conflict_manager: finish actions");
   _mysql.commit();
+  log_v2::sql()->trace("conflict_manager: finish actions commit done");
   for (uint32_t& v : _action)
     v = actions::none;
 
