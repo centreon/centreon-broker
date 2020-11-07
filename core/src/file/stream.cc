@@ -110,7 +110,7 @@ void stream::statistics(json11::Json::object& tree) const {
   bool write_time_expected(false);
   long long froffset(roffset + rid * static_cast<long long>(max_file_size));
   long long fwoffset(woffset + wid * static_cast<long long>(max_file_size));
-  if (((rid != wid) && max_file_size == std::numeric_limits<long>::max()) ||
+  if ((rid != wid && max_file_size == std::numeric_limits<long>::max()) ||
       !fwoffset) {
     tree["file_percent_processed"] = "unknown";
   } else {
@@ -120,7 +120,7 @@ void stream::statistics(json11::Json::object& tree) const {
   if (write_time_expected) {
     time_t now(time(nullptr));
 
-    if (_last_time && (now != _last_time)) {
+    if (_last_time && now != _last_time) {
       time_t eta(0);
       {
         unsigned long long div(froffset + _last_write_offset -
@@ -145,8 +145,6 @@ void stream::statistics(json11::Json::object& tree) const {
     _last_read_offset = froffset;
     _last_write_offset = fwoffset;
   }
-
-  return;
 }
 
 /**

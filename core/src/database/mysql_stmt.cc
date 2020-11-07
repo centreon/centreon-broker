@@ -286,12 +286,11 @@ void mysql_stmt::bind_value_as_i32(std::string const& name, int value) {
       bind_value_as_i32(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_i32(it->second, value);
-        return;
-      }
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to i32 value {} in statement {}", name, value, get_id());
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}", name, get_id());
   }
 }
 
@@ -313,13 +312,12 @@ void mysql_stmt::bind_value_as_u32(std::string const& name, uint32_t value) {
       bind_value_as_u32(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_u32(it->second, value);
-        return;
-      }
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to u32 value {} in statement {}",
+                                 name, value, get_id());
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
-                                 name, get_id());
   }
 }
 
@@ -342,13 +340,12 @@ void mysql_stmt::bind_value_as_u64(std::string const& name,
       bind_value_as_u64(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_u64(it->second, value);
-        return;
-      }
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to u64 value {} in statement {}",
+                                 name, value, get_id());
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
-                                 name, get_id());
   }
 }
 
@@ -376,13 +373,12 @@ void mysql_stmt::bind_value_as_f32(std::string const& name, float value) {
       bind_value_as_f32(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_f32(it->second, value);
-        return;
-      }
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to f32 value {} in statement {}",
+                                 name, value, get_id());
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
-                                 name, get_id());
   }
 }
 
@@ -410,13 +406,12 @@ void mysql_stmt::bind_value_as_f64(std::string const& name, double value) {
       bind_value_as_f64(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_f64(it->second, value);
-        return;
-      }
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to f64 value {} in statement {}",
+                                 name, value, get_id());
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
-                                 name, get_id());
   }
 }
 
@@ -438,13 +433,12 @@ void mysql_stmt::bind_value_as_tiny(std::string const& name, char value) {
       bind_value_as_tiny(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_tiny(it->second, value);
-        return;
-      }
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to tiny value {} in statement {}",
+                                 name, value, get_id());
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
-                                 name, get_id());
   }
 }
 
@@ -466,13 +460,12 @@ void mysql_stmt::bind_value_as_bool(std::string const& name, bool value) {
       bind_value_as_bool(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_bool(it->second, value);
-        return;
-      }
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to bool value {} in statement {}",
+                                 name, value, get_id());
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
-                                 name, get_id());
   }
 }
 
@@ -495,13 +488,12 @@ void mysql_stmt::bind_value_as_str(std::string const& name,
       bind_value_as_str(it->second, value);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_str(it->second, value);
-        return;
-      }
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
-                                 name, get_id());
+    else
+      log_v2::sql()->error("mysql: cannot bind object with name '{}' to string value {} in statement {}",
+          name, value, get_id());
   }
 }
 
@@ -523,12 +515,11 @@ void mysql_stmt::bind_value_as_null(std::string const& name) {
       bind_value_as_null(it->second);
       key[key.size() - 1] = '2';
       it = _bind_mapping.find(key);
-      if (it != _bind_mapping.end()) {
+      if (it != _bind_mapping.end())
         bind_value_as_null(it->second);
-        return;
-      }
     }
-    log_v2::sql()->debug("mysql: cannot bind object with name '{}' in statement {}",
+  else
+    log_v2::sql()->error("mysql: cannot bind object with name '{}' to null in statement {}",
                                  name, get_id());
   }
 }

@@ -226,9 +226,9 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   // Find event info.
   io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw(exceptions::msg()
+    throw exceptions::msg()
           << "could not prepare update query for event of type " << _event_id
-          << ": event is not registered");
+          << ": event is not registered";
 
   // Build query string.
   std::string query("UPDATE ");
@@ -239,7 +239,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   std::string key;
   int query_size(0);
   int where_size(0);
-  for (int i(0); !entries[i].is_null(); ++i) {
+  for (int i = 0; !entries[i].is_null(); ++i) {
     char const* entry_name;
     entry_name = entries[i].get_name_v2();
     if (!entry_name || !entry_name[0] ||
@@ -255,12 +255,10 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
     }
     // Part of ID field.
     else {
-      where.append("(");
       where.append(entry_name);
-      where.append("=?) AND ");
+      where.append("=? AND ");
       key = std::string(":");
       key.append(entry_name);
-      key.append("1");
       where_bind_mapping.insert(std::make_pair(key, where_size++));
     }
   }
@@ -278,9 +276,9 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   try {
     retval = ms.prepare_query(query, query_bind_mapping);
   } catch (std::exception const& e) {
-    throw(exceptions::msg()
+    throw exceptions::msg()
           << "could not prepare update query for event '" << info->get_name()
-          << "' on table '" << info->get_table_v2() << "': " << e.what());
+          << "' on table '" << info->get_table_v2() << "': " << e.what();
   }
   return retval;
 }

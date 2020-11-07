@@ -130,6 +130,7 @@ class mfifo {
     std::lock_guard<std::mutex> lk(_fifo_m);
     int32_t retval = _ack[idx];
     _ack[idx] = 0;
+    log_v2::sql()->trace("{} events acknowledged on line {}", retval, idx);
     return retval;
   }
   /**

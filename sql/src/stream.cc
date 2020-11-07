@@ -480,8 +480,8 @@ int stream::flush() {
   _pending_events -= retval;
 
   // Event acknowledgement.
-  log_v2::sql()->debug("SQL: {} events have not yet been acknowledged",
-                       _pending_events);
+  log_v2::sql()->debug("SQL: {} / {} events acknowledged",
+                       retval, _pending_events);
   return retval;
 }
 
