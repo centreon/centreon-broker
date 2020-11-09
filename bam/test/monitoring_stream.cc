@@ -37,9 +37,9 @@ class BamMonitoringStream : public testing::Test {
 };
 
 TEST_F(BamMonitoringStream, WriteKpi) {
-  database_config cfg("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config cfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                       "centreon");
-  database_config storage("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config storage("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                           "centreon_storage");
 
   std::shared_ptr<persistent_cache> cache;
@@ -53,9 +53,9 @@ TEST_F(BamMonitoringStream, WriteKpi) {
 }
 
 TEST_F(BamMonitoringStream, WriteBA) {
-  database_config cfg("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config cfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                       "centreon");
-  database_config storage("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config storage("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                           "centreon_storage");
   ;
   std::shared_ptr<persistent_cache> cache;

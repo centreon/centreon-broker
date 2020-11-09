@@ -33,11 +33,11 @@ class BamReportingStream : public testing::Test {
 };
 
 TEST_F(BamReportingStream, WriteKpi) {
-  database_config cfg("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config cfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                       "centreon");
-  database_config storage("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config storage("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                           "centreon_storage");
-  ;
+
   std::shared_ptr<persistent_cache> cache;
   std::unique_ptr<reporting_stream> rs;
 

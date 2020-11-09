@@ -47,7 +47,7 @@ class ConflictManagerTest : public ::testing::Test {
 };
 
 TEST_F(ConflictManagerTest, OpenClose) {
-  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                         "centreon_storage", 5, true, 5);
   uint32_t loop_timeout = 5;
   uint32_t instance_timeout = 5;
@@ -64,7 +64,7 @@ TEST_F(ConflictManagerTest, InstCVConflict) {
   l.load_file("./neb/10-neb.so");
   uint32_t loop_timeout = 5;
   uint32_t instance_timeout = 5;
-  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
                          "centreon_storage", 5, true, 5);
   ASSERT_NO_THROW(
       conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout));
