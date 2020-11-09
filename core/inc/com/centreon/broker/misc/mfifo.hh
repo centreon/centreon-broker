@@ -74,12 +74,11 @@ class mfifo {
    *
    * @return A pointer to the tuple or nullptr if none found.
    */
-  std::tuple<T, uint32_t, bool*>* first_event() {
+  std::deque<std::tuple<T, uint32_t, bool*>> first_events() {
+    std::deque<std::tuple<T, uint32_t, bool*>> retval;
     std::lock_guard<std::mutex> lk(_fifo_m);
-    if (_events.empty())
-      return nullptr;
-    else
-      return &_events.front();
+    std::swap(_events, retval);
+    return retval;
   }
 
   /**

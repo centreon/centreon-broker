@@ -379,6 +379,7 @@ void conflict_manager::_callback() {
       break;
     }
     size_t pos = 0;
+    std::deque<std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>> events;
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread
@@ -413,75 +414,67 @@ void conflict_manager::_callback() {
          * it it is necessary for cleanup operations.
          */
         while (count < _max_pending_queries && timeout < timeout_limit) {
-          auto* tpl = _fifo.first_event();
-          if (!tpl) {
-            // We wait for a tuple only if it was impossible to get it
-            // immediatly
-            tpl = _fifo.first_event_wait(std::chrono::seconds(1));
-            if (!tpl) {
-              log_v2::sql()->trace(
-                  "conflict_manager: timeout reached while waiting for "
-                  "events.");
-              std::lock_guard<std::mutex> lk(_stat_m);
-              _still_pending_events = _fifo.get_events().size();
-              _loop_duration = 0;
-              break;
-            } else
-              log_v2::sql()->trace(
-                  "conflict_manager: new events to send to the database.");
+          if (events.empty())
+            events = _fifo.first_events();
+          if (events.empty()) {
+            // Let's wait for 500ms.
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            continue;
           }
-          std::shared_ptr<io::data>& d = std::get<0>(*tpl);
-          uint32_t type{d->type()};
-          uint16_t cat{io::events::category_of_type(type)};
-          uint16_t elem{io::events::element_of_type(type)};
-          if (std::get<1>(*tpl) == sql && cat == io::events::neb)
-            (this->*(_neb_processing_table[elem]))(d);
-          else if (std::get<1>(*tpl) == storage && cat == io::events::neb &&
-                   type == neb::service_status::static_type())
-            _storage_process_service_status(d);
-          else
-            log_v2::sql()->trace(
-                "conflict_manager: event of type {} thrown away ; no need to "
-                "store it in the database.",
-                type);
+          while (!events.empty()) {
+            auto tpl = events.front();
+            events.pop_front();
+            std::shared_ptr<io::data>& d = std::get<0>(tpl);
+            uint32_t type{d->type()};
+            uint16_t cat{io::events::category_of_type(type)};
+            uint16_t elem{io::events::element_of_type(type)};
+            if (std::get<1>(tpl) == sql && cat == io::events::neb)
+              (this->*(_neb_processing_table[elem]))(d);
+            else if (std::get<1>(tpl) == storage && cat == io::events::neb &&
+                type == neb::service_status::static_type())
+              _storage_process_service_status(d);
+            else
+              log_v2::sql()->trace(
+                  "conflict_manager: event of type {} thrown away ; no need to "
+                  "store it in the database.",
+                  type);
 
-          ++count;
-          _stats_count[pos]++;
-          *std::get<2>(*tpl) = true;
-          _fifo.pop();
+            ++count;
+            _stats_count[pos]++;
+            *std::get<2>(tpl) = true;
 
-          std::chrono::system_clock::time_point now1 =
+            std::chrono::system_clock::time_point now1 =
               std::chrono::system_clock::now();
 
-          timeout =
+            timeout =
               std::chrono::duration_cast<std::chrono::milliseconds>(now1 - now0)
-                  .count();
+              .count();
 
-          /* Get some stats each second */
-          if (timeout >= duration) {
-            /* If there are too many perfdata to send, let's send them... */
-            if (_perfdata_queue.size() > _max_perfdata_queries)
-              _insert_perfdatas();
+            /* Get some stats each second */
+            if (timeout >= duration) {
+              /* If there are too many perfdata to send, let's send them... */
+              if (_perfdata_queue.size() > _max_perfdata_queries)
+                _insert_perfdatas();
 
-            do {
-              duration += 1000;
-              pos++;
-              if (pos >= _stats_count.size())
-                pos = 0;
-              _stats_count[pos] = 0;
-            } while (timeout > duration);
+              do {
+                duration += 1000;
+                pos++;
+                if (pos >= _stats_count.size())
+                  pos = 0;
+                _stats_count[pos] = 0;
+              } while (timeout > duration);
 
-            std::lock_guard<std::mutex> lk(_stat_m);
-            _still_pending_events = _fifo.get_events().size();
-            _loop_duration = timeout;
-            float s = 0.0f;
-            for (size_t i = 0; i < _stats_count.size(); ++i)
-              s += _stats_count[i];
+              std::lock_guard<std::mutex> lk(_stat_m);
+              _still_pending_events = _fifo.get_events().size();
+              _loop_duration = timeout;
+              float s = 0.0f;
+              for (size_t i = 0; i < _stats_count.size(); ++i)
+                s += _stats_count[i];
 
-            _speed = s / _stats_count.size();
+              _speed = s / _stats_count.size();
+            }
           }
         }
-
         log_v2::sql()->debug("{} new events to treat", count);
         /* Here, just before looping, we commit. */
         _finish_actions();
