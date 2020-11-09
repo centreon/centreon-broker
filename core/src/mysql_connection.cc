@@ -621,10 +621,18 @@ void mysql_connection::_push(std::shared_ptr<mysql_task> const& q) {
  */
 void mysql_connection::commit(std::promise<bool>* promise,
                               std::atomic_int& count) {
-  log_v2::sql()->debug("commit: {} queries on the stack", _tasks_count);
-  _push(std::make_shared<mysql_task_commit>(promise, count));
-  log_v2::sql()->debug("commit done: {} queries committed ; {} queries on the stack",
-                       _tasks_to_commit, _tasks_count);
+  if (_tasks_to_commit > 0) {
+    log_v2::sql()->debug("commit: {} queries on the stack", _tasks_count);
+    _push(std::make_shared<mysql_task_commit>(promise, count));
+    log_v2::sql()->debug("commit done: {} queries committed ; {} queries on the stack",
+                         _tasks_to_commit, _tasks_count);
+  }
+  else {
+    /* Commit is done on each connection. If task->count is 0, then we are on
+     * the last one. It's time to release the future boolean. */
+    if (--count == 0)
+      promise->set_value(true);
+  }
 }
 
 void mysql_connection::prepare_query(int stmt_id, std::string const& query) {

@@ -114,7 +114,7 @@ class conflict_manager {
   mutable std::mutex _loop_m;
   std::condition_variable _loop_cv;
   bool _exit;
-  std::atomic<bool> _broken;
+  std::atomic_bool _broken;
   uint32_t _loop_timeout;
   int32_t _max_pending_queries;
   mysql _mysql;
@@ -130,7 +130,9 @@ class conflict_manager {
   std::mutex _stat_m;
   int32_t _still_pending_events;
   int32_t _loop_duration;
-  int32_t _speed;
+  float _speed;
+  std::array<float, 20> _stats_count;
+  int32_t _stats_count_pos;
 
   /* How many streams are using this conflict_manager? */
   std::atomic<uint32_t> _ref_count;
