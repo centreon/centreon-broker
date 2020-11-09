@@ -535,11 +535,17 @@ void mysql_connection::_run() {
   _result_condition.notify_all();
 
   while (!_finished) {
+    std::list<std::shared_ptr<database::mysql_task>> tasks_list;
     std::unique_lock<std::mutex> locker(_list_mutex);
     if (!_tasks_list.empty()) {
-      std::shared_ptr<mysql_task> task(_tasks_list.front());
-      _tasks_list.pop_front();
+      std::swap(_tasks_list, tasks_list);
       locker.unlock();
+    } else {
+      _tasks_count = 0;
+      _tasks_condition.wait(locker);
+      continue;
+    }
+    for (auto task : tasks_list) {
       --_tasks_count;
       if (_task_processing_table[task->type])
         (this->*(_task_processing_table[task->type]))(task.get());
@@ -547,9 +553,6 @@ void mysql_connection::_run() {
         logging::error(logging::medium)
             << "mysql_connection: Error type not managed...";
       }
-    } else {
-      _tasks_count = 0;
-      _tasks_condition.wait(locker);
     }
   }
   for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),

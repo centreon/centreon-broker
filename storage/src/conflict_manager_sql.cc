@@ -196,6 +196,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "cv.host_id = h.host_id WHERE h.instance_id={}",
       instance_id);
 
+  _finish_action(-1, actions::custom_variables);
   _mysql.run_query(query,
                    "conflict_manager: could not clean custom variables table: ",
                    false, conn);
