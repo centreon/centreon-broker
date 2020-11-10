@@ -642,7 +642,6 @@ json11::Json::object conflict_manager::get_statistics() {
     retval["sql"] = static_cast<int32_t>(_fifo.get_timeline(sql).size());
     retval["storage"] = static_cast<int32_t>(_fifo.get_timeline(storage).size());
     retval["speed"] = fmt::format("{} events/s", _speed);
-    retval["array"] = fmt::format("{}", fmt::join(_stats_count, ","));
   }
   return retval;
 }
