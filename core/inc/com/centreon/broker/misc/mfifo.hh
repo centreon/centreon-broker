@@ -82,31 +82,6 @@ class mfifo {
   }
 
   /**
-   * @brief Returns a pointer to th first tuple contained in the fifo. This
-   * methods wait a duration of d if no element is available.
-   *
-   * @param d The duration to wait for.
-   *
-   * @return A pointer to the tuple or nullptr if none found at the end of the
-   * duration.
-   */
-  std::tuple<T, uint32_t, bool*>* first_event_wait(
-      const std::chrono::seconds& d) {
-    std::unique_lock<std::mutex> lk(_fifo_m);
-    if (_fifo_cv.wait_for(lk, d, [this] { return !_events.empty(); }))
-      return &_events.front();
-    else
-      return nullptr;
-  }
-  /**
-   * @brief Remove the first element of the fifo.
-   */
-  void pop() {
-    std::lock_guard<std::mutex> lk(_fifo_m);
-    assert(!_events.empty());
-    _events.pop_front();
-  }
-  /**
    * @brief Push a new element on this fifo coming from idx input source and
    * returns the number of elements already acknowledged.
    *
@@ -132,8 +107,9 @@ class mfifo {
     log_v2::sql()->trace("{} events acknowledged on line {}", retval, idx);
     return retval;
   }
+
   /**
-   * @brief Count for an input source how many consecutive elements have been
+   * @brief Count for an input source how many consecutive elements have been.
    * treated, remove them and returns that count.
    *
    * @param idx The input source index.
@@ -146,18 +122,11 @@ class mfifo {
       t.pop_front();
       ++count;
     }
-    log_v2::sql()->debug("{} elements removed from fifo (idx {})", count, idx);
-    std::list<bool> lst;
-    int i = 0;
-    auto it = t.begin();
-    while (it != t.end() && i < 20) {
-      lst.push_back(*it);
-      i++;
-    }
-    log_v2::sql()->trace("{} are the next in timeline", fmt::join(lst, ","));
+    log_v2::sql()->trace("{} elements removed from fifo (idx {})", count, idx);
     _pending_elements -= count;
     _ack[idx] += count;
   }
+
 
   /**
    * @brief Return the timeline of the idx input source.

@@ -87,8 +87,7 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _rrd_len{0},
       _interval_length{0},
       _max_perfdata_queries{0},
-      _still_pending_events{0},
-      _loop_duration{},
+      _events_handled{0},
       _speed{},
       _stats_count_pos{0},
       _ref_count{0},
@@ -464,13 +463,12 @@ void conflict_manager::_callback() {
                 _stats_count[pos] = 0;
               } while (timeout > duration);
 
-              std::lock_guard<std::mutex> lk(_stat_m);
-              _still_pending_events = _fifo.get_events().size();
-              _loop_duration = timeout;
+              _events_handled = events.size();
               float s = 0.0f;
-              for (size_t i = 0; i < _stats_count.size(); ++i)
-                s += _stats_count[i];
+              for (auto it = _stats_count.begin(); it != _stats_count.end(); ++it)
+                s += *it;
 
+              std::lock_guard<std::mutex> lk(_stat_m);
               _speed = s / _stats_count.size();
             }
           }
@@ -489,14 +487,10 @@ void conflict_manager::_callback() {
         /* Are there unresonsive instances? */
         _update_hosts_and_services_of_unresponsive_instances();
 
-        std::chrono::system_clock::time_point now2 = std::chrono::system_clock::now();
         /* Get some stats */
         {
           std::lock_guard<std::mutex> lk(_stat_m);
-          _still_pending_events = _fifo.get_events().size();
-          _loop_duration =
-              std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now0)
-                  .count();
+          _events_handled = events.size();
         }
       }
     } catch (std::exception const& e) {
@@ -639,14 +633,17 @@ void conflict_manager::__exit() {
 
 json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
-  std::lock_guard<std::mutex> lk(_stat_m);
   retval["max pending events"] = static_cast<int32_t>(_max_pending_queries);
   retval["max perfdata events"] = static_cast<int32_t>(_max_perfdata_queries);
   retval["loop timeout"] = static_cast<int32_t>(_loop_timeout);
-  retval["pending events"] = _still_pending_events;
-  retval["sql"] = static_cast<int32_t>(_fifo.get_timeline(sql).size());
-  retval["storage"] = static_cast<int32_t>(_fifo.get_timeline(storage).size());
-  retval["speed"] = fmt::format("{} events/s", _speed);
+  if (auto lock = std::unique_lock<std::mutex>(_stat_m, std::try_to_lock)) {
+    retval["waiting_events"] = static_cast<int32_t>(_fifo.get_events().size());
+    retval["events_handled"] = _events_handled;
+    retval["sql"] = static_cast<int32_t>(_fifo.get_timeline(sql).size());
+    retval["storage"] = static_cast<int32_t>(_fifo.get_timeline(storage).size());
+    retval["speed"] = fmt::format("{} events/s", _speed);
+    retval["array"] = fmt::format("{}", fmt::join(_stats_count, ","));
+  }
   return retval;
 }
 

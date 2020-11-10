@@ -128,8 +128,7 @@ class conflict_manager {
 
   /* Stats */
   std::mutex _stat_m;
-  int32_t _still_pending_events;
-  int32_t _loop_duration;
+  int32_t _events_handled;
   float _speed;
   std::array<float, 20> _stats_count;
   int32_t _stats_count_pos;
