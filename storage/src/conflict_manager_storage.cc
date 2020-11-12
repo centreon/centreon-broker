@@ -247,11 +247,11 @@ void conflict_manager::_storage_process_service_status(
             "crit_low,crit_threshold_mode,min,max,current_value,"
             "data_source_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
-        _metrics_update = _mysql.prepare_query(
-            "UPDATE metrics SET "
-            "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
-            "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
-            " WHERE metric_id=?");
+//        _metrics_update = _mysql.prepare_query(
+//            "UPDATE metrics SET "
+//            "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
+//            "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
+//            " WHERE metric_id=?");
       }
 
       /* Parse perfdata. */
@@ -263,7 +263,6 @@ void conflict_manager::_storage_process_service_status(
 
         std::list<std::shared_ptr<io::data>> to_publish;
         for (storage::perfdata& pd : pds) {
-          assert(pd.name().size() < 255);
           auto it_index_cache = _metric_cache.find({index_id, pd.name()});
 
           /* The cache does not contain this metric */
@@ -358,6 +357,7 @@ void conflict_manager::_storage_process_service_status(
                 it_index_cache->second.crit_mode != pd.critical_mode() ||
                 !check_equality(it_index_cache->second.min, pd.min()) ||
                 !check_equality(it_index_cache->second.max, pd.max())) {
+
               log_v2::perfdata()->info(
                   "conflict_manager: updating metric {} of index {}, perfdata "
                   "'{}' with unit: {}, warning: {}:{}, critical: {}:{}, min: "
@@ -366,22 +366,17 @@ void conflict_manager::_storage_process_service_status(
                   pd.unit(), pd.warning_low(), pd.warning(), pd.critical_low(),
                   pd.critical(), pd.min(), pd.max());
               // Update metrics table.
-              _metrics_update.bind_value_as_str(0, pd.unit());
-              _metrics_update.bind_value_as_f32(1, pd.warning());
-              _metrics_update.bind_value_as_f32(2, pd.warning_low());
-              _metrics_update.bind_value_as_tiny(3, pd.warning_mode());
-              _metrics_update.bind_value_as_f32(4, pd.critical());
-              _metrics_update.bind_value_as_f32(5, pd.critical_low());
-              _metrics_update.bind_value_as_tiny(6, pd.critical_mode());
-              _metrics_update.bind_value_as_f32(7, pd.min());
-              _metrics_update.bind_value_as_f32(8, pd.max());
-              _metrics_update.bind_value_as_f32(9, pd.value());
-              _metrics_update.bind_value_as_i32(
-                  10, it_index_cache->second.metric_id);
-
-              // Only use the thread_id 0
-              _mysql.run_statement(_metrics_update, "UPDATE metrics", false,
-                                   conn);
+              it_index_cache->second.unit_name = pd.unit();
+              it_index_cache->second.value = pd.value();
+              it_index_cache->second.warn = pd.warning();
+              it_index_cache->second.warn_low = pd.warning_low();
+              it_index_cache->second.crit = pd.critical();
+              it_index_cache->second.crit_low = pd.critical_low();
+              it_index_cache->second.warn_mode = pd.warning_mode();
+              it_index_cache->second.crit_mode = pd.critical_mode();
+              it_index_cache->second.min = pd.min();
+              it_index_cache->second.max = pd.max();
+              _metrics[it_index_cache->second.metric_id] = &it_index_cache->second;
             }
           }
           // std::shared_ptr<storage::metric_mapping> mm =
@@ -423,6 +418,35 @@ void conflict_manager::_storage_process_service_status(
       }
     }
   }
+}
+
+void conflict_manager::_update_metrics() {
+  if (_metrics.empty())
+    return;
+  std::deque<std::string> m;
+  for (auto it = _metrics.begin(); it != _metrics.end(); ++it) {
+    metric_info* metric = it->second;
+    m.emplace_back(fmt::format("({},\"{}\",{},{},'{}',{},{},'{}',{},{},{})",
+          metric->metric_id,
+          metric->unit_name,
+          isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
+          isnan(metric->warn_low) ? "NULL" : fmt::format("{}", metric->warn_low),
+          metric->warn_mode ? "1":"0",
+          isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
+          isnan(metric->crit_low) ? "NULL" : fmt::format("{}", metric->crit_low),
+          metric->crit_mode ? "1":"0",
+          isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
+          isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
+          metric->value));
+  }
+    std::string query(fmt::format(
+    "INSERT INTO metrics (metric_id, unit_name, warn, warn_low, warn_threshold_mode, crit, crit_low, crit_threshold_mode, min, max, current_value) VALUES {} ON DUPLICATE KEY UPDATE unit_name=VALUES(unit_name), warn=VALUES(warn), warn_low=VALUES(warn_low), warn_threshold_mode=VALUES(warn_threshold_mode), crit=VALUES(crit), crit_low=VALUES(crit_low), crit_threshold_mode=VALUES(crit_threshold_mode), min=VALUES(min), max=VALUES(max), current_value=VALUES(current_value)", fmt::join(m, ",")));
+  int32_t conn = _mysql.choose_best_connection(-1);
+  _finish_action(-1, actions::metrics);
+  log_v2::sql()->trace("Send query: {}", query);
+  _mysql.run_query(query, "storage: could not update metrics: ", false, conn);
+  _add_action(conn, actions::metrics);
+  _metrics.clear();
 }
 
 /**

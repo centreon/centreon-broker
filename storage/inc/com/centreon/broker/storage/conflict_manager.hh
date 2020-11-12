@@ -1,5 +1,5 @@
 /*
-** Copyright 2019 Centreon
+** Copyright 2019-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@
 #include "com/centreon/broker/misc/pair.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/storage/stored_timestamp.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 
 CCB_BEGIN()
 /* Forward declarations */
@@ -123,6 +124,7 @@ class conflict_manager {
   uint32_t _rrd_len;
   uint32_t _interval_length;
   uint32_t _max_perfdata_queries;
+  uint32_t _max_metrics_queries;
 
   std::thread _thread;
 
@@ -148,6 +150,7 @@ class conflict_manager {
   std::unordered_set<uint32_t> _hostgroup_cache;
   std::unordered_set<uint32_t> _servicegroup_cache;
   std::deque<metric_value> _perfdata_queue;
+  std::unordered_map<int32_t, metric_info*> _metrics;
   timestamp _oldest_timestamp;
   std::unordered_map<uint32_t, stored_timestamp> _stored_timestamps;
 
@@ -239,6 +242,7 @@ class conflict_manager {
   void _finish_action(int32_t conn, uint32_t action);
   void _finish_actions();
   void _add_action(int32_t conn, actions action);
+  void _update_metrics();
   void _insert_perfdatas();
   void __exit();
 

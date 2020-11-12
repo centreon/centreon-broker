@@ -87,6 +87,7 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _rrd_len{0},
       _interval_length{0},
       _max_perfdata_queries{0},
+      _max_metrics_queries{0},
       _events_handled{0},
       _speed{},
       _stats_count_pos{0},
@@ -130,6 +131,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_rrd_len = rrd_len;
       _singleton->_interval_length = interval_length;
       _singleton->_max_perfdata_queries = queries_per_transaction;
+      _singleton->_max_metrics_queries = queries_per_transaction;
       _singleton->_ref_count++;
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
@@ -302,6 +304,7 @@ void conflict_manager::_load_caches() {
   {
     std::lock_guard<std::mutex> lock(_metric_cache_m);
     _metric_cache.clear();
+    _metrics.clear();
 
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
@@ -385,6 +388,9 @@ void conflict_manager::_callback() {
          * that fill this queue. */
         _insert_perfdatas();
 
+        /* Time to send metrics to database */
+        _update_metrics();
+
         log_v2::sql()->trace(
             "conflict_manager: main loop initialized with a timeout of {} "
             "seconds.",
@@ -454,6 +460,10 @@ void conflict_manager::_callback() {
               /* If there are too many perfdata to send, let's send them... */
               if (_perfdata_queue.size() > _max_perfdata_queries)
                 _insert_perfdatas();
+
+              /* If there are too many metrics to send, let's send them... */
+              if (_metrics.size() > _max_metrics_queries)
+                _update_metrics();
 
               do {
                 duration += 1000;

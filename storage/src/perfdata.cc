@@ -41,15 +41,34 @@ perfdata::perfdata()
       _warning_mode(false) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other Object to copy.
- */
-
-/**
  *  Destructor.
  */
 perfdata::~perfdata() noexcept {}
+
+/**
+ *  Move operator.
+ *
+ *  @param[in] other Object to copy.
+ *
+ *  @return This object.
+ */
+perfdata& perfdata::operator=(perfdata&& other) {
+  if (this != &other) {
+    _critical = other._critical;
+    _critical_low = other._critical_low;
+    _critical_mode = other._critical_mode;
+    _max = other._max;
+    _min = other._min;
+    _name = std::move(other._name);
+    _unit = std::move(other._unit);
+    _value = other._value;
+    _value_type = other._value_type;
+    _warning = other._warning;
+    _warning_low = other._warning_low;
+    _warning_mode = other._warning_mode;
+  }
+  return *this;
+}
 
 /**
  *  Assignment operator.
