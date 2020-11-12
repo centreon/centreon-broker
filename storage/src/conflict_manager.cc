@@ -436,7 +436,7 @@ void conflict_manager::_callback() {
             if (std::get<1>(tpl) == sql && cat == io::events::neb)
               (this->*(_neb_processing_table[elem]))(d);
             else if (std::get<1>(tpl) == storage && cat == io::events::neb &&
-                type == neb::service_status::static_type())
+                     type == neb::service_status::static_type())
               _storage_process_service_status(d);
             else
               log_v2::sql()->trace(
@@ -449,11 +449,11 @@ void conflict_manager::_callback() {
             *std::get<2>(tpl) = true;
 
             std::chrono::system_clock::time_point now1 =
-              std::chrono::system_clock::now();
+                std::chrono::system_clock::now();
 
-            timeout =
-              std::chrono::duration_cast<std::chrono::milliseconds>(now1 - now0)
-              .count();
+            timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          now1 - now0)
+                          .count();
 
             /* Get some stats each second */
             if (timeout >= duration) {
@@ -475,7 +475,8 @@ void conflict_manager::_callback() {
 
               _events_handled = events.size();
               float s = 0.0f;
-              for (auto it = _stats_count.begin(); it != _stats_count.end(); ++it)
+              for (auto it = _stats_count.begin(); it != _stats_count.end();
+                   ++it)
                 s += *it;
 
               std::lock_guard<std::mutex> lk(_stat_m);
@@ -650,7 +651,8 @@ json11::Json::object conflict_manager::get_statistics() {
     retval["waiting_events"] = static_cast<int32_t>(_fifo.get_events().size());
     retval["events_handled"] = _events_handled;
     retval["sql"] = static_cast<int32_t>(_fifo.get_timeline(sql).size());
-    retval["storage"] = static_cast<int32_t>(_fifo.get_timeline(storage).size());
+    retval["storage"] =
+        static_cast<int32_t>(_fifo.get_timeline(storage).size());
     retval["speed"] = fmt::format("{} events/s", _speed);
   }
   return retval;

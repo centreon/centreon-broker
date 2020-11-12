@@ -123,8 +123,8 @@ time_t failover::get_retry_interval() const throw() {
  */
 void failover::run() {
   // Initial log.
-  log_v2::processing()->debug(
-      "failover: thread of endpoint '{}' is starting", _name);
+  log_v2::processing()->debug("failover: thread of endpoint '{}' is starting",
+                              _name);
 
   // Check endpoint.
   if (!_endpoint) {
@@ -275,9 +275,10 @@ void failover::run() {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
             should_commit = should_commit || d;
           } catch (exceptions::shutdown const& e) {
-            log_v2::processing()->debug("failover: muxer of endpoint '{}' "
-                                           "shutdown while reading: {}",
-                                        _name, e.what());
+            log_v2::processing()->debug(
+                "failover: muxer of endpoint '{}' "
+                "shutdown while reading: {}",
+                _name, e.what());
             muxer_can_read = false;
           }
           if (d) {

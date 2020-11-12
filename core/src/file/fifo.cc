@@ -17,13 +17,16 @@
 */
 
 #include "com/centreon/broker/file/fifo.hh"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include <cstring>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 

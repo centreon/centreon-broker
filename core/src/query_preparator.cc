@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/query_preparator.hh"
+
 #include <sstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -85,8 +87,8 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
     throw exceptions::msg()
-          << "could not prepare insertion query for event of type " << _event_id
-          << ": event is not registered";
+        << "could not prepare insertion query for event of type " << _event_id
+        << ": event is not registered";
 
   // Build query string.
   std::string query;
@@ -227,8 +229,8 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
     throw exceptions::msg()
-          << "could not prepare update query for event of type " << _event_id
-          << ": event is not registered";
+        << "could not prepare update query for event of type " << _event_id
+        << ": event is not registered";
 
   // Build query string.
   std::string query("UPDATE ");
@@ -277,8 +279,8 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
     retval = ms.prepare_query(query, query_bind_mapping);
   } catch (std::exception const& e) {
     throw exceptions::msg()
-          << "could not prepare update query for event '" << info->get_name()
-          << "' on table '" << info->get_table_v2() << "': " << e.what();
+        << "could not prepare update query for event '" << info->get_name()
+        << "' on table '" << info->get_table_v2() << "': " << e.what();
   }
   return retval;
 }
@@ -322,8 +324,8 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   } catch (std::exception const& e) {
     // FIXME DBR
     throw exceptions::msg()
-          << "could not prepare deletion query for event '" << info->get_name()
-          << "' on table '" << info->get_table_v2() << "': " << e.what();
+        << "could not prepare deletion query for event '" << info->get_name()
+        << "' on table '" << info->get_table_v2() << "': " << e.what();
   }
   return retval;
 }

@@ -247,11 +247,11 @@ void conflict_manager::_storage_process_service_status(
             "crit_low,crit_threshold_mode,min,max,current_value,"
             "data_source_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
-//        _metrics_update = _mysql.prepare_query(
-//            "UPDATE metrics SET "
-//            "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
-//            "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
-//            " WHERE metric_id=?");
+        //        _metrics_update = _mysql.prepare_query(
+        //            "UPDATE metrics SET "
+        //            "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
+        //            "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
+        //            " WHERE metric_id=?");
       }
 
       /* Parse perfdata. */
@@ -357,7 +357,6 @@ void conflict_manager::_storage_process_service_status(
                 it_index_cache->second.crit_mode != pd.critical_mode() ||
                 !check_equality(it_index_cache->second.min, pd.min()) ||
                 !check_equality(it_index_cache->second.max, pd.max())) {
-
               log_v2::perfdata()->info(
                   "conflict_manager: updating metric {} of index {}, perfdata "
                   "'{}' with unit: {}, warning: {}:{}, critical: {}:{}, min: "
@@ -376,7 +375,8 @@ void conflict_manager::_storage_process_service_status(
               it_index_cache->second.crit_mode = pd.critical_mode();
               it_index_cache->second.min = pd.min();
               it_index_cache->second.max = pd.max();
-              _metrics[it_index_cache->second.metric_id] = &it_index_cache->second;
+              _metrics[it_index_cache->second.metric_id] =
+                  &it_index_cache->second;
             }
           }
           // std::shared_ptr<storage::metric_mapping> mm =
@@ -426,21 +426,32 @@ void conflict_manager::_update_metrics() {
   std::deque<std::string> m;
   for (auto it = _metrics.begin(); it != _metrics.end(); ++it) {
     metric_info* metric = it->second;
-    m.emplace_back(fmt::format("({},\"{}\",{},{},'{}',{},{},'{}',{},{},{})",
-          metric->metric_id,
-          metric->unit_name,
-          std::isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
-          std::isnan(metric->warn_low) ? "NULL" : fmt::format("{}", metric->warn_low),
-          metric->warn_mode ? "1":"0",
-          std::isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
-          std::isnan(metric->crit_low) ? "NULL" : fmt::format("{}", metric->crit_low),
-          metric->crit_mode ? "1":"0",
-          std::isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
-          std::isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
-          metric->value));
+    m.emplace_back(fmt::format(
+        "({},\"{}\",{},{},'{}',{},{},'{}',{},{},{})", metric->metric_id,
+        metric->unit_name,
+        std::isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
+        std::isnan(metric->warn_low) ? "NULL"
+                                     : fmt::format("{}", metric->warn_low),
+        metric->warn_mode ? "1" : "0",
+        std::isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
+        std::isnan(metric->crit_low) ? "NULL"
+                                     : fmt::format("{}", metric->crit_low),
+        metric->crit_mode ? "1" : "0",
+        std::isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
+        std::isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
+        metric->value));
   }
-    std::string query(fmt::format(
-    "INSERT INTO metrics (metric_id, unit_name, warn, warn_low, warn_threshold_mode, crit, crit_low, crit_threshold_mode, min, max, current_value) VALUES {} ON DUPLICATE KEY UPDATE unit_name=VALUES(unit_name), warn=VALUES(warn), warn_low=VALUES(warn_low), warn_threshold_mode=VALUES(warn_threshold_mode), crit=VALUES(crit), crit_low=VALUES(crit_low), crit_threshold_mode=VALUES(crit_threshold_mode), min=VALUES(min), max=VALUES(max), current_value=VALUES(current_value)", fmt::join(m, ",")));
+  std::string query(fmt::format(
+      "INSERT INTO metrics (metric_id, unit_name, warn, warn_low, "
+      "warn_threshold_mode, crit, crit_low, crit_threshold_mode, min, max, "
+      "current_value) VALUES {} ON DUPLICATE KEY UPDATE "
+      "unit_name=VALUES(unit_name), warn=VALUES(warn), "
+      "warn_low=VALUES(warn_low), "
+      "warn_threshold_mode=VALUES(warn_threshold_mode), crit=VALUES(crit), "
+      "crit_low=VALUES(crit_low), "
+      "crit_threshold_mode=VALUES(crit_threshold_mode), min=VALUES(min), "
+      "max=VALUES(max), current_value=VALUES(current_value)",
+      fmt::join(m, ",")));
   int32_t conn = _mysql.choose_best_connection(-1);
   _finish_action(-1, actions::metrics);
   log_v2::sql()->trace("Send query: {}", query);

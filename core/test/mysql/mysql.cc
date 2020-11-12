@@ -18,10 +18,13 @@
  */
 
 #include "com/centreon/broker/mysql.hh"
+
 #include <gtest/gtest.h>
+
 #include <cmath>
 #include <future>
 #include <memory>
+
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/modules/loader.hh"
@@ -980,24 +983,25 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
                          "centreon_storage", 5, true, 5);
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
-  std::string query("INSERT INTO downtimes"
-       " (actual_end_time, "
-         "actual_start_time, "
-         "author, type, deletion_time, duration, end_time, entry_time, "
-         "fixed, host_id, instance_id, internal_id, service_id, "
-         "start_time, triggered_by, cancelled, started, comment_data) "
-         "VALUES(:actual_end_time,:actual_start_time,:author,:type,:deletion_"
-         "time,:duration,:end_time,:entry_time,:fixed,:host_id,:instance_id,:"
-         "internal_id,:service_id,:start_time,:triggered_by,:cancelled,:"
-         "started,:comment_data) ON DUPLICATE KEY UPDATE "
-         "actual_end_time=GREATEST(COALESCE(actual_end_time, -1), "
-         ":actual_end_time),"
-         "actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
-         "author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-         "deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-         "fixed=:fixed, host_id=:host_id, service_id=:service_id,"
-         "start_time=:start_time, started=:started,"
-         "triggered_by=:triggered_by, type=:type");
+  std::string query(
+      "INSERT INTO downtimes"
+      " (actual_end_time, "
+      "actual_start_time, "
+      "author, type, deletion_time, duration, end_time, entry_time, "
+      "fixed, host_id, instance_id, internal_id, service_id, "
+      "start_time, triggered_by, cancelled, started, comment_data) "
+      "VALUES(:actual_end_time,:actual_start_time,:author,:type,:deletion_"
+      "time,:duration,:end_time,:entry_time,:fixed,:host_id,:instance_id,:"
+      "internal_id,:service_id,:start_time,:triggered_by,:cancelled,:"
+      "started,:comment_data) ON DUPLICATE KEY UPDATE "
+      "actual_end_time=GREATEST(COALESCE(actual_end_time, -1), "
+      ":actual_end_time),"
+      "actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+      "author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+      "deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+      "fixed=:fixed, host_id=:host_id, service_id=:service_id,"
+      "start_time=:start_time, started=:started,"
+      "triggered_by=:triggered_by, type=:type");
   mysql_stmt downtime_insupdate(mysql_stmt(query, true));
   ms->prepare_statement(downtime_insupdate);
 

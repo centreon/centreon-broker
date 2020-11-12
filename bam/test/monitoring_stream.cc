@@ -17,8 +17,11 @@
 */
 
 #include "com/centreon/broker/bam/monitoring_stream.hh"
+
 #include <gtest/gtest.h>
+
 #include <memory>
+
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/config/applier/init.hh"
@@ -28,12 +31,8 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 class BamMonitoringStream : public testing::Test {
-  void SetUp() override {
-    config::applier::init();
-  }
-  void TearDown() override {
-    config::applier::deinit();
-  }
+  void SetUp() override { config::applier::init(); }
+  void TearDown() override { config::applier::deinit(); }
 };
 
 TEST_F(BamMonitoringStream, WriteKpi) {

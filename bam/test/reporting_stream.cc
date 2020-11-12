@@ -17,8 +17,11 @@
 */
 
 #include "com/centreon/broker/bam/reporting_stream.hh"
+
 #include <gtest/gtest.h>
+
 #include <memory>
+
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
 #include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #include "com/centreon/broker/persistent_cache.hh"
@@ -28,8 +31,8 @@ using namespace com::centreon::broker::bam;
 
 class BamReportingStream : public testing::Test {
  public:
-  //void SetUp() override { multiplexing::engine::load(); };
-  //void TearDown() override { multiplexing::engine::unload(); };
+  // void SetUp() override { multiplexing::engine::load(); };
+  // void TearDown() override { multiplexing::engine::unload(); };
 };
 
 TEST_F(BamReportingStream, WriteKpi) {

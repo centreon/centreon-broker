@@ -33,8 +33,8 @@
 #include "com/centreon/broker/misc/mfifo.hh"
 #include "com/centreon/broker/misc/pair.hh"
 #include "com/centreon/broker/mysql.hh"
-#include "com/centreon/broker/storage/stored_timestamp.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
+#include "com/centreon/broker/storage/stored_timestamp.hh"
 
 CCB_BEGIN()
 /* Forward declarations */

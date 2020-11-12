@@ -141,8 +141,7 @@ void mysql_connection::_commit(mysql_task* t) {
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     log_v2::sql()->trace("mysql_connection: commit done");
-  }
-  else
+  } else
     res = 0;
 
   if (res) {

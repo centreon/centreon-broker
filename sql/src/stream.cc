@@ -439,7 +439,8 @@ stream::stream(database_config const& dbcfg,
                uint32_t loop_timeout,
                uint32_t instance_timeout,
                bool with_state_events)
-    : io::stream("SQL"), _mysql(dbcfg),
+    : io::stream("SQL"),
+      _mysql(dbcfg),
       //      _cleanup_thread(dbcfg.get_type(),
       //                      dbcfg.get_host(),
       //                      dbcfg.get_port(),
@@ -480,8 +481,8 @@ int stream::flush() {
   _pending_events -= retval;
 
   // Event acknowledgement.
-  log_v2::sql()->debug("SQL: {} / {} events acknowledged",
-                       retval, _pending_events);
+  log_v2::sql()->debug("SQL: {} / {} events acknowledged", retval,
+                       _pending_events);
   return retval;
 }
 

@@ -127,7 +127,6 @@ class mfifo {
     _ack[idx] += count;
   }
 
-
   /**
    * @brief Return the timeline of the idx input source.
    *
