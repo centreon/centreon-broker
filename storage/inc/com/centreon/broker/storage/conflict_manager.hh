@@ -187,7 +187,6 @@ class conflict_manager {
   database::mysql_stmt _index_data_update;
   database::mysql_stmt _index_data_query;
   database::mysql_stmt _metrics_insert;
-  database::mysql_stmt _metrics_update;
 
   conflict_manager(database_config const& dbcfg,
                    uint32_t loop_timeout,

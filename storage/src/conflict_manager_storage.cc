@@ -246,12 +246,6 @@ void conflict_manager::_storage_process_service_status(
             "warn_threshold_mode,crit,"
             "crit_low,crit_threshold_mode,min,max,current_value,"
             "data_source_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
-
-        //        _metrics_update = _mysql.prepare_query(
-        //            "UPDATE metrics SET "
-        //            "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
-        //            "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
-        //            " WHERE metric_id=?");
       }
 
       /* Parse perfdata. */
