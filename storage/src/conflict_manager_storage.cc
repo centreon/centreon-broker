@@ -429,14 +429,14 @@ void conflict_manager::_update_metrics() {
     m.emplace_back(fmt::format("({},\"{}\",{},{},'{}',{},{},'{}',{},{},{})",
           metric->metric_id,
           metric->unit_name,
-          isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
-          isnan(metric->warn_low) ? "NULL" : fmt::format("{}", metric->warn_low),
+          std::isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
+          std::isnan(metric->warn_low) ? "NULL" : fmt::format("{}", metric->warn_low),
           metric->warn_mode ? "1":"0",
-          isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
-          isnan(metric->crit_low) ? "NULL" : fmt::format("{}", metric->crit_low),
+          std::isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
+          std::isnan(metric->crit_low) ? "NULL" : fmt::format("{}", metric->crit_low),
           metric->crit_mode ? "1":"0",
-          isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
-          isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
+          std::isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
+          std::isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
           metric->value));
   }
     std::string query(fmt::format(
