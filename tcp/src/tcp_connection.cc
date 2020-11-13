@@ -74,23 +74,16 @@ asio::ip::tcp::socket& tcp_connection::socket() {
 }
 
 /**
- * @brief Flush one write call and returns the number of event to acknowledge
- * since the last to call to flush() or write().
+ * @brief This function should not be used. Its only interest if for tests. We
+ * wait for the writing() internal function to be finished.
  *
- * @return The number of events to acknowledge.
+ * @return 0.
  */
 int32_t tcp_connection::flush() {
-  std::promise<int32_t> promise;
-  auto future = promise.get_future();
-
-  // The lambda is pushed on the strand queue and so a write call should pass
-  // before.
-  _strand.post([this, &promise] {
-    int32_t retval = _acks;
-    _acks -= retval;
-    promise.set_value(retval);
-  });
-  return future.get();
+  while (_writing) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  return 0;
 }
 
 /**
@@ -330,12 +323,12 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
       if (_exposed_read_queue.empty()) {
         /* No timeout on wait */
         if (timeout_time == static_cast<time_t>(-1)) {
-          _read_queue_cv.wait(lck,
-                              [this] { return !_read_queue.empty() || _closing; });
+          _read_queue_cv.wait(
+              lck, [this] { return !_read_queue.empty() || _closing; });
           if (_read_queue.empty())
-            throw exceptions::msg() << "Attempt to read data from peer " << _peer
-                                    << " on a closing socket";
-        /* Timeout on wait */
+            throw exceptions::msg() << "Attempt to read data from peer "
+                                    << _peer << " on a closing socket";
+          /* Timeout on wait */
         } else {
           time_t now;
           time(&now);
@@ -346,8 +339,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
                 return !_read_queue.empty() || _closing;
               })) {
             if (_read_queue.empty())
-              throw exceptions::msg() << "Attempt to read data from peer " << _peer
-                                      << " on a closing socket";
+              throw exceptions::msg() << "Attempt to read data from peer "
+                                      << _peer << " on a closing socket";
           } else {
             log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
                                  timeout_time);
