@@ -678,14 +678,9 @@ std::list<std::string> stream::get_running_config() {
  *  @see input::read()
  */
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  d.reset();
-
   // Read event.
   d.reset();
 
-  /* This lock is needed because the same stream is used by several threads.
-   * In the case of long events (split in several parts), if two threads read
-   * at the same time, the second one could get a part of the long event... */
   bool timed_out(!_read_any(d, deadline));
   uint32_t event_id(!d ? 0 : d->type());
   while (!timed_out && ((event_id >> 16) == io::events::bbdo)) {

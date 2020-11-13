@@ -164,16 +164,17 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
       throw exceptions::msg() << msg;
     }
 
-    _write_queue.push(v);
+    {
+      std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
+      _exposed_write_queue.push(v);
+    }
 
     // If the queue is not empty and the writing work is not started, we start
     // it.
     if (!_writing) {
       _writing = true;
       // The strand is useful because of the flush() method.
-      asio::async_write(_socket, asio::buffer(_write_queue.front()),
-                        _strand.wrap(std::bind(&tcp_connection::handle_write,
-                                               ptr(), std::placeholders::_1)));
+      _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
     }
   }
 
@@ -182,6 +183,30 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
    * another operation */
   _acks -= retval;
   return retval;
+}
+
+/**
+ * @brief Execute the real writing on the socket. Infact, this function:
+ *  * checks if the _write_queue is empty, and then exchanges its content with
+ *    the _exposed_write_queue. No mutex is needed because if this function is
+ *    executed from the internal function tcp_connection::write(), then we are
+ *    not already writing. And otherwise, writing() is called from the
+ *    tcp_connection::handle_write() function, cadenced by _strand.
+ *  * Launches the async_write.
+ */
+void tcp_connection::writing() {
+  if (_write_queue.empty()) {
+    std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
+    std::swap(_write_queue, _exposed_write_queue);
+  }
+  if (_write_queue.empty()) {
+    _writing = false;
+    return;
+  }
+
+  asio::async_write(_socket, asio::buffer(_write_queue.front()),
+                    _strand.wrap(std::bind(&tcp_connection::handle_write, ptr(),
+                                           std::placeholders::_1)));
 }
 
 /**
@@ -206,7 +231,7 @@ void tcp_connection::handle_write(const asio::error_code& ec) {
                         _strand.wrap(std::bind(&tcp_connection::handle_write,
                                                ptr(), std::placeholders::_1)));
     } else
-      _writing = false;
+      writing();
   }
 }
 
@@ -299,7 +324,6 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
     if (timeout_time == static_cast<time_t>(-1)) {
       _read_queue_cv.wait(lck,
                           [this] { return !_read_queue.empty() || _closing; });
-      //*timeout = false;
       if (!_read_queue.empty()) {
         retval = std::move(_read_queue.front());
         _read_queue.pop();
@@ -316,7 +340,6 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
       if (_read_queue_cv.wait_for(lck, std::chrono::seconds(delay), [this] {
             return !_read_queue.empty() || _closing;
           })) {
-        //*timeout = false;
         if (!_read_queue.empty()) {
           retval = std::move(_read_queue.front());
           _read_queue.pop();
