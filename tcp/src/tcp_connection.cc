@@ -312,46 +312,51 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
   std::vector<char> retval;
 
   if (!_socket.is_open()) {
+    if (_exposed_read_queue.empty()) {
+      std::lock_guard<std::mutex> lck(_read_queue_m);
+      std::swap(_exposed_read_queue, _read_queue);
+    }
+
     log_v2::tcp()->warn(
         "Socket is closed. Trying to read the end of its buffer");
-    std::lock_guard<std::mutex> lck(_read_queue_m);
-    if (!_read_queue.empty()) {
-      retval = std::move(_read_queue.front());
-      _read_queue.pop();
+    if (!_exposed_read_queue.empty()) {
+      retval = std::move(_exposed_read_queue.front());
+      _exposed_read_queue.pop();
     }
   } else {
-    std::unique_lock<std::mutex> lck(_read_queue_m);
-    if (timeout_time == static_cast<time_t>(-1)) {
-      _read_queue_cv.wait(lck,
-                          [this] { return !_read_queue.empty() || _closing; });
-      if (!_read_queue.empty()) {
-        retval = std::move(_read_queue.front());
-        _read_queue.pop();
-      } else
-        throw exceptions::msg() << "Attempt to read data from peer " << _peer
-                                << " on a closing socket";
-
-    } else {
-      time_t now;
-      time(&now);
-      int delay = timeout_time - now;
-      if (delay < 0)
-        delay = 0;
-      if (_read_queue_cv.wait_for(lck, std::chrono::seconds(delay), [this] {
-            return !_read_queue.empty() || _closing;
-          })) {
-        if (!_read_queue.empty()) {
-          retval = std::move(_read_queue.front());
-          _read_queue.pop();
-        } else
-          throw exceptions::msg() << "Attempt to read data from peer " << _peer
-                                  << " on a closing socket";
-
-      } else {
-        log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
-                             timeout_time);
+    if (_exposed_read_queue.empty()) {
+      std::unique_lock<std::mutex> lck(_read_queue_m);
+      std::swap(_exposed_read_queue, _read_queue);
+      if (_exposed_read_queue.empty()) {
+        /* No timeout on wait */
+        if (timeout_time == static_cast<time_t>(-1)) {
+          _read_queue_cv.wait(lck,
+                              [this] { return !_read_queue.empty() || _closing; });
+          if (_read_queue.empty())
+            throw exceptions::msg() << "Attempt to read data from peer " << _peer
+                                    << " on a closing socket";
+        /* Timeout on wait */
+        } else {
+          time_t now;
+          time(&now);
+          int delay = timeout_time - now;
+          if (delay < 0)
+            delay = 0;
+          if (_read_queue_cv.wait_for(lck, std::chrono::seconds(delay), [this] {
+                return !_read_queue.empty() || _closing;
+              })) {
+            if (_read_queue.empty())
+              throw exceptions::msg() << "Attempt to read data from peer " << _peer
+                                      << " on a closing socket";
+          } else
+            log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
+                                 timeout_time);
+        }
+        std::swap(_exposed_read_queue, _read_queue);
       }
     }
+    retval = std::move(_exposed_read_queue.front());
+    _exposed_read_queue.pop();
   }
   *timeout = retval.empty();
   return retval;

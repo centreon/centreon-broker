@@ -45,6 +45,7 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
   std::atomic_bool _reading;
   std::atomic_bool _closing;
   std::array<char, async_buf_size> _read_buffer;
+  std::queue<std::vector<char>> _exposed_read_queue;
   std::mutex _read_queue_m;
   std::condition_variable _read_queue_cv;
   std::queue<std::vector<char>> _read_queue;
