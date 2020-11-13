@@ -838,7 +838,6 @@ bool stream::_read_any(std::shared_ptr<io::data>& d, time_t deadline) {
           if (b.matches(event_id, source_id, dest_id)) {
             // Good, we've found it.
             b.push_back(std::move(content));
-
             content = b.to_vector();
             _buffer.erase(it);
             break;
@@ -940,8 +939,10 @@ void stream::_read_packet(size_t size, time_t deadline) {
     if (d && d->type() == io::raw::static_type()) {
       std::vector<char>& new_v = std::static_pointer_cast<io::raw>(d)->_buffer;
       if (!new_v.empty()) {
-        if (_packet.size() == 0)
+        if (_packet.size() == 0) {
           _packet = std::move(new_v);
+          new_v.clear();
+        }
         else
           _packet.insert(_packet.end(), new_v.begin(), new_v.end());
       }

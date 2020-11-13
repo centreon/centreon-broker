@@ -348,9 +348,12 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
             if (_read_queue.empty())
               throw exceptions::msg() << "Attempt to read data from peer " << _peer
                                       << " on a closing socket";
-          } else
+          } else {
             log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
                                  timeout_time);
+            *timeout = true;
+            return retval;
+          }
         }
         std::swap(_exposed_read_queue, _read_queue);
       }
