@@ -145,9 +145,12 @@ void mysql_connection::_commit(mysql_task* t) {
     res = 0;
 
   if (res) {
-    exceptions::msg e;
-    e << err_msg;
-    task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
+    std::string err_msg(
+        fmt::format("Error during commit: {}", ::mysql_error(_conn)));
+    log_v2::sql()->error("mysql_connection: {}", err_msg);
+    set_error_message(err_msg);
+    if (--task->count == 0)
+      task->promise->set_value(true);
   } else {
     /* No more queries are waiting for a commit now. */
     _need_commit = false;

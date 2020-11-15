@@ -569,6 +569,9 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
  * @return the number of events to ack.
  */
 int32_t conflict_manager::get_acks(stream_type c) {
+  if (_broken)
+    throw exceptions::msg() << "conflict_manager: events loop interrupted";
+
   return _fifo.get_acks(c);
 }
 
