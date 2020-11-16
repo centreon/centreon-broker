@@ -39,7 +39,7 @@ std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
 void (conflict_manager::*const conflict_manager::_neb_processing_table[])(
-    std::shared_ptr<io::data>) = {
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>&) = {
     nullptr,
     &conflict_manager::_process_acknowledgement,
     &conflict_manager::_process_comment,
@@ -88,6 +88,7 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _interval_length{0},
       _max_perfdata_queries{0},
       _max_metrics_queries{0},
+      _max_cv_queries{0},
       _events_handled{0},
       _speed{},
       _stats_count_pos{0},
@@ -132,6 +133,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_interval_length = interval_length;
       _singleton->_max_perfdata_queries = queries_per_transaction;
       _singleton->_max_metrics_queries = queries_per_transaction;
+      _singleton->_max_cv_queries = queries_per_transaction;
       _singleton->_ref_count++;
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
@@ -391,6 +393,9 @@ void conflict_manager::_callback() {
         /* Time to send metrics to database */
         _update_metrics();
 
+        /* Time to send customvariables to database */
+        _update_customvariables();
+
         log_v2::sql()->trace(
             "conflict_manager: main loop initialized with a timeout of {} "
             "seconds.",
@@ -408,6 +413,9 @@ void conflict_manager::_callback() {
          * stuffs. We make then a timer cadenced at 1000ms. */
         int32_t duration = 1000;
 
+        time_t next_insert_perfdatas = time(nullptr);
+        time_t next_update_metrics = time(nullptr);
+        time_t next_update_cv = time(nullptr);
         /* During this loop, connectors still fill the queue when they receive
          * new events.
          * The loop is hold by three conditions that are:
@@ -434,22 +442,44 @@ void conflict_manager::_callback() {
             uint16_t cat{io::events::category_of_type(type)};
             uint16_t elem{io::events::element_of_type(type)};
             if (std::get<1>(tpl) == sql && cat == io::events::neb)
-              (this->*(_neb_processing_table[elem]))(d);
+              (this->*(_neb_processing_table[elem]))(tpl);
             else if (std::get<1>(tpl) == storage && cat == io::events::neb &&
                      type == neb::service_status::static_type())
-              _storage_process_service_status(d);
-            else
+              _storage_process_service_status(tpl);
+            else {
               log_v2::sql()->trace(
                   "conflict_manager: event of type {} thrown away ; no need to "
                   "store it in the database.",
                   type);
+              *std::get<2>(tpl) = true;
+            }
 
             ++count;
             _stats_count[pos]++;
-            *std::get<2>(tpl) = true;
 
             std::chrono::system_clock::time_point now1 =
                 std::chrono::system_clock::now();
+
+            /* If there are too many perfdata to send, let's send them... */
+            if (std::chrono::system_clock::to_time_t(now1) >= next_insert_perfdatas &&
+                _perfdata_queue.size() > _max_perfdata_queries) {
+              next_insert_perfdatas = std::chrono::system_clock::to_time_t(now1) + 10;
+              _insert_perfdatas();
+            }
+
+            /* If there are too many metrics to send, let's send them... */
+            if (std::chrono::system_clock::to_time_t(now1) >= next_update_metrics &&
+                _metrics.size() > _max_metrics_queries) {
+              next_update_metrics = std::chrono::system_clock::to_time_t(now1) + 10;
+              _update_metrics();
+            }
+
+            /* Time to send customvariables to database */
+            if (std::chrono::system_clock::to_time_t(now1) >= next_update_cv &&
+                _cv_queue.size() > _max_cv_queries) {
+              next_update_cv = std::chrono::system_clock::to_time_t(now1) + 10;
+              _update_customvariables();
+            }
 
             timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
                           now1 - now0)
@@ -457,14 +487,6 @@ void conflict_manager::_callback() {
 
             /* Get some stats each second */
             if (timeout >= duration) {
-              /* If there are too many perfdata to send, let's send them... */
-              if (_perfdata_queue.size() > _max_perfdata_queries)
-                _insert_perfdatas();
-
-              /* If there are too many metrics to send, let's send them... */
-              if (_metrics.size() > _max_metrics_queries)
-                _update_metrics();
-
               do {
                 duration += 1000;
                 pos++;

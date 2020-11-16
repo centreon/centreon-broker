@@ -74,6 +74,7 @@ fmt::string_view truncate(const T& str, size_t s) {
 }
 
 size_t adjust_size_utf8(const std::string& str, size_t s);
+fmt::string_view escape(const std::string& str, size_t s);
 
 }  // namespace string
 }  // namespace misc

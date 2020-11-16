@@ -102,7 +102,7 @@ class conflict_manager {
   };
 
   static void (conflict_manager::*const _neb_processing_table[])(
-      std::shared_ptr<io::data>);
+      std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>&);
   static conflict_manager* _singleton;
   static std::mutex _init_m;
   static std::condition_variable _init_cv;
@@ -125,6 +125,7 @@ class conflict_manager {
   uint32_t _interval_length;
   uint32_t _max_perfdata_queries;
   uint32_t _max_metrics_queries;
+  uint32_t _max_cv_queries;
 
   std::thread _thread;
 
@@ -149,8 +150,11 @@ class conflict_manager {
 
   std::unordered_set<uint32_t> _hostgroup_cache;
   std::unordered_set<uint32_t> _servicegroup_cache;
+
   std::deque<metric_value> _perfdata_queue;
   std::unordered_map<int32_t, metric_info*> _metrics;
+  std::deque<std::pair<bool*, std::string>> _cv_queue;
+
   timestamp _oldest_timestamp;
   std::unordered_map<uint32_t, stored_timestamp> _stored_timestamps;
 
@@ -204,34 +208,34 @@ class conflict_manager {
   bool _is_valid_poller(uint32_t instance_id);
   void _check_deleted_index();
 
-  void _process_acknowledgement(std::shared_ptr<io::data> p);
-  void _process_comment(std::shared_ptr<io::data> p);
-  void _process_custom_variable(std::shared_ptr<io::data> p);
-  void _process_custom_variable_status(std::shared_ptr<io::data> p);
-  void _process_downtime(std::shared_ptr<io::data> p);
-  void _process_event_handler(std::shared_ptr<io::data> p);
-  void _process_flapping_status(std::shared_ptr<io::data> p);
-  void _process_host_check(std::shared_ptr<io::data> p);
-  void _process_host_dependency(std::shared_ptr<io::data> p);
-  void _process_host_group(std::shared_ptr<io::data> p);
-  void _process_host_group_member(std::shared_ptr<io::data> p);
-  void _process_host(std::shared_ptr<io::data> p);
-  void _process_host_parent(std::shared_ptr<io::data> p);
-  void _process_host_status(std::shared_ptr<io::data> p);
-  void _process_instance(std::shared_ptr<io::data> p);
-  void _process_instance_status(std::shared_ptr<io::data> p);
-  void _process_log(std::shared_ptr<io::data> p);
-  void _process_module(std::shared_ptr<io::data> p);
-  void _process_service_check(std::shared_ptr<io::data> p);
-  void _process_service_dependency(std::shared_ptr<io::data> p);
-  void _process_service_group(std::shared_ptr<io::data> p);
-  void _process_service_group_member(std::shared_ptr<io::data> p);
-  void _process_service(std::shared_ptr<io::data> p);
-  void _process_service_status(std::shared_ptr<io::data> p);
-  void _process_instance_configuration(std::shared_ptr<io::data> p);
-  void _process_responsive_instance(std::shared_ptr<io::data> p);
+  void _process_acknowledgement(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_comment(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_custom_variable(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_custom_variable_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_downtime(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_event_handler(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_flapping_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_host_check(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_host_dependency(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_host_group(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_host_group_member(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_host(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_host_parent(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_host_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_instance(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_instance_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_log(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_module(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_service_check(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_service_dependency(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_service_group(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_service_group_member(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_service(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_service_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_instance_configuration(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
+  void _process_responsive_instance(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
 
-  void _storage_process_service_status(std::shared_ptr<io::data> p);
+  void _storage_process_service_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t);
 
   void _load_deleted_instances();
   void _load_caches();
@@ -243,6 +247,7 @@ class conflict_manager {
   void _add_action(int32_t conn, actions action);
   void _update_metrics();
   void _insert_perfdatas();
+  void _update_customvariables();
   void __exit();
 
  public:

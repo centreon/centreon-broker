@@ -345,3 +345,49 @@ size_t string::adjust_size_utf8(const std::string& str, size_t s) {
     return s;
   }
 }
+
+/**
+ * @brief Escape the given string so that it can be directly inserted into the
+ * database. Essntially, characters \ and ' are prefixed with \. The function
+ * also only keeps the s first characters.
+ *
+ * @param str the string to escape and truncate.
+ * @param s The desired size.
+ *
+ * @return The resulting string.
+ */
+fmt::string_view string::escape(const std::string& str, size_t s) {
+  size_t found = str.find_first_of("'\\");
+  if (found == std::string::npos)
+    return fmt::string_view(str.data(), adjust_size_utf8(str, s));
+  else {
+    std::string ret;
+    /* ret is reserved with the worst size */
+    ret.reserve(found + 2 * (str.size() - found));
+    std::copy(str.data(), str.data() + found, std::back_inserter(ret));
+    ret += '\\';
+    ret += str[found];
+    do {
+      ++found;
+      size_t ffound = str.find_first_of("'\\", found);
+      if (ffound == std::string::npos) {
+        std::copy(str.data() + found, str.data() + str.size(), std::back_inserter(ret));
+        break;
+      }
+      std::copy(str.data() + found, str.data() + ffound, std::back_inserter(ret));
+      ret += '\\';
+      ret += str[ffound];
+      found = ffound;
+    } while (found < s);
+    ret.resize(adjust_size_utf8(ret, s));
+    if (ret.size() > 1) {
+      auto it = --ret.end();
+      if (*it == '\\') {
+        --it;
+        if (*it != '\\')
+          ret.resize(ret.size() - 1);
+      }
+    }
+    return ret;
+  }
+}

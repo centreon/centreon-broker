@@ -241,3 +241,33 @@ TEST(adjust_size_utf8, utf8_1) {
     ASSERT_EQ(sv.size(), tmp.size());
   }
 }
+
+TEST(escape, simple) {
+  ASSERT_EQ("Hello", string::escape("Hello", 10));
+  ASSERT_EQ("Hello", string::escape("Hello", 5));
+  ASSERT_EQ("Hel", string::escape("Hello", 3));
+}
+
+TEST(escape, utf8) {
+  std::string str("告'警'数\\量");
+  std::string res("告\\'警\\'数\\\\量");
+  std::string res1(res);
+  res1.resize(string::adjust_size_utf8(res, 10));
+  ASSERT_EQ(res, string::escape(str, 20));
+  ASSERT_EQ(res1, string::escape(str, 10));
+}
+
+TEST(escape, border) {
+  std::string str("'abc'");
+  std::string res("\\'abc");
+  ASSERT_EQ(res, string::escape(str, 6));
+}
+
+TEST(escape, complexe) {
+  std::string str("toto | a=23\nbidon bidon bidon looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool bla bla bla");
+  std::string res("toto | a=23\\nbidon bidon bidon looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool bla bla bla");
+  ASSERT_EQ(string::escape(str, 255), res);
+  std::string str1("CRITICAL: Very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong chinese 告警数量 output puté! | '告警数量'=42\navé dé long ouput oçi 还有中国人! Hái yǒu zhòng guó rén!");
+  std::string res1("CRITICAL: Very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong chinese 告警数量 output puté! | \'告警数量\'=42\\navé dé long ouput oçi 还有中国人! Hái yǒu zhòng guó rén!");
+  ASSERT_EQ(string::escape(str1, 255), res1);
+}

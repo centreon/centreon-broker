@@ -72,7 +72,8 @@ static inline bool check_equality(double a, double b) {
  * @return the number of events sent to the database.
  */
 void conflict_manager::_storage_process_service_status(
-    std::shared_ptr<io::data> d) {
+std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+  auto& d = std::get<0>(t);
   neb::service_status const& ss{*static_cast<neb::service_status*>(d.get())};
   uint64_t host_id = ss.host_id, service_id = ss.service_id;
   log_v2::perfdata()->debug(
@@ -256,7 +257,7 @@ void conflict_manager::_storage_process_service_status(
         p.parse_perfdata(ss.perf_data.c_str(), pds);
 
         std::list<std::shared_ptr<io::data>> to_publish;
-        for (storage::perfdata& pd : pds) {
+        for (auto& pd : pds) {
           auto it_index_cache = _metric_cache.find({index_id, pd.name()});
 
           /* The cache does not contain this metric */
@@ -412,6 +413,7 @@ void conflict_manager::_storage_process_service_status(
       }
     }
   }
+  *std::get<2>(t) = true;
 }
 
 void conflict_manager::_update_metrics() {
