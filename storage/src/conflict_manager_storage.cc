@@ -423,8 +423,9 @@ void conflict_manager::_update_metrics() {
   for (auto it = _metrics.begin(); it != _metrics.end(); ++it) {
     metric_info* metric = it->second;
     m.emplace_back(fmt::format(
-        "({},\"{}\",{},{},'{}',{},{},'{}',{},{},{})", metric->metric_id,
-        metric->unit_name,
+        "({},'{}',{},{},'{}',{},{},'{}',{},{},{})", metric->metric_id,
+        misc::string::escape(metric->unit_name,
+                             get_metrics_col_size(metrics_unit_name)),
         std::isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
         std::isnan(metric->warn_low) ? "NULL"
                                      : fmt::format("{}", metric->warn_low),
