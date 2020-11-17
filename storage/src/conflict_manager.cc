@@ -461,16 +461,20 @@ void conflict_manager::_callback() {
                 std::chrono::system_clock::now();
 
             /* If there are too many perfdata to send, let's send them... */
-            if (std::chrono::system_clock::to_time_t(now1) >= next_insert_perfdatas &&
+            if (std::chrono::system_clock::to_time_t(now1) >=
+                    next_insert_perfdatas &&
                 _perfdata_queue.size() > _max_perfdata_queries) {
-              next_insert_perfdatas = std::chrono::system_clock::to_time_t(now1) + 10;
+              next_insert_perfdatas =
+                  std::chrono::system_clock::to_time_t(now1) + 10;
               _insert_perfdatas();
             }
 
             /* If there are too many metrics to send, let's send them... */
-            if (std::chrono::system_clock::to_time_t(now1) >= next_update_metrics &&
+            if (std::chrono::system_clock::to_time_t(now1) >=
+                    next_update_metrics &&
                 _metrics.size() > _max_metrics_queries) {
-              next_update_metrics = std::chrono::system_clock::to_time_t(now1) + 10;
+              next_update_metrics =
+                  std::chrono::system_clock::to_time_t(now1) + 10;
               _update_metrics();
             }
 

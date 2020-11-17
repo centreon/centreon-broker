@@ -356,10 +356,10 @@ size_t string::adjust_size_utf8(const std::string& str, size_t s) {
  *
  * @return The resulting string.
  */
-fmt::string_view string::escape(const std::string& str, size_t s) {
+std::string string::escape(const std::string& str, size_t s) {
   size_t found = str.find_first_of("'\\");
   if (found == std::string::npos)
-    return fmt::string_view(str.data(), adjust_size_utf8(str, s));
+    return str.substr(0, adjust_size_utf8(str, s));
   else {
     std::string ret;
     /* ret is reserved with the worst size */
@@ -371,10 +371,12 @@ fmt::string_view string::escape(const std::string& str, size_t s) {
       ++found;
       size_t ffound = str.find_first_of("'\\", found);
       if (ffound == std::string::npos) {
-        std::copy(str.data() + found, str.data() + str.size(), std::back_inserter(ret));
+        std::copy(str.data() + found, str.data() + str.size(),
+                  std::back_inserter(ret));
         break;
       }
-      std::copy(str.data() + found, str.data() + ffound, std::back_inserter(ret));
+      std::copy(str.data() + found, str.data() + ffound,
+                std::back_inserter(ret));
       ret += '\\';
       ret += str[ffound];
       found = ffound;

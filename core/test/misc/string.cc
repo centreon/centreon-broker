@@ -18,8 +18,8 @@
  */
 #include "com/centreon/broker/misc/string.hh"
 
-#include <gtest/gtest.h>
 #include <fmt/format.h>
+#include <gtest/gtest.h>
 
 #include "com/centreon/broker/misc/misc.hh"
 
@@ -189,7 +189,11 @@ TEST(string_check_utf8, chinese) {
 
 /* A check coming from windows with characters from the cmd console */
 TEST(string_check_utf8, vietnam) {
-  std::string txt("loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong chinese 告警数量 output puté! | '告警数量'=42\navé dé long ouput oçi 还有中国人! Hái yǒu zhòng guó rén!");
+  std::string txt(
+      "looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong "
+      "chinese 告警数量 output puté! | '告警数量'=42\navé dé long ouput oçi "
+      "还有中国人! Hái yǒu zhòng guó rén!");
   ASSERT_EQ(string::check_string_utf8(txt), txt);
 }
 
@@ -213,14 +217,16 @@ TEST(truncate, utf8_1) {
   for (size_t i = 0; i <= str.size(); i++) {
     fmt::string_view tmp(str);
     fmt::string_view res(string::truncate(tmp, i));
-    fmt::string_view tmp1(string::check_string_utf8(std::string(res.data(), res.size())));
+    fmt::string_view tmp1(
+        string::check_string_utf8(std::string(res.data(), res.size())));
     ASSERT_EQ(res, tmp1);
   }
 }
 
 TEST(adjust_size_utf8, nominal1) {
   std::string str("foobar");
-  ASSERT_EQ(fmt::string_view(str.data(), string::adjust_size_utf8(str, 3)), fmt::string_view("foo"));
+  ASSERT_EQ(fmt::string_view(str.data(), string::adjust_size_utf8(str, 3)),
+            fmt::string_view("foo"));
 }
 
 TEST(adjust_size_utf8, nominal2) {
@@ -230,14 +236,16 @@ TEST(adjust_size_utf8, nominal2) {
 
 TEST(adjust_size_utf8, nominal3) {
   std::string str("foobar 超级杀手死亡检查");
-  ASSERT_EQ(fmt::string_view(str.data(), string::adjust_size_utf8(str, 1000)), str);
+  ASSERT_EQ(fmt::string_view(str.data(), string::adjust_size_utf8(str, 1000)),
+            str);
 }
 
 TEST(adjust_size_utf8, utf8_1) {
   std::string str("告警数量");
   for (size_t i = 0; i <= str.size(); i++) {
     fmt::string_view sv(str.data(), string::adjust_size_utf8(str, i));
-    std::string tmp(string::check_string_utf8(std::string(sv.data(), sv.data() + sv.size())));
+    std::string tmp(string::check_string_utf8(
+        std::string(sv.data(), sv.data() + sv.size())));
     ASSERT_EQ(sv.size(), tmp.size());
   }
 }
@@ -264,10 +272,26 @@ TEST(escape, border) {
 }
 
 TEST(escape, complexe) {
-  std::string str("toto | a=23\nbidon bidon bidon looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool bla bla bla");
-  std::string res("toto | a=23\\nbidon bidon bidon looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool bla bla bla");
+  std::string str(
+      "toto | a=23\nbidon bidon bidon "
+      "looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooool bla bla bla");
+  std::string res(
+      "toto | a=23\nbidon bidon bidon "
+      "looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "oooooooooool bla bla bla");
   ASSERT_EQ(string::escape(str, 255), res);
-  std::string str1("CRITICAL: Very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong chinese 告警数量 output puté! | '告警数量'=42\navé dé long ouput oçi 还有中国人! Hái yǒu zhòng guó rén!");
-  std::string res1("CRITICAL: Very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong chinese 告警数量 output puté! | \'告警数量\'=42\\navé dé long ouput oçi 还有中国人! Hái yǒu zhòng guó rén!");
+  std::string str1(
+      "CRITICAL: Very "
+      "looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong "
+      "chinese 告警数量 output puté! | '告警数量'=42\navé dé long ouput oçi "
+      "还有中国人! Hái yǒu zhòng guó rén!");
+  std::string res1(
+      "CRITICAL: Very "
+      "looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+      "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong "
+      "chinese 告警数量 output puté! | \\'告警数量\\'=42\navé dé long ouput "
+      "oçi 还有中国人! H");
   ASSERT_EQ(string::escape(str1, 255), res1);
 }

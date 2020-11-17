@@ -359,7 +359,8 @@ void conflict_manager::_prepare_sg_insupdate_statement() {
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_acknowledgement(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_acknowledgement(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   // Cast object.
   neb::acknowledgement const& ack =
@@ -404,7 +405,8 @@ void conflict_manager::_process_acknowledgement(std::tuple<std::shared_ptr<io::d
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_comment(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_comment(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::hosts | actions::instances |
                          actions::host_parents | actions::host_dependencies |
@@ -452,7 +454,8 @@ void conflict_manager::_process_comment(std::tuple<std::shared_ptr<io::data>, ui
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_custom_variable(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_custom_variable(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   // Cast object.
   neb::custom_variable const& cv{
@@ -470,21 +473,33 @@ void conflict_manager::_process_custom_variable(std::tuple<std::shared_ptr<io::d
 
   // Processing.
   if (cv.enabled) {
-    _cv_queue.emplace_back(std::make_pair(std::get<2>(t), fmt::format("('{}',{},{},'{}',{},{},{},'{}')",
-      misc::string::escape(cv.name, get_customvariables_col_size(customvariables_name)),
-      cv.host_id, cv.service_id,
-      misc::string::escape(cv.default_value, get_customvariables_col_size(customvariables_default_value)),
-      cv.modified ? 1:0, cv.var_type, cv.update_time,
-      misc::string::escape(cv.value, get_customvariables_col_size(customvariables_value)))));
+    _cv_queue.emplace_back(std::make_pair(
+        std::get<2>(t),
+        fmt::format(
+            "('{}',{},{},'{}',{},{},{},'{}')",
+            misc::string::escape(
+                cv.name, get_customvariables_col_size(customvariables_name)),
+            cv.host_id, cv.service_id,
+            misc::string::escape(
+                cv.default_value,
+                get_customvariables_col_size(customvariables_default_value)),
+            cv.modified ? 1 : 0, cv.var_type, cv.update_time,
+            misc::string::escape(cv.value, get_customvariables_col_size(
+                                               customvariables_value)))));
     if (cv.value.size() > 20) {
-      log_v2::sql()->debug("BIG VALUE <<{}>> (size {})", cv.value, get_customvariables_col_size(customvariables_value));
-      log_v2::sql()->debug("BIG VALUE AFTER RESIZING <<{}>>", misc::string::escape(cv.value, get_customvariables_col_size(customvariables_value)));
+      log_v2::sql()->debug("BIG VALUE <<{}>> (size {})", cv.value,
+                           get_customvariables_col_size(customvariables_value));
+      log_v2::sql()->debug(
+          "BIG VALUE AFTER RESIZING <<{}>>",
+          misc::string::escape(
+              cv.value, get_customvariables_col_size(customvariables_value)));
     }
     /* Here, we do not update the custom variable boolean ack flag, because
      * it will be updated later when the bulk query will be done:
      * conflict_manager::_update_customvariables() */
   } else {
-    int conn = _mysql.choose_best_connection(neb::custom_variable::static_type());
+    int conn =
+        _mysql.choose_best_connection(neb::custom_variable::static_type());
     _finish_action(-1, actions::custom_variables);
 
     log_v2::sql()->info("SQL: disabling custom variable '{}' of ({}, {})",
@@ -510,7 +525,8 @@ void conflict_manager::_process_custom_variable(std::tuple<std::shared_ptr<io::d
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_custom_variable_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_custom_variable_status(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int conn =
       _mysql.choose_best_connection(neb::custom_variable_status::static_type());
@@ -551,7 +567,8 @@ void conflict_manager::_process_custom_variable_status(std::tuple<std::shared_pt
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_downtime(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_downtime(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int conn = _mysql.choose_best_connection(neb::downtime::static_type());
   _finish_action(-1, actions::hosts | actions::instances | actions::downtimes |
@@ -618,7 +635,8 @@ void conflict_manager::_process_downtime(std::tuple<std::shared_ptr<io::data>, u
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_event_handler(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_event_handler(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   // Cast object.
   neb::event_handler const& eh =
@@ -660,7 +678,8 @@ void conflict_manager::_process_event_handler(std::tuple<std::shared_ptr<io::dat
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_flapping_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_flapping_status(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   // Cast object.
   neb::flapping_status const& fs(
@@ -703,7 +722,8 @@ void conflict_manager::_process_flapping_status(std::tuple<std::shared_ptr<io::d
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_host_check(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_host_check(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::instances | actions::downtimes |
                          actions::comments | actions::host_dependencies |
@@ -768,7 +788,8 @@ void conflict_manager::_process_host_check(std::tuple<std::shared_ptr<io::data>,
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_host_dependency(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_host_dependency(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int32_t conn =
       _mysql.choose_best_connection(neb::host_dependency::static_type());
@@ -826,7 +847,8 @@ void conflict_manager::_process_host_dependency(std::tuple<std::shared_ptr<io::d
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_host_group(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_host_group(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int conn = _mysql.choose_best_connection(neb::host_group::static_type());
   _finish_action(-1, actions::hosts);
@@ -875,7 +897,8 @@ void conflict_manager::_process_host_group(std::tuple<std::shared_ptr<io::data>,
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_host_group_member(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_host_group_member(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int conn =
       _mysql.choose_best_connection(neb::host_group_member::static_type());
@@ -970,7 +993,8 @@ void conflict_manager::_process_host_group_member(std::tuple<std::shared_ptr<io:
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_host(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_host(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::instances | actions::hostgroups |
                          actions::host_dependencies | actions::host_parents |
@@ -1030,7 +1054,8 @@ void conflict_manager::_process_host(std::tuple<std::shared_ptr<io::data>, uint3
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_host_parent(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_host_parent(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int32_t conn = _mysql.choose_best_connection(neb::host_parent::static_type());
   _finish_action(-1, actions::hosts | actions::host_dependencies |
@@ -1089,7 +1114,8 @@ void conflict_manager::_process_host_parent(std::tuple<std::shared_ptr<io::data>
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_host_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_host_status(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::instances | actions::downtimes |
                          actions::comments | actions::custom_variables |
@@ -1144,7 +1170,8 @@ void conflict_manager::_process_host_status(std::tuple<std::shared_ptr<io::data>
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_instance(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_instance(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   neb::instance& i(*static_cast<neb::instance*>(d.get()));
   int32_t conn = _mysql.choose_connection_by_instance(i.poller_id);
@@ -1192,7 +1219,8 @@ void conflict_manager::_process_instance(std::tuple<std::shared_ptr<io::data>, u
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_instance_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_instance_status(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   neb::instance_status& is = *static_cast<neb::instance_status*>(d.get());
   int32_t conn = _mysql.choose_connection_by_instance(is.poller_id);
@@ -1233,7 +1261,8 @@ void conflict_manager::_process_instance_status(std::tuple<std::shared_ptr<io::d
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_log(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_log(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int conn = _mysql.choose_best_connection(neb::log_entry::static_type());
 
@@ -1265,7 +1294,8 @@ void conflict_manager::_process_log(std::tuple<std::shared_ptr<io::data>, uint32
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_module(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_module(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   // Cast object.
   neb::module const& m = *static_cast<neb::module const*>(d.get());
@@ -1318,7 +1348,8 @@ void conflict_manager::_process_module(std::tuple<std::shared_ptr<io::data>, uin
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_service_check(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_service_check(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::downtimes | actions::comments |
                          actions::host_dependencies | actions::host_parents |
@@ -1393,7 +1424,8 @@ void conflict_manager::_process_service_check(std::tuple<std::shared_ptr<io::dat
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_service_dependency(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_service_dependency(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int32_t conn =
       _mysql.choose_best_connection(neb::service_dependency::static_type());
@@ -1459,7 +1491,8 @@ void conflict_manager::_process_service_dependency(std::tuple<std::shared_ptr<io
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_service_group(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_service_group(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int32_t conn =
       _mysql.choose_best_connection(neb::service_group::static_type());
@@ -1512,7 +1545,8 @@ void conflict_manager::_process_service_group(std::tuple<std::shared_ptr<io::dat
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_service_group_member(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_service_group_member(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   int32_t conn =
       _mysql.choose_best_connection(neb::service_group_member::static_type());
@@ -1606,7 +1640,8 @@ void conflict_manager::_process_service_group_member(std::tuple<std::shared_ptr<
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_service(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_service(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::host_parents | actions::comments |
                          actions::downtimes | actions::host_dependencies |
@@ -1665,7 +1700,8 @@ void conflict_manager::_process_service(std::tuple<std::shared_ptr<io::data>, ui
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_service_status(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_service_status(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::host_parents | actions::comments |
                          actions::downtimes | actions::host_dependencies |
@@ -1727,7 +1763,8 @@ void conflict_manager::_process_service_status(std::tuple<std::shared_ptr<io::da
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_instance_configuration(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_instance_configuration(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   *std::get<2>(t) = true;
 }
 
@@ -1736,7 +1773,8 @@ void conflict_manager::_process_instance_configuration(std::tuple<std::shared_pt
  *
  * @return The number of events that can be acknowledged.
  */
-void conflict_manager::_process_responsive_instance(std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
+void conflict_manager::_process_responsive_instance(
+    std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   *std::get<2>(t) = true;
 }
 
@@ -1747,14 +1785,20 @@ void conflict_manager::_update_customvariables() {
   _finish_action(-1, actions::custom_variables);
   auto it = _cv_queue.begin();
   std::ostringstream oss;
-  oss << "INSERT INTO customvariables (name,host_id,service_id,default_value,modified,type,update_time,value) VALUES " << std::get<1>(*it);
+  oss << "INSERT INTO customvariables "
+         "(name,host_id,service_id,default_value,modified,type,update_time,"
+         "value) VALUES "
+      << std::get<1>(*it);
   *std::get<0>(*it) = true;
-  for (++it ; it != _cv_queue.end(); ++it) {
+  for (++it; it != _cv_queue.end(); ++it) {
     oss << "," << std::get<1>(*it);
     *std::get<0>(*it) = true;
   }
-  oss << " ON DUPLICATE KEY UPDATE default_value=VALUES(default_VALUE),modified=VALUES(modified),type=VALUES(type),update_time=VALUES(update_time),value=VALUES(value)";
-  _mysql.run_query(oss.str(), "SQL: could not store custom variables correctly", true, conn);
+  oss << " ON DUPLICATE KEY UPDATE "
+         "default_value=VALUES(default_VALUE),modified=VALUES(modified),type="
+         "VALUES(type),update_time=VALUES(update_time),value=VALUES(value)";
+  _mysql.run_query(oss.str(), "SQL: could not store custom variables correctly",
+                   true, conn);
   log_v2::sql()->trace("sending query << {} >>", oss.str());
   _add_action(conn, actions::custom_variables);
   _cv_queue.clear();
