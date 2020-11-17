@@ -414,8 +414,8 @@ void conflict_manager::_callback() {
         int32_t duration = 1000;
 
         time_t next_insert_perfdatas = time(nullptr);
-        time_t next_update_metrics = time(nullptr);
-        time_t next_update_cv = time(nullptr);
+        time_t next_update_metrics = next_insert_perfdatas;
+        time_t next_update_cv = next_insert_perfdatas;
         /* During this loop, connectors still fill the queue when they receive
          * new events.
          * The loop is hold by three conditions that are:

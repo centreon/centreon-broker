@@ -1,26 +1,4 @@
 =======================
-Centreon Broker 20.10.2
-=======================
-
-************
-Enhancements
-************
-
-TCP connections
-===============
-TCP streams are really faster, especially when broker has retention files and
-there are a lot of traffic.
-
-SQL and storage streams
-=======================
-Those streams have several improvements:
-* events exchanges are really faster, especially when broker has retention
-  files.
-* Several queries have been changed to insert data in bulk, it is the case for
-  custom variables and metrics.
-* There are cases where those streams could crash that have been also fixed.
-
-=======================
 Centreon Broker 20.10.1
 =======================
 
@@ -54,6 +32,20 @@ that are the number of threads it contains and its latency in milliseconds that
 is the duration we have to wait to see a task executed. We post a task to the
 thread pool at time T1, it is executed by the thread pool at time T2, the
 latency is T2 - T1.
+
+TCP connections
+===============
+TCP streams are really faster, especially when broker has retention files and
+there are a lot of traffic.
+
+SQL and storage streams
+=======================
+Those streams have several improvements:
+* events exchanges are really faster, especially when broker has retention
+  files.
+* Several queries have been changed to insert data in bulk, it is the case for
+  custom variables and metrics.
+* There are cases where those streams could crash that have been also fixed.
 
 =======================
 Centreon Broker 20.10.0
