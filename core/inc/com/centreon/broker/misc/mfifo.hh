@@ -22,7 +22,6 @@
 #include <condition_variable>
 #include <mutex>
 
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -104,7 +103,6 @@ class mfifo {
     std::lock_guard<std::mutex> lk(_fifo_m);
     int32_t retval = _ack[idx];
     _ack[idx] = 0;
-    log_v2::sql()->trace("{} events acknowledged on line {}", retval, idx);
     return retval;
   }
 
@@ -122,7 +120,6 @@ class mfifo {
       t.pop_front();
       ++count;
     }
-    log_v2::sql()->trace("{} elements removed from fifo (idx {})", count, idx);
     _pending_elements -= count;
     _ack[idx] += count;
   }

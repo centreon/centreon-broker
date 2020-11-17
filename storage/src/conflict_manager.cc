@@ -634,7 +634,6 @@ void conflict_manager::_finish_action(int32_t conn, uint32_t action) {
 void conflict_manager::_finish_actions() {
   log_v2::sql()->trace("conflict_manager: finish actions");
   _mysql.commit();
-  log_v2::sql()->trace("conflict_manager: finish actions commit done");
   for (uint32_t& v : _action)
     v = actions::none;
 

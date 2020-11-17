@@ -324,15 +324,17 @@ std::string string::check_string_utf8(std::string const& str) noexcept {
 }
 
 /**
- * @brief This function makes a copy of the first s bytes of the given string
- * but it takes care of the UTF-8 encoding and avoids to cut the string in the
- * middle of a character. This function assumes the string to be UTF-8 encoded.
+ * @brief This function adjusts the given integer s so that the str string may
+ * be cut at this length and still be a UTF-8 string (we don't want to cut it
+ * in a middle of a character).
+ *
+ * This function assumes the string to be UTF-8 encoded.
  *
  * @param str A string to truncate.
  * @param s The desired size, maybe the resulting string will contain less
  * characters.
  *
- * @return a reference to the string str.
+ * @return The newly computed size.
  */
 size_t string::adjust_size_utf8(const std::string& str, size_t s) {
   if (s >= str.size())
