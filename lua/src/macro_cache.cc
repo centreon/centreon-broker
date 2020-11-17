@@ -92,6 +92,23 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
 }
 
 /**
+ *  Get the full host.
+ *
+ *  @param[in] host_id  The id of the host.
+ *
+ *  @return             A shared pointer on the host.
+ */
+const std::shared_ptr<neb::host>& macro_cache::get_host(
+    uint64_t host_id) const {
+  auto found = _hosts.find(host_id);
+
+  if (found == _hosts.end())
+    throw exceptions::msg()
+        << "lua: could not find information on host " << host_id;
+  return found->second;
+}
+
+/**
  *  Get the name of a host.
  *
  *  @param[in] host_id  The id of the host.

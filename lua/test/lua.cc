@@ -530,13 +530,18 @@ TEST_F(LuaTest, HostCacheTest) {
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 1;
   hst->host_name = "centreon";
+  hst->alias = "alias-centreon";
+  hst->address = "4.3.2.1";
   _cache->write(hst);
 
   CreateScript(filename,
                "function init(conf)\n"
                "  broker_log:set_parameters(3, '/tmp/log')\n"
-               "  local hst = broker_cache:get_hostname(1)\n"
-               "  broker_log:info(1, 'host is ' .. tostring(hst))\n"
+               "  local hstname = broker_cache:get_hostname(1)\n"
+               "  broker_log:info(1, 'host is ' .. tostring(hstname))\n"
+               "  local hst = broker_cache:get_host(1)\n"
+               "  broker_log:info(1, 'alias ' .. hst.alias .. ' address ' .. "
+               "hst.address .. ' name ' .. hst.name)\n"
                "end\n\n"
                "function write(d)\n"
                "end\n");
@@ -544,6 +549,8 @@ TEST_F(LuaTest, HostCacheTest) {
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host is centreon"), std::string::npos);
+  ASSERT_NE(lst.find("alias alias-centreon address 4.3.2.1 name centreon"),
+            std::string::npos);
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }

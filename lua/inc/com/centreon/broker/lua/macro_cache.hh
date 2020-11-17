@@ -48,6 +48,36 @@ namespace lua {
  *  @brief Data cache for Lua macro.
  */
 class macro_cache {
+  std::shared_ptr<persistent_cache> _cache;
+  std::unordered_map<uint64_t, std::shared_ptr<neb::instance> > _instances;
+  std::unordered_map<uint64_t, std::shared_ptr<neb::host> > _hosts;
+  std::unordered_map<uint64_t, std::shared_ptr<neb::host_group> > _host_groups;
+  std::map<std::pair<uint64_t, uint64_t>,
+           std::shared_ptr<neb::host_group_member> >
+      _host_group_members;
+  std::map<std::pair<uint64_t, uint64_t>,
+           std::shared_ptr<neb::custom_variable> >
+      _custom_vars;
+  std::unordered_map<std::pair<uint64_t, uint64_t>,
+                     std::shared_ptr<neb::service> >
+      _services;
+  std::unordered_map<uint64_t, std::shared_ptr<neb::service_group> >
+      _service_groups;
+  std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
+           std::shared_ptr<neb::service_group_member> >
+      _service_group_members;
+  std::unordered_map<uint64_t, std::shared_ptr<storage::index_mapping> >
+      _index_mappings;
+  std::unordered_map<uint64_t, std::shared_ptr<storage::metric_mapping> >
+      _metric_mappings;
+  std::unordered_map<uint64_t, std::shared_ptr<bam::dimension_ba_event> >
+      _dimension_ba_events;
+  std::unordered_multimap<uint64_t,
+                          std::shared_ptr<bam::dimension_ba_bv_relation_event> >
+      _dimension_ba_bv_relation_events;
+  std::unordered_map<uint64_t, std::shared_ptr<bam::dimension_bv_event> >
+      _dimension_bv_events;
+
  public:
   macro_cache(std::shared_ptr<persistent_cache> const& cache);
   ~macro_cache();
@@ -56,6 +86,7 @@ class macro_cache {
 
   storage::index_mapping const& get_index_mapping(uint32_t index_id) const;
   storage::metric_mapping const& get_metric_mapping(uint32_t metric_id) const;
+  const std::shared_ptr<neb::host>& get_host(uint64_t host_id) const;
   std::string const& get_host_name(uint64_t host_id) const;
   std::string const& get_notes_url(uint64_t host_id, uint64_t service_id) const;
   std::string const& get_notes(uint64_t host_id, uint64_t service_id) const;
@@ -103,36 +134,6 @@ class macro_cache {
       std::shared_ptr<io::data> const& data);
 
   void _save_to_disk();
-
-  std::shared_ptr<persistent_cache> _cache;
-  std::unordered_map<uint64_t, std::shared_ptr<neb::instance> > _instances;
-  std::unordered_map<uint64_t, std::shared_ptr<neb::host> > _hosts;
-  std::unordered_map<uint64_t, std::shared_ptr<neb::host_group> > _host_groups;
-  std::map<std::pair<uint64_t, uint64_t>,
-           std::shared_ptr<neb::host_group_member> >
-      _host_group_members;
-  std::map<std::pair<uint64_t, uint64_t>,
-           std::shared_ptr<neb::custom_variable> >
-      _custom_vars;
-  std::unordered_map<std::pair<uint64_t, uint64_t>,
-                     std::shared_ptr<neb::service> >
-      _services;
-  std::unordered_map<uint64_t, std::shared_ptr<neb::service_group> >
-      _service_groups;
-  std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
-           std::shared_ptr<neb::service_group_member> >
-      _service_group_members;
-  std::unordered_map<uint64_t, std::shared_ptr<storage::index_mapping> >
-      _index_mappings;
-  std::unordered_map<uint64_t, std::shared_ptr<storage::metric_mapping> >
-      _metric_mappings;
-  std::unordered_map<uint64_t, std::shared_ptr<bam::dimension_ba_event> >
-      _dimension_ba_events;
-  std::unordered_multimap<uint64_t,
-                          std::shared_ptr<bam::dimension_ba_bv_relation_event> >
-      _dimension_ba_bv_relation_events;
-  std::unordered_map<uint64_t, std::shared_ptr<bam::dimension_bv_event> >
-      _dimension_bv_events;
 };
 }  // namespace lua
 
