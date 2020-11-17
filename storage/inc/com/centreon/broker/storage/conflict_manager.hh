@@ -199,7 +199,6 @@ class conflict_manager {
   database::mysql_stmt _acknowledgement_insupdate;
   database::mysql_stmt _comment_insupdate;
   database::mysql_stmt _custom_variable_delete;
-  database::mysql_stmt _custom_variable_insupdate;
   database::mysql_stmt _custom_variable_status_insupdate;
   database::mysql_stmt _downtime_insupdate;
   database::mysql_stmt _event_handler_insupdate;
