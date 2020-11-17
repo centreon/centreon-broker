@@ -206,8 +206,8 @@ void mysql_stmt::operator<<(io::data const& d) {
             fmt::string_view sv;
             if (max_len > 0 && v.size() > max_len) {
               log_v2::sql()->trace(
-                  "column '{}' should admit a too long string, it is cut to {} "
-                  "characters.",
+                  "column '{}' should admit a longer string, it is cut to {} "
+                  "characters to be stored anyway.",
                   current_entry->get_name_v2(), max_len);
               max_len = misc::string::adjust_size_utf8(v, max_len);
               sv = fmt::string_view(v.data(), max_len);

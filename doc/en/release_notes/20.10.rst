@@ -1,4 +1,26 @@
 =======================
+Centreon Broker 20.10.2
+=======================
+
+************
+Enhancements
+************
+
+TCP connections
+===============
+TCP streams are really faster, especially when broker has retention files and
+there are a lot of traffic.
+
+SQL and storage streams
+=======================
+Those streams have several improvements:
+* events exchanges are really faster, especially when broker has retention
+  files.
+* Several queries have been changed to insert data in bulk, it is the case for
+  custom variables and metrics.
+* There are cases where those streams could crash that have been also fixed.
+
+=======================
 Centreon Broker 20.10.1
 =======================
 

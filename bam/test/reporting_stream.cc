@@ -31,8 +31,6 @@ using namespace com::centreon::broker::bam;
 
 class BamReportingStream : public testing::Test {
  public:
-  // void SetUp() override { multiplexing::engine::load(); };
-  // void TearDown() override { multiplexing::engine::unload(); };
 };
 
 TEST_F(BamReportingStream, WriteKpi) {
