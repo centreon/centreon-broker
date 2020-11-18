@@ -486,14 +486,6 @@ void conflict_manager::_process_custom_variable(
             cv.modified ? 1 : 0, cv.var_type, cv.update_time,
             misc::string::escape(cv.value, get_customvariables_col_size(
                                                customvariables_value)))));
-    if (cv.value.size() > 20) {
-      log_v2::sql()->debug("BIG VALUE <<{}>> (size {})", cv.value,
-                           get_customvariables_col_size(customvariables_value));
-      log_v2::sql()->debug(
-          "BIG VALUE AFTER RESIZING <<{}>>",
-          misc::string::escape(
-              cv.value, get_customvariables_col_size(customvariables_value)));
-    }
     /* Here, we do not update the custom variable boolean ack flag, because
      * it will be updated later when the bulk query will be done:
      * conflict_manager::_update_customvariables() */

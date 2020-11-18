@@ -92,7 +92,6 @@ add_executable(ut
   ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
   ${TESTS_DIR}/processing/acceptor.cc
   ${TESTS_DIR}/processing/feeder.cc
-  ${TESTS_DIR}/processing/thread.cc
   ${TESTS_DIR}/rpc/brokerrpc.cc
   ${TESTS_DIR}/exceptions.cc
   ${TESTS_DIR}/io.cc

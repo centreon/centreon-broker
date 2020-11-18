@@ -31,7 +31,6 @@
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/mysql_manager.hh"
-#include "com/centreon/broker/processing/thread.hh"
 #include "com/centreon/broker/stats/helper.hh"
 
 using namespace com::centreon::broker;
