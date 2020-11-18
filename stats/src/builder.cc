@@ -93,15 +93,13 @@ void builder::build() {
 
   std::vector<json11::Json::object> modules_objects;
   stats::get_loaded_module_stats(modules_objects);
-  for (auto& obj : modules_objects)
-  {
+  for (auto& obj : modules_objects) {
     object["module" + obj["name"].string_value()] = obj;
   }
 
   std::vector<json11::Json::object> endpoint_objects;
   stats::get_endpoint_stats(endpoint_objects);
-  for (auto& obj : endpoint_objects)
-  {
+  for (auto& obj : endpoint_objects) {
     object["endpoint " + obj["name"].string_value()] = obj;
   }
 
