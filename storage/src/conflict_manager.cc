@@ -431,6 +431,8 @@ void conflict_manager::_callback() {
             events = _fifo.first_events();
           if (events.empty()) {
             // Let's wait for 500ms.
+            if (_should_exit())
+              break;
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
             continue;
           }
