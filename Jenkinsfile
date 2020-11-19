@@ -78,7 +78,7 @@ try {
     }
 
     if (env.BUILD == 'REFERENCE') {
-      build job: 'centreon-web/master', wait: false
+      build job: "centreon-web/${env.BRANCH_NAME}", wait: false
     }
   }
 }
