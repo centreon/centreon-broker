@@ -95,6 +95,9 @@ int32_t tcp_connection::flush() {
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
+  //FIXME DBR
+  if (_peer.find(":5670") != std::string::npos)
+    log_v2::perfdata()->error("tcp_connection::flush to {} with {} events", _peer, retval);
   return retval;
 }
 
@@ -187,6 +190,11 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
   /* Do not set it to zero directly, maybe it has already been incremented by
    * another operation */
   _acks -= retval;
+
+  //FIXME DBR
+  if (_peer.find(":5670") != std::string::npos)
+    log_v2::perfdata()->error("tcp_connection::write to {} with {} events", _peer, retval);
+
   return retval;
 }
 
