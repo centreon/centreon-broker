@@ -80,10 +80,22 @@ asio::ip::tcp::socket& tcp_connection::socket() {
  * @return 0.
  */
 int32_t tcp_connection::flush() {
+  int32_t retval = _acks;
+  if (_acks) {
+    /* Do not set it to zero directly, maybe it has already been incremented by
+     * another operation */
+    _acks -= retval;
+  }
   while (_writing) {
+    if (_acks) {
+      int32_t tmp = _acks;
+      _acks -= tmp;
+      retval += tmp;
+      return retval;
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
-  return 0;
+  return retval;
 }
 
 /**
