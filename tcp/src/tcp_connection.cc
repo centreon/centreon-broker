@@ -150,25 +150,25 @@ static std::string debug_buf(const char* data, int32_t size) {
  */
 int32_t tcp_connection::write(const std::vector<char>& v) {
   {
-    std::lock_guard<std::mutex> lck(_data_m);
+    std::lock_guard<std::mutex> lck(_error_m);
     if (_current_error) {
       std::string msg{std::move(_current_error.message())};
       _current_error.clear();
       throw exceptions::msg() << msg;
     }
+  }
 
-    {
-      std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
-      _exposed_write_queue.push(v);
-    }
+  {
+    std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
+    _exposed_write_queue.push(v);
+  }
 
-    // If the queue is not empty and the writing work is not started, we start
-    // it.
-    if (!_writing) {
-      _writing = true;
-      // The strand is useful because of the flush() method.
-      _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
-    }
+  // If the queue is not empty and the writing work is not started, we start
+  // it.
+  if (!_writing) {
+    _writing = true;
+    // The strand is useful because of the flush() method.
+    _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
   }
 
   int32_t retval = _acks;
@@ -211,11 +211,10 @@ void tcp_connection::writing() {
 void tcp_connection::handle_write(const asio::error_code& ec) {
   if (ec) {
     log_v2::tcp()->error("Error while writing on tcp socket: {}", ec.message());
-    std::lock_guard<std::mutex> lck(_data_m);
+    std::lock_guard<std::mutex> lck(_error_m);
     _current_error = ec;
     _writing = false;
   } else {
-    std::lock_guard<std::mutex> lck(_data_m);
     ++_acks;
     _write_queue.pop();
     if (!_write_queue.empty()) {
@@ -291,7 +290,7 @@ void tcp_connection::close() {
  */
 std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
   {
-    std::lock_guard<std::mutex> lck(_data_m);
+    std::lock_guard<std::mutex> lck(_error_m);
     if (_current_error) {
       std::string msg{std::move(_current_error.message())};
       _current_error.clear();
