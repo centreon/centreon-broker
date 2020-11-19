@@ -33,7 +33,7 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
   asio::ip::tcp::socket _socket;
   asio::io_context::strand _strand;
 
-  std::mutex _data_m;
+  std::mutex _error_m;
   asio::error_code _current_error;
 
   std::mutex _exposed_write_queue_m;
