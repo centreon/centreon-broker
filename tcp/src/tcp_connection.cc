@@ -39,6 +39,7 @@ tcp_connection::tcp_connection(asio::io_context& io_context,
                                uint16_t port)
     : _socket(io_context),
       _strand(io_context),
+      _write_queue_has_events(false),
       _writing(false),
       _acks(0),
       _reading(false),
@@ -85,16 +86,36 @@ int32_t tcp_connection::flush() {
     /* Do not set it to zero directly, maybe it has already been incremented by
      * another operation */
     _acks -= retval;
+    return retval;
+  }
+  {
+    std::lock_guard<std::mutex> lck(_error_m);
+    if (_current_error) {
+      std::string msg{std::move(_current_error.message())};
+      _current_error.clear();
+      throw exceptions::msg() << msg;
+    }
+  }
+  if (_write_queue_has_events && !_writing) {
+    _writing = true;
+    // The strand is useful because of the flush() method.
+    _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
   }
   while (_writing) {
     if (_acks) {
-      int32_t tmp = _acks;
-      _acks -= tmp;
-      retval += tmp;
+      retval = _acks;
+      _acks -= retval;
       return retval;
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    else {
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+      if (_peer.find(":5670") != std::string::npos)
+        log_v2::perfdata()->error("tcp_connection::flush waiting for 20ms");
+    }
   }
+  //FIXME DBR
+  if (_peer.find(":5670") != std::string::npos)
+    log_v2::perfdata()->error("tcp_connection::flush to {} with {} events", _peer, retval);
   return retval;
 }
 
@@ -187,6 +208,11 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
   /* Do not set it to zero directly, maybe it has already been incremented by
    * another operation */
   _acks -= retval;
+
+  //FIXME DBR
+  if (_peer.find(":5670") != std::string::npos)
+    log_v2::perfdata()->error("tcp_connection::write to {} with {} events", _peer, retval);
+
   return retval;
 }
 
@@ -200,11 +226,12 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
  *  * Launches the async_write.
  */
 void tcp_connection::writing() {
-  if (_write_queue.empty()) {
+  if (!_write_queue_has_events) {
     std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
     std::swap(_write_queue, _exposed_write_queue);
+    _write_queue_has_events = !_write_queue.empty();
   }
-  if (_write_queue.empty()) {
+  if (!_write_queue_has_events) {
     _writing = false;
     return;
   }
@@ -229,7 +256,8 @@ void tcp_connection::handle_write(const asio::error_code& ec) {
   } else {
     ++_acks;
     _write_queue.pop();
-    if (!_write_queue.empty()) {
+    _write_queue_has_events = !_write_queue.empty();
+    if (_write_queue_has_events) {
       // The strand is useful because of the flush() method.
       asio::async_write(_socket, asio::buffer(_write_queue.front()),
                         _strand.wrap(std::bind(&tcp_connection::handle_write,
