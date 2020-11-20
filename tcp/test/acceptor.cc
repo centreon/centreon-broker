@@ -111,7 +111,8 @@ TEST(TcpAcceptor, Nominal) {
       }
     }
     s_centengine->write(data_write);
-    while (s_centengine->flush() == 0)
+    int retry = 10;
+    while (retry-- && s_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -159,7 +160,8 @@ TEST(TcpAcceptor, QuestionAnswer) {
       }
       s_cbd->write(data_write);
     }
-    while (s_cbd->flush() == 0)
+    int retry = 10;
+    while (retry-- && s_cbd->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -305,7 +307,8 @@ TEST(TcpAcceptor, MultiNominal) {
         }
       }
       s_centengine->write(data_write);
-      while (s_centengine->flush() == 0)
+      int retry = 10;
+      while (retry-- && s_centengine->flush() == 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
       std::unique_lock<std::mutex> lock(cbd_m);
       cbd_cv.wait(lock, [&cbd_finished] { return cbd_finished; });
@@ -351,7 +354,8 @@ TEST(TcpAcceptor, NominalReversed) {
       }
     }
     s_centengine->write(data_write);
-    while (s_centengine->flush() == 0)
+    int retry = 10;
+    while (retry-- && s_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -410,7 +414,8 @@ TEST(TcpAcceptor, OnePeer) {
       }
     }
     s_centengine->write(data_write);
-    while (s_centengine->flush() == 0)
+    int retry = 10;
+    while (retry-- && s_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -505,7 +510,8 @@ TEST(TcpAcceptor, OnePeerReversed) {
       }
     }
     s_centengine->write(data_write);
-    while (s_centengine->flush() == 0)
+    int retry = 10;
+    while (retry-- && s_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -543,7 +549,8 @@ TEST(TcpAcceptor, MultiOnePeer) {
         std::shared_ptr<io::raw> data_write = std::make_shared<io::raw>();
         data_write->append(std::string("Hello2!"));
         s_centengine->write(data_write);
-        while (s_centengine->flush() == 0)
+        int retry = 10;
+        while (retry-- && s_centengine->flush() == 0)
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
         s_centengine.reset();
         i++;
@@ -628,7 +635,8 @@ TEST(TcpAcceptor, NominalRepeated) {
       std::cout << "engine 4 " << i << "\n";
       i++;
     }
-    while (s_centengine->flush() == 0)
+    int retry = 10;
+    while (retry-- && s_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -714,7 +722,8 @@ TEST(TcpAcceptor, Simple) {
     std::shared_ptr<io::data> data_read;
     data->append(std::string("TEST\n"));
     str->write(data);
-    while (str->flush() == 0)
+    int retry = 10;
+    while (retry-- && str->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     std::unique_lock<std::mutex> lock(m);
     cv.wait(lock, [&finish] { return finish; });
@@ -865,7 +874,8 @@ TEST(TcpAcceptor, CloseRead) {
       std::shared_ptr<io::data> data_read;
       data->append(std::string("0"));
       str->write(data);
-      while (str->flush() == 0)
+      int retry = 10;
+      while (retry-- && str->flush() == 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }};
@@ -946,7 +956,8 @@ TEST(TcpAcceptor, QuestionAnswerMultiple) {
         }
         s_cbd->write(data_write);
       }
-      while (s_cbd->flush() == 0)
+      int retry = 10;
+      while (retry-- && s_cbd->flush() == 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     });
 
