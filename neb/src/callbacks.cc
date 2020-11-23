@@ -1226,23 +1226,8 @@ int neb::callback_host(int callback_type, void* data) {
           << my_host->host_name << "') on instance " << my_host->poller_id;
       neb::gl_publisher.write(my_host);
 
-      // Generate existing custom variables.
-      for (com::centreon::engine::map_customvar::const_iterator
-               it{h->custom_variables.begin()},
-           end{h->custom_variables.end()};
-           it != end; ++it) {
-        std::string const& name{misc::string::check_string_utf8(it->first)};
-        if (it->second.is_sent() && name != "HOST_ID") {
-          nebstruct_custom_variable_data data;
-          memset(&data, 0, sizeof(data));
-          data.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
-          data.timestamp.tv_sec = host_data->timestamp.tv_sec;
-          data.var_name = const_cast<char*>(name.c_str());
-          data.var_value = const_cast<char*>(it->second.get_value().c_str());
-          data.object_ptr = host_data->object_ptr;
-          callback_custom_variable(NEBCALLBACK_CUSTOM_VARIABLE_DATA, &data);
-        }
-      }
+      /* No need to send this service custom variables changes, custom variables
+       * are managed in a different loop. */
     } else
       logging::error(logging::medium)
           << "callbacks: host '"
@@ -1911,23 +1896,8 @@ int neb::callback_service(int callback_type, void* data) {
           << my_service->host_id;
       neb::gl_publisher.write(my_service);
 
-      // Generate existing custom variables.
-      for (com::centreon::engine::map_customvar::const_iterator
-               it{s->custom_variables.begin()},
-           end{s->custom_variables.end()};
-           it != end; ++it) {
-        if (it->second.is_sent() && !it->first.empty() &&
-            it->first != "HOST_ID" && it->first != "SERVICE_ID") {
-          nebstruct_custom_variable_data data;
-          memset(&data, 0, sizeof(data));
-          data.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
-          data.timestamp.tv_sec = service_data->timestamp.tv_sec;
-          data.var_name = const_cast<char*>(it->first.c_str());
-          data.var_value = const_cast<char*>(it->second.get_value().c_str());
-          data.object_ptr = service_data->object_ptr;
-          callback_custom_variable(NEBCALLBACK_CUSTOM_VARIABLE_DATA, &data);
-        }
-      }
+      /* No need to send this service custom variables changes, custom variables
+       * are managed in a different loop. */
     } else
       logging::error(logging::medium)
           << "callbacks: service has no host ID or no service ID (yet) (host '"
