@@ -1,4 +1,16 @@
 ========================
+Centreon Broker 20.04.11
+========================
+
+****
+Bugs
+****
+
+Custom variables
+================
+They were updated several times in the database. It is fixed now.
+
+========================
 Centreon Broker 20.04.10
 ========================
 
