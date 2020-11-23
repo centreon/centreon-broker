@@ -39,6 +39,7 @@ tcp_connection::tcp_connection(asio::io_context& io_context,
                                uint16_t port)
     : _socket(io_context),
       _strand(io_context),
+      _write_queue_has_events(false),
       _writing(false),
       _acks(0),
       _reading(false),
@@ -80,10 +81,27 @@ asio::ip::tcp::socket& tcp_connection::socket() {
  * @return 0.
  */
 int32_t tcp_connection::flush() {
-  while (_writing) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  int32_t retval = _acks;
+  if (_acks) {
+    /* Do not set it to zero directly, maybe it has already been incremented by
+     * another operation */
+    _acks -= retval;
+    return retval;
   }
-  return 0;
+  {
+    std::lock_guard<std::mutex> lck(_error_m);
+    if (_current_error) {
+      std::string msg{std::move(_current_error.message())};
+      _current_error.clear();
+      throw exceptions::msg() << msg;
+    }
+  }
+  if (_write_queue_has_events && !_writing) {
+    _writing = true;
+    // The strand is useful because of the flush() method.
+    _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
+  }
+  return retval;
 }
 
 /**
@@ -150,31 +168,32 @@ static std::string debug_buf(const char* data, int32_t size) {
  */
 int32_t tcp_connection::write(const std::vector<char>& v) {
   {
-    std::lock_guard<std::mutex> lck(_data_m);
+    std::lock_guard<std::mutex> lck(_error_m);
     if (_current_error) {
       std::string msg{std::move(_current_error.message())};
       _current_error.clear();
       throw exceptions::msg() << msg;
     }
+  }
 
-    {
-      std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
-      _exposed_write_queue.push(v);
-    }
+  {
+    std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
+    _exposed_write_queue.push(v);
+  }
 
-    // If the queue is not empty and the writing work is not started, we start
-    // it.
-    if (!_writing) {
-      _writing = true;
-      // The strand is useful because of the flush() method.
-      _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
-    }
+  // If the queue is not empty and the writing work is not started, we start
+  // it.
+  if (!_writing) {
+    _writing = true;
+    // The strand is useful because of the flush() method.
+    _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
   }
 
   int32_t retval = _acks;
   /* Do not set it to zero directly, maybe it has already been incremented by
    * another operation */
   _acks -= retval;
+
   return retval;
 }
 
@@ -188,11 +207,13 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
  *  * Launches the async_write.
  */
 void tcp_connection::writing() {
-  if (_write_queue.empty()) {
+  if (!_write_queue_has_events) {
     std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
     std::swap(_write_queue, _exposed_write_queue);
+    _write_queue_has_events = !_write_queue.empty();
   }
-  if (_write_queue.empty()) {
+  if (!_write_queue_has_events) {
+
     _writing = false;
     return;
   }
@@ -211,14 +232,14 @@ void tcp_connection::writing() {
 void tcp_connection::handle_write(const asio::error_code& ec) {
   if (ec) {
     log_v2::tcp()->error("Error while writing on tcp socket: {}", ec.message());
-    std::lock_guard<std::mutex> lck(_data_m);
+    std::lock_guard<std::mutex> lck(_error_m);
     _current_error = ec;
     _writing = false;
   } else {
-    std::lock_guard<std::mutex> lck(_data_m);
     ++_acks;
     _write_queue.pop();
-    if (!_write_queue.empty()) {
+    _write_queue_has_events = !_write_queue.empty();
+    if (_write_queue_has_events) {
       // The strand is useful because of the flush() method.
       asio::async_write(_socket, asio::buffer(_write_queue.front()),
                         _strand.wrap(std::bind(&tcp_connection::handle_write,
@@ -291,7 +312,7 @@ void tcp_connection::close() {
  */
 std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
   {
-    std::lock_guard<std::mutex> lck(_data_m);
+    std::lock_guard<std::mutex> lck(_error_m);
     if (_current_error) {
       std::string msg{std::move(_current_error.message())};
       _current_error.clear();
