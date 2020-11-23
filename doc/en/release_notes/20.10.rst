@@ -16,6 +16,11 @@ The splitter class is now thread safe and does not need external locks anymore.
 It is also far less strict and allows some reading and some writing at the same
 time.
 
+TCP
+===
+Writing on a tcp stream could slow down in case of many retention files. The
+issue was essentially in the flush internal function.
+
 ************
 Enhancements
 ************
