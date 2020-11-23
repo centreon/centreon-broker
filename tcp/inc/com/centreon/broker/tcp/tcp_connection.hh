@@ -33,12 +33,13 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
   asio::ip::tcp::socket _socket;
   asio::io_context::strand _strand;
 
-  std::mutex _data_m;
+  std::mutex _error_m;
   asio::error_code _current_error;
 
   std::mutex _exposed_write_queue_m;
   std::queue<std::vector<char>> _exposed_write_queue;
   std::queue<std::vector<char>> _write_queue;
+  std::atomic_bool _write_queue_has_events;
   std::atomic_bool _writing;
 
   std::atomic<int32_t> _acks;
@@ -52,8 +53,6 @@ class tcp_connection : public std::enable_shared_from_this<tcp_connection> {
 
   std::atomic_bool _closed;
   std::string _peer;
-
-  std::condition_variable _is_writing_cv;
 
  public:
   typedef std::shared_ptr<tcp_connection> pointer;
