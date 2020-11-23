@@ -101,21 +101,6 @@ int32_t tcp_connection::flush() {
     // The strand is useful because of the flush() method.
     _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
   }
-//  while (_writing) {
-//    if (_acks) {
-//      retval = _acks;
-//      _acks -= retval;
-//      return retval;
-//    }
-//    else {
-//      std::this_thread::sleep_for(std::chrono::milliseconds(20));
-//      if (_peer.find(":5670") != std::string::npos)
-//        log_v2::perfdata()->error("tcp_connection::flush waiting for 20ms");
-//    }
-//  }
-  //FIXME DBR
-  if (_peer.find(":5670") != std::string::npos)
-    log_v2::perfdata()->error("tcp_connection::flush to {} with {} events", _peer, retval);
   return retval;
 }
 
@@ -208,10 +193,6 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
   /* Do not set it to zero directly, maybe it has already been incremented by
    * another operation */
   _acks -= retval;
-
-  //FIXME DBR
-  if (_peer.find(":5670") != std::string::npos)
-    log_v2::perfdata()->error("tcp_connection::write to {} with {} events", _peer, retval);
 
   return retval;
 }
