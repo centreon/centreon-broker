@@ -74,7 +74,6 @@ while len(content) < size:
 print("Welcome packet should be read with TLS")
 
 conn = context.wrap_socket(s, server_side=False, server_hostname=server_sni_hostname)
-#conn.connect((host_addr, host_port))
 print("SSL established. Peer: {}".format(conn.getpeercert()))
 print("Sending: 'Hello, world!")
 conn.send(b"Hello, world!")
