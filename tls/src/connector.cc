@@ -47,20 +47,6 @@ connector::connector(std::string const& cert,
     : io::endpoint(false), _ca(ca), _cert(cert), _key(key) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-connector::connector(connector const& right) : io::endpoint(right) {
-  _internal_copy(right);
-}
-
-/**
- *  Destructor.
- */
-connector::~connector() {}
-
-/**
  *  Connect to the remote TLS peer.
  *
  *  @return New connected stream.
@@ -148,23 +134,5 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     p.validate_cert(*session);
   }
 
-  return (s);
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void connector::_internal_copy(connector const& right) {
-  _ca = right._ca;
-  _cert = right._cert;
-  _key = right._key;
-  return;
+  return s;
 }
