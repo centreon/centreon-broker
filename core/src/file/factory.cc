@@ -39,7 +39,7 @@ using namespace com::centreon::broker::file;
  *
  *  @return True if configuration matches the file layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   bool retval;
   if (flag)
     *flag = no;

@@ -181,5 +181,4 @@ void acceptor::_internal_copy(acceptor const& right) {
   _ca = right._ca;
   _cert = right._cert;
   _key = right._key;
-  return;
 }

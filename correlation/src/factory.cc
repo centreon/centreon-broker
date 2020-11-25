@@ -33,7 +33,7 @@ using namespace com::centreon::broker::correlation;
  *
  *  @return True if configuration matches streams build by this factory.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   bool is_correlation(!strncasecmp(cfg.type.c_str(), "correlation", 12));
   if (flag)
     *flag = no;
