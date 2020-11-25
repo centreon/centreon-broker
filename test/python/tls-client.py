@@ -48,7 +48,7 @@ def get_header(header):
 
 
 host_addr = '127.0.0.1'
-host_port = 5050
+host_port = 5758
 server_sni_hostname = 'localhost'
 server_cert = 'server.crt'
 client_cert = 'client.crt'
@@ -70,12 +70,24 @@ while len(content) < size:
     time.sleep(0.2)
     l = size - len(content)
     content += s.recv(l)
+print("bbdo message of type {} and length {} received".format(typ,size))
 
-print("Welcome packet should be read with TLS")
+print("TLS establishment")
 
 conn = context.wrap_socket(s, server_side=False, server_hostname=server_sni_hostname)
 print("SSL established. Peer: {}".format(conn.getpeercert()))
-print("Sending: 'Hello, world!")
-conn.send(b"Hello, world!")
-print("Closing connection")
-conn.close()
+try:
+    while True:
+        header = conn.recv(16)
+        chksum, size, typ, src, dst = get_header(header)
+        content = conn.recv(size)
+        while len(content) < size:
+            print("packet not full...")
+            time.sleep(0.2)
+            l = size - len(content)
+            content += conn.recv(l)
+        print("bbdo message of type {} and length {} received".format(typ,size))
+finally:
+    print("Closing connection")
+    conn.shutdown(socket.SHUT_RDWR)
+    conn.close()
