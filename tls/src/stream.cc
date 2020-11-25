@@ -97,8 +97,8 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN)) {
       log_v2::tls()->error("TLS: could not receive data: {}",
                                       gnutls_strerror(ret));
-      throw(exceptions::msg()
-            << "TLS: could not receive data: " << gnutls_strerror(ret));
+      throw exceptions::msg()
+            << "TLS: could not receive data: " << gnutls_strerror(ret);
     } else
       return false;
   } else if (ret) {
@@ -107,7 +107,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     return true;
   } else {
     log_v2::tls()->error("TLS session is terminated");
-    throw(exceptions::msg() << "TLS session is terminated");
+    throw exceptions::msg() << "TLS session is terminated";
   }
   return false;
 }
@@ -179,8 +179,8 @@ int stream::write(std::shared_ptr<io::data> const& d) {
       if (ret < 0) {
         log_v2::tls()->error("TLS: could not send data: {}",
                                         gnutls_strerror(ret));
-        throw(exceptions::msg()
-              << "TLS: could not send data: " << gnutls_strerror(ret));
+        throw exceptions::msg()
+              << "TLS: could not send data: " << gnutls_strerror(ret);
       }
       ptr += ret;
       size -= ret;
