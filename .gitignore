@@ -26,4 +26,6 @@ libroker.a
 librokerbase.a
 tags
 test-coverage
+test/python/*.crt
+test/python/*.key
 ut
