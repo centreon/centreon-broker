@@ -318,6 +318,7 @@ ALTER TABLE `mod_bam_user_overview_relation`
 CREATE TABLE mod_bam_poller_relations (
   ba_id int NOT NULL,
   poller_id int NOT NULL,
+  UNIQUE KEY uniq_relation (ba_id, poller_id),
   FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
     ON DELETE CASCADE,
   FOREIGN KEY (poller_id) REFERENCES nagios_server (id)
@@ -469,7 +470,7 @@ CREATE TABLE IF NOT EXISTS @DB_CENTSTORAGE@.`mod_bam_kpi_logs` (
 --
 CREATE TABLE @DB_CENTSTORAGE@.mod_bam_reporting_bv (
   bv_id int NOT NULL auto_increment,
-  bv_name varchar(45) default NULL,
+  bv_name varchar(255) default NULL,
 
   bv_description text default NULL,
 
@@ -482,8 +483,7 @@ CREATE TABLE @DB_CENTSTORAGE@.mod_bam_reporting_bv (
 --
 CREATE TABLE @DB_CENTSTORAGE@.mod_bam_reporting_ba (
   ba_id int NOT NULL,
-  ba_name varchar(45) default NULL,
-
+  ba_name varchar(254) default NULL,
   ba_description text default NULL,
   sla_month_percent_crit float default NULL,
   sla_month_percent_warn float default NULL,
@@ -499,20 +499,20 @@ CREATE TABLE @DB_CENTSTORAGE@.mod_bam_reporting_ba (
 --
 CREATE TABLE @DB_CENTSTORAGE@.mod_bam_reporting_kpi (
   kpi_id int NOT NULL,
-  kpi_name varchar(45) default NULL,
+  kpi_name varchar(255) default NULL,
 
   ba_id int default NULL,
-  ba_name varchar(45) default NULL,
+  ba_name varchar(254) default NULL,
   host_id int default NULL,
-  host_name varchar(45) default NULL,
+  host_name varchar(255) default NULL,
   service_id int default NULL,
-  service_description varchar(45) default NULL,
+  service_description varchar(255) default NULL,
   kpi_ba_id int default NULL,
-  kpi_ba_name varchar(45) default NULL,
+  kpi_ba_name varchar(254) default NULL,
   meta_service_id int default NULL,
-  meta_service_name varchar(45),
+  meta_service_name varchar(254) default NULL,
   boolean_id int default NULL,
-  boolean_name varchar(45),
+  boolean_name varchar(255) default NULL,
   impact_warning float default NULL,
   impact_critical float default NULL,
   impact_unknown float default NULL,
@@ -582,9 +582,11 @@ CREATE TABLE @DB_CENTSTORAGE@.mod_bam_reporting_kpi_events (
 -- Relations between BA events and KPI events.
 --
 CREATE TABLE @DB_CENTSTORAGE@.mod_bam_reporting_relations_ba_kpi_events (
+  relation_id BIGINT NOT NULL auto_increment,
   ba_event_id int NOT NULL,
   kpi_event_id int NOT NULL,
 
+  PRIMARY KEY (relation_id),
   FOREIGN KEY (ba_event_id) REFERENCES mod_bam_reporting_ba_events (ba_event_id)
     ON DELETE CASCADE,
   FOREIGN KEY (kpi_event_id) REFERENCES mod_bam_reporting_kpi_events (kpi_event_id)
@@ -706,7 +708,8 @@ INSERT INTO `mod_bam_user_preferences` (`user_id`, `pref_key`, `pref_value`) VAL
 (NULL, 'id_reporting_period', (SELECT tp_id FROM timeperiod ORDER BY tp_name = '24x7' DESC, tp_id LIMIT 1)),
 (NULL, 'id_notif_period', (SELECT tp_id FROM timeperiod ORDER BY tp_name = '24x7' DESC, tp_id LIMIT 1)),
 (NULL, 'height_impacts_tree', '400'),
-(NULL, 'command_id', (SELECT command_id FROM command ORDER BY command_name = 'bam-notify-by-email' DESC, command_id LIMIT 1));
+(NULL, 'command_id', (SELECT command_id FROM command ORDER BY command_name = 'bam-notify-by-email' DESC, command_id LIMIT 1)),
+(NULL, 'inherit_kpi_downtimes', '1');
 
 -- TOPOLOGY
 INSERT INTO `topology` (`topology_name`, `topology_parent`, `topology_page`, `topology_order`, `topology_group`, `topology_url`, `topology_url_opt`, `topology_popup`, `topology_modules`, `topology_show`, `is_react`) VALUES
@@ -715,7 +718,7 @@ INSERT INTO `topology` (`topology_name`, `topology_parent`, `topology_page`, `to
 ('Monitoring', '207', '20701', '10', '1', './modules/centreon-bam-server/core/dashboard/dashboard.php', NULL, NULL, '1', '1', '0'),
 ('Reporting', '207', '20702', '20', '1', './modules/centreon-bam-server/core/reporting/reporting.php', NULL, NULL, '1', '1', '0'),
 ('Logs', '207', '20703', '30', '1', './modules/centreon-bam-server/core/logs/logs.php', NULL, NULL, '1', '1', '0'),
-('Business Activity', '6', '626', '20', '1', '/configuration/bam/bvs', NULL, '0', '1', '1', '1'),
+('Business Activity', '6', '626', '20', '1', '/configuration/bam/bas', NULL, '0', '1', '1', '1'),
 ('Management', '626', NULL, NULL, '1', NULL, NULL, '0', '1', '1', '0'),
 ('Indicators', '626', '62606', '30', '1', './modules/centreon-bam-server/core/configuration/kpi/configuration_kpi.php', NULL, NULL, '1', '1', '0'),
 ('Boolean Rules', '626', '62611', '40', '1', './modules/centreon-bam-server/core/configuration/boolean/configuration_boolean.php', NULL, NULL, '1', '1', '0'),
