@@ -20,8 +20,10 @@
 # a cbd instance. It is useful to test the validity of BBDO packets sent by
 # centengine.
 
-import socket, sys, ssl, time
+import socket
+from socket import AF_INET, SOCK_STREAM, SO_REUSEADDR, SOL_SOCKET, SHUT_RDWR
 from datetime import datetime
+import ssl, sys, time
 
 
 def welcome():
@@ -47,12 +49,8 @@ def get_header(header):
     return h, s, t, src, dst
 
 
-import socket
-from socket import AF_INET, SOCK_STREAM, SO_REUSEADDR, SOL_SOCKET, SHUT_RDWR
-import ssl
-
 listen_addr = '127.0.0.1'
-listen_port = 5671
+listen_port = 5758
 server_cert = 'server.crt'
 server_key = 'server.key'
 client_certs = 'client.crt'
@@ -70,19 +68,35 @@ while True:
     print("Waiting for client")
     newsocket, fromaddr = bindsocket.accept()
     print("Client connected: {}:{}".format(fromaddr[0], fromaddr[1]))
+
+    header = newsocket.recv(16)
+    chksum, size, typ, src, dst = get_header(header)
+    content = newsocket.recv(size)
+    while len(content) < size:
+        print("packet not full...")
+        time.sleep(0.2)
+        l = size - len(content)
+        content += newsocket.recv(l)
+
+    print("Welcome package received from peer")
+    w = welcome()
+    newsocket.send(w)
+
+    print("Welcome package sent to peer")
+
     conn = context.wrap_socket(newsocket, server_side=True)
     print("SSL established. Peer: {}".format(conn.getpeercert()))
-    buf = b''  # Buffer to hold received client data
     try:
         while True:
-            data = conn.recv(4096)
-            if data:
-                # Client sent us data. Append to buffer
-                buf += data
-            else:
-                # No more data from client. Show buffer and close connection.
-                print("Received:", buf)
-                break
+            header = conn.recv(16)
+            chksum, size, typ, src, dst = get_header(header)
+            content = conn.recv(size)
+            while len(content) < size:
+                print("packet not full...")
+                time.sleep(0.2)
+                l = size - len(content)
+                content += conn.recv(l)
+            print("bbdo message of type {} and length {} received".format(typ,size))
     finally:
         print("Closing connection")
         conn.shutdown(socket.SHUT_RDWR)
