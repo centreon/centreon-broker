@@ -67,9 +67,8 @@ void params::apply(gnutls_session_t session) {
                  : "NORMAL:+ANON-DH:+COMP-DEFLATE:%COMPAT"),
       nullptr);
   if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error(
-        "TLS: encryption parameter application failed: {}",
-        gnutls_strerror(ret));
+    log_v2::tls()->error("TLS: encryption parameter application failed: {}",
+                         gnutls_strerror(ret));
     throw exceptions::msg() << "TLS: encryption parameter application failed: "
                             << gnutls_strerror(ret);
   }
@@ -77,12 +76,10 @@ void params::apply(gnutls_session_t session) {
   // Set anonymous credentials...
   if (_cert.empty() || _key.empty()) {
     if (CLIENT == _type) {
-      log_v2::tls()->debug(
-          "TLS: using anonymous client credentials");
+      log_v2::tls()->debug("TLS: using anonymous client credentials");
       ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.client);
     } else {
-      log_v2::tls()->debug(
-          "TLS: using anonymous server credentials");
+      log_v2::tls()->debug("TLS: using anonymous server credentials");
       ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.server);
     }
   }
@@ -95,9 +92,9 @@ void params::apply(gnutls_session_t session) {
   }
   if (ret != GNUTLS_E_SUCCESS) {
     log_v2::tls()->error("TLS: could not set credentials: {}",
-                                    gnutls_strerror(ret));
+                         gnutls_strerror(ret));
     throw exceptions::msg()
-          << "TLS: could not set credentials: " << gnutls_strerror(ret);
+        << "TLS: could not set credentials: " << gnutls_strerror(ret);
   }
 }
 
@@ -112,9 +109,9 @@ void params::load() {
     ret = gnutls_certificate_allocate_credentials(&_cred.cert);
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error("TLS: credentials allocation failed: {}",
-                                      gnutls_strerror(ret));
+                           gnutls_strerror(ret));
       throw exceptions::msg()
-            << "TLS: credentials allocation failed: " << gnutls_strerror(ret);
+          << "TLS: credentials allocation failed: " << gnutls_strerror(ret);
     }
     gnutls_certificate_set_dh_params(_cred.cert, dh_params);
     _init = true;
@@ -124,9 +121,9 @@ void params::load() {
         _cred.cert, _cert.c_str(), _key.c_str(), GNUTLS_X509_FMT_PEM);
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error("TLS: could not load certificate: {}",
-                                      gnutls_strerror(ret));
+                           gnutls_strerror(ret));
       throw exceptions::msg()
-            << "TLS: could not load certificate: " << gnutls_strerror(ret);
+          << "TLS: could not load certificate: " << gnutls_strerror(ret);
     }
 
     if (!_ca.empty()) {
@@ -226,8 +223,8 @@ void params::validate_cert(gnutls_session_t session) {
           "certificate: {}",
           gnutls_strerror(ret));
       throw exceptions::msg()
-            << "TLS: certificate verification failed"
-            << ", assuming invalid certificate: " << gnutls_strerror(ret);
+          << "TLS: certificate verification failed"
+          << ", assuming invalid certificate: " << gnutls_strerror(ret);
     } else if (status & GNUTLS_CERT_INVALID) {
       log_v2::tls()->error("TLS: peer certificate is invalid");
       throw exceptions::msg() << "TLS: peer certificate is invalid";
@@ -283,12 +280,11 @@ void params::_init_anonymous() {
   else
     ret = gnutls_anon_allocate_server_credentials(&_cred.server);
   if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error(
-        "TLS: anonymous credentials initialization failed: {}",
-        gnutls_strerror(ret));
+    log_v2::tls()->error("TLS: anonymous credentials initialization failed: {}",
+                         gnutls_strerror(ret));
     throw exceptions::msg()
-          << "TLS: anonymous credentials initialization failed: "
-          << gnutls_strerror(ret);
+        << "TLS: anonymous credentials initialization failed: "
+        << gnutls_strerror(ret);
   }
   if (_type != CLIENT)
     gnutls_anon_set_server_dh_params(_cred.server, dh_params);

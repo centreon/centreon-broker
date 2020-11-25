@@ -129,7 +129,7 @@ class stream : public io::stream {
 
   stream();
   stream(stream const&) = delete;
-  ~stream();
+  ~stream() noexcept;
   stream& operator=(stream const&) = delete;
   int flush() override;
   void negotiate(negotiation_type neg);

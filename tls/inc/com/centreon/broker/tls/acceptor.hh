@@ -20,6 +20,7 @@
 #define CCB_TLS_ACCEPTOR_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
