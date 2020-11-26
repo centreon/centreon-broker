@@ -6,6 +6,11 @@ Centreon Broker 20.04.11
 Bugs
 ****
 
+TLS
+===
+Credentials were no more loaded by the TLS connector. This is fixed with this
+new version.
+
 Custom variables
 ================
 They were updated several times in the database. It is fixed now.
