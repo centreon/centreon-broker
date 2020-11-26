@@ -38,7 +38,7 @@ class stream : public io::stream {
   static int const max_data_size = 100000000;
 
   stream(int level = -1, size_t size = 0);
-  ~stream();
+  ~stream() noexcept;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
   int flush();

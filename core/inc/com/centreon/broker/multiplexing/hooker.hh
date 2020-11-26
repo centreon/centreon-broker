@@ -32,17 +32,17 @@ namespace multiplexing {
  *  Place a hook on the multiplexing engine.
  */
 class hooker : public io::stream {
+ protected:
+  bool _registered;
+
  public:
   hooker();
   hooker(hooker const& other) = delete;
   hooker& operator=(hooker const& other) = delete;
-  virtual ~hooker();
+  virtual ~hooker() noexcept;
   void hook(bool should_hook);
   virtual void starting() = 0;
   virtual void stopping() = 0;
-
- protected:
-  bool _registered;
 };
 }  // namespace multiplexing
 

@@ -43,7 +43,7 @@ using namespace com::centreon::broker::bbdo;
  *
  *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   std::map<std::string, std::string>::const_iterator it{
       cfg.params.find("protocol")};
   if (flag)

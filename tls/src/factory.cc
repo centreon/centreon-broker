@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/tls/factory.hh"
+
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
@@ -38,15 +40,32 @@ using namespace com::centreon::broker::tls;
  *  is running. We will be able to add this endpoint later, following the flag
  *  value.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   if (flag) {
     auto it = cfg.params.find("tls");
     if (it == cfg.params.end() || strncasecmp(it->second.c_str(), "no", 3) == 0)
       *flag = no;
-    else if (strncasecmp(it->second.c_str(), "auto", 5) == 0)
-      *flag = maybe;
-    else if (strncasecmp(it->second.c_str(), "yes", 4) == 0)
-      *flag = yes;
+    else {
+      if (strncasecmp(it->second.c_str(), "auto", 5) == 0)
+        *flag = maybe;
+      else if (strncasecmp(it->second.c_str(), "yes", 4) == 0)
+        *flag = yes;
+
+      // CA certificate.
+      it = cfg.params.find("ca_certificate");
+      if (it != cfg.params.end())
+        _ca_cert = it->second;
+
+      // Private key.
+      it = cfg.params.find("private_key");
+      if (it != cfg.params.end())
+        _private_key = it->second;
+
+      // Public certificate.
+      it = cfg.params.find("public_cert");
+      if (it != cfg.params.end())
+        _public_cert = it->second;
+    }
   }
   return false;
 }
@@ -120,5 +139,6 @@ std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
                                                 bool is_acceptor,
                                                 std::string const& proto_name) {
   (void)proto_name;
-  return is_acceptor ? acceptor().open(to) : connector().open(to);
+  return is_acceptor ? acceptor(_public_cert, _private_key, _ca_cert).open(to)
+                     : connector(_public_cert, _private_key, _ca_cert).open(to);
 }

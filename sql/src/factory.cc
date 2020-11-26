@@ -41,7 +41,7 @@ using namespace com::centreon::broker::sql;
  *
  *  @return True if the endpoint match the configuration.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   if (flag)
     *flag = no;
   bool is_sql{!strncasecmp(cfg.type.c_str(), "sql", 4)};

@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/compression/stream.hh"
+
 #include "com/centreon/broker/compression/zlib.hh"
 #include "com/centreon/broker/exceptions/corruption.hh"
 #include "com/centreon/broker/exceptions/interrupt.hh"

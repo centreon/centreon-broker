@@ -51,7 +51,7 @@ class muxer : public io::stream {
   muxer(std::string const& name, bool persistent = false);
   muxer(muxer const& other) = delete;
   muxer& operator=(muxer const& other) = delete;
-  ~muxer();
+  ~muxer() noexcept;
   void ack_events(int count);
   static void event_queue_max_size(uint32_t max) noexcept;
   static uint32_t event_queue_max_size() throw();

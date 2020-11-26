@@ -20,6 +20,7 @@
 #define CCB_TLS_ACCEPTOR_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -38,22 +39,19 @@ namespace tls {
  *  the returned accepted streams.
  */
 class acceptor : public io::endpoint {
+  std::string _ca;
+  std::string _cert;
+  std::string _key;
+
  public:
   acceptor(std::string const& cert = std::string(),
            std::string const& key = std::string(),
            std::string const& ca = std::string());
-  acceptor(acceptor const& right);
-  ~acceptor();
+  ~acceptor() = default;
+  acceptor(acceptor const& right) = delete;
   acceptor& operator=(acceptor const&) = delete;
   std::shared_ptr<io::stream> open();
   std::shared_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
-
- private:
-  void _internal_copy(acceptor const& right);
-
-  std::string _ca;
-  std::string _cert;
-  std::string _key;
 };
 }  // namespace tls
 
