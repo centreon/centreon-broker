@@ -42,7 +42,7 @@ using namespace com::centreon::broker::bam;
  *
  *  @return True if the configuration matches the BAM layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   if (flag)
     *flag = no;
   bool is_bam{!strncasecmp("bam", cfg.type.c_str(), 4)};

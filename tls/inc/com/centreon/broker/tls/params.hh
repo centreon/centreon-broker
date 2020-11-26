@@ -20,7 +20,9 @@
 #define CCB_TLS_PARAMS_HH
 
 #include <gnutls/gnutls.h>
+
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -38,23 +40,7 @@ class params {
  public:
   enum connection_type { CLIENT = 1, SERVER };
 
- public:
-  params(connection_type type);
-  virtual ~params();
-  void apply(gnutls_session_t session);
-  void load();
-  void reset();
-  void set_cert(std::string const& cert, std::string const& key);
-  void set_compression(bool compress = false);
-  void set_trusted_ca(std::string const& ca_cert);
-  void validate_cert(gnutls_session_t session);
-
  private:
-  params(params const& p);
-  params& operator=(params const& p);
-  void _clean();
-  void _init_anonymous();
-
   std::string _ca;
   std::string _cert;
   bool _compress;
@@ -66,6 +52,22 @@ class params {
   bool _init;
   std::string _key;
   connection_type _type;
+
+  void _clean();
+  void _init_anonymous();
+
+ public:
+  params(connection_type type);
+  params(params const& p) = delete;
+  params& operator=(params const& p) = delete;
+  virtual ~params();
+  void apply(gnutls_session_t session);
+  void load();
+  void reset();
+  void set_cert(std::string const& cert, std::string const& key);
+  void set_compression(bool compress = false);
+  void set_trusted_ca(std::string const& ca_cert);
+  void validate_cert(gnutls_session_t session);
 };
 }  // namespace tls
 

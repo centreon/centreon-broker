@@ -63,7 +63,7 @@ void broker_module_init(void const* arg) {
     logging::info(logging::high)
         << "TLS: module for Centreon Broker " << CENTREON_BROKER_VERSION;
     log_v2::tls()->info("TLS: module for Centreon Broker {}",
-                                   CENTREON_BROKER_VERSION);
+                        CENTREON_BROKER_VERSION);
 
     // Initialization.
     tls::initialize();

@@ -29,7 +29,6 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/stream.hh"
 
@@ -61,26 +60,6 @@ gnutls_dh_params_t tls::dh_params;
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #endif  // GNU TLS < 3.0.0
 
-/**************************************
- *                                     *
- *          Static Functions           *
- *                                     *
- **************************************/
-
-// Might be used below, when library logging is enabled.
-// static void log_gnutls_message(int level, char const* message) {
-//   (void)level;
-//   logging::debug(logging::low)
-//     << "TLS: GNU TLS debug: " << message;
-//   return ;
-// }
-
-/**************************************
- *                                     *
- *          Global Functions           *
- *                                     *
- **************************************/
-
 /**
  *  Deinit the TLS library.
  */
@@ -90,8 +69,6 @@ void tls::destroy() {
 
   // Unload GNU TLS library
   gnutls_global_deinit();
-
-  return;
 }
 
 /**
@@ -106,37 +83,32 @@ void tls::initialize() {
 
   // Eventually initialize libgcrypt.
 #if GNUTLS_VERSION_NUMBER < 0x030000
-  logging::info(logging::high)
-      << "TLS: initializing libgcrypt (GNU TLS <= 2.11.0)";
+  log_v2::tls()->info("TLS: initializing libgcrypt (GNU TLS <= 2.11.0)");
   gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
 #endif  // GNU TLS < 3.0.0
 
   // Initialize GNU TLS library.
   if (gnutls_global_init() != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error(
-        "TLS: GNU TLS library initialization failed");
-    throw(exceptions::msg() << "TLS: GNU TLS library initialization failed");
+    log_v2::tls()->error("TLS: GNU TLS library initialization failed");
+    throw exceptions::msg() << "TLS: GNU TLS library initialization failed";
   }
 
   // Log GNU TLS version.
   {
-    logging::info(logging::medium)
-        << "TLS: compiled with GNU TLS version " << GNUTLS_VERSION;
     log_v2::tls()->info("TLS: compiled with GNU TLS version {}",
-                                   GNUTLS_VERSION);
+                        GNUTLS_VERSION);
     char const* v(gnutls_check_version(GNUTLS_VERSION));
     if (!v) {
       log_v2::tls()->error(
           "TLS: GNU TLS run-time version is incompatible with the compile-time "
           "version ({}): please update your GNU TLS library",
           GNUTLS_VERSION);
-      throw(exceptions::msg()
-            << "TLS: GNU TLS run-time version is "
-            << "incompatible with the compile-time version (" << GNUTLS_VERSION
-            << "): please update your GNU TLS library");
+      throw exceptions::msg()
+          << "TLS: GNU TLS run-time version is "
+          << "incompatible with the compile-time version (" << GNUTLS_VERSION
+          << "): please update your GNU TLS library";
     }
     log_v2::tls()->info("TLS: loading GNU TLS version {}", v);
-    logging::info(logging::high) << "TLS: loading GNU TLS version " << v;
     // gnutls_global_set_log_function(log_gnutls_message);
     // gnutls_global_set_log_level(11);
   }
@@ -147,19 +119,17 @@ void tls::initialize() {
     log_v2::tls()->error(
         "TLS: could not load TLS Diffie-Hellman parameters: {}",
         gnutls_strerror(ret));
-    throw(exceptions::msg()
-          << "TLS: could not load TLS Diffie-Hellman parameters: "
-          << gnutls_strerror(ret));
+    throw exceptions::msg()
+        << "TLS: could not load TLS Diffie-Hellman parameters: "
+        << gnutls_strerror(ret);
   }
   ret = gnutls_dh_params_import_pkcs3(dh_params, &dhp, GNUTLS_X509_FMT_PEM);
   if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error(
-        "TLS: could not import PKCS #3 parameters: ", gnutls_strerror(ret));
-    throw(exceptions::msg() << "TLS: could not import PKCS #3 parameters: "
-                            << gnutls_strerror(ret));
+    log_v2::tls()->error("TLS: could not import PKCS #3 parameters: ",
+                         gnutls_strerror(ret));
+    throw exceptions::msg()
+        << "TLS: could not import PKCS #3 parameters: " << gnutls_strerror(ret);
   }
-
-  return;
 }
 
 /**
@@ -167,7 +137,7 @@ void tls::initialize() {
  *  layer and give it to TLS for decoding.
  */
 ssize_t tls::pull_helper(gnutls_transport_ptr_t ptr, void* data, size_t size) {
-  return (static_cast<tls::stream*>(ptr)->read_encrypted(data, size));
+  return static_cast<tls::stream*>(ptr)->read_encrypted(data, size);
 }
 
 /**
@@ -177,5 +147,5 @@ ssize_t tls::pull_helper(gnutls_transport_ptr_t ptr, void* data, size_t size) {
 ssize_t tls::push_helper(gnutls_transport_ptr_t ptr,
                          void const* data,
                          size_t size) {
-  return (static_cast<tls::stream*>(ptr)->write_encrypted(data, size));
+  return static_cast<tls::stream*>(ptr)->write_encrypted(data, size);
 }

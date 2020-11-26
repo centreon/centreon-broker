@@ -65,7 +65,7 @@ static std::string const& find_param(config::endpoint const& cfg,
  *
  *  @return true if the configuration matches the storage layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   if (flag)
     *flag = no;
   bool is_storage(!strncasecmp(cfg.type.c_str(), "storage", 8));
