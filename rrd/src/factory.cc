@@ -71,7 +71,7 @@ static std::string find_param(config::endpoint const& cfg,
  *
  *  @return True if the configuration matches the RRD layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   if (flag)
     *flag = no;
   return cfg.type == "rrd";

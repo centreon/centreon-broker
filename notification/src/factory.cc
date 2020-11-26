@@ -61,7 +61,7 @@ static std::string const& find_param(config::endpoint const& cfg,
  *
  *  @return True if the endpoint match the configuration.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
+bool factory::has_endpoint(config::endpoint& cfg) {
   bool is_notif(!cfg.type.compare("notification", Qt::CaseInsensitive));
   if (is_notif) {
     cfg.params["cache"] = "yes";

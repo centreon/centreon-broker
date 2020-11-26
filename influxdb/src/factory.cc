@@ -67,7 +67,7 @@ static std::string find_param(config::endpoint const& cfg,
  *
  *  @return True if the configuration matches the storage layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   bool is_ifdb{!strncasecmp(cfg.type.c_str(), "influxdb", 9)};
   if (flag)
     *flag = no;

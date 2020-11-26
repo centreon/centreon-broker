@@ -96,9 +96,9 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   if (ret < 0) {
     if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN)) {
       log_v2::tls()->error("TLS: could not receive data: {}",
-                                      gnutls_strerror(ret));
-      throw(exceptions::msg()
-            << "TLS: could not receive data: " << gnutls_strerror(ret));
+                           gnutls_strerror(ret));
+      throw exceptions::msg()
+          << "TLS: could not receive data: " << gnutls_strerror(ret);
     } else
       return false;
   } else if (ret) {
@@ -107,7 +107,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     return true;
   } else {
     log_v2::tls()->error("TLS session is terminated");
-    throw(exceptions::msg() << "TLS session is terminated");
+    throw exceptions::msg() << "TLS session is terminated";
   }
   return false;
 }
@@ -129,7 +129,8 @@ long long stream::read_encrypted(void* buffer, long long size) {
     if (!timed_out && d && d->type() == io::raw::static_type()) {
       io::raw* r(static_cast<io::raw*>(d.get()));
       _buffer.reserve(_buffer.size() + r->get_buffer().size());
-      _buffer.insert(_buffer.end(), r->get_buffer().begin(), r->get_buffer().end());
+      _buffer.insert(_buffer.end(), r->get_buffer().begin(),
+                     r->get_buffer().end());
       //_buffer.append(r->data(), r->size());
     } else if (timed_out)
       break;
@@ -178,9 +179,9 @@ int stream::write(std::shared_ptr<io::data> const& d) {
       int ret(gnutls_record_send(*_session, ptr, size));
       if (ret < 0) {
         log_v2::tls()->error("TLS: could not send data: {}",
-                                        gnutls_strerror(ret));
-        throw(exceptions::msg()
-              << "TLS: could not send data: " << gnutls_strerror(ret));
+                             gnutls_strerror(ret));
+        throw exceptions::msg()
+            << "TLS: could not send data: " << gnutls_strerror(ret);
       }
       ptr += ret;
       size -= ret;
@@ -200,7 +201,9 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  */
 long long stream::write_encrypted(void const* buffer, long long size) {
   std::shared_ptr<io::raw> r(new io::raw);
-  std::vector<char> tmp(const_cast<char *>(static_cast<char const *>(buffer)), const_cast<char *>(static_cast<char const*>(buffer)) + static_cast<std::size_t>(size));
+  std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(buffer)),
+                        const_cast<char*>(static_cast<char const*>(buffer)) +
+                            static_cast<std::size_t>(size));
   logging::error(logging::low) << "tls write enc: " << size;
   r->get_buffer() = std::move(tmp);
   _substream->write(r);

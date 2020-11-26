@@ -46,7 +46,7 @@ using namespace com::centreon::broker::compression;
  *  is running. We will be able to add this endpoint later, following the flag
  *  value.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   if (flag) {
     auto it = cfg.params.find("compression");
     if (it == cfg.params.end() || strncasecmp(it->second.c_str(), "no", 3) == 0)

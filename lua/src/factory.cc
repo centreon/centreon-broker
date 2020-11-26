@@ -51,7 +51,7 @@ static std::string find_param(config::endpoint const& cfg,
  *
  *  @return true if the endpoint match the configuration.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) const {
+bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
   if (flag)
     *flag = no;
   bool is_lua{!strncasecmp(cfg.type.c_str(), "lua", 4)};

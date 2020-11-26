@@ -57,7 +57,7 @@ class factory {
    *
    * @return a boolean
    */
-  virtual bool has_endpoint(config::endpoint& cfg, flag* flag) const = 0;
+  virtual bool has_endpoint(config::endpoint& cfg, flag* flag) = 0;
   virtual endpoint* new_endpoint(
       config::endpoint& cfg,
       bool& is_acceptor,
