@@ -1,5 +1,3 @@
-// https://ericscrivner.me/2017/10/c-using-shared_ptr-lua-userdata/
-
 /*
 ** Copyright 2020 Centreon
 **
