@@ -47,14 +47,10 @@ class stream : public io::stream {
   /* Macro cache */
   macro_cache _cache;
 
-  /* Management of the main loop */
-  mutable std::mutex _loop_m;
-  std::condition_variable _loop_cv;
-
   /* The write stuff */
-  std::deque<std::shared_ptr<io::data>> _events;
-  mutable std::mutex _acks_count_m;
-  uint32_t _acks_count;
+  std::mutex _exposed_events_m;
+  std::deque<std::shared_ptr<io::data>> _exposed_events;
+  std::atomic_uint _acks_count;
 
   /* Every 30s, we store in this array the number of events not treated by the
    * connector. We can then have an idea of the evolution and send warnings if
@@ -70,9 +66,10 @@ class stream : public io::stream {
   double _a_min;
 
   /* The exit flag */
-  bool _exit;
+  std::atomic_bool _exit;
 
   /* The flush flag */
+  std::mutex _flush_m;
   bool _flush;
 
  public:
