@@ -24,27 +24,20 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
 
 /**
- *  The Lua broker_socket constructor
+ *  The Lua broker_event constructor
  *
  *  @param L The Lua interpreter
  *
  *  @return 1
  */
 int l_broker_event_new(lua_State* L) {
-  auto event = std::make_shared<io::data>();
-
   void* userdata = lua_newuserdata(L, sizeof(std::shared_ptr<io::data>));
   if (!userdata)
     return 0;
 
+  new(userdata) std::shared_ptr<io::data>();
 
-  ip::tcp::socket** udata{static_cast<ip::tcp::socket**>(
-      lua_newuserdata(L, sizeof(ip::tcp::socket*)))};
-  *udata = new ip::tcp::socket{ctx};
-
-  socket_state = unconnected;
-
-  luaL_getmetatable(L, "lua_broker_tcp_socket");
+  luaL_getmetatable(L, "broker_event");
   lua_setmetatable(L, -2);
 
   return 1;
@@ -63,150 +56,115 @@ static int l_broker_event_destructor(lua_State* L) {
   if (ptr) {
     auto event = static_cast<std::shared_ptr<io::data>*>(ptr);
     event->reset();
+    delete event;
   }
   return 0;
 }
 
-/**
- *  The Lua broker_socket connect method
- *
- *  @param L The Lua interpreter
- *
- *  @return 0
- */
-static int l_broker_socket_connect(lua_State* L) {
-  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
-      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
-  char const* addr{luaL_checkstring(L, 2)};
-  int port{static_cast<int>(luaL_checknumber(L, 3))};
+static int l_broker_event_get(lua_State* L) {
+  std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(luaL_checkudata(L, 1, "broker_event"))};
+  const char* key = luaL_checkstring(L, 2);
 
-  socket_state = hostLookup;
-  ip::tcp::resolver resolver{ctx};
-  ip::tcp::resolver::query query{addr, std::to_string(port)};
-
-  try {
-    ip::tcp::resolver::iterator it{resolver.resolve(query)};
-    ip::tcp::resolver::iterator end;
-    socket_state = connecting;
-
-    std::error_code err{std::make_error_code(std::errc::host_unreachable)};
-
-    // it can resolve to multiple addresses like ipv4 and ipv6
-    // we need to try all to find the first available socket
-    while (err && it != end) {
-      socket->connect(*it, err);
-
-      if (err)
-        socket->close();
-
-      ++it;
+  io::event_info const* info = io::events::instance().get_event_info(e->type());
+  if (info) {
+    for (const mapping::entry* current_entry = info->get_mapping();
+         !current_entry->is_null();
+         ++current_entry) {
+      char const* entry_name(current_entry->get_name_v2());
+      if (entry_name && strcmp(entry_name, key) == 0) {
+        switch (current_entry->get_type()) {
+          case mapping::source::BOOL:
+            lua_pushboolean(_L, current_entry->get_bool(d));
+            break;
+          case mapping::source::DOUBLE:
+            lua_pushnumber(_L, current_entry->get_double(d));
+            break;
+          case mapping::source::INT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                int val(current_entry->get_int(d));
+                if (val == 0)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                int val(current_entry->get_int(d));
+                if (val == -1)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              default:
+                lua_pushinteger(_L, current_entry->get_int(d));
+            }
+            break;
+          case mapping::source::SHORT:
+            lua_pushinteger(_L, current_entry->get_short(d));
+            break;
+          case mapping::source::STRING:
+            if (current_entry->get_attribute() ==
+                mapping::entry::invalid_on_zero) {
+              std::string val{current_entry->get_string(d)};
+              if (val.empty())
+                lua_pushnil(_L);
+              else
+                lua_pushstring(_L, val.c_str());
+            } else
+              lua_pushstring(_L, current_entry->get_string(d).c_str());
+            break;
+          case mapping::source::TIME:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                time_t val = current_entry->get_time(d);
+                if (val == 0)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                time_t val = current_entry->get_time(d);
+                if (val == -1)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              default:
+                lua_pushinteger(_L, current_entry->get_time(d));
+            }
+            break;
+          case mapping::source::UINT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                uint32_t val = current_entry->get_uint(d);
+                if (val == 0)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                uint32_t val = current_entry->get_uint(d);
+                if (val == static_cast<uint32_t>(-1))
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              default:
+                lua_pushinteger(_L, current_entry->get_uint(d));
+            }
+            break;
+          default:  // Error in one of the mappings.
+            throw exceptions::msg() << "invalid mapping for object "
+                                    << "of type '" << info->get_name()
+                                    << "': " << current_entry->get_type()
+                                    << " is not a known type ID";
+        }
+        return 1;
+      }
     }
-
-    if (err) {
-      socket_state = unconnected;
-      std::ostringstream ss;
-      ss << "broker_socket::connect: Couldn't connect to " << addr << ":"
-         << port << ": " << err.message();
-      luaL_error(L, ss.str().c_str());
-    } else {
-      socket_state = connected;
-    }
-  } catch (std::system_error const& se) {
-    socket_state = unconnected;
-    std::ostringstream ss;
-    ss << "broker_socket::connect: Couldn't connect to " << addr << ":" << port
-       << ": " << se.what();
-    luaL_error(L, ss.str().c_str());
-  }
-  return 0;
-}
-
-/**
- *  The Lua broker_socket state method
- *
- *  @param L The Lua interpreter
- *
- *  @return 1
- */
-static int l_broker_socket_state(lua_State* L) {
-  char const* ans[] = {
-      "unconnected", "hostLookup", "connecting", "connected", "closing",
-  };
-  lua_pushstring(L, ans[socket_state]);
-  return 1;
-}
-
-/**
- *  The Lua broker_socket write method
- *
- *  @param L The Lua interpreter
- *
- *  @return 0
- */
-static int l_broker_socket_write(lua_State* L) {
-  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
-      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
-  size_t len;
-  char const* content(lua_tolstring(L, 2, &len));
-  std::error_code err;
-
-  asio::write(*socket, asio::buffer(content, len), asio::transfer_all(), err);
-
-  if (err) {
-    std::ostringstream ss;
-    ss << "broker_socket::write: Couldn't write to "
-       << socket->remote_endpoint().address().to_string() << ":"
-       << socket->remote_endpoint().port() << ": " << err.message();
-    luaL_error(L, ss.str().c_str());
-  }
-
-  return 0;
-}
-
-/**
- *  The Lua broker_socket read method
- *
- *  @param L The Lua interpreter
- *
- *  @return 1
- */
-static int l_broker_socket_read(lua_State* L) {
-  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
-      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
-  std::error_code err;
-
-  char* buff = new char[1024];
-
-  size_t len = socket->read_some(asio::buffer(buff, 1024), err);
-
-  if (err && err != asio::error::eof) {
-    std::ostringstream ss;
-    ss << "broker_socket::read: Couldn't read data from "
-       << socket->remote_endpoint().address().to_string() << ":"
-       << socket->remote_endpoint().port() << ": " << err.message();
-    luaL_error(L, ss.str().c_str());
-  } else if (!err) {
-    lua_pushlstring(L, buff, len);
-  }
-
-  delete[] buff;
-  return 1;
-}
-
-/**
- *  The Lua broker_socket close method
- *
- *  @param L The Lua interpreter
- *
- *  @return 0
- */
-static int l_broker_socket_close(lua_State* L) {
-  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
-      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
-
-  socket_state = closing;
-  socket->close();
-  socket_state = unconnected;
+  } else
+    throw exceptions::msg() << "cannot bind object of type " << e->type()
+                            << " to database query: mapping does not exist";
   return 0;
 }
 
@@ -217,13 +175,9 @@ static int l_broker_socket_close(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_socket::broker_socket_reg(lua_State* L) {
-  luaL_Reg s_broker_socket_regs[] = {{"new", l_broker_socket_constructor},
+  luaL_Reg s_broker_event_regs[] = {{"new", l_broker_event_constructor},
                                      {"__gc", l_broker_event_destructor},
-                                     {"connect", l_broker_socket_connect},
-                                     {"get_state", l_broker_socket_state},
-                                     {"write", l_broker_socket_write},
-                                     {"read", l_broker_socket_read},
-                                     {"close", l_broker_socket_close},
+                                     {"get", l_broker_event_get},
                                      {nullptr, nullptr}};
 
   const char* name = "broker_event";
@@ -232,9 +186,9 @@ void broker_socket::broker_socket_reg(lua_State* L) {
 
   // Register the C functions into the metatable we just created.
 #ifdef LUA51
-  luaL_register(L, NULL, s_broker_socket_regs);
+  luaL_register(L, NULL, s_broker_event_regs);
 #else
-  luaL_setfuncs(L, s_broker_socket_regs, 0);
+  luaL_setfuncs(L, s_broker_event_regs, 0);
 #endif
 
   lua_pushliteral(L, "__index");
