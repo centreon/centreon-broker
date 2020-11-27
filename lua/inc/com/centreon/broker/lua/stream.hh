@@ -20,6 +20,7 @@
 #define CCB_LUA_STREAM_HH
 
 #include <array>
+#include <atomic>
 #include <condition_variable>
 #include <deque>
 #include <json11.hpp>
@@ -50,7 +51,7 @@ class stream : public io::stream {
   /* The write stuff */
   std::mutex _exposed_events_m;
   std::deque<std::shared_ptr<io::data>> _exposed_events;
-  std::atomic_uint _acks_count;
+  std::atomic<uint32_t> _acks_count;
 
   /* Every 30s, we store in this array the number of events not treated by the
    * connector. We can then have an idea of the evolution and send warnings if

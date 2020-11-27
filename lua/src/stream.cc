@@ -90,25 +90,22 @@ stream::stream(std::string const& lua_script,
         if (_flush) {
           log_v2::lua()->debug("stream: flush event");
           int32_t res = lb->flush();
-          {
-            std::lock_guard<std::mutex> lock(_acks_count_m);
-            log_v2::lua()->trace(
-                "stream: {} events acknowledged by the script flush", res);
-            _acks_count += res;
-            log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
-          }
+          log_v2::lua()->trace(
+              "stream: {} events acknowledged by the script flush", res);
+          _acks_count += res;
+          log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
           _flush = false;
         }
       }
 
       if (events.empty()) {
         std::lock_guard<std::mutex> lck(_exposed_events_m);
-        std::swap(_exposed_events, _events);
+        std::swap(_exposed_events, events);
       }
 
       if (!events.empty()) {
-        std::shared_ptr<io::data> d = _events.front();
-        _events.pop_front();
+        std::shared_ptr<io::data> d = events.front();
+        events.pop_front();
         uint32_t res = lb->write(d);
         log_v2::lua()->trace(
             "stream: {} events acknowledged by the script write", res);
@@ -225,5 +222,5 @@ int stream::flush() {
 void stream::statistics(json11::Json::object& tree) const {
   tree["waiting_events"] =
       json11::Json::object{{"lm", json11::Json::object{{"a", _a}, {"b", _b}}},
-                           {"total", static_cast<double>(_events.size())}};
+                           {"total", static_cast<double>(_exposed_events.size())}};
 }
