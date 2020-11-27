@@ -15,17 +15,17 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/lua/stream.hh"
+
 #include <algorithm>
 #include <cmath>
 #include <sstream>
-#include <sstream>
+
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
-#include "com/centreon/broker/lua/stream.hh"
 #include "com/centreon/broker/misc/math.hh"
 
 using namespace com::centreon::broker;
@@ -52,9 +52,7 @@ stream::stream(std::string const& lua_script,
       _acks_count{0},
       _stats{{}},
       _stats_it{_stats.begin()},
-      _next_stat{time(nullptr)},
-      _nb_stats{0},
-      _a_min{1},
+      _next_stat{std::chrono::system_clock::now()},
       _exit{false},
       _flush{false} {
   bool fail = false;
@@ -76,36 +74,60 @@ stream::stream(std::string const& lua_script,
     try {
       lb = new luabinding(lua_script, conf_params, _cache);
       has_flush = lb->has_flush();
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       fail_msg = e.what();
       fail = true;
       _exit = true;
       return;
     }
 
+    /**
+     * Events handling starts really here. */
+
+    /* The count of events handled each second. */
+    int count = 0;
     for (;;) {
-      if (has_flush) {
-        std::lock_guard<std::mutex> lck(_flush_m);
-        if (_flush) {
-          log_v2::lua()->debug("stream: flush event");
-          int32_t res = lb->flush();
-          log_v2::lua()->trace(
-              "stream: {} events acknowledged by the script flush", res);
-          _acks_count += res;
-          log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
-          _flush = false;
-        }
+      /* Is the flush activated and have we received a flush ? */
+      if (has_flush && _flush) {
+        log_v2::lua()->debug("stream: flush event");
+        int32_t res = lb->flush();
+        log_v2::lua()->trace(
+            "stream: {} events acknowledged by the script flush", res);
+        _acks_count += res;
+        log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
+        _flush = false;
       }
 
+      /* If the thread queue is empty, we swap it with exposed events */
       if (events.empty()) {
         std::lock_guard<std::mutex> lck(_exposed_events_m);
         std::swap(_exposed_events, events);
+        _events_size = events.size();
       }
 
+      /* Every seconds, we store how many events have been handled. We can
+       * then build an array of 10 values used to compute a speed. */
+      {
+        auto now = std::chrono::system_clock::now();
+        if (now > _next_stat) {
+          *_stats_it = count;
+          count = 0;
+          ++_stats_it;
+          if (_stats_it == _stats.end())
+            _stats_it = _stats.begin();
+
+          // We take a point at least every 1s.
+          _next_stat =
+              std::chrono::system_clock::now() + std::chrono::seconds(1);
+        }
+      }
+
+      /* Are there events to handle? */
       if (!events.empty()) {
         std::shared_ptr<io::data> d = events.front();
         events.pop_front();
+        --_events_size;
+        ++count;
         uint32_t res = lb->write(d);
         log_v2::lua()->trace(
             "stream: {} events acknowledged by the script write", res);
@@ -115,7 +137,10 @@ stream::stream(std::string const& lua_script,
         /* We exit only if the events queue is empty */
         log_v2::lua()->debug("stream: exit");
         break;
-      }
+      } else
+      /* We did nothing, let's wait for 500ms. We don't cook an egg with our
+       * cpus. */
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     // No more need of the Lua interpreter
@@ -161,41 +186,15 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 int stream::write(std::shared_ptr<io::data> const& data) {
   assert(data);
   {
-  std::lock_guard<std::mutex> lck(_exposed_events_m);
-  _exposed_events.push_back(data);
+    std::lock_guard<std::mutex> lck(_exposed_events_m);
+    _exposed_events.push_back(data);
   }
-
-
-//  {
-//    time_t now = time(nullptr);
-//    if (now > _next_stat || std::isnan(_a)) {
-//      *_stats_it = {now, _events.size()};
-//      ++_nb_stats;
-//      ++_stats_it;
-//      if (_stats_it == _stats.end())
-//        _stats_it = _stats.begin();
-//
-//      // We take a point at least every 30s.
-//      bool res = misc::least_squares(_stats, _nb_stats, _a, _b);
-//      if (!res) {
-//        _a = NAN;
-//        _b = NAN;
-//      }
-//      else {
-//        _next_stat += 30;
-//        if (_a > _a_min) {
-//          _a_min = _a;
-//          logging::debug(logging::high) << "LUA: The streamconnector looks "
-//            "quite slow, waiting events are increasing at the speed of "
-//            << _a << "events/s";
-//        }
-//      }
-//    }
-//  }
 
   int retval = _acks_count;
   _acks_count -= retval;
-  log_v2::lua()->debug("stream: {} events will be acknowledged at the end of the write function", retval);
+  log_v2::lua()->debug(
+      "stream: {} events will be acknowledged at the end of the write function",
+      retval);
   return retval;
 }
 
@@ -207,8 +206,7 @@ int stream::write(std::shared_ptr<io::data> const& data) {
  * @return The number of events to ack.
  */
 int stream::flush() {
-  {
-    std::lock_guard<std::mutex> lck(_flush_m);
+  if (!_flush) {
     log_v2::lua()->debug("stream: flush forced");
     _flush = true;
   }
@@ -220,7 +218,13 @@ int stream::flush() {
 }
 
 void stream::statistics(json11::Json::object& tree) const {
-  tree["waiting_events"] =
-      json11::Json::object{{"lm", json11::Json::object{{"a", _a}, {"b", _b}}},
-                           {"total", static_cast<double>(_exposed_events.size())}};
+  std::lock_guard<std::mutex> lck(_exposed_events_m);
+  double avg = 0;
+  for (auto& s : _stats)
+    avg += s;
+  avg /= _stats.size();
+  tree["waiting_events"] = json11::Json::object{
+      {"speed", fmt::format("{} events/s", avg)},
+      {"handled_events", static_cast<int>(_events_size)},
+      {"waiting_events", static_cast<int>(_exposed_events.size())}};
 }

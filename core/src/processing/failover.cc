@@ -83,6 +83,7 @@ void failover::exit() {
   if (_started) {
     if (!_should_exit) {
       _should_exit = true;
+      log_v2::config()->trace("Waiting for {} to be stopped", _name);
       _stopped_cv.wait(lock, [this] { return _stopped; });
       _thread.join();
       _started = false;

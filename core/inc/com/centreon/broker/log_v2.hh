@@ -30,6 +30,7 @@ CCB_BEGIN()
 
 class log_v2 {
   std::shared_ptr<spdlog::logger> _core_log;
+  std::shared_ptr<spdlog::logger> _config_log;
   std::shared_ptr<spdlog::logger> _tcp_log;
   std::shared_ptr<spdlog::logger> _bbdo_log;
   std::shared_ptr<spdlog::logger> _tls_log;
@@ -50,6 +51,7 @@ class log_v2 {
             std::string& err);
 
   static std::shared_ptr<spdlog::logger> core();
+  static std::shared_ptr<spdlog::logger> config();
   static std::shared_ptr<spdlog::logger> tls();
   static std::shared_ptr<spdlog::logger> bbdo();
   static std::shared_ptr<spdlog::logger> tcp();
