@@ -30,7 +30,7 @@ using namespace com::centreon::broker::lua;
  *
  *  @return 1
  */
-int l_broker_event_create(lua_State* L) {
+int l_broker_event_new(lua_State* L) {
   auto event = std::make_shared<io::data>();
 
   void* userdata = lua_newuserdata(L, sizeof(std::shared_ptr<io::data>));
@@ -51,17 +51,19 @@ int l_broker_event_create(lua_State* L) {
 }
 
 /**
- *  The Lua broker_socket destructor
+ *  The Lua broker_event destructor
  *
  *  @param L The Lua interpreter
  *
  *  @return 0
  */
-static int l_broker_socket_destructor(lua_State* L) {
-  delete *static_cast<ip::tcp::socket**>(
-      luaL_checkudata(L, 1, "lua_broker_tcp_socket"));
+static int l_broker_event_destructor(lua_State* L) {
+  void* ptr = luaL_checkudata(L, 1, "broker_event");
 
-  socket_state = unconnected;
+  if (ptr) {
+    auto event = static_cast<std::shared_ptr<io::data>*>(ptr);
+    event->reset();
+  }
   return 0;
 }
 
@@ -216,7 +218,7 @@ static int l_broker_socket_close(lua_State* L) {
  */
 void broker_socket::broker_socket_reg(lua_State* L) {
   luaL_Reg s_broker_socket_regs[] = {{"new", l_broker_socket_constructor},
-                                     {"__gc", l_broker_socket_destructor},
+                                     {"__gc", l_broker_event_destructor},
                                      {"connect", l_broker_socket_connect},
                                      {"get_state", l_broker_socket_state},
                                      {"write", l_broker_socket_write},
@@ -224,10 +226,9 @@ void broker_socket::broker_socket_reg(lua_State* L) {
                                      {"close", l_broker_socket_close},
                                      {nullptr, nullptr}};
 
-  // Create a metatable. It is not exposed to Lua. It is not
-  // exposed to Lua. The "lua_broker" label is used by Lua
-  // internally to identify things.
-  luaL_newmetatable(L, "lua_broker_tcp_socket");
+  const char* name = "broker_event";
+  lua_newtable(L);
+  luaL_newmetatable(L, name);
 
   // Register the C functions into the metatable we just created.
 #ifdef LUA51
@@ -236,23 +237,8 @@ void broker_socket::broker_socket_reg(lua_State* L) {
   luaL_setfuncs(L, s_broker_socket_regs, 0);
 #endif
 
-  // The Lua stack at this point looks like:
-  // 1  =>  userdata                  => -2
-  // 2  =>  metatable "lua_broker"    => -1
-  lua_pushvalue(L, -1);
-
-  // The Lua stack at this point looks like:
-  // 1  =>  userdata                  => -3
-  // 2  =>  metatable "lua_broker"    => -2
-  // 3  =>  metatable "lua_broker"    => -1
-
-  // Set the __index field of the metatable to point to itself
-  lua_setfield(L, -1, "__index");
-
-  // The Lua stack at this point looks like:
-  // 1  =>  userdata                  => -2
-  // 2  =>  metatable "lua_broker"    => -1
-
-  // And now, we use setglobal to store userdata as the variable "broker".
-  lua_setglobal(L, "broker_tcp_socket");
+  lua_pushliteral(L, "__index");
+  lua_pushvalue(L, -2);
+  lua_rawset(L, -3);
+  lua_setglobal(L, name);
 }
