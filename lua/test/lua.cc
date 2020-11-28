@@ -180,8 +180,8 @@ TEST_F(LuaTest, SimpleScript) {
 
   std::string result(ReadFile("/tmp/test.log"));
   std::list<std::string> lst{misc::string::split(result, '\n')};
-  // 74 lines and one empty line.
-  ASSERT_EQ(lst.size(), 75u);
+  // 85 lines and one empty line.
+  ASSERT_EQ(lst.size(), 86u);
   size_t pos1 = result.find("INFO: init: address => 127.0.0.1");
   size_t pos2 = result.find("INFO: init: port => 8857");
   size_t pos3 = result.find("INFO: write: host_id => 12");
@@ -221,8 +221,9 @@ TEST_F(LuaTest, WriteAcknowledgement) {
   std::string result{ReadFile("/tmp/test.log")};
   {
     std::list<std::string> lst{misc::string::split(result, '\n')};
-    // 17 = 16 lines + 1 empty line
-    ASSERT_EQ(lst.size(), 17u);
+    // 20 = 19 lines + 1 empty line
+    std::cout << result << std::endl;
+    ASSERT_EQ(lst.size(), 20u);
   }
   ASSERT_NE(result.find("INFO: init: address => 127.0.0.1"), std::string::npos);
   ASSERT_NE(result.find("INFO: init: double => 3.1415926535898"),
@@ -1651,27 +1652,47 @@ TEST_F(LuaTest, BrokerEvent) {
                "function init(conf)\n"
                "  broker_log:set_parameters(3, '/tmp/event_log')\n"
                "end\n\n"
-               "function write2(d)\n"
+               "function write(d)\n"
                "  for k,v in pairs(d) do\n"
                "    broker_log:info(0, k .. ' = ' .. tostring(v))\n"
                "  end\n"
-               "end\n"
-               "function write(d)\n"
                "end\n");
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
-  binding->write2(svc);
+  binding->write(svc);
   std::string lst(ReadFile("/tmp/event_log"));
-  std::cout
-    << "##################\n"
-    << lst
-    << "##################\n"
-    << std::endl;
   ASSERT_NE(lst.find("description = foo bar"), std::string::npos);
   ASSERT_NE(lst.find("notes = svc notes"), std::string::npos);
   ASSERT_NE(lst.find("notes_url = svc notes url"), std::string::npos);
   ASSERT_NE(lst.find("action_url = svc action url"), std::string::npos);
   ASSERT_NE(lst.find("host_id = 1"), std::string::npos);
   ASSERT_NE(lst.find("service_id = 2"), std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/event_log");
+}
+
+TEST_F(LuaTest, BrokerEventJsonEncode) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  std::map<std::string, misc::variant> conf;
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 2;
+  svc->service_description = "foo bar";
+  svc->notes = "svc notes";
+  svc->notes_url = "svc notes url";
+  svc->action_url = "svc action url";
+  std::string filename("/tmp/cache_test.lua");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/event_log')\n"
+               "end\n\n"
+               "function write(d)\n"
+               "  broker_log:info(0, broker.json_encode(d))\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  binding->write2(svc);
+  std::string lst(ReadFile("/tmp/event_log"));
+  ASSERT_EQ(lst, "{\"_type\":65559}");
   RemoveFile(filename);
   RemoveFile("/tmp/event_log");
 }

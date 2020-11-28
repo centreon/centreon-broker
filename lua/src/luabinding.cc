@@ -285,22 +285,24 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   // Let's get the function to call
   lua_getglobal(_L, "write");
 
-  // Let's build the table from the event as argument to write()
-  lua_newtable(_L);
-  lua_pushstring(_L, "_type");
-  lua_pushinteger(_L, type);
-  lua_rawset(_L, -3);
-
-  lua_pushstring(_L, "category");
-  lua_pushinteger(_L, cat);
-  lua_rawset(_L, -3);
-
-  lua_pushstring(_L, "element");
-  lua_pushinteger(_L, elem);
-  lua_rawset(_L, -3);
-
-  io::data const& d(*data);
-  _parse_entries(d);
+  // We add data as argument
+  broker_event::create(_L, data);
+//  // Let's build the table from the event as argument to write()
+//  lua_newtable(_L);
+//  lua_pushstring(_L, "_type");
+//  lua_pushinteger(_L, type);
+//  lua_rawset(_L, -3);
+//
+//  lua_pushstring(_L, "category");
+//  lua_pushinteger(_L, cat);
+//  lua_rawset(_L, -3);
+//
+//  lua_pushstring(_L, "element");
+//  lua_pushinteger(_L, elem);
+//  lua_rawset(_L, -3);
+//
+//  io::data const& d(*data);
+//  _parse_entries(d);
 
   if (lua_pcall(_L, 1, 1, 0) != 0) {
     logging::error(logging::high) << "lua: error running function `write'"

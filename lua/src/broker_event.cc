@@ -76,6 +76,22 @@ static int l_broker_event_next(lua_State* L) {
   size_t keyl;
   const char* key = lua_tolstring(L, 2, &keyl);
 
+  if (key == nullptr) {
+    lua_pushstring(L, "_type");
+    lua_pushinteger(L, e->type());
+    return 2;
+  }
+  else if (strcmp(key, "_type") == 0) {
+    lua_pushstring(L, "category");
+    lua_pushinteger(L, static_cast<uint32_t>(e->type()) >> 16);
+    return 2;
+  }
+  else if (strcmp(key, "category") == 0) {
+    lua_pushstring(L, "element");
+    lua_pushinteger(L, e->type() & 0xffff);
+    return 2;
+  }
+
   io::event_info const* info = io::events::instance().get_event_info(e->type());
   if (info) {
     bool found = false;
@@ -83,9 +99,9 @@ static int l_broker_event_next(lua_State* L) {
          !current_entry->is_null();
          ++current_entry) {
       char const* entry_name(current_entry->get_name_v2());
-      if (!entry_name)
+      if (!entry_name || *entry_name == 0)
         continue;
-      if (key == nullptr)
+      if (strcmp(key, "element") == 0)
         found = true;
       else if (!found && strcmp(entry_name, key) == 0) {
         found = true;
@@ -193,6 +209,14 @@ static int l_broker_event_index(lua_State* L) {
 
   if (strcmp(key, "_type") == 0) {
     lua_pushinteger(L, e->type());
+    return 1;
+  }
+  else if (strcmp(key, "category") == 0) {
+    lua_pushinteger(L, (static_cast<uint32_t>(e->type()) >> 16));
+    return 1;
+  }
+  else if (strcmp(key, "category") == 0) {
+    lua_pushinteger(L, e->type() & 0xffff);
     return 1;
   }
 
