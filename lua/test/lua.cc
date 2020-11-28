@@ -1649,18 +1649,29 @@ TEST_F(LuaTest, BrokerEvent) {
   std::string filename("/tmp/cache_test.lua");
   CreateScript(filename,
                "function init(conf)\n"
-               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  broker_log:set_parameters(3, '/tmp/event_log')\n"
                "end\n\n"
                "function write2(d)\n"
-               "  broker_log:info(0, 'service '..d.description)\n"
+               "  for k,v in pairs(d) do\n"
+               "    broker_log:info(0, k .. ' = ' .. tostring(v))\n"
+               "  end\n"
                "end\n"
                "function write(d)\n"
                "end\n");
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   binding->write2(svc);
-  std::string lst(ReadFile("/tmp/log"));
-  std::cout << lst << std::endl;
-  ASSERT_NE(lst.find("service foo bar"), std::string::npos);
+  std::string lst(ReadFile("/tmp/event_log"));
+  std::cout
+    << "##################\n"
+    << lst
+    << "##################\n"
+    << std::endl;
+  ASSERT_NE(lst.find("description = foo bar"), std::string::npos);
+  ASSERT_NE(lst.find("notes = svc notes"), std::string::npos);
+  ASSERT_NE(lst.find("notes_url = svc notes url"), std::string::npos);
+  ASSERT_NE(lst.find("action_url = svc action url"), std::string::npos);
+  ASSERT_NE(lst.find("host_id = 1"), std::string::npos);
+  ASSERT_NE(lst.find("service_id = 2"), std::string::npos);
   RemoveFile(filename);
-  RemoveFile("/tmp/log");
+  RemoveFile("/tmp/event_log");
 }

@@ -46,26 +46,6 @@ void broker_event::create(lua_State* L, std::shared_ptr<io::data> e) {
 }
 
 /**
- *  The Lua broker_event constructor
- *
- *  @param L The Lua interpreter
- *
- *  @return 1
- */
-int l_broker_event_new(lua_State* L) {
-  void* userdata = lua_newuserdata(L, sizeof(std::shared_ptr<io::data>));
-  if (!userdata)
-    return 0;
-
-  new(userdata) std::shared_ptr<io::data>();
-
-  luaL_getmetatable(L, "broker_event");
-  lua_setmetatable(L, -2);
-
-  return 1;
-}
-
-/**
  *  The Lua broker_event destructor
  *
  *  @param L The Lua interpreter
@@ -82,9 +62,139 @@ static int l_broker_event_destructor(lua_State* L) {
   return 0;
 }
 
+static int l_broker_event_pairs(lua_State* L) {
+  std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(
+      luaL_checkudata(L, 1, "broker_event"))};
+  luaL_getmetafield(L, 1, "__next");
+  lua_insert(L, 1);
+  lua_pushnil(L);
+  return 3;
+}
+
+static int l_broker_event_next(lua_State* L) {
+  std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(luaL_checkudata(L, 1, "broker_event"))};
+  size_t keyl;
+  const char* key = lua_tolstring(L, 2, &keyl);
+
+  io::event_info const* info = io::events::instance().get_event_info(e->type());
+  if (info) {
+    bool found = false;
+    for (const mapping::entry* current_entry = info->get_mapping();
+         !current_entry->is_null();
+         ++current_entry) {
+      char const* entry_name(current_entry->get_name_v2());
+      if (!entry_name)
+        continue;
+      if (key == nullptr)
+        found = true;
+      else if (!found && strcmp(entry_name, key) == 0) {
+        found = true;
+        continue;
+      }
+      if (found) {
+        lua_pushstring(L, entry_name);
+        switch (current_entry->get_type()) {
+          case mapping::source::BOOL:
+            lua_pushboolean(L, current_entry->get_bool(*e));
+            break;
+          case mapping::source::DOUBLE:
+            lua_pushnumber(L, current_entry->get_double(*e));
+            break;
+          case mapping::source::INT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                int val(current_entry->get_int(*e));
+                if (val == 0)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                int val(current_entry->get_int(*e));
+                if (val == -1)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              default:
+                lua_pushinteger(L, current_entry->get_int(*e));
+            }
+            break;
+          case mapping::source::SHORT:
+            lua_pushinteger(L, current_entry->get_short(*e));
+            break;
+          case mapping::source::STRING:
+            if (current_entry->get_attribute() ==
+                mapping::entry::invalid_on_zero) {
+              std::string val{current_entry->get_string(*e)};
+              if (val.empty())
+                lua_pushnil(L);
+              else
+                lua_pushstring(L, val.c_str());
+            } else
+              lua_pushstring(L, current_entry->get_string(*e).c_str());
+            break;
+          case mapping::source::TIME:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                time_t val = current_entry->get_time(*e);
+                if (val == 0)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                time_t val = current_entry->get_time(*e);
+                if (val == -1)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              default:
+                lua_pushinteger(L, current_entry->get_time(*e));
+            }
+            break;
+          case mapping::source::UINT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                uint32_t val = current_entry->get_uint(*e);
+                if (val == 0)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                uint32_t val = current_entry->get_uint(*e);
+                if (val == static_cast<uint32_t>(-1))
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              default:
+                lua_pushinteger(L, current_entry->get_uint(*e));
+            }
+            break;
+          default:  // Error in one of the mappings.
+            lua_pushnil(L);
+        }
+        return 2;
+      }
+    }
+    lua_pushnil(L);
+    return 1;
+  } else
+    throw exceptions::msg() << "unable to parse object of type " << e->type()
+                            << " ; it does not look like a BBDO event";
+}
+
 static int l_broker_event_index(lua_State* L) {
   std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(luaL_checkudata(L, 1, "broker_event"))};
   const char* key = luaL_checkstring(L, 2);
+
+  if (strcmp(key, "_type") == 0) {
+    lua_pushinteger(L, e->type());
+    return 1;
+  }
 
   io::event_info const* info = io::events::instance().get_event_info(e->type());
   if (info) {
@@ -196,9 +306,11 @@ static int l_broker_event_index(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_event::broker_event_reg(lua_State* L) {
-  luaL_Reg s_broker_event_regs[] = {{"new", l_broker_event_new},
+  luaL_Reg s_broker_event_regs[] = {
                                      {"__gc", l_broker_event_destructor},
                                      {"__index", l_broker_event_index},
+                                     {"__next", l_broker_event_next},
+                                     {"__pairs", l_broker_event_pairs},
                                      {nullptr, nullptr}};
 
   const char* name = "broker_event";
