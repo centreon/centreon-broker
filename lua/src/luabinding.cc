@@ -23,6 +23,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/broker_cache.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
+#include "com/centreon/broker/lua/broker_event.hh"
 #include "com/centreon/broker/lua/broker_socket.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
 
@@ -213,6 +214,21 @@ void luabinding::_init_script(
   if (lua_pcall(_L, 1, 0, 0) != 0)
     throw exceptions::msg() << "lua: error running function `init'"
                             << lua_tostring(_L, -1);
+}
+
+int luabinding::write2(const std::shared_ptr<io::data>& data) noexcept {
+  // Let's get the function to call
+  lua_getglobal(_L, "write2");
+
+  // We add data as argument
+  broker_event::create(_L, data);
+
+  if (lua_pcall(_L, 1, 1, 0) != 0) {
+    logging::error(logging::high) << "lua: error running function `write2'"
+                                  << lua_tostring(_L, -1);
+    return 0;
+  }
+  return 0;
 }
 
 /**
@@ -431,6 +447,9 @@ lua_State* luabinding::_load_interpreter() {
 
   // Registers the broker_log object
   broker_log::broker_log_reg(L);
+
+  // Registers the broker event object
+  broker_event::broker_event_reg(L);
 
   // Registers the broker socket object
   broker_socket::broker_socket_reg(L);

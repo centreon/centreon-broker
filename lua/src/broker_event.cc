@@ -18,10 +18,32 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/lua/broker_event.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
+
+/**
+ *  The Lua broker_event constructor
+ *
+ *  @param L The Lua interpreter
+ *  @param e An event to wrap
+ *
+ */
+void broker_event::create(lua_State* L, std::shared_ptr<io::data> e) {
+  void* userdata = lua_newuserdata(L, sizeof(std::shared_ptr<io::data>));
+  if (!userdata)
+    throw exceptions::msg() << "Unable to build a lua broker_event";
+
+  new(userdata) std::shared_ptr<io::data>(e);
+
+  luaL_getmetatable(L, "broker_event");
+  lua_setmetatable(L, -2);
+}
 
 /**
  *  The Lua broker_event constructor
@@ -56,12 +78,11 @@ static int l_broker_event_destructor(lua_State* L) {
   if (ptr) {
     auto event = static_cast<std::shared_ptr<io::data>*>(ptr);
     event->reset();
-    delete event;
   }
   return 0;
 }
 
-static int l_broker_event_get(lua_State* L) {
+static int l_broker_event_index(lua_State* L) {
   std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(luaL_checkudata(L, 1, "broker_event"))};
   const char* key = luaL_checkstring(L, 2);
 
@@ -74,83 +95,83 @@ static int l_broker_event_get(lua_State* L) {
       if (entry_name && strcmp(entry_name, key) == 0) {
         switch (current_entry->get_type()) {
           case mapping::source::BOOL:
-            lua_pushboolean(_L, current_entry->get_bool(d));
+            lua_pushboolean(L, current_entry->get_bool(*e));
             break;
           case mapping::source::DOUBLE:
-            lua_pushnumber(_L, current_entry->get_double(d));
+            lua_pushnumber(L, current_entry->get_double(*e));
             break;
           case mapping::source::INT:
             switch (current_entry->get_attribute()) {
               case mapping::entry::invalid_on_zero: {
-                int val(current_entry->get_int(d));
+                int val(current_entry->get_int(*e));
                 if (val == 0)
-                  lua_pushnil(_L);
+                  lua_pushnil(L);
                 else
-                  lua_pushinteger(_L, val);
+                  lua_pushinteger(L, val);
               } break;
               case mapping::entry::invalid_on_minus_one: {
-                int val(current_entry->get_int(d));
+                int val(current_entry->get_int(*e));
                 if (val == -1)
-                  lua_pushnil(_L);
+                  lua_pushnil(L);
                 else
-                  lua_pushinteger(_L, val);
+                  lua_pushinteger(L, val);
               } break;
               default:
-                lua_pushinteger(_L, current_entry->get_int(d));
+                lua_pushinteger(L, current_entry->get_int(*e));
             }
             break;
           case mapping::source::SHORT:
-            lua_pushinteger(_L, current_entry->get_short(d));
+            lua_pushinteger(L, current_entry->get_short(*e));
             break;
           case mapping::source::STRING:
             if (current_entry->get_attribute() ==
                 mapping::entry::invalid_on_zero) {
-              std::string val{current_entry->get_string(d)};
+              std::string val{current_entry->get_string(*e)};
               if (val.empty())
-                lua_pushnil(_L);
+                lua_pushnil(L);
               else
-                lua_pushstring(_L, val.c_str());
+                lua_pushstring(L, val.c_str());
             } else
-              lua_pushstring(_L, current_entry->get_string(d).c_str());
+              lua_pushstring(L, current_entry->get_string(*e).c_str());
             break;
           case mapping::source::TIME:
             switch (current_entry->get_attribute()) {
               case mapping::entry::invalid_on_zero: {
-                time_t val = current_entry->get_time(d);
+                time_t val = current_entry->get_time(*e);
                 if (val == 0)
-                  lua_pushnil(_L);
+                  lua_pushnil(L);
                 else
-                  lua_pushinteger(_L, val);
+                  lua_pushinteger(L, val);
               } break;
               case mapping::entry::invalid_on_minus_one: {
-                time_t val = current_entry->get_time(d);
+                time_t val = current_entry->get_time(*e);
                 if (val == -1)
-                  lua_pushnil(_L);
+                  lua_pushnil(L);
                 else
-                  lua_pushinteger(_L, val);
+                  lua_pushinteger(L, val);
               } break;
               default:
-                lua_pushinteger(_L, current_entry->get_time(d));
+                lua_pushinteger(L, current_entry->get_time(*e));
             }
             break;
           case mapping::source::UINT:
             switch (current_entry->get_attribute()) {
               case mapping::entry::invalid_on_zero: {
-                uint32_t val = current_entry->get_uint(d);
+                uint32_t val = current_entry->get_uint(*e);
                 if (val == 0)
-                  lua_pushnil(_L);
+                  lua_pushnil(L);
                 else
-                  lua_pushinteger(_L, val);
+                  lua_pushinteger(L, val);
               } break;
               case mapping::entry::invalid_on_minus_one: {
-                uint32_t val = current_entry->get_uint(d);
+                uint32_t val = current_entry->get_uint(*e);
                 if (val == static_cast<uint32_t>(-1))
-                  lua_pushnil(_L);
+                  lua_pushnil(L);
                 else
-                  lua_pushinteger(_L, val);
+                  lua_pushinteger(L, val);
               } break;
               default:
-                lua_pushinteger(_L, current_entry->get_uint(d));
+                lua_pushinteger(L, current_entry->get_uint(*e));
             }
             break;
           default:  // Error in one of the mappings.
@@ -174,14 +195,13 @@ static int l_broker_event_get(lua_State* L) {
  *
  *  @return The Lua interpreter as a lua_State*
  */
-void broker_socket::broker_socket_reg(lua_State* L) {
-  luaL_Reg s_broker_event_regs[] = {{"new", l_broker_event_constructor},
+void broker_event::broker_event_reg(lua_State* L) {
+  luaL_Reg s_broker_event_regs[] = {{"new", l_broker_event_new},
                                      {"__gc", l_broker_event_destructor},
-                                     {"get", l_broker_event_get},
+                                     {"__index", l_broker_event_index},
                                      {nullptr, nullptr}};
 
   const char* name = "broker_event";
-  lua_newtable(L);
   luaL_newmetatable(L, name);
 
   // Register the C functions into the metatable we just created.
@@ -191,8 +211,5 @@ void broker_socket::broker_socket_reg(lua_State* L) {
   luaL_setfuncs(L, s_broker_event_regs, 0);
 #endif
 
-  lua_pushliteral(L, "__index");
-  lua_pushvalue(L, -2);
-  lua_rawset(L, -3);
   lua_setglobal(L, name);
 }

@@ -19,6 +19,8 @@
 #ifndef CCB_LUA_BROKER_EVENT_HH
 #define CCB_LUA_BROKER_EVENT_HH
 
+#include <memory>
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/namespace.hh"
 
 extern "C" {
@@ -40,6 +42,7 @@ namespace lua {
 class broker_event {
  public:
   static void broker_event_reg(lua_State* L);
+  static void create(lua_State* L, std::shared_ptr<io::data> e);
 };
 }  // namespace lua
 
