@@ -74,7 +74,6 @@ class luabinding {
   luabinding& operator=(luabinding const& other) = delete;
   ~luabinding();
   bool has_filter() const noexcept;
-  int32_t write2(std::shared_ptr<io::data> const& data) noexcept;
   int32_t write(std::shared_ptr<io::data> const& data) noexcept;
   bool has_flush() const noexcept;
   int32_t flush() noexcept;

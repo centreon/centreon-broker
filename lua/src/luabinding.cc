@@ -216,21 +216,6 @@ void luabinding::_init_script(
                             << lua_tostring(_L, -1);
 }
 
-int luabinding::write2(const std::shared_ptr<io::data>& data) noexcept {
-  // Let's get the function to call
-  lua_getglobal(_L, "write2");
-
-  // We add data as argument
-  broker_event::create(_L, data);
-
-  if (lua_pcall(_L, 1, 1, 0) != 0) {
-    logging::error(logging::high) << "lua: error running function `write2'"
-                                  << lua_tostring(_L, -1);
-    return 0;
-  }
-  return 0;
-}
-
 /**
  *  The write method called by the stream::write method.
  *

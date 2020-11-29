@@ -1636,7 +1636,48 @@ TEST_F(LuaTest, CacheSeverity) {
   RemoveFile("/tmp/log");
 }
 
-TEST_F(LuaTest, BrokerEvent) {
+TEST_F(LuaTest, BrokerEventIndex) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  std::map<std::string, misc::variant> conf;
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 2;
+  svc->service_description = "foo bar";
+  svc->notes = "svc notes";
+  svc->notes_url = "svc notes url";
+  svc->action_url = "svc action url";
+  svc->check_interval = 1.2;
+  svc->check_type = 14;
+  svc->last_check = 123456;
+  std::string filename("/tmp/cache_test.lua");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/event_log')\n"
+               "end\n\n"
+               "function write(d)\n"
+               "  broker_log:info(0, 'description = ' .. d.description)\n"
+               "  broker_log:info(0, 'stalk_on_ok = ' .. tostring(d.stalk_on_ok))\n"
+               "  broker_log:info(0, 'check_interval = ' .. d.check_interval)\n"
+               "  broker_log:info(0, 'check_type = ' .. d.check_type)\n"
+               "  broker_log:info(0, 'service_id = ' .. d.service_id)\n"
+               "  broker_log:info(0, 'last_check = ' .. d.last_check)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  binding->write(svc);
+  std::string lst(ReadFile("/tmp/event_log"));
+  std::cout << lst << std::endl;
+  ASSERT_NE(lst.find("description = foo bar"), std::string::npos);
+  ASSERT_NE(lst.find("stalk_on_ok = false"), std::string::npos);
+  ASSERT_NE(lst.find("check_interval = 1.2"), std::string::npos);
+  ASSERT_NE(lst.find("check_type = 14"), std::string::npos);
+  ASSERT_NE(lst.find("service_id = 2"), std::string::npos);
+  ASSERT_NE(lst.find("last_check = 123456"), std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/event_log");
+}
+
+TEST_F(LuaTest, BrokerEventPairs) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
@@ -1690,9 +1731,9 @@ TEST_F(LuaTest, BrokerEventJsonEncode) {
                "  broker_log:info(0, broker.json_encode(d))\n"
                "end\n");
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
-  binding->write2(svc);
+  binding->write(svc);
   std::string lst(ReadFile("/tmp/event_log"));
-  ASSERT_EQ(lst, "{\"_type\":65559}");
+  ASSERT_NE(lst.find("{ \"_type\": 65559, \"category\": 1, \"element\": 23, \"acknowledged\":false, \"acknowledgement_type\":0, \"action_url\":\"svc action url\", \"active_checks\":false, \"check_freshness\":false, \"check_interval\":0.0, \"check_period\":\"\", \"check_type\":0, \"check_attempt\":0, \"state\":4, \"default_active_checks\":false, \"default_event_handler_enabled\":false, \"default_flap_detection\":false, \"default_notify\":false, \"default_passive_checks\":false, \"scheduled_downtime_depth\":0, \"display_name\":\"\", \"enabled\":true, \"event_handler\":\"\", \"event_handler_enabled\":false, \"execution_time\":0.0, \"first_notification_delay\":0.0, \"flap_detection\":false, \"flap_detection_on_critical\":false, \"flap_detection_on_ok\":false, \"flap_detection_on_unknown\":false, \"flap_detection_on_warning\":false, \"freshness_threshold\":0.0, \"checked\":false, \"high_flap_threshold\":0.0, \"host_id\":\"1\", \"icon_image\":\"\", \"icon_image_alt\":\"\", \"service_id\":\"2\", \"flapping\":false, \"volatile\":false, \"last_hard_state\":4, \"latency\":0.0, \"low_flap_threshold\":0.0, \"max_check_attempts\":0, \"no_more_notifications\":false, \"notes\":\"svc notes\", \"notes_url\":\"svc notes url\", \"notification_interval\":0.0, \"notification_number\":0, \"notification_period\":\"\", \"notify\":false, \"notify_on_critical\":false, \"notify_on_downtime\":false, \"notify_on_flapping\":false, \"notify_on_recovery\":false, \"notify_on_unknown\":false, \"notify_on_warning\":false, \"obsess_over_service\":false, \"passive_checks\":false, \"percent_state_change\":0.0, \"retry_interval\":0.0, \"description\":\"foo bar\", \"should_be_scheduled\":false, \"stalk_on_critical\":false, \"stalk_on_ok\":false, \"stalk_on_unknown\":false, \"stalk_on_warning\":false, \"state_type\":0, \"check_command\":\"\", \"output\":\"\", \"perfdata\":\"\", \"retain_nonstatus_information\":false, \"retain_status_information\":false}"), std::string::npos);
   RemoveFile(filename);
   RemoveFile("/tmp/event_log");
 }
