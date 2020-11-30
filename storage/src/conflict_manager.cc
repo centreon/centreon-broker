@@ -89,6 +89,7 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _max_perfdata_queries{0},
       _max_metrics_queries{0},
       _max_cv_queries{0},
+      _max_log_queries{0},
       _events_handled{0},
       _speed{},
       _stats_count_pos{0},
@@ -134,6 +135,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_max_perfdata_queries = queries_per_transaction;
       _singleton->_max_metrics_queries = queries_per_transaction;
       _singleton->_max_cv_queries = queries_per_transaction;
+      _singleton->_max_log_queries = queries_per_transaction;
       _singleton->_ref_count++;
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
@@ -396,6 +398,9 @@ void conflict_manager::_callback() {
         /* Time to send customvariables to database */
         _update_customvariables();
 
+        /* Time to send logs to database */
+        _insert_logs();
+
         log_v2::sql()->trace(
             "conflict_manager: main loop initialized with a timeout of {} "
             "seconds.",
@@ -416,6 +421,7 @@ void conflict_manager::_callback() {
         time_t next_insert_perfdatas = time(nullptr);
         time_t next_update_metrics = next_insert_perfdatas;
         time_t next_update_cv = next_insert_perfdatas;
+        time_t next_update_log = next_insert_perfdatas;
         /* During this loop, connectors still fill the queue when they receive
          * new events.
          * The loop is hold by three conditions that are:
@@ -485,6 +491,13 @@ void conflict_manager::_callback() {
                 _cv_queue.size() > _max_cv_queries) {
               next_update_cv = std::chrono::system_clock::to_time_t(now1) + 10;
               _update_customvariables();
+            }
+
+            /* Time to send logs to database */
+            if (std::chrono::system_clock::to_time_t(now1) >= next_update_log &&
+                _log_queue.size() > _max_log_queries) {
+              next_update_log = std::chrono::system_clock::to_time_t(now1) + 10;
+              _insert_logs();
             }
 
             timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
