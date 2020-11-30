@@ -94,6 +94,39 @@ static void broker_json_encode_table(lua_State* L, std::ostringstream& oss) {
   }
 }
 
+static void escape_str(const char* content, std::ostringstream& oss) {
+  /* If the string contains '"', we must escape it */
+  size_t pos(strcspn(content, "\\\"\t\r\n"));
+  if (content[pos] != 0) {
+    std::string str(content);
+    char replacement[3] = "\\\\";
+    do {
+      switch (str[pos]) {
+        case '\\':
+          replacement[1] = '\\';
+          break;
+        case '"':
+          replacement[1] = '"';
+          break;
+        case '\t':
+          replacement[1] = 't';
+          break;
+        case '\r':
+          replacement[1] = 'r';
+          break;
+        case '\n':
+          replacement[1] = 'n';
+          break;
+      }
+      str.replace(pos, 1, replacement);
+      pos += 2;
+    } while ((pos = str.find_first_of("\\\"\t\r\n", pos)) !=
+             std::string::npos);
+    oss << str;
+  } else
+    oss << content;
+}
+
 void broker_json_encode_broker_event(lua_State* L, std::shared_ptr<io::data> e, std::ostringstream& oss) {
   io::event_info const* info = io::events::instance().get_event_info(e->type());
   if (info) {
@@ -135,10 +168,16 @@ void broker_json_encode_broker_event(lua_State* L, std::shared_ptr<io::data> e, 
             if (current_entry->get_attribute() ==
                 mapping::entry::invalid_on_zero) {
               std::string val{current_entry->get_string(*e)};
-              if (!val.empty())
-                oss << fmt::format(", \"{}\":\"{}\"", entry_name, val);
-            } else
-              oss << fmt::format(", \"{}\":\"{}\"", entry_name, current_entry->get_string(*e));
+              if (!val.empty()) {
+                oss << fmt::format(", \"{}\":\"", entry_name);
+                escape_str(val.c_str(), oss);
+                oss << '"';
+              }
+            } else {
+              oss << fmt::format(", \"{}\":\"", entry_name);
+              escape_str(current_entry->get_string(*e).c_str(), oss);
+              oss << '"';
+            }
             break;
           case mapping::source::TIME:
             switch (current_entry->get_attribute()) {
@@ -199,36 +238,10 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
       break;
     case LUA_TSTRING: {
       /* If the string contains '"', we must escape it */
-      char const* content(lua_tostring(L, -1));
-      size_t pos(strcspn(content, "\\\"\t\r\n"));
-      if (content[pos] != 0) {
-        std::string str(content);
-        char replacement[3] = "\\\\";
-        do {
-          switch (str[pos]) {
-            case '\\':
-              replacement[1] = '\\';
-              break;
-            case '"':
-              replacement[1] = '"';
-              break;
-            case '\t':
-              replacement[1] = 't';
-              break;
-            case '\r':
-              replacement[1] = 'r';
-              break;
-            case '\n':
-              replacement[1] = 'n';
-              break;
-          }
-          str.replace(pos, 1, replacement);
-          pos += 2;
-        } while ((pos = str.find_first_of("\\\"\t\r\n", pos)) !=
-                 std::string::npos);
-        oss << '"' << str << '"';
-      } else
-        oss << '"' << content << '"';
+      const char* content = lua_tostring(L, -1);
+      oss << '"';
+      escape_str(content, oss);
+      oss << '"';
     } break;
     case LUA_TBOOLEAN:
       oss << (lua_toboolean(L, -1) ? "true" : "false");
