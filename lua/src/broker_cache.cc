@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/lua/broker_cache.hh"
+#include "com/centreon/broker/lua/broker_event.hh"
 
 #include "com/centreon/broker/misc/pair.hh"
 
@@ -172,6 +173,30 @@ static int l_broker_cache_get_hostname(lua_State* L) {
 }
 
 /**
+ *  The get_service() method available in the Lua interpreter
+ *  It returns a broker_event of type 'service'.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_service(lua_State* L) {
+  macro_cache const* cache(
+      *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  uint32_t host_id(luaL_checkinteger(L, 2));
+  uint32_t svc_id(luaL_checkinteger(L, 3));
+
+  try {
+    const std::shared_ptr<neb::service>& svc{cache->get_service(host_id, svc_id)};
+    broker_event::create(L, svc);
+  } catch (std::exception const& e) {
+    (void)e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
  *  The get_host() method available in the Lua interpreter
  *  It returns a table containing various attributes of the host.
  *
@@ -186,14 +211,7 @@ static int l_broker_cache_get_host(lua_State* L) {
 
   try {
     const std::shared_ptr<neb::host>& hst{cache->get_host(id)};
-    lua_createtable(L, 0, 3);
-
-    lua_pushlstring(L, hst->host_name.c_str(), hst->host_name.size());
-    lua_setfield(L, -2, "name");
-    lua_pushlstring(L, hst->alias.c_str(), hst->alias.size());
-    lua_setfield(L, -2, "alias");
-    lua_pushlstring(L, hst->address.c_str(), hst->address.size());
-    lua_setfield(L, -2, "address");
+    broker_event::create(L, hst);
   } catch (std::exception const& e) {
     (void)e;
     lua_pushnil(L);
@@ -544,6 +562,7 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
       {"get_hostgroups", l_broker_cache_get_hostgroups},
       {"get_hostname", l_broker_cache_get_hostname},
       {"get_host", l_broker_cache_get_host},
+      {"get_service", l_broker_cache_get_service},
       {"get_index_mapping", l_broker_cache_get_index_mapping},
       {"get_instance_name", l_broker_cache_get_instance_name},
       {"get_metric_mapping", l_broker_cache_get_metric_mapping},

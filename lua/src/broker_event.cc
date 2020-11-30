@@ -215,7 +215,7 @@ static int l_broker_event_index(lua_State* L) {
     lua_pushinteger(L, (static_cast<uint32_t>(e->type()) >> 16));
     return 1;
   }
-  else if (strcmp(key, "category") == 0) {
+  else if (strcmp(key, "element") == 0) {
     lua_pushinteger(L, e->type() & 0xffff);
     return 1;
   }
@@ -319,7 +319,7 @@ static int l_broker_event_index(lua_State* L) {
     }
   } else
     throw exceptions::msg() << "cannot bind object of type " << e->type()
-                            << " to database query: mapping does not exist";
+                            << " to lua userdata: mapping does not exist";
   return 0;
 }
 
