@@ -44,29 +44,29 @@ class service_status;
 
 namespace storage {
 
-  /**
-   * @brief The conflict manager.
-   *
-   * Many queries are executed by Broker through the sql connector and also
-   * the storage connector. Thos queries are made with several connections to
-   * the database and we don't commit after each query. All those constraints
-   * are there for performance purpose but they can lead us to database
-   * deadlocks. To avoid such locks, there is the conflict manager. Sent queries
-   * are sent to connections through it. The idea behind the conflict manager
-   * is the following:
-   *
-   * * determine the connection to use for the upcoming query.
-   * * Check that the "action" to execute is compatible with actions already
-   *   running on our connection and also others. If not, solve the issue with
-   *   commits.
-   * * Send the query to the connection.
-   * * Add or not an action flag to this connection for next queries.
-   *
-   * Another task of the conflict manager is to keep informations for queries.
-   * Metrics, customvariables are sent in bulk to avoid locks on the database,
-   * so we keep some containers here to build those big queries.
-   *
-   */
+/**
+ * @brief The conflict manager.
+ *
+ * Many queries are executed by Broker through the sql connector and also
+ * the storage connector. Thos queries are made with several connections to
+ * the database and we don't commit after each query. All those constraints
+ * are there for performance purpose but they can lead us to database
+ * deadlocks. To avoid such locks, there is the conflict manager. Sent queries
+ * are sent to connections through it. The idea behind the conflict manager
+ * is the following:
+ *
+ * * determine the connection to use for the upcoming query.
+ * * Check that the "action" to execute is compatible with actions already
+ *   running on our connection and also others. If not, solve the issue with
+ *   commits.
+ * * Send the query to the connection.
+ * * Add or not an action flag to this connection for next queries.
+ *
+ * Another task of the conflict manager is to keep informations for queries.
+ * Metrics, customvariables are sent in bulk to avoid locks on the database,
+ * so we keep some containers here to build those big queries.
+ *
+ */
 class conflict_manager {
   /* Forward declarations */
  public:
@@ -150,6 +150,7 @@ class conflict_manager {
   uint32_t _max_perfdata_queries;
   uint32_t _max_metrics_queries;
   uint32_t _max_cv_queries;
+  uint32_t _max_log_queries;
 
   std::thread _thread;
 
@@ -186,12 +187,15 @@ class conflict_manager {
    * one, that's why we store those values in a map. The filled table here is
    * 'metrics'. */
   std::unordered_map<int32_t, metric_info*> _metrics;
-  /* This queue is sent in bulk to the database. The insert/update is done if
-   * the loop timeout is reached or if the queue size is greater than
-   * _max_cv_queries. The filled table here is 'customvariables'. The queue
-   * elements are pairs of a string used for the query and a pointer to a
-   * boolean so that we can acknowledge the BBDO event when written. */
+
+  /* These queues are sent in bulk to the database. The insert/update is done
+   * if the loop timeout is reached or if the queue size is greater than
+   * _max_cv_queries/_max_log_queries. The filled table here is respectively
+   * 'customvariables'/'logs'. The queue elements are pairs of a string used
+   * for the query and a pointer to a boolean so that we can acknowledge the
+   * BBDO event when written. */
   std::deque<std::pair<bool*, std::string>> _cv_queue;
+  std::deque<std::pair<bool*, std::string>> _log_queue;
 
   timestamp _oldest_timestamp;
   std::unordered_map<uint32_t, stored_timestamp> _stored_timestamps;
@@ -214,7 +218,6 @@ class conflict_manager {
   database::mysql_stmt _host_status_update;
   database::mysql_stmt _instance_insupdate;
   database::mysql_stmt _instance_status_insupdate;
-  database::mysql_stmt _log_insert;
   database::mysql_stmt _module_insert;
   database::mysql_stmt _service_check_update;
   database::mysql_stmt _service_dependency_insupdate;
@@ -310,6 +313,7 @@ class conflict_manager {
   void _update_metrics();
   void _insert_perfdatas();
   void _update_customvariables();
+  void _insert_logs();
   void __exit();
 
  public:
