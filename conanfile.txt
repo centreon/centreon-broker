@@ -8,6 +8,7 @@ openssl/1.1.1h
 grpc/1.27.3@inexorgame/stable
 mariadb-connector-c/3.1.10
 zlib/1.2.11
+lua/5.3.5
 
 [generators]
 cmake_paths
