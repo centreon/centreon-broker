@@ -25,7 +25,6 @@
 #include <iomanip>
 #include <json11.hpp>
 #include <sstream>
-#include <memory>
 #include <fmt/format.h>
 
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"

@@ -19,7 +19,6 @@
 #include <cassert>
 #include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/broker_cache.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
