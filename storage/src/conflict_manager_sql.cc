@@ -1778,6 +1778,13 @@ void conflict_manager::_process_responsive_instance(
   *std::get<2>(t) = true;
 }
 
+/**
+ * @brief Send a big query to update/insert a bulk of custom variables. When
+ * the query is done, we set the corresponding boolean of each pair to true
+ * to ack each event.
+ *
+ * When we exit the function, the custom variables queue is empty.
+ */
 void conflict_manager::_update_customvariables() {
   if (_cv_queue.empty())
     return;
@@ -1793,6 +1800,7 @@ void conflict_manager::_update_customvariables() {
   for (++it; it != _cv_queue.end(); ++it)
     oss << "," << std::get<1>(*it);
 
+  /* Building of the query */
   oss << " ON DUPLICATE KEY UPDATE "
          "default_value=VALUES(default_VALUE),modified=VALUES(modified),type="
          "VALUES(type),update_time=VALUES(update_time),value=VALUES(value)";
@@ -1802,6 +1810,8 @@ void conflict_manager::_update_customvariables() {
   log_v2::sql()->debug("{} new custom variables inserted", _cv_queue.size());
   log_v2::sql()->trace("sending query << {} >>", query);
   _add_action(conn, actions::custom_variables);
+
+  /* Acknowledgement and cleanup */
   while (!_cv_queue.empty()) {
     auto it = _cv_queue.begin();
     *std::get<0>(*it) = true;
@@ -1809,12 +1819,20 @@ void conflict_manager::_update_customvariables() {
   }
 }
 
+/**
+ * @brief Send a big query to insert a bulk of logs. When the query is done,
+ * we set the corresponding boolean of each pair to true to ack each event.
+ *
+ * When we exit the function, the logs queue is empty.
+ */
 void conflict_manager::_insert_logs() {
   if (_log_queue.empty())
     return;
   int conn = _mysql.choose_best_connection(neb::log_entry::static_type());
   auto it = _log_queue.begin();
   std::ostringstream oss;
+
+  /* Building of the query */
   oss << "INSERT INTO logs "
          "(ctime,host_id,service_id,host_name,instance_name,type,msg_type,"
          "notification_cmd,notification_contact,retry,service_description,"
@@ -1828,6 +1846,8 @@ void conflict_manager::_insert_logs() {
   _mysql.run_query(query, "SQL: could not store logs correctly", true, conn);
   log_v2::sql()->debug("{} new logs inserted", _log_queue.size());
   log_v2::sql()->trace("sending query << {} >>", query);
+
+  /* Acknowledgement and cleanup */
   while (!_log_queue.empty()) {
     auto it = _log_queue.begin();
     *std::get<0>(*it) = true;
