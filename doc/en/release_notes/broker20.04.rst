@@ -1,4 +1,16 @@
 ========================
+Centreon Broker 20.04.12
+========================
+
+************
+Enhancements
+************
+
+logs
+====
+Logs are sent to the database in bulk as we already do for customvariables.
+
+========================
 Centreon Broker 20.04.11
 ========================
 
