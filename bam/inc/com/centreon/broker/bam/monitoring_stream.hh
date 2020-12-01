@@ -41,6 +41,20 @@ namespace bam {
  *  metrics table of a centbam DB.
  */
 class monitoring_stream : public io::stream {
+  configuration::applier::state _applier;
+  std::string _status;
+  std::string _ext_cmd_file;
+  ba_svc_mapping _ba_mapping;
+  ba_svc_mapping _meta_mapping;
+  mutable std::mutex _statusm;
+  mysql _mysql;
+  database::mysql_stmt _ba_update;
+  database::mysql_stmt _kpi_update;
+  database::mysql_stmt _meta_service_update;
+  int32_t _pending_events;
+  database_config _storage_db_cfg;
+  std::shared_ptr<persistent_cache> _cache;
+
  public:
   monitoring_stream(std::string const& ext_cmd_file,
                     database_config const& db_cfg,
@@ -65,20 +79,6 @@ class monitoring_stream : public io::stream {
 
   void _read_cache();
   void _write_cache();
-
-  configuration::applier::state _applier;
-  std::string _status;
-  std::string _ext_cmd_file;
-  ba_svc_mapping _ba_mapping;
-  ba_svc_mapping _meta_mapping;
-  mutable std::mutex _statusm;
-  mysql _mysql;
-  database::mysql_stmt _ba_update;
-  database::mysql_stmt _kpi_update;
-  database::mysql_stmt _meta_service_update;
-  int _pending_events;
-  database_config _storage_db_cfg;
-  std::shared_ptr<persistent_cache> _cache;
 };
 }  // namespace bam
 
