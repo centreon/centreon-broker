@@ -1256,7 +1256,6 @@ void conflict_manager::_process_instance_status(
 void conflict_manager::_process_log(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn = _mysql.choose_best_connection(neb::log_entry::static_type());
 
   // Fetch proper structure.
   neb::log_entry const& le(*static_cast<neb::log_entry const*>(d.get()));
@@ -1266,16 +1265,25 @@ void conflict_manager::_process_log(
       "SQL: processing log of poller '{}' generated at {} (type {})",
       le.poller_name, le.c_time, le.msg_type);
 
-  // Prepare query.
-  if (!_log_insert.prepared()) {
-    query_preparator qp(neb::log_entry::static_type());
-    _log_insert = qp.prepare_insert(_mysql);
-  }
-
   // Run query.
-  _log_insert << le;
-  _mysql.run_statement(_log_insert, "SQL: ", true, conn);
-  *std::get<2>(t) = true;
+  _log_queue.emplace_back(std::make_pair(
+      std::get<2>(t),
+      fmt::format(
+          "({},{},{},'{}','{}',{},{},'{}','{}',{},'{}',{},'{}')", le.c_time,
+          le.host_id, le.service_id,
+          misc::string::escape(le.host_name, get_logs_col_size(logs_host_name)),
+          misc::string::escape(le.poller_name,
+                               get_logs_col_size(logs_instance_name)),
+          le.log_type, le.msg_type,
+          misc::string::escape(le.notification_cmd,
+                               get_logs_col_size(logs_notification_cmd)),
+          misc::string::escape(le.notification_contact,
+                               get_logs_col_size(logs_notification_contact)),
+          le.retry,
+          misc::string::escape(le.service_description,
+                               get_logs_col_size(logs_service_description)),
+          le.status,
+          misc::string::escape(le.output, get_logs_col_size(logs_output)))));
 }
 
 /**
@@ -1770,6 +1778,13 @@ void conflict_manager::_process_responsive_instance(
   *std::get<2>(t) = true;
 }
 
+/**
+ * @brief Send a big query to update/insert a bulk of custom variables. When
+ * the query is done, we set the corresponding boolean of each pair to true
+ * to ack each event.
+ *
+ * When we exit the function, the custom variables queue is empty.
+ */
 void conflict_manager::_update_customvariables() {
   if (_cv_queue.empty())
     return;
@@ -1782,16 +1797,60 @@ void conflict_manager::_update_customvariables() {
          "value) VALUES "
       << std::get<1>(*it);
   *std::get<0>(*it) = true;
-  for (++it; it != _cv_queue.end(); ++it) {
+  for (++it; it != _cv_queue.end(); ++it)
     oss << "," << std::get<1>(*it);
-    *std::get<0>(*it) = true;
-  }
+
+  /* Building of the query */
   oss << " ON DUPLICATE KEY UPDATE "
          "default_value=VALUES(default_VALUE),modified=VALUES(modified),type="
          "VALUES(type),update_time=VALUES(update_time),value=VALUES(value)";
-  _mysql.run_query(oss.str(), "SQL: could not store custom variables correctly",
+  std::string query(oss.str());
+  _mysql.run_query(query, "SQL: could not store custom variables correctly",
                    true, conn);
-  log_v2::sql()->trace("sending query << {} >>", oss.str());
+  log_v2::sql()->debug("{} new custom variables inserted", _cv_queue.size());
+  log_v2::sql()->trace("sending query << {} >>", query);
   _add_action(conn, actions::custom_variables);
-  _cv_queue.clear();
+
+  /* Acknowledgement and cleanup */
+  while (!_cv_queue.empty()) {
+    auto it = _cv_queue.begin();
+    *std::get<0>(*it) = true;
+    _cv_queue.pop_front();
+  }
+}
+
+/**
+ * @brief Send a big query to insert a bulk of logs. When the query is done,
+ * we set the corresponding boolean of each pair to true to ack each event.
+ *
+ * When we exit the function, the logs queue is empty.
+ */
+void conflict_manager::_insert_logs() {
+  if (_log_queue.empty())
+    return;
+  int conn = _mysql.choose_best_connection(neb::log_entry::static_type());
+  auto it = _log_queue.begin();
+  std::ostringstream oss;
+
+  /* Building of the query */
+  oss << "INSERT INTO logs "
+         "(ctime,host_id,service_id,host_name,instance_name,type,msg_type,"
+         "notification_cmd,notification_contact,retry,service_description,"
+         "status,output) VALUES "
+      << std::get<1>(*it);
+  *std::get<0>(*it) = true;
+  for (++it; it != _log_queue.end(); ++it)
+    oss << "," << std::get<1>(*it);
+
+  std::string query(oss.str());
+  _mysql.run_query(query, "SQL: could not store logs correctly", true, conn);
+  log_v2::sql()->debug("{} new logs inserted", _log_queue.size());
+  log_v2::sql()->trace("sending query << {} >>", query);
+
+  /* Acknowledgement and cleanup */
+  while (!_log_queue.empty()) {
+    auto it = _log_queue.begin();
+    *std::get<0>(*it) = true;
+    _log_queue.pop_front();
+  }
 }
