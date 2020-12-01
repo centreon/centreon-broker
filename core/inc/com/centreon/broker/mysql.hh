@@ -54,7 +54,7 @@ class mysql {
                             int thread = -1);
 
   int run_statement(database::mysql_stmt& stmt,
-                    std::string const& error_msg = "",
+                    my_error::code ec = my_error::empty,
                     bool fatal = false,
                     int thread_id = -1);
 

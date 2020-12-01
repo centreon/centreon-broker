@@ -72,7 +72,7 @@ void (stream::*const stream::_correlation_processing_table[])(
  */
 void stream::_process_engine(std::shared_ptr<io::data> const& e) {
   // Log message.
-  logging::info(logging::medium) << "SQL: processing correlation engine event";
+  log_v2::sql()->info("SQL: processing correlation engine event");
 
   // Cast event.
   correlation::engine_state const& es(
@@ -82,16 +82,17 @@ void stream::_process_engine(std::shared_ptr<io::data> const& e) {
   if (es.started) {
     time_t now(time(nullptr));
     {
-      std::ostringstream ss;
-      ss << "UPDATE issues SET end_time=" << now
-         << "  WHERE end_time=0 OR end_time IS NULL";
-      _mysql.run_query(ss.str());
+      std::string query(fmt::format(
+          "UPDATE issues SET end_time={} WHERE end_time=0 OR end_time IS NULL",
+          now));
+      _mysql.run_query(query);
     }
     {
-      std::ostringstream ss;
-      ss << "UPDATE issues_issues_parents SET end_time=" << now
-         << "  WHERE end_time=0 OR end_time IS NULL";
-      _mysql.run_query(ss.str());
+      std::string query(
+          fmt::format("UPDATE issues_issues_parents SET end_time={} WHERE "
+                      "end_time=0 OR end_time IS NULL",
+                      now));
+      _mysql.run_query(query);
     }
   }
 }
@@ -111,28 +112,21 @@ void stream::_process_host_state(std::shared_ptr<io::data> const& e) {
 
   // Prepare queries.
   if (!_host_state_insupdate.prepared()) {
-    std::ostringstream ss;
-    ss << "INSERT INTO hoststateevents"
-       << " (host_id, start_time, ack_time,"
-          "            end_time, in_downtime, state)"
-          "  VALUES (:host_id, :start_time, :ack_time, :end_time,"
-          "          :in_downtime, :state)"
-          " ON DUPLICATE KEY UPDATE"
-          " ack_time=:ack_time,"
-          " end_time=:end_time, in_downtime=:in_downtime,"
-          " state=:state";
-    _host_state_insupdate = mysql_stmt(ss.str(), true);
+    std::string query(
+        "INSERT INTO hoststateevents"
+        " (host_id, start_time, ack_time, end_time, in_downtime, state)"
+        " VALUES (:host_id, :start_time, :ack_time, :end_time,"
+        " :in_downtime, :state) ON DUPLICATE KEY UPDATE ack_time=:ack_time, "
+        "end_time=:end_time, in_downtime=:in_downtime, state=:state");
+    _host_state_insupdate = mysql_stmt(query, true);
     _mysql.prepare_statement(_host_state_insupdate);
   }
 
   // Processing.
   if (_with_state_events) {
-    std::ostringstream oss;
-    oss << "SQL: could not store host state event (host: " << s.host_id
-        << ", start time " << s.start_time << "): ";
-
     _host_state_insupdate << s;
-    _mysql.run_statement(_host_state_insupdate, oss.str(), true,
+    _mysql.run_statement(_host_state_insupdate,
+                         database::mysql_error::store_host_state, true,
                          _mysql.choose_connection_by_instance(s.poller_id));
   }
 }
