@@ -2,6 +2,15 @@
 Centreon Broker 20.04.12
 ========================
 
+****
+Bugs
+****
+
+Bam reporting
+=============
+When availabilities are computed, durations can be doubled. This new version
+fixes this issue.
+
 ************
 Enhancements
 ************

@@ -90,13 +90,10 @@ class mysql_task_prepare : public mysql_task {
 
 class mysql_task_run : public mysql_task {
  public:
-  mysql_task_run(std::string const& q, std::string const& error_msg, bool fatal)
-      : mysql_task(mysql_task::RUN),
-        query(q),
-        error_msg(error_msg),
-        fatal(fatal) {}
+  mysql_task_run(std::string const& q, mysql_error::code ec, bool fatal)
+      : mysql_task(mysql_task::RUN), query(q), error_code(ec), fatal(fatal) {}
   std::string query;
-  std::string error_msg;
+  mysql_error::code error_code;
   bool fatal;
 };
 
