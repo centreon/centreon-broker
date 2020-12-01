@@ -23,6 +23,7 @@
 #include <ctime>
 #include <sstream>
 
+#include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql.hh"
@@ -126,21 +127,17 @@ void cleanup::_run() {
         "    ON hosts.instance_id=instances.instance_id"
         "  SET index_data.to_delete=1"
         "  WHERE instances.deleted=1",
-        "SQL: could not flag the index_data table"
-        " to delete outdated entries",
-        false);
+        database::mysql_error::flag_index_data, false);
     ms.run_query(
         "DELETE hosts FROM hosts INNER JOIN instances"
         "  ON hosts.instance_id=instances.instance_id"
         "  WHERE instances.deleted=1",
-        "SQL: could not delete outdated entries from the hosts table", false);
+        database::mysql_error::delete_hosts, false);
     ms.run_query(
         "DELETE modules FROM modules INNER JOIN instances"
         "  ON modules.instance_id=instances.instance_id"
         "  WHERE instances.deleted=1",
-        "SQL: could not delete outdated entries"
-        " from the modules tables",
-        false);
+        database::mysql_error::delete_modules, false);
 
     // Sleep a while.
     time_t target(time(nullptr) + _interval);
