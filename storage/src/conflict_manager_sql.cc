@@ -53,10 +53,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id "
       "SET h.enabled=0, s.enabled=0 WHERE h.instance_id={}",
       instance_id));
-  _mysql.run_query(
-      query,
-      "conflict_manager: could not clean hosts and services tables: ", false,
-      conn);
+  _mysql.run_query(query, database::mysql_error::clean_hosts_services, false,
+                   conn);
   _add_action(conn, actions::hosts);
 
   /* Remove host group memberships. */
@@ -67,10 +65,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "DELETE hosts_hostgroups FROM hosts_hostgroups LEFT JOIN hosts ON "
       "hosts_hostgroups.host_id=hosts.host_id WHERE hosts.instance_id={}",
       instance_id);
-  _mysql.run_query(
-      query,
-      "conflict_manager: could not clean host groups memberships table: ",
-      false, conn);
+  _mysql.run_query(query, database::mysql_error::clean_hostgroup_members, false,
+                   conn);
   _add_action(conn, actions::hostgroups);
 
   /* Remove service group memberships */
@@ -82,9 +78,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "hosts ON services_servicegroups.host_id=hosts.host_id WHERE "
       "hosts.instance_id={}",
       instance_id);
-  _mysql.run_query(
-      query, "SQL: could not clean service groups memberships table: ", false,
-      conn);
+  _mysql.run_query(query, database::mysql_error::clean_servicegroup_members,
+                   false, conn);
   _add_action(conn, actions::servicegroups);
 
   /* Remove host groups. */
@@ -94,7 +89,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _mysql.run_query(
       "DELETE hg FROM hostgroups AS hg LEFT JOIN hosts_hostgroups AS hhg ON "
       "hg.hostgroup_id=hhg.hostgroup_id WHERE hhg.hostgroup_id IS NULL",
-      "conflict_manager: could not remove empty host groups", false, conn);
+      database::mysql_error::clean_empty_hostgroups, false, conn);
   _add_action(conn, actions::hostgroups);
 
   /* Remove service groups. */
@@ -106,7 +101,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "DELETE sg FROM servicegroups AS sg LEFT JOIN services_servicegroups as "
       "ssg ON sg.servicegroup_id=ssg.servicegroup_id WHERE ssg.servicegroup_id "
       "IS NULL",
-      "conflict_manager: could not remove empty service groups", false, conn);
+      database::mysql_error::clean_empty_servicegroups, false, conn);
   _add_action(conn, actions::servicegroups);
 
   /* Remove host dependencies. */
@@ -118,10 +113,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "h ON hhd.host_id=h.host_id OR hhd.dependent_host_id=h.host_id WHERE "
       "h.instance_id={}",
       instance_id);
-  _mysql.run_query(
-      query,
-      "conflict_manager: could not clean host dependencies table: ", false,
-      conn);
+  _mysql.run_query(query, database::mysql_error::clean_host_dependencies, false,
+                   conn);
   _add_action(conn, actions::host_dependencies);
 
   /* Remove host parents. */
@@ -132,9 +125,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "hhp.child_id=h.host_id OR hhp.parent_id=h.host_id WHERE "
       "h.instance_id={}",
       instance_id);
-  _mysql.run_query(
-      query, "conflict_manager: could not clean host parents table: ", false,
-      conn);
+  _mysql.run_query(query, database::mysql_error::clean_host_parents, false,
+                   conn);
   _add_action(conn, actions::host_parents);
 
   /* Remove service dependencies. */
@@ -150,16 +142,15 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       " ON s.host_id=h.host_id"
       " WHERE h.instance_id={}",
       instance_id);
-  _mysql.run_query(
-      query, "SQL: could not clean service dependencies table: ", false, conn);
+  _mysql.run_query(query, database::mysql_error::clean_service_dependencies,
+                   false, conn);
   _add_action(conn, actions::service_dependencies);
 
   /* Remove list of modules. */
   log_v2::sql()->debug("SQL: remove list of modules (instance_id: {})",
                        instance_id);
   query = fmt::format("DELETE FROM modules WHERE instance_id={}", instance_id);
-  _mysql.run_query(
-      query, "conflict_manager: could not clean modules table: ", false, conn);
+  _mysql.run_query(query, database::mysql_error::clean_modules, false, conn);
   _add_action(conn, actions::modules);
 
   // Cancellation of downtimes.
@@ -170,9 +161,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "SET d.cancelled=1 WHERE d.actual_end_time IS NULL AND d.cancelled=0 "
       "AND h.instance_id={}",
       instance_id);
-  _mysql.run_query(query,
-                   "conflict_manager: could not clean downtimes table: ", false,
-                   conn);
+  _mysql.run_query(query, database::mysql_error::clean_downtimes, false, conn);
   _add_action(conn, actions::downtimes);
 
   // Remove comments.
@@ -183,8 +172,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "c.deletion_time={} WHERE h.instance_id={} AND c.persistent=0 AND "
       "(c.deletion_time IS NULL OR c.deletion_time=0)",
       time(nullptr), instance_id);
-  _mysql.run_query(
-      query, "conflict_manager: could not clean comments table: ", false, conn);
+  _mysql.run_query(query, database::mysql_error::clean_comments, false, conn);
   _add_action(conn, actions::comments);
 
   // Remove custom variables. No need to choose the good instance, there are
@@ -197,9 +185,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       instance_id);
 
   _finish_action(-1, actions::custom_variables | actions::hosts);
-  _mysql.run_query(query,
-                   "conflict_manager: could not clean custom variables table: ",
-                   false, conn);
+  _mysql.run_query(query, database::mysql_error::clean_customvariables, false,
+                   conn);
   _add_action(conn, actions::custom_variables);
 }
 
@@ -258,20 +245,21 @@ void conflict_manager::_update_hosts_and_services_of_instance(uint32_t id,
   if (responsive) {
     query = fmt::format(
         "UPDATE instances SET outdated=FALSE WHERE instance_id={}", id);
-    _mysql.run_query(query, "SQL: could not restore outdated instance", false,
+    _mysql.run_query(query, database::mysql_error::restore_instances, false,
                      conn);
     _add_action(conn, actions::instances);
     query = fmt::format(
         "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id=s.host_id "
         "SET h.state=h.real_state,s.state=s.real_state WHERE h.instance_id={}",
         id);
-    _mysql.run_query(query, "SQL: could not restore outdated instance", false,
+    _mysql.run_query(query, database::mysql_error::restore_instances, false,
                      conn);
     _add_action(conn, actions::hosts);
   } else {
     query = fmt::format(
         "UPDATE instances SET outdated=TRUE WHERE instance_id={}", id);
-    _mysql.run_query(query, "SQL: could not outdate instance", false, conn);
+    _mysql.run_query(query, database::mysql_error::restore_instances, false,
+                     conn);
     _add_action(conn, actions::instances);
     query = fmt::format(
         "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id=s.host_id "
@@ -279,7 +267,8 @@ void conflict_manager::_update_hosts_and_services_of_instance(uint32_t id,
         "WHERE h.instance_id={}",
         com::centreon::engine::host::state_unreachable,
         com::centreon::engine::service::state_unknown, id);
-    _mysql.run_query(query, "SQL: could not outdate instance", false, conn);
+    _mysql.run_query(query, database::mysql_error::restore_instances, false,
+                     conn);
     _add_action(conn, actions::hosts);
   }
   std::shared_ptr<neb::responsive_instance> ri =
@@ -826,7 +815,7 @@ void conflict_manager::_process_host_dependency(
         "DELETE FROM hosts_hosts_dependencies WHERE dependent_host_id={}"
         " AND host_id={}",
         hd.dependent_host_id, hd.host_id));
-    _mysql.run_query(query, "SQL: ", true, conn);
+    _mysql.run_query(query, database::mysql_error::empty, true, conn);
     _add_action(conn, actions::host_dependencies);
   }
   *std::get<2>(t) = true;
@@ -875,7 +864,7 @@ void conflict_manager::_process_host_group(
           " ON hosts_hostgroups.host_id=hosts.host_id"
           " WHERE hosts_hostgroups.hostgroup_id={} AND hosts.instance_id={}",
           hg.id, hg.poller_id));
-      _mysql.run_query(query, "SQL: ", false, conn);
+      _mysql.run_query(query, database::mysql_error::empty, false, conn);
       _hostgroup_cache.erase(hg.id);
     }
   }
@@ -1334,7 +1323,7 @@ void conflict_manager::_process_module(
       std::string query(fmt::format(
           "DELETE FROM modules WHERE instance_id={} AND filename='{}'",
           m.poller_id, *ptr_filename));
-      _mysql.run_query(query, "SQL: ", false, conn);
+      _mysql.run_query(query, database::mysql_error::empty, false, conn);
       _add_action(conn, actions::modules);
     }
   }
@@ -1478,7 +1467,7 @@ void conflict_manager::_process_service_dependency(
         "AND dependent_service_id={} AND host_id={} AND service_id={}",
         sd.dependent_host_id, sd.dependent_service_id, sd.host_id,
         sd.service_id));
-    _mysql.run_query(query, "SQL: ", false, conn);
+    _mysql.run_query(query, database::mysql_error::empty, false, conn);
     _add_action(conn, actions::service_dependencies);
   }
   *std::get<2>(t) = true;
@@ -1530,7 +1519,7 @@ void conflict_manager::_process_service_group(
           "services_servicegroups.servicegroup_id={} AND "
           "hosts.instance_id={}",
           sg.id, sg.poller_id));
-      _mysql.run_query(query, "SQL: ", false, conn);
+      _mysql.run_query(query, database::mysql_error::empty, false, conn);
       _add_action(conn, actions::servicegroups);
       _servicegroup_cache.erase(sg.id);
     }
@@ -1805,8 +1794,8 @@ void conflict_manager::_update_customvariables() {
          "default_value=VALUES(default_VALUE),modified=VALUES(modified),type="
          "VALUES(type),update_time=VALUES(update_time),value=VALUES(value)";
   std::string query(oss.str());
-  _mysql.run_query(query, "SQL: could not store custom variables correctly",
-                   true, conn);
+  _mysql.run_query(query, database::mysql_error::update_customvariables, true,
+                   conn);
   log_v2::sql()->debug("{} new custom variables inserted", _cv_queue.size());
   log_v2::sql()->trace("sending query << {} >>", query);
   _add_action(conn, actions::custom_variables);
@@ -1843,7 +1832,7 @@ void conflict_manager::_insert_logs() {
     oss << "," << std::get<1>(*it);
 
   std::string query(oss.str());
-  _mysql.run_query(query, "SQL: could not store logs correctly", true, conn);
+  _mysql.run_query(query, database::mysql_error::update_logs, true, conn);
   log_v2::sql()->debug("{} new logs inserted", _log_queue.size());
   log_v2::sql()->trace("sending query << {} >>", query);
 

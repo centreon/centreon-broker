@@ -299,15 +299,10 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
       }
     }
     {
-      std::ostringstream oss;
-      oss << "UPDATE " << table << "  SET end_time=" << end_time << "  WHERE "
-          << id << "=" << it->first << "  AND start_time=" << it->second;
-
-      std::string err_msg(
-          fmt::format("BAM-BI: could not close inconsistent event of {} {} "
-                      "starting at {}: ",
-                      event_type, it->first, it->second));
-      _mysql.run_query(oss.str(), err_msg, true);
+      std::string query(
+          fmt::format("UPDATE {} SET end_time={} WHERE {}={} AND start_time={}",
+                      table, end_time, id, it->first, it->second));
+      _mysql.run_query(query, database::mysql_error::close_event, true);
     }
   }
 }
@@ -318,13 +313,13 @@ void reporting_stream::_close_all_events() {
       fmt::format("UPDATE mod_bam_reporting_ba_events SET end_time={} WHERE "
                   "end_time IS NULL",
                   now));
-  _mysql.run_query(query, "BAM-BI: could not close all ba events");
+  _mysql.run_query(query, database::mysql_error::close_ba_events);
 
   query = fmt::format(
       "UPDATE mod_bam_reporting_kpi_events SET end_time={} WHERE end_time IS "
       "NULL",
       now);
-  _mysql.run_query(query, "BAM-BI, could not close all kpi events");
+  _mysql.run_query(query, database::mysql_error::close_kpi_events);
 }
 
 /**
@@ -1339,9 +1334,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
                       "a.ba_event_id = b.ba_event_id WHERE b.ba_id IN ({})",
                       r.bas_to_rebuild));
 
-      std::string err_msg(fmt::format(
-          "BAM-BI: could not delete BA durations {}: ", r.bas_to_rebuild));
-      _mysql.run_query(query, err_msg, true);
+      _mysql.run_query(query, database::mysql_error::delete_ba_durations, true);
     }
 
     // Get the ba events.
