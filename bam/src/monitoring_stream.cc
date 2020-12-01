@@ -390,7 +390,7 @@ void monitoring_stream::_rebuild() {
   // Set all the BAs to should not be rebuild.
   {
     std::string query("UPDATE mod_bam SET must_be_rebuild='0'");
-    _mysql.run_query(query, "BAM: could not update the list of BAs to rebuild");
+    _mysql.run_query(query, database::mysql_error::rebuild_ba);
   }
 }
 
