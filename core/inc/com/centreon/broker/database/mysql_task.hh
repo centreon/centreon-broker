@@ -122,18 +122,18 @@ class mysql_task_run_int : public mysql_task {
 class mysql_task_statement : public mysql_task {
  public:
   mysql_task_statement(database::mysql_stmt& stmt,
-                       std::string const& error_msg,
+                       mysql_error::code ec,
                        bool fatal)
       : mysql_task(mysql_task::STATEMENT),
         statement_id(stmt.get_id()),
         param_count(stmt.get_param_count()),
         bind(stmt.get_bind()),
-        error_msg(error_msg),
+        error_code(ec),
         fatal(fatal) {}
   int statement_id;
   int param_count;
   std::unique_ptr<database::mysql_bind> bind;
-  std::string error_msg;
+  mysql_error::code error_code;
   bool fatal;
 };
 
