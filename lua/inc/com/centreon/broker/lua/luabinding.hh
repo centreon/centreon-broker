@@ -20,6 +20,7 @@
 #define CCB_LUA_LUABINDING_HH
 
 #include <map>
+
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/variant.hh"
 
@@ -58,13 +59,13 @@ class luabinding {
   // Count on events
   int32_t _total;
 
+  // Api version among (1, 2)
+  uint32_t _broker_api_version;
+
   lua_State* _load_interpreter();
   void _load_script();
   void _init_script(std::map<std::string, misc::variant> const& conf_params);
   void _update_lua_path(std::string const& path);
-
-  // Event conversion to Lua table.
-  void _parse_entries(io::data const& d);
 
  public:
   luabinding(std::string const& lua_script,
@@ -78,6 +79,10 @@ class luabinding {
   bool has_flush() const noexcept;
   int32_t flush() noexcept;
 };
+
+// Event conversion to Lua table.
+void push_event_as_table(lua_State* L, io::data const& d);
+
 }  // namespace lua
 
 CCB_END()

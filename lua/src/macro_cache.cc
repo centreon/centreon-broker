@@ -105,9 +105,8 @@ const std::shared_ptr<neb::service>& macro_cache::get_service(
   auto found = _services.find({host_id, service_id});
 
   if (found == _services.end())
-    throw exceptions::msg()
-        << "lua: could not find information on service (" << host_id << ","
-        << service_id << ")";
+    throw exceptions::msg() << "lua: could not find information on service ("
+                            << host_id << "," << service_id << ")";
   return found->second;
 }
 
@@ -353,13 +352,13 @@ macro_cache::get_dimension_ba_bv_relation_events() const {
  *
  * @return a reference to the dimension_ba_event.
  */
-bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
-    uint64_t ba_id) const {
+const std::shared_ptr<bam::dimension_ba_event>&
+macro_cache::get_dimension_ba_event(uint64_t ba_id) const {
   auto const found = _dimension_ba_events.find(ba_id);
   if (found == _dimension_ba_events.end())
     throw exceptions::msg()
         << "lua: could not find information on dimension ba event " << ba_id;
-  return *found->second;
+  return found->second;
 }
 
 /**
@@ -369,13 +368,13 @@ bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
  *
  * @return a reference to the dimension_bv_event.
  */
-bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
-    uint64_t bv_id) const {
+const std::shared_ptr<bam::dimension_bv_event>&
+macro_cache::get_dimension_bv_event(uint64_t bv_id) const {
   auto const found = _dimension_bv_events.find(bv_id);
   if (found == _dimension_bv_events.end())
     throw exceptions::msg()
         << "lua: could not find information on dimension bv event " << bv_id;
-  return *found->second;
+  return found->second;
 }
 
 /**

@@ -1,5 +1,5 @@
 --
--- Copyright 2018 Centreon
+-- Copyright 2018-2020 Centreon
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 --
 -- For more information : contact@centreon.com
 --
+
+broker_api_version = 2
 
 -- Init function
 function init(params)

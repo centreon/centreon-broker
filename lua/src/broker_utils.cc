@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/lua/broker_utils.hh"
 
+#include <fmt/format.h>
 #include <sys/stat.h>
 
 #include <cstdlib>
@@ -25,13 +26,12 @@
 #include <iomanip>
 #include <json11.hpp>
 #include <sstream>
-#include <fmt/format.h>
 
-#include "com/centreon/broker/storage/exceptions/perfdata.hh"
-#include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/storage/exceptions/perfdata.hh"
+#include "com/centreon/broker/storage/parser.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -120,30 +120,32 @@ static void escape_str(const char* content, std::ostringstream& oss) {
       }
       str.replace(pos, 1, replacement);
       pos += 2;
-    } while ((pos = str.find_first_of("\\\"\t\r\n", pos)) !=
-             std::string::npos);
+    } while ((pos = str.find_first_of("\\\"\t\r\n", pos)) != std::string::npos);
     oss << str;
   } else
     oss << content;
 }
 
-void broker_json_encode_broker_event(lua_State* L, std::shared_ptr<io::data> e, std::ostringstream& oss) {
+void broker_json_encode_broker_event(lua_State* L,
+                                     std::shared_ptr<io::data> e,
+                                     std::ostringstream& oss) {
   io::event_info const* info = io::events::instance().get_event_info(e->type());
   if (info) {
     oss << fmt::format("{{ \"_type\": {}, \"category\": {}, \"element\": {}",
                        e->type(), static_cast<uint32_t>(e->type()) >> 16,
                        static_cast<uint32_t>(e->type()) & 0xffff);
     for (const mapping::entry* current_entry = info->get_mapping();
-         !current_entry->is_null();
-         ++current_entry) {
+         !current_entry->is_null(); ++current_entry) {
       char const* entry_name(current_entry->get_name_v2());
       if (entry_name && *entry_name) {
         switch (current_entry->get_type()) {
           case mapping::source::BOOL:
-            oss << fmt::format(", \"{}\":{}", entry_name, current_entry->get_bool(*e));
+            oss << fmt::format(", \"{}\":{}", entry_name,
+                               current_entry->get_bool(*e));
             break;
           case mapping::source::DOUBLE:
-            oss << fmt::format(", \"{}\":{}", entry_name, current_entry->get_double(*e));
+            oss << fmt::format(", \"{}\":{}", entry_name,
+                               current_entry->get_double(*e));
             break;
           case mapping::source::INT:
             switch (current_entry->get_attribute()) {
@@ -158,11 +160,13 @@ void broker_json_encode_broker_event(lua_State* L, std::shared_ptr<io::data> e, 
                   oss << fmt::format(", \"{}\":{}", entry_name, val);
               } break;
               default:
-                oss << fmt::format(", \"{}\":{}", entry_name, current_entry->get_int(*e));
+                oss << fmt::format(", \"{}\":{}", entry_name,
+                                   current_entry->get_int(*e));
             }
             break;
           case mapping::source::SHORT:
-            oss << fmt::format(", \"{}\":{}", entry_name, current_entry->get_short(*e));
+            oss << fmt::format(", \"{}\":{}", entry_name,
+                               current_entry->get_short(*e));
             break;
           case mapping::source::STRING:
             if (current_entry->get_attribute() ==
@@ -192,7 +196,8 @@ void broker_json_encode_broker_event(lua_State* L, std::shared_ptr<io::data> e, 
                   oss << fmt::format(", \"{}\":\"{}\"", entry_name, val);
               } break;
               default:
-                oss << fmt::format(", \"{}\":\"{}\"", entry_name, current_entry->get_time(*e));
+                oss << fmt::format(", \"{}\":\"{}\"", entry_name,
+                                   current_entry->get_time(*e));
             }
             break;
           case mapping::source::UINT:
@@ -200,15 +205,16 @@ void broker_json_encode_broker_event(lua_State* L, std::shared_ptr<io::data> e, 
               case mapping::entry::invalid_on_zero: {
                 uint32_t val = current_entry->get_uint(*e);
                 if (val != 0)
-                  oss << fmt::format(", \"{}\":\"{}\"", entry_name, val);
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
               } break;
               case mapping::entry::invalid_on_minus_one: {
                 uint32_t val = current_entry->get_uint(*e);
                 if (val != static_cast<uint32_t>(-1))
-                  oss << fmt::format(", \"{}\":\"{}\"", entry_name, val);
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
               } break;
               default:
-                oss << fmt::format(", \"{}\":\"{}\"", entry_name, current_entry->get_uint(*e));
+                oss << fmt::format(", \"{}\":{}", entry_name,
+                                   current_entry->get_uint(*e));
             }
             break;
           default:  // Error in one of the mappings.
@@ -256,7 +262,7 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
         broker_json_encode_broker_event(L, *event, oss);
         break;
       }
-                        }
+    }
     default:
       luaL_error(L, "json_encode: type not implemented");
   }
