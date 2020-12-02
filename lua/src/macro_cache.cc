@@ -141,9 +141,8 @@ const std::shared_ptr<neb::service>& macro_cache::get_service(
   auto found = _services.find({host_id, service_id});
 
   if (found == _services.end())
-    throw exceptions::msg()
-        << "lua: could not find information on service (" << host_id << ","
-        << service_id << ")";
+    throw exceptions::msg() << "lua: could not find information on service ("
+                            << host_id << "," << service_id << ")";
   return found->second;
 }
 
