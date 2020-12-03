@@ -20,10 +20,12 @@
 
 #include <atomic>
 
+#include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/mysql_connection.hh"
 
 CCB_BEGIN()
 
+using my_error = database::mysql_error;
 /**
  *  @class mysql mysql.hh "com/centreon/broker/storage/mysql.hh"
  *  @brief Class managing the mysql connection
@@ -40,7 +42,7 @@ class mysql {
       mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
   void commit(int thread_id = -1);
   int run_query(std::string const& query,
-                std::string const& error_msg = "",
+                my_error::code ec = my_error::empty,
                 bool fatal = false,
                 int thread = -1);
   int run_query_and_get_result(std::string const& query,
@@ -52,7 +54,7 @@ class mysql {
                             int thread = -1);
 
   int run_statement(database::mysql_stmt& stmt,
-                    std::string const& error_msg = "",
+                    my_error::code ec = my_error::empty,
                     bool fatal = false,
                     int thread_id = -1);
 

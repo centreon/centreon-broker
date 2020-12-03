@@ -25,6 +25,7 @@
 #include <ctime>
 #include <sstream>
 
+#include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -417,7 +418,5 @@ void rebuilder::_set_index_rebuild(mysql& ms, uint32_t index_id, short state) {
   std::string query(
       fmt::format("UPDATE index_data SET must_be_rebuild='{}' WHERE id={}",
                   state, index_id));
-  std::string err_msg(fmt::format(
-      "storage: rebuilder: cannot update state of index {}: ", index_id));
-  ms.run_query(query, err_msg, false);
+  ms.run_query(query, database::mysql_error::update_index_state, false);
 }

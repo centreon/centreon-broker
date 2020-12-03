@@ -34,6 +34,8 @@
 
 CCB_BEGIN()
 
+using my_error = database::mysql_error;
+
 /**
  *  @class mysql_connection mysql_connection.hh
  * "com/centreon/broker/mysql_connection.hh"
@@ -51,18 +53,14 @@ class mysql_connection {
 
   void prepare_query(int id, std::string const& query);
   void commit(std::promise<bool>* promise, std::atomic_int& count);
-  void run_query(std::string const& query,
-                 std::string const& error_msg,
-                 bool fatal);
+  void run_query(std::string const& query, my_error::code ec, bool fatal);
   void run_query_and_get_result(std::string const& query,
                                 std::promise<database::mysql_result>* promise);
   void run_query_and_get_int(std::string const& query,
                              std::promise<int>* promise,
                              database::mysql_task::int_type type);
 
-  void run_statement(database::mysql_stmt& stmt,
-                     std::string const& error_msg,
-                     bool fatal);
+  void run_statement(database::mysql_stmt& stmt, my_error::code ec, bool fatal);
   void run_statement_and_get_result(
       database::mysql_stmt& stmt,
       std::promise<database::mysql_result>* promise);

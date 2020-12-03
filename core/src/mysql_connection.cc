@@ -28,6 +28,8 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
+constexpr const char* mysql_error::msg[];
+
 const int STR_SIZE = 200;
 const int MAX_ATTEMPTS = 10;
 
@@ -74,8 +76,8 @@ void mysql_connection::_query(mysql_task* t) {
   mysql_task_run* task(static_cast<mysql_task_run*>(t));
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
-    std::string err_msg(
-        fmt::format("{} {}", task->error_msg, ::mysql_error(_conn)));
+    const char* m = mysql_error::msg[task->error_code];
+    std::string err_msg(fmt::format("{} {}", m, ::mysql_error(_conn)));
     log_v2::sql()->error("mysql_connection: {}", err_msg);
     if (task->fatal || _server_error(::mysql_errno(_conn)))
       set_error_message(err_msg);
@@ -213,8 +215,9 @@ void mysql_connection::_statement(mysql_task* t) {
     int32_t attempts = 0;
     for (;;) {
       if (mysql_stmt_execute(stmt)) {
-        std::string err_msg(
-            fmt::format("{} {}", task->error_msg, ::mysql_stmt_error(stmt)));
+        std::string err_msg(fmt::format("{} {}",
+                                        mysql_error::msg[task->error_code],
+                                        ::mysql_stmt_error(stmt)));
         if (_server_error(::mysql_stmt_errno(stmt))) {
           set_error_message(err_msg);
           break;
@@ -229,7 +232,7 @@ void mysql_connection::_statement(mysql_task* t) {
         logging::error(logging::medium) << "mysql_connection: " << err_msg;
         if (++attempts >= MAX_ATTEMPTS) {
           if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
-            set_error_message("{} {}", task->error_msg,
+            set_error_message("{} {}", mysql_error::msg[task->error_code],
                               ::mysql_stmt_error(stmt));
           break;
         }
@@ -633,9 +636,9 @@ void mysql_connection::prepare_query(int stmt_id, std::string const& query) {
  *  @param p A pointer to a promise.
  */
 void mysql_connection::run_query(std::string const& query,
-                                 std::string const& error_msg,
+                                 my_error::code ec,
                                  bool fatal) {
-  _push(std::make_shared<mysql_task_run>(query, error_msg, fatal));
+  _push(std::make_shared<mysql_task_run>(query, ec, fatal));
 }
 
 void mysql_connection::run_query_and_get_result(
@@ -651,9 +654,9 @@ void mysql_connection::run_query_and_get_int(std::string const& query,
 }
 
 void mysql_connection::run_statement(database::mysql_stmt& stmt,
-                                     std::string const& error_msg,
+                                     my_error::code ec,
                                      bool fatal) {
-  _push(std::make_shared<mysql_task_statement>(stmt, error_msg, fatal));
+  _push(std::make_shared<mysql_task_statement>(stmt, ec, fatal));
 }
 
 void mysql_connection::run_statement_and_get_result(

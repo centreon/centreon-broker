@@ -248,9 +248,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       _ba_update.bind_value_as_bool(4, status->in_downtime);
       _ba_update.bind_value_as_i32(5, status->state);
 
-      std::string err_msg(
-          fmt::format("BAM: could not update BA {}: ", status->ba_id));
-      _mysql.run_statement(_ba_update, err_msg, true);
+      _mysql.run_statement(_ba_update, database::mysql_error::update_ba, true);
 
       if (status->state_changed) {
         std::pair<std::string, std::string> ba_svc_name(
@@ -293,9 +291,8 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       _kpi_update.bind_value_as_bool(8, status->in_downtime);
       _kpi_update.bind_value_as_u32(9, status->kpi_id);
 
-      std::string err_msg(
-          fmt::format("BAM: could not update KPI {}: ", status->kpi_id));
-      _mysql.run_statement(_kpi_update, err_msg, true);
+      _mysql.run_statement(_kpi_update, database::mysql_error::update_kpi,
+                           true);
     } break;
     case inherited_downtime::static_type(): {
       std::string cmd;
@@ -390,7 +387,7 @@ void monitoring_stream::_rebuild() {
   // Set all the BAs to should not be rebuild.
   {
     std::string query("UPDATE mod_bam SET must_be_rebuild='0'");
-    _mysql.run_query(query, "BAM: could not update the list of BAs to rebuild");
+    _mysql.run_query(query, database::mysql_error::rebuild_ba);
   }
 }
 
