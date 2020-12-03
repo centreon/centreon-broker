@@ -82,13 +82,13 @@ storage::index_mapping const& macro_cache::get_index_mapping(
  *
  *  @return               The metric mapping.
  */
-storage::metric_mapping const& macro_cache::get_metric_mapping(
+const std::shared_ptr<storage::metric_mapping>& macro_cache::get_metric_mapping(
     uint32_t metric_id) const {
   auto found = _metric_mappings.find(metric_id);
   if (found == _metric_mappings.end())
     throw exceptions::msg()
         << "lua: could not find index of metric " << metric_id;
-  return *found->second;
+  return found->second;
 }
 
 /**

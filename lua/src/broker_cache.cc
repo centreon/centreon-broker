@@ -32,7 +32,7 @@ using namespace com::centreon::broker::lua;
  */
 static int l_broker_cache_destructor(lua_State* L) {
   (void)L;
-  return (0);
+  return 0;
 }
 
 /**
@@ -339,14 +339,14 @@ static int l_broker_cache_get_instance_name(lua_State* L) {
  *
  *  @return 1
  */
-static int l_broker_cache_get_metric_mapping(lua_State* L) {
+static int l_broker_cache_get_metric_mapping_v1(lua_State* L) {
   macro_cache const* cache(
       *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
   int metric_id(luaL_checkinteger(L, 2));
 
   try {
     storage::metric_mapping const& mapping(
-        cache->get_metric_mapping(metric_id));
+        *cache->get_metric_mapping(metric_id));
     lua_createtable(L, 0, 2);
 
     lua_pushinteger(L, mapping.metric_id);
@@ -354,6 +354,21 @@ static int l_broker_cache_get_metric_mapping(lua_State* L) {
 
     lua_pushinteger(L, mapping.index_id);
     lua_setfield(L, -2, "index_id");
+  } catch (std::exception const& e) {
+    (void)e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+static int l_broker_cache_get_metric_mapping_v2(lua_State* L) {
+  macro_cache const* cache(
+      *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int metric_id(luaL_checkinteger(L, 2));
+
+  try {
+    const std::shared_ptr<storage::metric_mapping>& mm{cache->get_metric_mapping(metric_id)};
+    broker_event::create(L, mm);
   } catch (std::exception const& e) {
     (void)e;
     lua_pushnil(L);
@@ -624,7 +639,7 @@ void broker_cache::broker_cache_reg(lua_State* L,
       {"get_service", l_broker_cache_get_service_v1},
       {"get_index_mapping", l_broker_cache_get_index_mapping},
       {"get_instance_name", l_broker_cache_get_instance_name},
-      {"get_metric_mapping", l_broker_cache_get_metric_mapping},
+      {"get_metric_mapping", l_broker_cache_get_metric_mapping_v1},
       {"get_service_description", l_broker_cache_get_service_description},
       {"get_servicegroup_name", l_broker_cache_get_servicegroup_name},
       {"get_servicegroups", l_broker_cache_get_servicegroups},
@@ -639,6 +654,7 @@ void broker_cache::broker_cache_reg(lua_State* L,
     s_broker_cache_regs[2].func = l_broker_cache_get_bv_v2;
     s_broker_cache_regs[7].func = l_broker_cache_get_host_v2;
     s_broker_cache_regs[8].func = l_broker_cache_get_service_v2;
+    s_broker_cache_regs[11].func = l_broker_cache_get_metric_mapping_v2;
   }
 
   // Create a metatable. It is not exposed to Lua.

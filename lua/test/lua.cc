@@ -662,7 +662,7 @@ TEST_F(LuaTest, InstanceNameCacheTest) {
 // When a query for a metric mapping is made
 // And the cache knows about it
 // Then the metric mapping is returned from the lua method.
-TEST_F(LuaTest, MetricMappingCacheTest) {
+TEST_F(LuaTest, MetricMappingCacheTestV1) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<storage::metric_mapping> mm(new storage::metric_mapping);
@@ -674,6 +674,7 @@ TEST_F(LuaTest, MetricMappingCacheTest) {
                "function init(conf)\n"
                "  broker_log:set_parameters(3, '/tmp/log')\n"
                "  local mm = broker_cache:get_metric_mapping(27)\n"
+               "  broker_log:info(1, 'mm type is ' .. type(mm))\n"
                "  broker_log:info(1, 'metric id is ' .. mm.metric_id)\n"
                "  broker_log:info(1, 'index id is ' .. mm.index_id)\n"
                "end\n\n"
@@ -682,6 +683,38 @@ TEST_F(LuaTest, MetricMappingCacheTest) {
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
+  ASSERT_NE(std::string::npos, lst.find("mm type is table"));
+  ASSERT_NE(std::string::npos, lst.find("metric id is 27"));
+  ASSERT_NE(std::string::npos, lst.find("index id is 19"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, MetricMappingCacheTestV2) {
+  modules::loader l;
+  l.load_file("./storage/20-storage.so");
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  std::shared_ptr<storage::metric_mapping> mm(new storage::metric_mapping);
+  mm->index_id = 19;
+  mm->metric_id = 27;
+  _cache->write(mm);
+
+  CreateScript(filename,
+               "broker_api_version=2\n"
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local mm = broker_cache:get_metric_mapping(27)\n"
+               "  broker_log:info(1, 'mm type is ' .. type(mm))\n"
+               "  broker_log:info(1, 'metric id is ' .. mm.metric_id)\n"
+               "  broker_log:info(1, 'index id is ' .. mm.index_id)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+
+  ASSERT_NE(std::string::npos, lst.find("mm type is userdata"));
   ASSERT_NE(std::string::npos, lst.find("metric id is 27"));
   ASSERT_NE(std::string::npos, lst.find("index id is 19"));
   RemoveFile(filename);
@@ -1824,33 +1857,33 @@ TEST_F(LuaTest, BrokerEventJsonEncode) {
           "{ \"_type\": 65559, \"category\": 1, \"element\": 23, "
           "\"acknowledged\":false, \"acknowledgement_type\":0, "
           "\"action_url\":\"svc action url\", \"active_checks\":false, "
-          "\"check_freshness\":false, \"check_interval\":0.0, "
+          "\"check_freshness\":false, \"check_interval\":0, "
           "\"check_period\":\"\", \"check_type\":0, \"check_attempt\":0, "
           "\"state\":4, \"default_active_checks\":false, "
           "\"default_event_handler_enabled\":false, "
           "\"default_flap_detection\":false, \"default_notify\":false, "
           "\"default_passive_checks\":false, \"scheduled_downtime_depth\":0, "
           "\"display_name\":\"\", \"enabled\":true, \"event_handler\":\"\", "
-          "\"event_handler_enabled\":false, \"execution_time\":0.0, "
-          "\"first_notification_delay\":0.0, \"flap_detection\":false, "
+          "\"event_handler_enabled\":false, \"execution_time\":0, "
+          "\"first_notification_delay\":0, \"flap_detection\":false, "
           "\"flap_detection_on_critical\":false, "
           "\"flap_detection_on_ok\":false, "
           "\"flap_detection_on_unknown\":false, "
-          "\"flap_detection_on_warning\":false, \"freshness_threshold\":0.0, "
-          "\"checked\":false, \"high_flap_threshold\":0.0, \"host_id\":1, "
+          "\"flap_detection_on_warning\":false, \"freshness_threshold\":0, "
+          "\"checked\":false, \"high_flap_threshold\":0, \"host_id\":1, "
           "\"icon_image\":\"\", \"icon_image_alt\":\"\", \"service_id\":2, "
           "\"flapping\":false, \"volatile\":false, \"last_hard_state\":4, "
-          "\"latency\":0.0, \"low_flap_threshold\":0.0, "
+          "\"latency\":0, \"low_flap_threshold\":0, "
           "\"max_check_attempts\":0, \"no_more_notifications\":false, "
           "\"notes\":\"svc notes\", \"notes_url\":\"d:\\\\\\\\bonjour le "
-          "\\\"monde\\\"\", \"notification_interval\":0.0, "
+          "\\\"monde\\\"\", \"notification_interval\":0, "
           "\"notification_number\":0, \"notification_period\":\"\", "
           "\"notify\":false, \"notify_on_critical\":false, "
           "\"notify_on_downtime\":false, \"notify_on_flapping\":false, "
           "\"notify_on_recovery\":false, \"notify_on_unknown\":false, "
           "\"notify_on_warning\":false, \"obsess_over_service\":false, "
-          "\"passive_checks\":false, \"percent_state_change\":0.0, "
-          "\"retry_interval\":0.0, \"description\":\"foo bar\", "
+          "\"passive_checks\":false, \"percent_state_change\":0, "
+          "\"retry_interval\":0, \"description\":\"foo bar\", "
           "\"should_be_scheduled\":false, \"stalk_on_critical\":false, "
           "\"stalk_on_ok\":false, \"stalk_on_unknown\":false, "
           "\"stalk_on_warning\":false, \"state_type\":0, "

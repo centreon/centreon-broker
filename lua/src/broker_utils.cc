@@ -126,8 +126,7 @@ static void escape_str(const char* content, std::ostringstream& oss) {
     oss << content;
 }
 
-void broker_json_encode_broker_event(lua_State* L,
-                                     std::shared_ptr<io::data> e,
+static void broker_json_encode_broker_event(std::shared_ptr<io::data> e,
                                      std::ostringstream& oss) {
   io::event_info const* info = io::events::instance().get_event_info(e->type());
   if (info) {
@@ -259,7 +258,7 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
       void* ptr = luaL_checkudata(L, 1, "broker_event");
       if (ptr) {
         auto event = static_cast<std::shared_ptr<io::data>*>(ptr);
-        broker_json_encode_broker_event(L, *event, oss);
+        broker_json_encode_broker_event(*event, oss);
         break;
       }
     }
