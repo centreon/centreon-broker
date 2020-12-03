@@ -169,7 +169,26 @@ TEST_F(LuaTest, SimpleScript) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
 
-  std::unique_ptr<luabinding> bnd(new luabinding(FILE3, conf, *_cache));
+  std::string filename("/tmp/test-lua3.lua");
+  CreateScript(filename,
+"broker_api_version = 2\n"
+"function init(params)\n"
+"  broker_log:set_parameters(1, \"/tmp/test.log\")\n"
+"  for i,v in pairs(params) do\n"
+"    broker_log:info(1, \"init: \" .. i .. \" => \" .. tostring(v))\n"
+"  end\n"
+"end\n"
+"function write(d)\n"
+"  for i,v in pairs(d) do\n"
+"    broker_log:info(1, \"write: \" .. i .. \" => \" .. tostring(v))\n"
+"  end\n"
+"  return true\n"
+"end\n"
+"function filter(typ, cat)\n"
+"  return true\n"
+"end\n");
+
+  std::unique_ptr<luabinding> bnd(new luabinding(filename, conf, *_cache));
   ASSERT_TRUE(bnd.get());
   std::unique_ptr<neb::service> s(new neb::service);
   s->host_id = 12;
@@ -194,6 +213,7 @@ TEST_F(LuaTest, SimpleScript) {
   ASSERT_NE(pos4, std::string::npos);
   ASSERT_NE(pos5, std::string::npos);
   l.unload();
+  RemoveFile(filename);
 }
 
 // When a script is correctly loaded and a neb event has to be sent
@@ -1851,7 +1871,6 @@ TEST_F(LuaTest, BrokerEventJsonEncode) {
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   binding->write(svc);
   std::string lst(ReadFile("/tmp/event_log"));
-  std::cout << lst << std::endl;
   ASSERT_NE(
       lst.find(
           "{ \"_type\": 65559, \"category\": 1, \"element\": 23, "

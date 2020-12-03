@@ -31,6 +31,15 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
 
+#ifdef LUA51
+static int l_pairs(lua_State* L) {
+  if (!luaL_getmetafield(L, 1, "__next"))
+    lua_getglobal(L, "next");
+  lua_pushvalue(L, 1);
+  lua_pushnil(L);
+  return 3;
+}
+#endif
 /**
  *  Constructor.
  *
@@ -176,7 +185,11 @@ void luabinding::_load_script() {
 
   /* Checking the version api */
   lua_getglobal(_L, "broker_api_version");
+#if LUA53
   if (lua_isinteger(_L, 1))
+#else
+  if (lua_isnumber(_L, 1))
+#endif
     _broker_api_version = lua_tointeger(_L, 1);
   else if (lua_isnumber(_L, 1))
     _broker_api_version = static_cast<uint32_t>(lua_tonumber(_L, 1));
@@ -193,6 +206,13 @@ void luabinding::_load_script() {
     _broker_api_version = 1;
   }
   lua_pop(_L, 1);
+
+#ifdef LUA51
+  lua_getglobal(_L, "pairs");
+  lua_setglobal(_L, "__pairs");
+  lua_pushcfunction(_L, l_pairs);
+  lua_setglobal(_L, "pairs");
+#endif
 
   log_v2::lua()->info("Lua broker_api_version set to {}", _broker_api_version);
 
