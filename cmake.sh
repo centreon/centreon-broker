@@ -34,24 +34,31 @@ elif [ -r /etc/issue ] ; then
   if [[ $v =~ "version 3" ]] ; then
     cmake='cmake'
   elif [ $maj = "Debian" ] ; then
-    if dpkg -l cmake ; then
+    if dpkg -l --no-pager cmake ; then
       echo "Bad version of cmake..."
       exit 1
     else
-      apt install -y cmake
+      echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
       cmake='cmake'
+    fi
+    count=$(dpkg --no-pager -l gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev | grep "^ii" | wc -l)
+    if [ $count -lt 6 ] ; then
+      echo -e "One or packages among these ones, gcc, cmake, librrd-dev, libgnutls28-dev, ninja-build, liblua5.3-dev, are not installed. You could enter, as root:\n\tapt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev\n\n"
+      exit 1
     fi
   else
     echo "Bad version of cmake..."
     exit 1
   fi
   if [[ ! -x /usr/bin/python3 ]] ; then
-    apt install -y python3
+    echo -e "python3 is not installed, you can enter, as root:\n\tapt install -y python3\n\n"
+    exit 1
   else
     echo "python3 already installed"
   fi
-  if ! dpkg -l python3-pip ; then
-    apt install -y python3-pip
+  if ! dpkg -l --no-pager python3-pip ; then
+    echo -e "python3-pip is not installed, you can enter, as root:\n\tapt install -y python3-pip\n\n"
+    exit 1
   else
     echo "pip3 already installed"
   fi
@@ -63,7 +70,7 @@ my_id=$(id -u)
 if [ $my_id -eq 0 ] ; then
   conan='conan'
 else
-  conan='~/.local/bin/conan'
+  conan="$HOME/.local/bin/conan"
 fi
 $conan remote add centreon https://api.bintray.com/conan/centreon/centreon
 
@@ -80,6 +87,8 @@ if [ "$force" = "1" ] ; then
   mkdir build
 fi
 cd build
+
+set -x
 
 if [ $good -eq 1 ] ; then
   $conan install .. --remote centreon -s compiler.libcxx=libstdc++11
