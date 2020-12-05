@@ -5,6 +5,9 @@ if [ "$1" = "-f" ] ; then
   shift
 fi
 
+# Am I root?
+my_id=$(id -u)
+
 if [ -r /etc/centos-release ] ; then
   maj="centos$(cat /etc/centos-release | awk '{print $4}' | cut -f1 -d'.')"
   v=$(cmake --version)
@@ -43,22 +46,34 @@ elif [ -r /etc/issue ] ; then
     fi
     count=$(dpkg --no-pager -l gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev | grep "^ii" | wc -l)
     if [ $count -lt 6 ] ; then
-      echo -e "One or packages among these ones, gcc, cmake, librrd-dev, libgnutls28-dev, ninja-build, liblua5.3-dev, are not installed. You could enter, as root:\n\tapt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev\n\n"
-      exit 1
+      if [ $my_id -eq 0 ] ; then
+        apt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev
+      else
+        echo -e "One or packages among these ones, gcc, cmake, librrd-dev, libgnutls28-dev, ninja-build, liblua5.3-dev, are not installed. You could enter, as root:\n\tapt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev\n\n"
+        exit 1
+      fi
     fi
   else
     echo "Bad version of cmake..."
     exit 1
   fi
   if [[ ! -x /usr/bin/python3 ]] ; then
-    echo -e "python3 is not installed, you can enter, as root:\n\tapt install -y python3\n\n"
-    exit 1
+    if [ $my_id -eq 0 ] ; then
+      apt install -y python3
+    else
+      echo -e "python3 is not installed, you can enter, as root:\n\tapt install -y python3\n\n"
+      exit 1
+    fi
   else
     echo "python3 already installed"
   fi
   if ! dpkg -l --no-pager python3-pip ; then
-    echo -e "python3-pip is not installed, you can enter, as root:\n\tapt install -y python3-pip\n\n"
-    exit 1
+    if [ $my_id -eq 0 ] ; then
+      apt install -y python3-pip
+    else
+      echo -e "python3-pip is not installed, you can enter, as root:\n\tapt install -y python3-pip\n\n"
+      exit 1
+    fi
   else
     echo "pip3 already installed"
   fi
@@ -66,7 +81,6 @@ fi
 
 pip3 install conan --upgrade
 
-my_id=$(id -u)
 if [ $my_id -eq 0 ] ; then
   conan='conan'
 else
