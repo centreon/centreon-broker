@@ -45,7 +45,7 @@ if [ -r /etc/centos-release ] ; then
   for i in "${pkgs[@]}"; do
     if ! rpm -q $i ; then
       if [ $maj = 'centos7' ] ; then
-        yum install -f $i
+        yum install -y $i
       else
         dnf -y --enablerepo=PowerTools install $i
       fi
@@ -106,7 +106,9 @@ if [ $my_id -eq 0 ] ; then
 else
   conan="$HOME/.local/bin/conan"
 fi
-$conan remote add centreon https://api.bintray.com/conan/centreon/centreon
+if ! $conan remote list | grep ^centreon ; then
+  $conan remote add centreon https://api.bintray.com/conan/centreon/centreon
+fi
 
 good=$(gcc --version | awk '/gcc/ && ($3+0)>5.0{print 1}')
 
@@ -122,14 +124,10 @@ if [ "$force" = "1" ] ; then
 fi
 cd build
 
-set -x
-
-if ! conan remote list | grep ^centreon ; then
-  if [ $good -eq 1 ] ; then
-    $conan install .. --remote centreon -s compiler.libcxx=libstdc++11
-  else
-    $conan install .. --remote centreon -s compiler.libcxx=libstdc++
-  fi
+if [ $good -eq 1 ] ; then
+  $conan install .. --remote centreon -s compiler.libcxx=libstdc++11
+else
+  $conan install .. --remote centreon -s compiler.libcxx=libstdc++
 fi
 
 CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
