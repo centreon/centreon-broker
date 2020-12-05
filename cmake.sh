@@ -16,7 +16,7 @@ if [ -r /etc/centos-release ] ; then
   else
     if rpm -q cmake3 ; then
       cmake='cmake3'
-    else
+    elif [ $maj = "centos7" ] ; then
       yum -y install epel-release cmake3
       cmake='cmake3'
     fi
@@ -26,11 +26,31 @@ if [ -r /etc/centos-release ] ; then
   else
     echo "python3 already installed"
   fi
-  if ! rpm -qa | grep "python3-pip" ; then
+  if ! rpm -q python3-pip ; then
     yum -y install python3-pip
   else
     echo "pip3 already installed"
   fi
+
+  if ! rpm -q gcc-c++ ; then
+    yum -y install gcc-c++
+  fi
+
+  pkgs=(
+    ninja-build
+    rrdtool-devel
+    gnutls-devel
+    lua-devel
+  )
+  for i in "${pkgs[@]}"; do
+    if ! rpm -q $i ; then
+      if [ $maj = 'centos7' ] ; then
+        yum install -f $i
+      else
+        dnf -y --enablerepo=PowerTools install $i
+      fi
+    fi
+  done
 elif [ -r /etc/issue ] ; then
   maj=$(cat /etc/issue | awk '{print $1}')
   v=$(cmake --version)
@@ -104,10 +124,12 @@ cd build
 
 set -x
 
-if [ $good -eq 1 ] ; then
-  $conan install .. --remote centreon -s compiler.libcxx=libstdc++11
-else
-  $conan install .. --remote centreon -s compiler.libcxx=libstdc++
+if ! conan remote list | grep ^centreon ; then
+  if [ $good -eq 1 ] ; then
+    $conan install .. --remote centreon -s compiler.libcxx=libstdc++11
+  else
+    $conan install .. --remote centreon -s compiler.libcxx=libstdc++
+  fi
 fi
 
 CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
