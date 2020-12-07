@@ -6,8 +6,14 @@ Centreon Broker 20.04.12
 Bugs
 ****
 
-Bam reporting
-=============
+Bam reporting dimensions computation
+====================================
+If there are retention files, dimensions computation could fail because of
+conflicts between new block computation and old ones (the ones in the
+retention).
+
+Bam reporting durations
+=======================
 When availabilities are computed, durations can be doubled. This new version
 fixes this issue.
 
