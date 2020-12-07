@@ -24,9 +24,9 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_truncate_table_signal::dimension_truncate_table_signal()
+dimension_truncate_table_signal::dimension_truncate_table_signal(bool update)
     : io::data(dimension_truncate_table_signal::static_type()),
-      update_started(true) {}
+      update_started(update) {}
 
 /**
  *  Equality test operator.
@@ -35,10 +35,10 @@ dimension_truncate_table_signal::dimension_truncate_table_signal()
  *
  *  @return  True if the two objects are equal.
  */
-bool dimension_truncate_table_signal::operator==(
-    dimension_truncate_table_signal const& other) const {
-  return update_started == other.update_started;
-}
+// bool dimension_truncate_table_signal::operator==(
+//    dimension_truncate_table_signal const& other) const {
+//  return update_started == other.update_started;
+//}
 
 // Mapping.
 mapping::entry const dimension_truncate_table_signal::entries[] = {
@@ -48,7 +48,7 @@ mapping::entry const dimension_truncate_table_signal::entries[] = {
 
 // Operations.
 static io::data* new_dimension_truncate_table_signal() {
-  return new dimension_truncate_table_signal;
+  return new dimension_truncate_table_signal(true);
 }
 io::event_info::event_operations const
     dimension_truncate_table_signal::operations = {
