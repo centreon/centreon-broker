@@ -49,8 +49,11 @@ void broker_event::create(lua_State* L, std::shared_ptr<io::data> e) {
 
 /**
  *  Given an event d, this method converts it to a Lua table.
- *  The result is stored on the Lua interpreter stack.
+ *  The result is stored on the Lua interpreter stack. This internal function
+ *  is essentially needed by the broker api version 1. We do not transpose
+ *  events to table in api v2.
  *
+ *  @param L The Lua interpreter.
  *  @param d The event to convert.
  */
 void broker_event::create_as_table(lua_State* L, const io::data& d) {
@@ -188,6 +191,15 @@ static int l_broker_event_destructor(lua_State* L) {
   return 0;
 }
 
+/**
+ * @brief The pairs() Lua function needed for iteration on Broker event content.
+ *
+ * @param L The Lua interpreter. We need to access its stack where our element
+ * is.
+ *
+ * @return 3 (The number of element on the stack to return: the __next internal
+ * function, the broker event and nil).
+ */
 static int l_broker_event_pairs(lua_State* L) {
   std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(
       luaL_checkudata(L, 1, "broker_event"))};
@@ -197,6 +209,16 @@ static int l_broker_event_pairs(lua_State* L) {
   return 3;
 }
 
+/**
+ * @brief The next() internal function needed for iteration on Broker event
+ * content.
+ *
+ * @param L The Lua interpreter. We need to access its stack.
+ *
+ * @return Usually 2 (the number of elements when the function exits. Elements
+ * are a key and its value.) or 1 when the iteration is over (the returned
+ * element is nil).
+ */
 static int l_broker_event_next(lua_State* L) {
   std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(
       luaL_checkudata(L, 1, "broker_event"))};
@@ -327,6 +349,16 @@ static int l_broker_event_next(lua_State* L) {
                             << " ; it does not look like a BBDO event";
 }
 
+/**
+ * @brief This function is the implementation of indexation on a broker event.
+ * It is useful to be able to get for example the name of a host, we enter
+ * something like host.name
+ *
+ * @param L The Lua interpreter to access its stack.
+ *
+ * @return 1 (the number of element returned by this function which is just
+ * a value).
+ */
 static int l_broker_event_index(lua_State* L) {
   std::shared_ptr<io::data> e{*static_cast<std::shared_ptr<io::data>*>(
       luaL_checkudata(L, 1, "broker_event"))};
@@ -446,10 +478,9 @@ static int l_broker_event_index(lua_State* L) {
 }
 
 /**
- *  Load the Lua interpreter with the standard libraries
- *  and the broker lua sdk.
+ *  Register the broker_event element in the Lua interpreter.
  *
- *  @return The Lua interpreter as a lua_State*
+ *  @param The Lua interpreter as a lua_State*
  */
 void broker_event::broker_event_reg(lua_State* L) {
   luaL_Reg s_broker_event_regs[] = {{"__gc", l_broker_event_destructor},

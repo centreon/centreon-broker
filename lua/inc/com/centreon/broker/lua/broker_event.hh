@@ -36,9 +36,19 @@ namespace lua {
 /**
  *  @class broker_event broker_event.hh
  * "com/centreon/broker/lua/broker_event.hh"
- *  @brief Class providing TCP event to the lua interpreter
+ *  @brief Class providing BBDO event to the lua interpreter
  *
- *  This class provides a binding to Lua to access TCP events.
+ *  This class provides a binding to Lua to access BBDO events.
+ *
+ *  In lua API v1, each broker event was converted into Lua tables. This
+ *  procedure worked well but was expensive for cbd, because each call to
+ *  write needed a conversion to table of its parameter.
+ *
+ *  Now, when the broker_api_version global variable is set to 2, events are
+ *  just encapsulated into Lua userdata. We tried to paste the table behavior
+ *  to this object. So almost every script working on version 1 should also
+ *  work with version 2.
+ *
  */
 class broker_event {
  public:
