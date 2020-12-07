@@ -967,7 +967,8 @@ void reporting_stream::_process_dimension_truncate_signal(
 
   if (dtts.update_started) {
     _processing_dimensions = true;
-    log_v2::bam()->debug("BAM-BI: processing table truncation signal");
+    log_v2::bam()->debug(
+        "BAM-BI: processing table truncation signal (opening)");
 
     for (auto& stmt : _dimension_truncate_tables)
       _mysql.run_statement(stmt,
@@ -976,6 +977,8 @@ void reporting_stream::_process_dimension_truncate_signal(
     _timeperiods.clear();
     _dimension_data_cache.clear();
   } else {
+    log_v2::bam()->debug(
+        "BAM-BI: processing table truncation signal (closing)");
     // Lock the availability thread.
     std::lock_guard<availability_thread> lock(*_availabilities);
 
