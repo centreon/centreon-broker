@@ -208,10 +208,12 @@ void luabinding::_load_script() {
   lua_pop(_L, 1);
 
 #ifdef LUA51
-  lua_getglobal(_L, "pairs");
-  lua_setglobal(_L, "__pairs");
-  lua_pushcfunction(_L, l_pairs);
-  lua_setglobal(_L, "pairs");
+  if (_broker_api_version == 2) {
+    lua_getglobal(_L, "pairs");
+    lua_setglobal(_L, "__pairs");
+    lua_pushcfunction(_L, l_pairs);
+    lua_setglobal(_L, "pairs");
+  }
 #endif
 
   log_v2::lua()->info("Lua broker_api_version set to {}", _broker_api_version);
