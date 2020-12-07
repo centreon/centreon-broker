@@ -147,6 +147,10 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
       _process_ba_duration_event(data);
       break;
     case io::events::data_type<io::events::bam,
+                               bam::de_dimension_truncate_table_signal>::value:
+      _process_dimension_truncate_signal(data);
+      break;
+    case io::events::data_type<io::events::bam,
                                bam::de_dimension_ba_event>::value:
     case io::events::data_type<io::events::bam,
                                bam::de_dimension_bv_event>::value:
@@ -154,8 +158,6 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
                                bam::de_dimension_ba_bv_relation_event>::value:
     case io::events::data_type<io::events::bam,
                                bam::de_dimension_kpi_event>::value:
-    case io::events::data_type<io::events::bam,
-                               bam::de_dimension_truncate_table_signal>::value:
     case io::events::data_type<io::events::bam,
                                bam::de_dimension_timeperiod>::value:
     case io::events::data_type<io::events::bam,
@@ -178,12 +180,6 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
   _ack_events = 0;
   return retval;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Apply a timeperiod declaration.
@@ -851,39 +847,14 @@ void reporting_stream::_process_dimension_ba_bv_relation(
  *  @param e  The event to process.
  */
 void reporting_stream::_process_dimension(std::shared_ptr<io::data> const& e) {
-  // Cache the event until the end of the dimensions dump.
-  _dimension_data_cache.emplace_back(e);
-  //_dimension_data_cache.push_back(_dimension_copy(e));
-
-  // If this is a dimension truncate table signal, it's either the beginning
-  // or the end of the dimensions dump.
-  if (e->type() ==
-      io::events::data_type<io::events::bam,
-                            bam::de_dimension_truncate_table_signal>::value) {
-    const dimension_truncate_table_signal& dtts =
-        *std::static_pointer_cast<const dimension_truncate_table_signal>(e);
-
-    if (!dtts.update_started) {
-      // Lock the availability thread.
-      std::unique_lock<availability_thread> lock(*_availabilities);
-
-      // XXX : dimension event acknowledgement might not work !!!
-      //       For this reason, ignore any db error. We wouldn't
-      //       be able to manage it on a stream level.
-      try {
-        for (auto& e : _dimension_data_cache)
-          _dimension_dispatch(e);
-        _mysql.commit();
-      } catch (std::exception const& e) {
-        logging::error(logging::medium)
-            << "BAM-BI: ignored dimension insertion failure: " << e.what();
-      }
-
-      _dimension_data_cache.clear();
-    } else
-      _dimension_data_cache.erase(_dimension_data_cache.begin(),
-                                  _dimension_data_cache.end() - 1);
-  }
+  if (_processing_dimensions)
+    // Cache the event until the end of the dimensions dump.
+    _dimension_data_cache.emplace_back(e);
+  else
+    log_v2::bam()->warn(
+        "Dimension of type {:x} not handled because dimension block not "
+        "started.",
+        e->type());
 }
 
 /**
@@ -909,10 +880,6 @@ void reporting_stream::_dimension_dispatch(
     case io::events::data_type<io::events::bam,
                                bam::de_dimension_kpi_event>::value:
       _process_dimension_kpi(data);
-      break;
-    case io::events::data_type<io::events::bam,
-                               bam::de_dimension_truncate_table_signal>::value:
-      _process_dimension_truncate_signal(data);
       break;
     case io::events::data_type<io::events::bam,
                                bam::de_dimension_timeperiod>::value:
@@ -999,6 +966,7 @@ void reporting_stream::_process_dimension_truncate_signal(
       *std::static_pointer_cast<const dimension_truncate_table_signal>(e);
 
   if (dtts.update_started) {
+    _processing_dimensions = true;
     log_v2::bam()->debug("BAM-BI: processing table truncation signal");
 
     for (auto& stmt : _dimension_truncate_tables)
@@ -1006,6 +974,24 @@ void reporting_stream::_process_dimension_truncate_signal(
                            database::mysql_error::truncate_dimension_table);
 
     _timeperiods.clear();
+    _dimension_data_cache.clear();
+  } else {
+    // Lock the availability thread.
+    std::lock_guard<availability_thread> lock(*_availabilities);
+
+    // XXX : dimension event acknowledgement might not work !!!
+    //       For this reason, ignore any db error. We wouldn't
+    //       be able to manage it on a stream level.
+    try {
+      for (auto& e : _dimension_data_cache)
+        _dimension_dispatch(e);
+    } catch (std::exception const& e) {
+      logging::error(logging::medium)
+          << "BAM-BI: ignored dimension insertion failure: " << e.what();
+    }
+    _mysql.commit();
+    _dimension_data_cache.clear();
+    _processing_dimensions = false;
   }
 }
 
@@ -1289,7 +1275,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
   // We block the availability thread to prevent it waking
   // up on truncated event durations.
   try {
-    std::unique_lock<availability_thread> lock(*_availabilities);
+    std::lock_guard<availability_thread> lock(*_availabilities);
 
     // Delete obsolete ba events durations.
     {

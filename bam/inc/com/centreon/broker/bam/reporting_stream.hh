@@ -52,6 +52,40 @@ class dimension_timeperiod_exclusion;
  *  metrics table of a centbam DB.
  */
 class reporting_stream : public io::stream {
+  uint32_t _ack_events;
+  uint32_t _pending_events;
+  uint32_t _queries_per_transaction;
+  std::string _status;
+  mutable std::mutex _statusm;
+  uint32_t _transaction_queries;
+  mysql _mysql;
+  database::mysql_stmt _ba_full_event_insert;
+  database::mysql_stmt _ba_event_update;
+  database::mysql_stmt _ba_duration_event_insert;
+  database::mysql_stmt _ba_duration_event_update;
+  database::mysql_stmt _kpi_full_event_insert;
+  database::mysql_stmt _kpi_event_update;
+  database::mysql_stmt _kpi_event_link;
+  database::mysql_stmt _kpi_event_link_update;
+  database::mysql_stmt _dimension_ba_insert;
+  database::mysql_stmt _dimension_bv_insert;
+  database::mysql_stmt _dimension_ba_bv_relation_insert;
+  database::mysql_stmt _dimension_timeperiod_insert;
+  database::mysql_stmt _dimension_timeperiod_exception_insert;
+  database::mysql_stmt _dimension_timeperiod_exclusion_insert;
+  database::mysql_stmt _dimension_ba_timeperiod_insert;
+  database::mysql_stmt _dimension_kpi_insert;
+  std::vector<database::mysql_stmt> _dimension_truncate_tables;
+  std::unique_ptr<availability_thread> _availabilities;
+
+  // Timeperiods by BAs, with an option is default timeperiod.
+  timeperiod_map _timeperiods;
+
+  std::vector<std::shared_ptr<io::data>> _dimension_data_cache;
+  std::unordered_map<uint32_t, std::map<std::time_t, uint64_t>>
+      _last_inserted_kpi;  // ba_id => <time, row>
+  bool _processing_dimensions;
+
  public:
   reporting_stream(database_config const& db_cfg);
   ~reporting_stream();
@@ -95,39 +129,6 @@ class reporting_stream : public io::stream {
   void _update_status(std::string const& status);
   void _compute_event_durations(std::shared_ptr<ba_event> const& ev,
                                 io::stream* visitor);
-
-  uint32_t _ack_events;
-  uint32_t _pending_events;
-  uint32_t _queries_per_transaction;
-  std::string _status;
-  mutable std::mutex _statusm;
-  uint32_t _transaction_queries;
-  mysql _mysql;
-  database::mysql_stmt _ba_full_event_insert;
-  database::mysql_stmt _ba_event_update;
-  database::mysql_stmt _ba_duration_event_insert;
-  database::mysql_stmt _ba_duration_event_update;
-  database::mysql_stmt _kpi_full_event_insert;
-  database::mysql_stmt _kpi_event_update;
-  database::mysql_stmt _kpi_event_link;
-  database::mysql_stmt _kpi_event_link_update;
-  database::mysql_stmt _dimension_ba_insert;
-  database::mysql_stmt _dimension_bv_insert;
-  database::mysql_stmt _dimension_ba_bv_relation_insert;
-  database::mysql_stmt _dimension_timeperiod_insert;
-  database::mysql_stmt _dimension_timeperiod_exception_insert;
-  database::mysql_stmt _dimension_timeperiod_exclusion_insert;
-  database::mysql_stmt _dimension_ba_timeperiod_insert;
-  database::mysql_stmt _dimension_kpi_insert;
-  std::vector<database::mysql_stmt> _dimension_truncate_tables;
-  std::unique_ptr<availability_thread> _availabilities;
-
-  // Timeperiods by BAs, with an option is default timeperiod.
-  timeperiod_map _timeperiods;
-
-  std::vector<std::shared_ptr<io::data>> _dimension_data_cache;
-  std::unordered_map<uint32_t, std::map<std::time_t, uint64_t>>
-      _last_inserted_kpi;  // ba_id => <time, row>
 };
 }  // namespace bam
 
