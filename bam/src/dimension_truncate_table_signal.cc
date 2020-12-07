@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -29,38 +29,6 @@ dimension_truncate_table_signal::dimension_truncate_table_signal()
       update_started(true) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-dimension_truncate_table_signal::dimension_truncate_table_signal(
-    dimension_truncate_table_signal const& other)
-    : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-dimension_truncate_table_signal::~dimension_truncate_table_signal() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
-    dimension_truncate_table_signal const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
-
-/**
  *  Equality test operator.
  *
  *  @param[in] other  The object to test for equality.
@@ -71,22 +39,6 @@ bool dimension_truncate_table_signal::operator==(
     dimension_truncate_table_signal const& other) const {
   return update_started == other.update_started;
 }
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void dimension_truncate_table_signal::_internal_copy(
-    dimension_truncate_table_signal const& other) {
-  update_started = other.update_started;
-}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const dimension_truncate_table_signal::entries[] = {

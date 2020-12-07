@@ -41,10 +41,11 @@ namespace bam {
 class dimension_truncate_table_signal : public io::data {
  public:
   dimension_truncate_table_signal();
-  dimension_truncate_table_signal(dimension_truncate_table_signal const& other);
-  ~dimension_truncate_table_signal();
+  dimension_truncate_table_signal(const dimension_truncate_table_signal&) =
+      delete;
+  ~dimension_truncate_table_signal() noexcept = default;
   dimension_truncate_table_signal& operator=(
-      dimension_truncate_table_signal const& other);
+      const dimension_truncate_table_signal&) = delete;
   bool operator==(dimension_truncate_table_signal const& other) const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<
@@ -55,9 +56,6 @@ class dimension_truncate_table_signal : public io::data {
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(dimension_truncate_table_signal const& other);
 };
 }  // namespace bam
 
