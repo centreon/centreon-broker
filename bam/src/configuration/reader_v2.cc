@@ -635,7 +635,7 @@ void reader_v2::_load_dimensions() {
         ba->sla_month_percent_crit = res.value_as_f64(4);
         ba->sla_duration_warn = res.value_as_i32(5);
         ba->sla_duration_crit = res.value_as_i32(6);
-        datas.push_back(std::static_pointer_cast<io::data>(ba));
+        datas.push_back(ba);
         bas[ba->ba_id] = ba;
         if (!res.value_is_null(7)) {
           std::shared_ptr<dimension_ba_timeperiod_relation> dbtr(
@@ -663,7 +663,7 @@ void reader_v2::_load_dimensions() {
         bv->bv_id = res.value_as_u32(0);
         bv->bv_name = res.value_as_str(1);
         bv->bv_description = res.value_as_str(2);
-        datas.push_back(std::static_pointer_cast<io::data>(bv));
+        datas.push_back(bv);
       }
     } catch (std::exception const& e) {
       throw exceptions::msg()
@@ -690,7 +690,7 @@ void reader_v2::_load_dimensions() {
               new dimension_ba_bv_relation_event);
           babv->ba_id = res.value_as_u32(0);
           babv->bv_id = res.value_as_u32(1);
-          datas.push_back(std::static_pointer_cast<io::data>(babv));
+          datas.push_back(babv);
         }
       } catch (std::exception const& e) {
         throw exceptions::msg()
@@ -751,7 +751,7 @@ void reader_v2::_load_dimensions() {
         database::mysql_result res(promise.get_future().get());
 
         while (_mysql.fetch_row(res)) {
-          std::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
+          auto k(std::make_shared<dimension_kpi_event>());
           k->kpi_id = res.value_as_u32(0);
           k->host_id = res.value_as_u32(2);
           k->service_id = res.value_as_u32(3);
@@ -782,7 +782,7 @@ void reader_v2::_load_dimensions() {
             }
             k->kpi_ba_name = found->second->ba_name;
           }
-          datas.push_back(std::static_pointer_cast<io::data>(k));
+          datas.push_back(k);
         }
       } catch (std::exception const& e) {
         throw exceptions::msg()
