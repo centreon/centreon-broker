@@ -795,7 +795,7 @@ void reporting_stream::_process_dimension_ba(
   _dimension_ba_insert.bind_value_as_f64(5, dba.sla_duration_crit);
   _dimension_ba_insert.bind_value_as_f64(6, dba.sla_duration_warn);
   _mysql.run_statement(_dimension_ba_insert, database::mysql_error::insert_ba,
-                       true);
+                       false);
 }
 
 /**
@@ -820,7 +820,7 @@ void reporting_stream::_process_dimension_bv(
                                 get_mod_bam_reporting_bv_col_size(
                                     mod_bam_reporting_bv_bv_description)));
   _mysql.run_statement(_dimension_bv_insert, database::mysql_error::insert_bv,
-                       true);
+                       false);
 }
 
 /**
@@ -838,7 +838,7 @@ void reporting_stream::_process_dimension_ba_bv_relation(
   _dimension_ba_bv_relation_insert.bind_value_as_i32(0, dbabv.ba_id);
   _dimension_ba_bv_relation_insert.bind_value_as_i32(1, dbabv.bv_id);
   _mysql.run_statement(_dimension_ba_bv_relation_insert,
-                       database::mysql_error::insert_dimension_ba_bv, true);
+                       database::mysql_error::insert_dimension_ba_bv, false);
 }
 
 /**
@@ -846,14 +846,94 @@ void reporting_stream::_process_dimension_ba_bv_relation(
  *
  *  @param e  The event to process.
  */
-void reporting_stream::_process_dimension(std::shared_ptr<io::data> const& e) {
-  if (_processing_dimensions)
+void reporting_stream::_process_dimension(const std::shared_ptr<io::data>& e) {
+  if (_processing_dimensions) {
     // Cache the event until the end of the dimensions dump.
+    switch (e->type()) {
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_ba_event>::value: {
+        bam::dimension_ba_event const& dba =
+            *std::static_pointer_cast<bam::dimension_ba_event const>(e);
+        log_v2::bam()->debug("BAM-BI: preparing ba dimension {} ('{}' '{}')",
+                             dba.ba_id, dba.ba_name, dba.ba_description);
+      } break;
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_bv_event>::value: {
+        bam::dimension_bv_event const& dbv =
+            *std::static_pointer_cast<bam::dimension_bv_event const>(e);
+        log_v2::bam()->debug("BAM-BI: preparing bv dimension {} ('{}')",
+                             dbv.bv_id, dbv.bv_name);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_ba_bv_relation_event>::value: {
+        bam::dimension_ba_bv_relation_event const& dbabv =
+            *std::static_pointer_cast<
+                bam::dimension_ba_bv_relation_event const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing relation between ba {} and bv {}", dbabv.ba_id,
+            dbabv.bv_id);
+      } break;
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_kpi_event>::value: {
+        bam::dimension_kpi_event const& dk{
+            *std::static_pointer_cast<bam::dimension_kpi_event const>(e)};
+        std::string kpi_name;
+        if (!dk.service_description.empty())
+          kpi_name =
+              fmt::format("svc: {} {}", dk.host_name, dk.service_description);
+        else if (!dk.kpi_ba_name.empty())
+          kpi_name = fmt::format("ba: {}", dk.kpi_ba_name);
+        else if (!dk.boolean_name.empty())
+          kpi_name = fmt::format("bool: {}", dk.boolean_name);
+        else if (!dk.meta_service_name.empty())
+          kpi_name = fmt::format("meta: {}", dk.meta_service_name);
+        log_v2::bam()->debug("BAM-BI: preparing declaration of kpi {} ('{}')",
+                             dk.kpi_id, kpi_name);
+      } break;
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_timeperiod>::value: {
+        bam::dimension_timeperiod const& tp =
+            *std::static_pointer_cast<bam::dimension_timeperiod const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing declaration of timeperiod {} ('{}')", tp.id,
+            tp.name);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_timeperiod_exception>::value: {
+        bam::dimension_timeperiod_exception const& tpe =
+            *std::static_pointer_cast<
+                bam::dimension_timeperiod_exception const>(e);
+        log_v2::bam()->debug("BAM-BI: preparing exception of timeperiod {}",
+                             tpe.timeperiod_id);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_timeperiod_exclusion>::value: {
+        bam::dimension_timeperiod_exclusion const& tpe =
+            *std::static_pointer_cast<
+                bam::dimension_timeperiod_exclusion const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing exclusion of timeperiod {} by timeperiod {}",
+            tpe.excluded_timeperiod_id, tpe.timeperiod_id);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_ba_timeperiod_relation>::value: {
+        bam::dimension_ba_timeperiod_relation const& r =
+            *std::static_pointer_cast<
+                bam::dimension_ba_timeperiod_relation const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing relation of BA {} to timeperiod {}", r.ba_id,
+            r.timeperiod_id);
+      } break;
+      default:
+        log_v2::bam()->debug("BAM-BI: preparing event of type {:x}", e->type());
+        break;
+    }
     _dimension_data_cache.emplace_back(e);
-  else
+
+  } else
     log_v2::bam()->warn(
         "Dimension of type {:x} not handled because dimension block not "
-        "started.",
+        "opened.",
         e->type());
 }
 
@@ -970,10 +1050,6 @@ void reporting_stream::_process_dimension_truncate_signal(
     log_v2::bam()->debug(
         "BAM-BI: processing table truncation signal (opening)");
 
-    for (auto& stmt : _dimension_truncate_tables)
-      _mysql.run_statement(stmt,
-                           database::mysql_error::truncate_dimension_table);
-
     _timeperiods.clear();
     _dimension_data_cache.clear();
   } else {
@@ -981,6 +1057,10 @@ void reporting_stream::_process_dimension_truncate_signal(
         "BAM-BI: processing table truncation signal (closing)");
     // Lock the availability thread.
     std::lock_guard<availability_thread> lock(*_availabilities);
+
+    for (auto& stmt : _dimension_truncate_tables)
+      _mysql.run_statement(stmt,
+                           database::mysql_error::truncate_dimension_table);
 
     // XXX : dimension event acknowledgement might not work !!!
     //       For this reason, ignore any db error. We wouldn't
@@ -992,6 +1072,7 @@ void reporting_stream::_process_dimension_truncate_signal(
       logging::error(logging::medium)
           << "BAM-BI: ignored dimension insertion failure: " << e.what();
     }
+
     _mysql.commit();
     _dimension_data_cache.clear();
     _processing_dimensions = false;
@@ -1062,7 +1143,7 @@ void reporting_stream::_process_dimension_kpi(
                                      mod_bam_reporting_kpi_boolean_name)));
 
   _mysql.run_statement(_dimension_kpi_insert,
-                       database::mysql_error::insert_dimension_kpi, true);
+                       database::mysql_error::insert_dimension_kpi, false);
 }
 
 /**
@@ -1112,7 +1193,7 @@ void reporting_stream::_process_dimension_timeperiod(
                                 get_mod_bam_reporting_timeperiods_col_size(
                                     mod_bam_reporting_timeperiods_saturday)));
   _mysql.run_statement(_dimension_timeperiod_insert,
-                       database::mysql_error::insert_timeperiod, true);
+                       database::mysql_error::insert_timeperiod, false);
   _apply(tp);
 }
 
@@ -1144,7 +1225,7 @@ void reporting_stream::_process_dimension_timeperiod_exception(
 
   _mysql.run_statement(_dimension_timeperiod_exception_insert,
                        database::mysql_error::insert_timeperiod_exception,
-                       true);
+                       false);
   _apply(tpe);
 }
 
@@ -1168,7 +1249,7 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
       1, tpe.excluded_timeperiod_id);
   _mysql.run_statement(_dimension_timeperiod_exclusion_insert,
                        database::mysql_error::insert_exclusion_timeperiod,
-                       true);
+                       false);
   _apply(tpe);
 }
 
@@ -1190,7 +1271,7 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
   _dimension_ba_timeperiod_insert.bind_value_as_bool(2, r.is_default);
   _mysql.run_statement(_dimension_ba_timeperiod_insert,
                        database::mysql_error::insert_relation_ba_timeperiod,
-                       true);
+                       false);
   _timeperiods.add_relation(r.ba_id, r.timeperiod_id, r.is_default);
 }
 
