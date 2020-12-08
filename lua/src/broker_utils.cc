@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/lua/broker_utils.hh"
 
+#include <fmt/format.h>
 #include <sys/stat.h>
 
 #include <cstdlib>
@@ -26,6 +27,9 @@
 #include <json11.hpp>
 #include <sstream>
 
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
 
@@ -90,6 +94,142 @@ static void broker_json_encode_table(lua_State* L, std::ostringstream& oss) {
   }
 }
 
+static void escape_str(const char* content, std::ostringstream& oss) {
+  /* If the string contains '"', we must escape it */
+  size_t pos(strcspn(content, "\\\"\t\r\n"));
+  if (content[pos] != 0) {
+    std::string str(content);
+    char replacement[3] = "\\\\";
+    do {
+      switch (str[pos]) {
+        case '\\':
+          replacement[1] = '\\';
+          break;
+        case '"':
+          replacement[1] = '"';
+          break;
+        case '\t':
+          replacement[1] = 't';
+          break;
+        case '\r':
+          replacement[1] = 'r';
+          break;
+        case '\n':
+          replacement[1] = 'n';
+          break;
+      }
+      str.replace(pos, 1, replacement);
+      pos += 2;
+    } while ((pos = str.find_first_of("\\\"\t\r\n", pos)) != std::string::npos);
+    oss << str;
+  } else
+    oss << content;
+}
+
+static void broker_json_encode_broker_event(std::shared_ptr<io::data> e,
+                                     std::ostringstream& oss) {
+  io::event_info const* info = io::events::instance().get_event_info(e->type());
+  if (info) {
+    oss << fmt::format("{{ \"_type\": {}, \"category\": {}, \"element\": {}",
+                       e->type(), static_cast<uint32_t>(e->type()) >> 16,
+                       static_cast<uint32_t>(e->type()) & 0xffff);
+    for (const mapping::entry* current_entry = info->get_mapping();
+         !current_entry->is_null(); ++current_entry) {
+      char const* entry_name(current_entry->get_name_v2());
+      if (entry_name && *entry_name) {
+        switch (current_entry->get_type()) {
+          case mapping::source::BOOL:
+            oss << fmt::format(", \"{}\":{}", entry_name,
+                               current_entry->get_bool(*e));
+            break;
+          case mapping::source::DOUBLE:
+            oss << fmt::format(", \"{}\":{}", entry_name,
+                               current_entry->get_double(*e));
+            break;
+          case mapping::source::INT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                int val(current_entry->get_int(*e));
+                if (val != 0)
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                int val(current_entry->get_int(*e));
+                if (val != -1)
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
+              } break;
+              default:
+                oss << fmt::format(", \"{}\":{}", entry_name,
+                                   current_entry->get_int(*e));
+            }
+            break;
+          case mapping::source::SHORT:
+            oss << fmt::format(", \"{}\":{}", entry_name,
+                               current_entry->get_short(*e));
+            break;
+          case mapping::source::STRING:
+            if (current_entry->get_attribute() ==
+                mapping::entry::invalid_on_zero) {
+              std::string val{current_entry->get_string(*e)};
+              if (!val.empty()) {
+                oss << fmt::format(", \"{}\":\"", entry_name);
+                escape_str(val.c_str(), oss);
+                oss << '"';
+              }
+            } else {
+              oss << fmt::format(", \"{}\":\"", entry_name);
+              escape_str(current_entry->get_string(*e).c_str(), oss);
+              oss << '"';
+            }
+            break;
+          case mapping::source::TIME:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                time_t val = current_entry->get_time(*e);
+                if (val != 0)
+                  oss << fmt::format(", \"{}\":\"{}\"", entry_name, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                time_t val = current_entry->get_time(*e);
+                if (val != -1)
+                  oss << fmt::format(", \"{}\":\"{}\"", entry_name, val);
+              } break;
+              default:
+                oss << fmt::format(", \"{}\":\"{}\"", entry_name,
+                                   current_entry->get_time(*e));
+            }
+            break;
+          case mapping::source::UINT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                uint32_t val = current_entry->get_uint(*e);
+                if (val != 0)
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                uint32_t val = current_entry->get_uint(*e);
+                if (val != static_cast<uint32_t>(-1))
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
+              } break;
+              default:
+                oss << fmt::format(", \"{}\":{}", entry_name,
+                                   current_entry->get_uint(*e));
+            }
+            break;
+          default:  // Error in one of the mappings.
+            throw exceptions::msg() << "invalid mapping for object "
+                                    << "of type '" << info->get_name()
+                                    << "': " << current_entry->get_type()
+                                    << " is not a known type ID";
+        }
+      }
+    }
+    oss << "}}";
+  } else
+    throw exceptions::msg() << "cannot bind object of type " << e->type()
+                            << " to database query: mapping does not exist";
+}
+
 /**
  *  The json_encode function for Lua objects others than tables
  *
@@ -103,36 +243,10 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
       break;
     case LUA_TSTRING: {
       /* If the string contains '"', we must escape it */
-      char const* content(lua_tostring(L, -1));
-      size_t pos(strcspn(content, "\\\"\t\r\n"));
-      if (content[pos] != 0) {
-        std::string str(content);
-        char replacement[3] = "\\\\";
-        do {
-          switch (str[pos]) {
-            case '\\':
-              replacement[1] = '\\';
-              break;
-            case '"':
-              replacement[1] = '"';
-              break;
-            case '\t':
-              replacement[1] = 't';
-              break;
-            case '\r':
-              replacement[1] = 'r';
-              break;
-            case '\n':
-              replacement[1] = 'n';
-              break;
-          }
-          str.replace(pos, 1, replacement);
-          pos += 2;
-        } while ((pos = str.find_first_of("\\\"\t\r\n", pos)) !=
-                 std::string::npos);
-        oss << '"' << str << '"';
-      } else
-        oss << '"' << content << '"';
+      const char* content = lua_tostring(L, -1);
+      oss << '"';
+      escape_str(content, oss);
+      oss << '"';
     } break;
     case LUA_TBOOLEAN:
       oss << (lua_toboolean(L, -1) ? "true" : "false");
@@ -140,6 +254,14 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
     case LUA_TTABLE:
       broker_json_encode_table(L, oss);
       break;
+    case LUA_TUSERDATA: {
+      void* ptr = luaL_checkudata(L, 1, "broker_event");
+      if (ptr) {
+        auto event = static_cast<std::shared_ptr<io::data>*>(ptr);
+        broker_json_encode_broker_event(*event, oss);
+        break;
+      }
+    }
     default:
       luaL_error(L, "json_encode: type not implemented");
   }
