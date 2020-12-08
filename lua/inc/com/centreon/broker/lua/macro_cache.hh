@@ -48,62 +48,6 @@ namespace lua {
  *  @brief Data cache for Lua macro.
  */
 class macro_cache {
- public:
-  macro_cache(std::shared_ptr<persistent_cache> const& cache);
-  ~macro_cache();
-
-  void write(std::shared_ptr<io::data> const& data);
-
-  storage::index_mapping const& get_index_mapping(uint32_t index_id) const;
-  storage::metric_mapping const& get_metric_mapping(uint32_t metric_id) const;
-  std::string const& get_host_name(uint64_t host_id) const;
-  std::string const& get_notes_url(uint64_t host_id, uint64_t service_id) const;
-  std::string const& get_notes(uint64_t host_id, uint64_t service_id) const;
-  std::string const& get_action_url(uint64_t host_id,
-                                    uint64_t service_id) const;
-  int32_t get_severity(uint64_t host_id, uint64_t service_id) const;
-  std::string const& get_host_group_name(uint64_t id) const;
-  std::map<std::pair<uint64_t, uint64_t>,
-           std::shared_ptr<neb::host_group_member> > const&
-  get_host_group_members() const;
-  std::string const& get_service_description(uint64_t host_id,
-                                             uint64_t service_id) const;
-  std::string const& get_service_group_name(uint64_t id) const;
-  std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
-           std::shared_ptr<neb::service_group_member> > const&
-  get_service_group_members() const;
-  std::string const& get_instance(uint64_t instance_id) const;
-
-  std::unordered_multimap<
-      uint64_t,
-      std::shared_ptr<bam::dimension_ba_bv_relation_event> > const&
-  get_dimension_ba_bv_relation_events() const;
-  bam::dimension_ba_event const& get_dimension_ba_event(uint64_t id) const;
-  bam::dimension_bv_event const& get_dimension_bv_event(uint64_t id) const;
-
- private:
-  macro_cache(macro_cache const& f);
-  macro_cache& operator=(macro_cache const& f);
-
-  void _process_instance(std::shared_ptr<io::data> const& data);
-  void _process_host(std::shared_ptr<io::data> const& data);
-  void _process_host_group(std::shared_ptr<io::data> const& data);
-  void _process_host_group_member(std::shared_ptr<io::data> const& data);
-  void _process_custom_variable(std::shared_ptr<io::data> const& data);
-  void _process_service(std::shared_ptr<io::data> const& data);
-  void _process_service_group(std::shared_ptr<io::data> const& data);
-  void _process_service_group_member(std::shared_ptr<io::data> const& data);
-  void _process_index_mapping(std::shared_ptr<io::data> const& data);
-  void _process_metric_mapping(std::shared_ptr<io::data> const& data);
-  void _process_dimension_ba_event(std::shared_ptr<io::data> const& data);
-  void _process_dimension_ba_bv_relation_event(
-      std::shared_ptr<io::data> const& data);
-  void _process_dimension_bv_event(std::shared_ptr<io::data> const& data);
-  void _process_dimension_truncate_table_signal(
-      std::shared_ptr<io::data> const& data);
-
-  void _save_to_disk();
-
   std::shared_ptr<persistent_cache> _cache;
   std::unordered_map<uint64_t, std::shared_ptr<neb::instance> > _instances;
   std::unordered_map<uint64_t, std::shared_ptr<neb::host> > _hosts;
@@ -133,6 +77,67 @@ class macro_cache {
       _dimension_ba_bv_relation_events;
   std::unordered_map<uint64_t, std::shared_ptr<bam::dimension_bv_event> >
       _dimension_bv_events;
+
+ public:
+  macro_cache(std::shared_ptr<persistent_cache> const& cache);
+  ~macro_cache();
+
+  void write(std::shared_ptr<io::data> const& data);
+
+  storage::index_mapping const& get_index_mapping(uint32_t index_id) const;
+  const std::shared_ptr<storage::metric_mapping>& get_metric_mapping(uint32_t metric_id) const;
+  const std::shared_ptr<neb::host>& get_host(uint64_t host_id) const;
+  const std::shared_ptr<neb::service>& get_service(uint64_t host_id,
+                                                   uint64_t service_id) const;
+  std::string const& get_host_name(uint64_t host_id) const;
+  std::string const& get_notes_url(uint64_t host_id, uint64_t service_id) const;
+  std::string const& get_notes(uint64_t host_id, uint64_t service_id) const;
+  std::string const& get_action_url(uint64_t host_id,
+                                    uint64_t service_id) const;
+  int32_t get_severity(uint64_t host_id, uint64_t service_id) const;
+  std::string const& get_host_group_name(uint64_t id) const;
+  std::map<std::pair<uint64_t, uint64_t>,
+           std::shared_ptr<neb::host_group_member> > const&
+  get_host_group_members() const;
+  std::string const& get_service_description(uint64_t host_id,
+                                             uint64_t service_id) const;
+  std::string const& get_service_group_name(uint64_t id) const;
+  std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
+           std::shared_ptr<neb::service_group_member> > const&
+  get_service_group_members() const;
+  std::string const& get_instance(uint64_t instance_id) const;
+
+  const std::unordered_multimap<
+      uint64_t,
+      std::shared_ptr<bam::dimension_ba_bv_relation_event> >&
+  get_dimension_ba_bv_relation_events() const;
+  const std::shared_ptr<bam::dimension_ba_event>& get_dimension_ba_event(
+      uint64_t id) const;
+  const std::shared_ptr<bam::dimension_bv_event>& get_dimension_bv_event(
+      uint64_t id) const;
+
+ private:
+  macro_cache(macro_cache const& f);
+  macro_cache& operator=(macro_cache const& f);
+
+  void _process_instance(std::shared_ptr<io::data> const& data);
+  void _process_host(std::shared_ptr<io::data> const& data);
+  void _process_host_group(std::shared_ptr<io::data> const& data);
+  void _process_host_group_member(std::shared_ptr<io::data> const& data);
+  void _process_custom_variable(std::shared_ptr<io::data> const& data);
+  void _process_service(std::shared_ptr<io::data> const& data);
+  void _process_service_group(std::shared_ptr<io::data> const& data);
+  void _process_service_group_member(std::shared_ptr<io::data> const& data);
+  void _process_index_mapping(std::shared_ptr<io::data> const& data);
+  void _process_metric_mapping(std::shared_ptr<io::data> const& data);
+  void _process_dimension_ba_event(std::shared_ptr<io::data> const& data);
+  void _process_dimension_ba_bv_relation_event(
+      std::shared_ptr<io::data> const& data);
+  void _process_dimension_bv_event(std::shared_ptr<io::data> const& data);
+  void _process_dimension_truncate_table_signal(
+      std::shared_ptr<io::data> const& data);
+
+  void _save_to_disk();
 };
 }  // namespace lua
 

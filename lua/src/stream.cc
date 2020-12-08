@@ -15,17 +15,17 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/lua/stream.hh"
+
 #include <algorithm>
 #include <cmath>
 #include <sstream>
-#include <sstream>
+
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
-#include "com/centreon/broker/lua/stream.hh"
 #include "com/centreon/broker/misc/math.hh"
 
 using namespace com::centreon::broker;
@@ -52,9 +52,7 @@ stream::stream(std::string const& lua_script,
       _acks_count{0},
       _stats{{}},
       _stats_it{_stats.begin()},
-      _next_stat{time(nullptr)},
-      _nb_stats{0},
-      _a_min{1},
+      _next_stat{std::chrono::system_clock::now()},
       _exit{false},
       _flush{false} {
   bool fail = false;
@@ -62,84 +60,93 @@ stream::stream(std::string const& lua_script,
 
   /* The lua interpreter does not support exchanges with several threads from
    * the outside. By design, the filter is called from another thread than the
-   * one used for the write function.
+   * one used by the write function.
    * To fulfill this difficulty, the filter and write functions feed this thread
    * with their arguments. The filter waits for an answer whereas the write
    * function just increases an _acks_count to inform broker on treated events.
    */
-  std::unique_lock<std::mutex> lock(_loop_m);
-
   _thread = std::thread([&] {
     // Access to the Lua interpreter
     luabinding* lb = nullptr;
     bool has_flush = false;
+    std::deque<std::shared_ptr<io::data>> events;
 
-    {
-      std::lock_guard<std::mutex> lock(_loop_m);
-      try {
-        lb = new luabinding(lua_script, conf_params, _cache);
-        has_flush = lb->has_flush();
-      }
-      catch (std::exception const& e) {
-        fail_msg = e.what();
-        fail = true;
-        _exit = true;
-        _loop_cv.notify_one();
-        return;
-      }
-      _loop_cv.notify_one();
+    try {
+      lb = new luabinding(lua_script, conf_params, _cache);
+      has_flush = lb->has_flush();
+    } catch (std::exception const& e) {
+      fail_msg = e.what();
+      fail = true;
+      _exit = true;
+      return;
     }
 
-    std::unique_lock<std::mutex> lock(_loop_m);
+    /**
+     * Events handling starts really here. */
 
+    /* The count of events handled each second. */
+    int count = 0;
     for (;;) {
-      log_v2::lua()->trace("stream: waiting for an event...");
-       if (has_flush) {
-         _loop_cv.wait(lock, [this] { return _exit || _flush || !_events.empty(); });
-
-         if (_flush) {
-           log_v2::lua()->debug("stream: flush event");
-           lock.unlock();
-           int32_t res = lb->flush();
-           {
-             std::lock_guard<std::mutex> lock(_acks_count_m);
-             log_v2::lua()->trace("stream: {} events acknowledged by the script flush", res);
-             _acks_count += res;
-             log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
-           }
-           _flush = false;
-           lock.lock();
-         }
-       }
-       else
-         _loop_cv.wait(lock, [this] { return _exit || !_events.empty(); });
-
-      if (!_events.empty()) {
-        log_v2::lua()->debug("stream: there are events to send to lua");
-        std::shared_ptr<io::data> d = _events.front();
-        _events.pop_front();
-        lock.unlock();
-        uint32_t res = lb->write(d);
-        {
-          std::lock_guard<std::mutex> lock(_acks_count_m);
-          log_v2::lua()->trace("stream: {} events acknowledged by the script write", res);
-          _acks_count += res;
-          log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
-        }
-        lock.lock();
+      /* Is the flush activated and have we received a flush ? */
+      if (has_flush && _flush) {
+        log_v2::lua()->debug("stream: flush event");
+        int32_t res = lb->flush();
+        log_v2::lua()->trace(
+            "stream: {} events acknowledged by the script flush", res);
+        _acks_count += res;
+        log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
+        _flush = false;
       }
-      else if (_exit) {
+
+      /* If the thread queue is empty, we swap it with exposed events */
+      if (events.empty()) {
+        std::lock_guard<std::mutex> lck(_exposed_events_m);
+        std::swap(_exposed_events, events);
+        _events_size = events.size();
+      }
+
+      /* Every seconds, we store how many events have been handled. We can
+       * then build an array of 10 values used to compute a speed. */
+      {
+        auto now = std::chrono::system_clock::now();
+        if (now > _next_stat) {
+          *_stats_it = count;
+          count = 0;
+          ++_stats_it;
+          if (_stats_it == _stats.end())
+            _stats_it = _stats.begin();
+
+          // We take a point at least every 1s.
+          _next_stat =
+              std::chrono::system_clock::now() + std::chrono::seconds(1);
+        }
+      }
+
+      /* Are there events to handle? */
+      if (!events.empty()) {
+        std::shared_ptr<io::data> d = events.front();
+        events.pop_front();
+        --_events_size;
+        ++count;
+        uint32_t res = lb->write(d);
+        log_v2::lua()->trace(
+            "stream: {} events acknowledged by the script write", res);
+        _acks_count += res;
+        log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
+      } else if (_exit) {
         /* We exit only if the events queue is empty */
         log_v2::lua()->debug("stream: exit");
         break;
-      }
+      } else
+      /* We did nothing, let's wait for 500ms. We don't cook an egg with our
+       * cpus. */
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     // No more need of the Lua interpreter
     delete lb;
   });
 
-  _loop_cv.wait(lock);
   if (fail) {
     _thread.join();
     throw exceptions::msg() << fail_msg;
@@ -150,11 +157,7 @@ stream::stream(std::string const& lua_script,
  *  Destructor.
  */
 stream::~stream() {
-  {
-    std::lock_guard<std::mutex> lock(_loop_m);
-    _exit = true;
-    _loop_cv.notify_one();
-  }
+  _exit = true;
   if (_thread.joinable())
     _thread.join();
 }
@@ -181,47 +184,18 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& data) {
-  if (!validate(data, get_name()))
-    return 0;
-
+  assert(data);
   {
-    std::lock_guard<std::mutex> lock(_loop_m);
-    _events.push_back(data);
-
-    time_t now = time(nullptr);
-    if (now > _next_stat || std::isnan(_a)) {
-      *_stats_it = {now, _events.size()};
-      ++_nb_stats;
-      ++_stats_it;
-      if (_stats_it == _stats.end())
-        _stats_it = _stats.begin();
-
-      // We take a point at least every 30s.
-      bool res = misc::least_squares(_stats, _nb_stats, _a, _b);
-      if (!res) {
-        _a = NAN;
-        _b = NAN;
-      }
-      else {
-        _next_stat += 30;
-        if (_a > _a_min) {
-          _a_min = _a;
-          logging::debug(logging::high) << "LUA: The streamconnector looks "
-            "quite slow, waiting events are increasing at the speed of "
-            << _a << "events/s";
-        }
-      }
-    }
+    std::lock_guard<std::mutex> lck(_exposed_events_m);
+    _exposed_events.push_back(data);
   }
-  _loop_cv.notify_one();
 
-  {
-    std::lock_guard<std::mutex> lock(_acks_count_m);
-    log_v2::lua()->debug("stream: {} events will be acknowledged at the end of the write function", _acks_count);
-    int retval = _acks_count;
-    _acks_count = 0;
-    return retval;
-  }
+  int retval = _acks_count;
+  _acks_count -= retval;
+  log_v2::lua()->debug(
+      "stream: {} events will be acknowledged at the end of the write function",
+      retval);
+  return retval;
 }
 
 /**
@@ -232,23 +206,25 @@ int stream::write(std::shared_ptr<io::data> const& data) {
  * @return The number of events to ack.
  */
 int stream::flush() {
-  {
-    std::lock_guard<std::mutex> loop_lock(_loop_m);
+  if (!_flush) {
     log_v2::lua()->debug("stream: flush forced");
     _flush = true;
-    _loop_cv.notify_one();
   }
 
-  std::lock_guard<std::mutex> lock(_acks_count_m);
   int retval = _acks_count;
-  _acks_count = 0;
+  _acks_count -= retval;
   log_v2::lua()->debug("stream: flush {} events acknowledged", retval);
   return retval;
 }
 
 void stream::statistics(json11::Json::object& tree) const {
-  std::lock_guard<std::mutex> lock(_loop_m);
-  tree["waiting_events"] =
-      json11::Json::object{{"lm", json11::Json::object{{"a", _a}, {"b", _b}}},
-                           {"total", static_cast<double>(_events.size())}};
+  std::lock_guard<std::mutex> lck(_exposed_events_m);
+  double avg = 0;
+  for (auto& s : _stats)
+    avg += s;
+  avg /= _stats.size();
+  tree["waiting_events"] = json11::Json::object{
+      {"speed", fmt::format("{} events/s", avg)},
+      {"handled_events", static_cast<int>(_events_size)},
+      {"waiting_events", static_cast<int>(_exposed_events.size())}};
 }
