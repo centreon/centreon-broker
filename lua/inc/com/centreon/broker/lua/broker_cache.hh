@@ -40,7 +40,9 @@ namespace lua {
  */
 class broker_cache {
  public:
-  static void broker_cache_reg(lua_State* L, macro_cache const& cache);
+  static void broker_cache_reg(lua_State* L,
+                               macro_cache const& cache,
+                               uint32_t api_version);
 };
 }  // namespace lua
 

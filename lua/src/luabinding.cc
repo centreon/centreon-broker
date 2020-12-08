@@ -18,10 +18,12 @@
 
 #include <cassert>
 #include <fstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/broker_cache.hh"
+#include "com/centreon/broker/lua/broker_event.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_socket.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
@@ -29,6 +31,15 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
 
+#ifdef LUA51
+static int l_pairs(lua_State* L) {
+  if (!luaL_getmetafield(L, 1, "__next"))
+    lua_getglobal(L, "next");
+  lua_pushvalue(L, 1);
+  lua_pushnil(L);
+  return 3;
+}
+#endif
 /**
  *  Constructor.
  *
@@ -44,7 +55,8 @@ luabinding::luabinding(std::string const& lua_script,
       _flush{false},
       _lua_script(lua_script),
       _cache(cache),
-      _total{0} {
+      _total{0},
+      _broker_api_version{1} {
   size_t pos(lua_script.find_last_of('/'));
   std::string path(lua_script.substr(0, pos));
   _L = _load_interpreter();
@@ -56,8 +68,7 @@ luabinding::luabinding(std::string const& lua_script,
   try {
     _load_script();
     _init_script(conf_params);
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     lua_close(_L);
     throw;
   }
@@ -104,12 +115,16 @@ void luabinding::_update_lua_path(std::string const& path) {
 /**
  *  Returns true if a filter was configured in the Lua script.
  */
-bool luabinding::has_filter() const noexcept { return _filter; }
+bool luabinding::has_filter() const noexcept {
+  return _filter;
+}
 
 /**
  *  Returns true if a flush was configured in the Lua script.
  */
-bool luabinding::has_flush() const noexcept { return _flush; }
+bool luabinding::has_flush() const noexcept {
+  return _flush;
+}
 
 /**
  *  Reads the Lua script, checks its syntax and checks if
@@ -123,27 +138,29 @@ void luabinding::_load_script() {
   // script loading
   if (luaL_loadfile(_L, _lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
-    throw exceptions::msg() << "lua: '" << _lua_script
-                            << "' could not be loaded: " << error_msg;
+    throw exceptions::msg()
+        << "lua: '" << _lua_script << "' could not be loaded: " << error_msg;
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
-    throw exceptions::msg() << "lua: '" << _lua_script
-                            << "' could not be compiled";
+    throw exceptions::msg()
+        << "lua: '" << _lua_script << "' could not be compiled";
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw exceptions::msg() << "lua: '" << _lua_script
-                            << "' init() global function is missing";
+    throw exceptions::msg()
+        << "lua: '" << _lua_script << "' init() global function is missing";
+  lua_pop(_L, 1);
 
   // Checking for write() availability: this function is mandatory
   lua_getglobal(_L, "write");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw exceptions::msg() << "lua: '" << _lua_script
-                            << "' write() global function is missing";
+    throw exceptions::msg()
+        << "lua: '" << _lua_script << "' write() global function is missing";
+  lua_pop(_L, 1);
 
   // Checking for filter() availability: this function is optional
   lua_getglobal(_L, "filter");
@@ -154,6 +171,7 @@ void luabinding::_load_script() {
     _filter = false;
   } else
     _filter = true;
+  lua_pop(_L, 1);
 
   // Checking for flush() availability: this function is optional
   lua_getglobal(_L, "flush");
@@ -163,6 +181,57 @@ void luabinding::_load_script() {
     _flush = false;
   } else
     _flush = true;
+  lua_pop(_L, 1);
+
+  /* Checking the version api */
+  lua_getglobal(_L, "broker_api_version");
+#if LUA53
+  if (lua_isinteger(_L, 1))
+#else
+  if (lua_isnumber(_L, 1))
+#endif
+    _broker_api_version = lua_tointeger(_L, 1);
+  else if (lua_isnumber(_L, 1))
+    _broker_api_version = static_cast<uint32_t>(lua_tonumber(_L, 1));
+  else if (lua_isstring(_L, 1)) {
+    char* end;
+    _broker_api_version = strtol(lua_tostring(_L, 1), &end, 10);
+  }
+
+  if (_broker_api_version != 1 && _broker_api_version != 2) {
+    log_v2::lua()->error(
+        "broker_api_version represents the Lua broker api to use, it must be "
+        "one of (1, 2) and not '{}'. Setting it to 1",
+        _broker_api_version);
+    _broker_api_version = 1;
+  }
+  lua_pop(_L, 1);
+
+#ifdef LUA51
+  if (_broker_api_version == 2) {
+    lua_getglobal(_L, "pairs");
+    lua_setglobal(_L, "__pairs");
+    lua_pushcfunction(_L, l_pairs);
+    lua_setglobal(_L, "pairs");
+  }
+#endif
+
+  log_v2::lua()->info("Lua broker_api_version set to {}", _broker_api_version);
+
+  // Registers the broker_log object
+  broker_log::broker_log_reg(_L);
+
+  // Registers the broker event object
+  broker_event::broker_event_reg(_L);
+
+  // Registers the broker socket object
+  broker_socket::broker_socket_reg(_L);
+
+  // Registers the broker utils
+  broker_utils::broker_utils_reg(_L);
+
+  // Registers the broker cache
+  broker_cache::broker_cache_reg(_L, _cache, _broker_api_version);
 }
 
 /**
@@ -180,8 +249,7 @@ void luabinding::_init_script(
   for (std::map<std::string, misc::variant>::const_iterator
            it(conf_params.begin()),
        end(conf_params.end());
-       it != end;
-       ++it) {
+       it != end; ++it) {
     switch (it->second.user_type()) {
       case misc::variant::type_int:
       case misc::variant::type_uint:
@@ -211,8 +279,8 @@ void luabinding::_init_script(
     }
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
-    throw exceptions::msg() << "lua: error running function `init'"
-                            << lua_tostring(_L, -1);
+    throw exceptions::msg()
+        << "lua: error running function `init'" << lua_tostring(_L, -1);
 }
 
 /**
@@ -258,8 +326,8 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
     }
 
     execute_write = lua_toboolean(_L, -1);
-    logging::debug(logging::medium) << "lua: `filter' returned "
-                                    << (execute_write ? "true" : "false");
+    logging::debug(logging::medium)
+        << "lua: `filter' returned " << (execute_write ? "true" : "false");
     lua_pop(_L, -1);
   }
 
@@ -269,26 +337,22 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   // Let's get the function to call
   lua_getglobal(_L, "write");
 
-  // Let's build the table from the event as argument to write()
-  lua_newtable(_L);
-  lua_pushstring(_L, "_type");
-  lua_pushinteger(_L, type);
-  lua_rawset(_L, -3);
+  // We add data as argument
+  switch (_broker_api_version) {
+    case 1: {
+      // Let's build the table from the event as argument to write()
 
-  lua_pushstring(_L, "category");
-  lua_pushinteger(_L, cat);
-  lua_rawset(_L, -3);
-
-  lua_pushstring(_L, "element");
-  lua_pushinteger(_L, elem);
-  lua_rawset(_L, -3);
-
-  io::data const& d(*data);
-  _parse_entries(d);
+      io::data const& d(*data);
+      broker_event::create_as_table(_L, d);
+    } break;
+    case 2:
+      broker_event::create(_L, data);
+      break;
+  }
 
   if (lua_pcall(_L, 1, 1, 0) != 0) {
-    logging::error(logging::high) << "lua: error running function `write'"
-                                  << lua_tostring(_L, -1);
+    logging::error(logging::high)
+        << "lua: error running function `write'" << lua_tostring(_L, -1);
     return 0;
   }
 
@@ -309,116 +373,6 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
 }
 
 /**
- *  Given an event d, this method converts it to a Lua table.
- *  The result is stored on the Lua interpreter stack.
- *
- *  @param d The event to convert.
- */
-void luabinding::_parse_entries(io::data const& d) {
-  io::event_info const* info(io::events::instance().get_event_info(d.type()));
-  if (info) {
-    for (mapping::entry const* current_entry(info->get_mapping());
-         !current_entry->is_null();
-         ++current_entry) {
-      char const* entry_name(current_entry->get_name_v2());
-      if (entry_name && entry_name[0]) {
-        lua_pushstring(_L, entry_name);
-        switch (current_entry->get_type()) {
-          case mapping::source::BOOL:
-            lua_pushboolean(_L, current_entry->get_bool(d));
-            break;
-          case mapping::source::DOUBLE:
-            lua_pushnumber(_L, current_entry->get_double(d));
-            break;
-          case mapping::source::INT:
-            switch (current_entry->get_attribute()) {
-              case mapping::entry::invalid_on_zero: {
-                int val(current_entry->get_int(d));
-                if (val == 0)
-                  lua_pushnil(_L);
-                else
-                  lua_pushinteger(_L, val);
-              } break;
-              case mapping::entry::invalid_on_minus_one: {
-                int val(current_entry->get_int(d));
-                if (val == -1)
-                  lua_pushnil(_L);
-                else
-                  lua_pushinteger(_L, val);
-              } break;
-              default:
-                lua_pushinteger(_L, current_entry->get_int(d));
-            }
-            break;
-          case mapping::source::SHORT:
-            lua_pushinteger(_L, current_entry->get_short(d));
-            break;
-          case mapping::source::STRING:
-            if (current_entry->get_attribute() ==
-                mapping::entry::invalid_on_zero) {
-              std::string val{current_entry->get_string(d)};
-              if (val.empty())
-                lua_pushnil(_L);
-              else
-                lua_pushstring(_L, val.c_str());
-            } else
-              lua_pushstring(_L, current_entry->get_string(d).c_str());
-            break;
-          case mapping::source::TIME:
-            switch (current_entry->get_attribute()) {
-              case mapping::entry::invalid_on_zero: {
-                time_t val = current_entry->get_time(d);
-                if (val == 0)
-                  lua_pushnil(_L);
-                else
-                  lua_pushinteger(_L, val);
-              } break;
-              case mapping::entry::invalid_on_minus_one: {
-                time_t val = current_entry->get_time(d);
-                if (val == -1)
-                  lua_pushnil(_L);
-                else
-                  lua_pushinteger(_L, val);
-              } break;
-              default:
-                lua_pushinteger(_L, current_entry->get_time(d));
-            }
-            break;
-          case mapping::source::UINT:
-            switch (current_entry->get_attribute()) {
-              case mapping::entry::invalid_on_zero: {
-                uint32_t val = current_entry->get_uint(d);
-                if (val == 0)
-                  lua_pushnil(_L);
-                else
-                  lua_pushinteger(_L, val);
-              } break;
-              case mapping::entry::invalid_on_minus_one: {
-                uint32_t val = current_entry->get_uint(d);
-                if (val == static_cast<uint32_t>(-1))
-                  lua_pushnil(_L);
-                else
-                  lua_pushinteger(_L, val);
-              } break;
-              default:
-                lua_pushinteger(_L, current_entry->get_uint(d));
-            }
-            break;
-          default:  // Error in one of the mappings.
-            throw exceptions::msg() << "invalid mapping for object "
-                                    << "of type '" << info->get_name()
-                                    << "': " << current_entry->get_type()
-                                    << " is not a known type ID";
-        }
-        lua_rawset(_L, -3);
-      }
-    }
-  } else
-    throw exceptions::msg() << "cannot bind object of type " << d.type()
-                            << " to database query: mapping does not exist";
-}
-
-/**
  *  Load the Lua interpreter with classical and custom libraries.
  *
  * @return The Lua interpreter
@@ -429,18 +383,6 @@ lua_State* luabinding::_load_interpreter() {
   // Read common lua libraries
   luaL_openlibs(L);
 
-  // Registers the broker_log object
-  broker_log::broker_log_reg(L);
-
-  // Registers the broker socket object
-  broker_socket::broker_socket_reg(L);
-
-  // Registers the broker utils
-  broker_utils::broker_utils_reg(L);
-
-  // Registers the broker cache
-  broker_cache::broker_cache_reg(L, _cache);
-
   return L;
 }
 
@@ -450,8 +392,8 @@ int32_t luabinding::flush() noexcept {
   // Let's get the function to call
   lua_getglobal(_L, "flush");
   if (lua_pcall(_L, 0, 1, 0) != 0) {
-    logging::error(logging::high) << "lua: error running function `flush'"
-                                  << lua_tostring(_L, -1);
+    logging::error(logging::high)
+        << "lua: error running function `flush'" << lua_tostring(_L, -1);
     return 0;
   }
   if (!lua_isboolean(_L, -1)) {

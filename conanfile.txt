@@ -1,11 +1,11 @@
 [requires]
 gtest/1.8.1@bincrafters/stable
 asio/1.18.0
-fmt/6.2.0
-spdlog/1.5.0
+fmt/7.1.2
+spdlog/1.8.1
 json11/e2e3a11@centreon/stable
 openssl/1.1.1h
-grpc/1.26.0@inexorgame/stable
+grpc/1.27.3@inexorgame/stable
 mariadb-connector-c/3.1.10
 zlib/1.2.11
 
