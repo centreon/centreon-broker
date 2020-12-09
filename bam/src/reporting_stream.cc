@@ -187,6 +187,7 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
  *  @param[in] tp  Timeperiod declaration.
  */
 void reporting_stream::_apply(dimension_timeperiod const& tp) {
+  log_v2::bam()->trace("BAM-BI: adding timeperiod {} to cache", tp.id);
   _timeperiods.add_timeperiod(
       tp.id, time::timeperiod::ptr(new time::timeperiod(
                  tp.id, tp.name, "", tp.sunday, tp.monday, tp.tuesday,
@@ -1050,7 +1051,6 @@ void reporting_stream::_process_dimension_truncate_signal(
     log_v2::bam()->debug(
         "BAM-BI: processing table truncation signal (opening)");
 
-    _timeperiods.clear();
     _dimension_data_cache.clear();
   } else {
     log_v2::bam()->debug(
@@ -1061,6 +1061,7 @@ void reporting_stream::_process_dimension_truncate_signal(
     for (auto& stmt : _dimension_truncate_tables)
       _mysql.run_statement(stmt,
                            database::mysql_error::truncate_dimension_table);
+    _timeperiods.clear();
 
     // XXX : dimension event acknowledgement might not work !!!
     //       For this reason, ignore any db error. We wouldn't
