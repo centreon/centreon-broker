@@ -984,59 +984,6 @@ void reporting_stream::_dimension_dispatch(
 }
 
 /**
- *  Copy a dimension event.
- *
- *  @param[in] data  The data to copy.
- *
- *  @return  The dimension event copied.
- */
-// std::shared_ptr<io::data> reporting_stream::_dimension_copy(
-//    std::shared_ptr<io::data> const& data) {
-//  switch (data->type()) {
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_ba_event>::value:
-//      return std::make_shared<bam::dimension_ba_event>(
-//          *std::static_pointer_cast<bam::dimension_ba_event>(data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_bv_event>::value:
-//      return std::make_shared<bam::dimension_bv_event>(
-//          *std::static_pointer_cast<bam::dimension_bv_event>(data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_ba_bv_relation_event>::value:
-//      return std::make_shared<bam::dimension_ba_bv_relation_event>(
-//          *std::static_pointer_cast<bam::dimension_ba_bv_relation_event>(data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_kpi_event>::value:
-//      return std::make_shared<bam::dimension_kpi_event>(
-//          *std::static_pointer_cast<bam::dimension_kpi_event>(data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_truncate_table_signal>::value:
-//      return std::make_shared<bam::dimension_truncate_table_signal>(
-//          *std::static_pointer_cast<bam::dimension_truncate_table_signal>(
-//              data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_timeperiod>::value:
-//      return std::make_shared<bam::dimension_timeperiod>(
-//          *std::static_pointer_cast<bam::dimension_timeperiod>(data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_timeperiod_exception>::value:
-//      return std::make_shared<bam::dimension_timeperiod_exception>(
-//          *std::static_pointer_cast<bam::dimension_timeperiod_exception>(data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_timeperiod_exclusion>::value:
-//      return std::make_shared<bam::dimension_timeperiod_exclusion>(
-//          *std::static_pointer_cast<bam::dimension_timeperiod_exclusion>(data));
-//    case io::events::data_type<io::events::bam,
-//                               bam::de_dimension_ba_timeperiod_relation>::value:
-//      return std::make_shared<bam::dimension_ba_timeperiod_relation>(
-//          *std::static_pointer_cast<bam::dimension_ba_timeperiod_relation>(
-//              data));
-//    default:
-//      return std::shared_ptr<io::data>();
-//  }
-//}
-
-/**
  *  Process a dimension truncate signal and write it to the db.
  *
  *  @param[in] e The event.
