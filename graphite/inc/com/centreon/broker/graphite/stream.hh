@@ -66,7 +66,7 @@ class stream : public io::stream {
   ~stream();
   int flush();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void statistics(json11::Json::object& tree) const;
+  void statistics(json11::Json::object& tree) const override;
   int write(std::shared_ptr<io::data> const& d);
 
  private:

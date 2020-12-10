@@ -1914,34 +1914,6 @@ TEST_F(LuaTest, BrokerEventJsonEncode) {
   RemoveFile("/tmp/event_log");
 }
 
-TEST_F(LuaTest, BrokerEventCache) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
-  std::map<std::string, misc::variant> conf;
-  std::shared_ptr<neb::service> svc(new neb::service);
-  svc->host_id = 1;
-  svc->service_id = 2;
-  svc->service_description = "foo bar cache";
-  svc->notes = "svc notes";
-  svc->notes_url = "svc notes url";
-  svc->action_url = "svc action url";
-  std::string filename("/tmp/cache_test.lua");
-  CreateScript(filename,
-               "function init(conf)\n"
-               "  broker_log:set_parameters(3, '/tmp/event_log')\n"
-               "end\n\n"
-               "function write(d)\n"
-               "  local svc = broker_cache:get_service(1, 2)\n"
-               "  broker_log:info(0, 'description = ' .. svc.description)\n"
-               "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
-  binding->write(svc);
-  std::string lst(ReadFile("/tmp/event_log"));
-  ASSERT_NE(lst.find("description = foo bar cache"), std::string::npos);
-  RemoveFile(filename);
-  RemoveFile("/tmp/event_log");
-}
-
 TEST_F(LuaTest, TestHostApiV1) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
@@ -2061,3 +2033,32 @@ TEST_F(LuaTest, TestSvcApiV1) {
   RemoveFile(filename);
   RemoveFile("/tmp/event_log");
 }
+
+TEST_F(LuaTest, BrokerEventCache) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  std::map<std::string, misc::variant> conf;
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 2;
+  svc->service_description = "foo bar cache";
+  svc->notes = "svc notes";
+  svc->notes_url = "svc notes url";
+  svc->action_url = "svc action url";
+  std::string filename("/tmp/cache_test.lua");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/event_log')\n"
+               "end\n\n"
+               "function write(d)\n"
+               "  local svc = broker_cache:get_service(1, 2)\n"
+               "  broker_log:info(0, 'description = ' .. svc.description)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  binding->write(svc);
+  std::string lst(ReadFile("/tmp/event_log"));
+  ASSERT_NE(lst.find("description = foo bar cache"), std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/event_log");
+}
+

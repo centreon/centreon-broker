@@ -53,7 +53,6 @@ luabinding::luabinding(std::string const& lua_script,
     : _L{nullptr},
       _filter{false},
       _flush{false},
-      _lua_script(lua_script),
       _cache(cache),
       _total{0},
       _broker_api_version{1} {
@@ -66,7 +65,7 @@ luabinding::luabinding(std::string const& lua_script,
       << "lua: initializing the Lua virtual machine";
 
   try {
-    _load_script();
+    _load_script(lua_script);
     _init_script(conf_params);
   } catch (std::exception const& e) {
     lua_close(_L);
@@ -131,35 +130,40 @@ bool luabinding::has_flush() const noexcept {
  *   - init()
  *   - write()
  *   - filter()
+ *   - flush()
  *  functions exist in the Lua script. The two first ones are
  *  mandatory whereas the third one is optional.
+ *
+ *  It is also here that the broker_api_version variable is checked.
+ *
+ *  @param lua_script the file name of the lua script.
  */
-void luabinding::_load_script() {
+void luabinding::_load_script(const std::string& lua_script) {
   // script loading
-  if (luaL_loadfile(_L, _lua_script.c_str()) != 0) {
+  if (luaL_loadfile(_L, lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
     throw exceptions::msg()
-        << "lua: '" << _lua_script << "' could not be loaded: " << error_msg;
+        << "lua: '" << lua_script << "' could not be loaded: " << error_msg;
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
     throw exceptions::msg()
-        << "lua: '" << _lua_script << "' could not be compiled";
+        << "lua: '" << lua_script << "' could not be compiled";
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
     throw exceptions::msg()
-        << "lua: '" << _lua_script << "' init() global function is missing";
+        << "lua: '" << lua_script << "' init() global function is missing";
   lua_pop(_L, 1);
 
   // Checking for write() availability: this function is mandatory
   lua_getglobal(_L, "write");
   if (!lua_isfunction(_L, lua_gettop(_L)))
     throw exceptions::msg()
-        << "lua: '" << _lua_script << "' write() global function is missing";
+        << "lua: '" << lua_script << "' write() global function is missing";
   lua_pop(_L, 1);
 
   // Checking for filter() availability: this function is optional
