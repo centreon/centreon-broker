@@ -4,7 +4,7 @@ asio/1.18.0
 fmt/7.1.2
 spdlog/1.8.1
 json11/e2e3a11@centreon/stable
-grpc/1.25.0@inexorgame/stable
+grpc/1.27.3@inexorgame/stable
 
 [generators]
 cmake_paths
