@@ -28,18 +28,6 @@ dimension_truncate_table_signal::dimension_truncate_table_signal(bool update)
     : io::data(dimension_truncate_table_signal::static_type()),
       update_started(update) {}
 
-/**
- *  Equality test operator.
- *
- *  @param[in] other  The object to test for equality.
- *
- *  @return  True if the two objects are equal.
- */
-// bool dimension_truncate_table_signal::operator==(
-//    dimension_truncate_table_signal const& other) const {
-//  return update_started == other.update_started;
-//}
-
 // Mapping.
 mapping::entry const dimension_truncate_table_signal::entries[] = {
     mapping::entry(&bam::dimension_truncate_table_signal::update_started,
