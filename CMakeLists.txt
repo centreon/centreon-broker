@@ -21,7 +21,7 @@
 #
 
 # Set necessary settings.
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.4)
 project("Centreon Broker" C CXX)
 if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   message(FATAL_ERROR "You can build broker with g++ or clang++. CMake will exit.")
