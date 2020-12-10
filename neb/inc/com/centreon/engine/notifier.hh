@@ -240,14 +240,14 @@ class notifier : public checkable {
       dependency::types dependency_type) const = 0;
   uint64_t get_next_notification_id() const noexcept;
   virtual timeperiod* get_notification_timeperiod() const = 0;
-  notification_category get_category(reason_type type) const;
+  static notification_category get_category(reason_type type);
   bool is_notification_viable(notification_category cat,
                               reason_type type,
                               notification_option options);
   std::unordered_set<contact*> get_contacts_to_notify(
       notification_category cat,
       reason_type type,
-      uint32_t& notification_interval);
+      uint32_t& notification_interval, bool& escalated);
   notifier_type get_notifier_type() const noexcept;
   std::unordered_map<std::string, contact*>& get_contacts() noexcept;
   std::unordered_map<std::string, contact*> const& get_contacts() const
