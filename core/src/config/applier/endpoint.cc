@@ -120,7 +120,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
     for (auto& ep : endpoints)
       eps.push_back(ep.name);
     log_v2::core()->debug("endpoint applier: {} endpoints to apply: {}",
-                          endpoints.size(), fmt::join(eps, ", "));
+                          endpoints.size(), fmt::format("{}", fmt::join(eps, ", ")));
   }
 
   // Copy endpoint configurations and apply eventual modifications.
@@ -197,28 +197,26 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
  *  Discard applied configuration.
  */
 void endpoint::discard() {
-  logging::debug(logging::high) << "endpoint applier: destruction";
+  log_v2::config()->debug("endpoint applier: destruction");
 
   // Stop multiplexing.
   multiplexing::engine::instance().stop();
 
   // Exit threads.
   {
-    logging::debug(logging::medium)
-        << "endpoint applier: requesting threads termination";
+    log_v2::config()->debug("endpoint applier: requesting threads termination");
     std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
     // Send termination requests.
     for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end;
          ++it) {
-      logging::debug(logging::medium)
-          << "endpoint applier: send exit signal on endpoint '"
-          << it->second->get_name() << "'";
+      log_v2::config()->trace(
+          "endpoint applier: send exit signal on endpoint '{}'",
+          it->second->get_name());
       delete it->second;
     }
 
-    logging::debug(logging::medium)
-        << "endpoint applier: all threads are terminated";
+    log_v2::config()->debug("endpoint applier: all threads are terminated");
     _endpoints.clear();
   }
 }

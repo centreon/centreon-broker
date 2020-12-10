@@ -70,7 +70,7 @@ find_package(spdlog REQUIRED)
 find_package(asio REQUIRED)
 find_package(protobuf REQUIRED)
 find_package(protoc_installer REQUIRED)
-find_package(grpc REQUIRED)
+find_package(gRPC REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -82,22 +82,22 @@ include_directories(${fmt_INCLUDE_DIRS})
 include_directories(${spdlog_INCLUDE_DIRS})
 include_directories(${asio_INCLUDE_DIRS})
 include_directories(${protobuf_INCLUDE_DIRS})
-include_directories(${grpc_INCLUDE_DIRS})
+include_directories(${gRPC_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 link_directories(${json11_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
 link_directories(${spdlog_LIB_DIRS})
 link_directories(${protobuf_LIB_DIRS})
-link_directories(${grpc_LIB_DIRS})
+link_directories(${gRPC_LIB_DIRS})
 link_directories(${c-ares_LIB_DIRS})
 link_directories(${OpenSSL_LIB_DIRS})
 link_directories(${ZLIB_LIB_DIRS})
 
-message(STATUS "Using protobuf ${grpc_VERSION}")
+message(STATUS "Using protobuf ${gRPC_VERSION}")
 set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
 message(STATUS "${PROTOBUF_PREFIX}/bin/protoc")
-set(GRPC_PREFIX "${grpc_LIB_DIRS}/..")
+set(GRPC_PREFIX "${gRPC_LIB_DIRS}/..")
 
 add_custom_command(
   DEPENDS ${SRC_DIR}/broker.proto
@@ -610,7 +610,7 @@ target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${MYSQL_LIBS}  pthread dl berp
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS} grpc++_reflection)
+target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection)
 
 # Standalone binary.
 set(DAEMON cbd)
@@ -618,7 +618,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-  "-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS} )
+  "-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)

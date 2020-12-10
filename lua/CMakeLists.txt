@@ -33,6 +33,7 @@ set(LUA "${LUA}" PARENT_SCOPE)
 add_library("${LUA}" SHARED
   # Sources.
   "${SRC_DIR}/broker_cache.cc"
+  "${SRC_DIR}/broker_event.cc"
   "${SRC_DIR}/broker_log.cc"
   "${SRC_DIR}/broker_socket.cc"
   "${SRC_DIR}/broker_utils.cc"
@@ -44,6 +45,7 @@ add_library("${LUA}" SHARED
   "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/broker_cache.hh"
+  "${INC_DIR}/broker_event.hh"
   "${INC_DIR}/broker_log.hh"
   "${INC_DIR}/broker_socket.hh"
   "${INC_DIR}/broker_utils.hh"
