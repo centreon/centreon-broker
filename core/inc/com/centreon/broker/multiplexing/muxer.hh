@@ -66,7 +66,7 @@ class muxer : public io::stream {
   uint32_t get_event_queue_size() const;
   void nack_events();
   void remove_queue_files();
-  void statistics(json11::Json::object& tree) const;
+  void statistics(json11::Json::object& tree) const override;
   void wake();
   int write(std::shared_ptr<io::data> const& d);
 

@@ -48,6 +48,7 @@ log_v2::log_v2() {
   _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
   _tcp_log = std::make_shared<logger>("tcp", null_sink);
   _core_log = std::make_shared<logger>("core", null_sink);
+  _config_log = std::make_shared<logger>("config", null_sink);
   _sql_log = std::make_shared<logger>("sql", null_sink);
   _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
   _lua_log = std::make_shared<logger>("lua", null_sink);
@@ -119,6 +120,8 @@ bool log_v2::load(std::string const& file,
         std::shared_ptr<logger>* l;
         if (entry["name"].string_value() == "core")
           l = &_core_log;
+        else if (entry["name"].string_value() == "config")
+          l = &_config_log;
         else if (entry["name"].string_value() == "tls")
           l = &_tls_log;
         else if (entry["name"].string_value() == "tcp")
@@ -157,6 +160,10 @@ bool log_v2::load(std::string const& file,
 
 std::shared_ptr<spdlog::logger> log_v2::core() {
   return instance()._core_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::config() {
+  return instance()._config_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::tls() {

@@ -20,6 +20,7 @@
 #define CCB_LUA_STREAM_HH
 
 #include <array>
+#include <atomic>
 #include <condition_variable>
 #include <deque>
 #include <json11.hpp>
@@ -40,6 +41,21 @@ namespace lua {
  *  @brief lua stream.
  *
  *  Stream events into lua database.
+ *  This stream runs its own thread. The write() internal function pushes to
+ *  its exposed queue some events.
+ *
+ *  The stream thread has its own queue. When it is empty, this queue is swapped
+ *  with the exposed queue. This allows to pop events from it without locking
+ *  any mutex.
+ *
+ *  In case of the mutex's queue full, the write function is more called. The
+ *  muxer waits for events to be acknowledged before sending again new events.
+ *  This procedure is done through the flush() function. In this stream, the
+ *  flush function sets a flag _flush to true. Then the stream thread gets the
+ *  information of a flush call and can call it.
+ *
+ *  When the flush flag is false, and the queue is empty, if it is not time to
+ *  exit, the thread waits for 500ms before rechecking events.
  */
 class stream : public io::stream {
   std::thread _thread;
@@ -47,33 +63,33 @@ class stream : public io::stream {
   /* Macro cache */
   macro_cache _cache;
 
-  /* Management of the main loop */
-  mutable std::mutex _loop_m;
-  std::condition_variable _loop_cv;
+  /* _exposed_events is just filled by the write() function. This access is
+   * locked by the _exposed_events_m mutex. */
+  mutable std::mutex _exposed_events_m;
+  std::deque<std::shared_ptr<io::data>> _exposed_events;
 
-  /* The write stuff */
-  std::deque<std::shared_ptr<io::data>> _events;
-  mutable std::mutex _acks_count_m;
-  uint32_t _acks_count;
+  /* _acks_count is the number of events to acknowledge regards to the muxer.
+   * This value may be sent on a call to write() or a call to flush(). */
+  std::atomic<uint32_t> _acks_count;
 
-  /* Every 30s, we store in this array the number of events not treated by the
-   * connector. We can then have an idea of the evolution and send warnings if
-   * this value continue to increase.
-   *  Each pair is <index of the value, number of events>. The array is filled
-   *  from 0 to 9, from 0 to 9, etc.. and the index is increased little by
-   *  little. */
-  std::array<std::pair<time_t, size_t>, 10> _stats;
-  std::array<std::pair<time_t, size_t>, 10>::iterator _stats_it;
-  time_t _next_stat;
-  uint32_t _nb_stats;
-  double _a, _b;  // _stats points follow the model given by y = _a * x + _b
-  double _a_min;
+  /* _events_size is just the size of the thread queue. Since, it is only
+   * visible by the thread, we need a such variable to access the size. */
+  std::atomic<uint32_t> _events_size;
+
+  /* Every seconds, we store in this array the number of events handled.
+   * Arrived at the last index, we start again at the beginning of the array.
+   * This allows us to compute an average speed on the last 10 seconds. */
+  std::array<size_t, 10> _stats;
+  std::array<size_t, 10>::iterator _stats_it;
+  std::chrono::time_point<std::chrono::system_clock> _next_stat;
 
   /* The exit flag */
-  bool _exit;
+  std::atomic_bool _exit;
 
-  /* The flush flag */
-  bool _flush;
+  /* Here is the flag to tell the thread to execute a flush. No need to lock,
+   * _flush is reset to false when the flush is over, and on the other side,
+   * it is set to true only when it is not already set. */
+  std::atomic_bool _flush;
 
  public:
   stream(std::string const& lua_script,

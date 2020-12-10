@@ -19,6 +19,16 @@ Logs
 ====
 Logs are sent to the database in bulk as we already do for customvariables.
 
+Lua
+===
+There is a new api available for the lua connector. To use it scripts must
+declare a global variable `broker_api_version=2`. From the user's point of view,
+stream connectors should work almost the same. In isolate cases, we could see
+scripts that do not work with this new api, then you can always work with
+broker_api_version 1, by setting the variable to 1 or by removing this variable
+declaration in the script. Why should we use the v2 version? Because it is
+faster, really faster.
+
 =======================
 Centreon Broker 20.10.2
 =======================
