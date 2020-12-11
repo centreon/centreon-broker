@@ -19,7 +19,6 @@
 #include "com/centreon/broker/bam/reporting_stream.hh"
 
 #include <cstdlib>
-#include <sstream>
 
 #include "com/centreon/broker/bam/ba_duration_event.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
@@ -55,7 +54,8 @@ using namespace com::centreon::broker::database;
  *  @param[in] db_cfg                  BAM DB configuration.
  */
 reporting_stream::reporting_stream(database_config const& db_cfg)
-    : io::stream("BAM-BI"), _ack_events(0), _pending_events(0), _mysql(db_cfg) {
+    : io::stream("BAM-BI"), _ack_events(0), _pending_events(0), _mysql(db_cfg),
+      _processing_dimensions(false) {
   // Prepare queries.
   _prepare();
 
@@ -136,48 +136,45 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
   if (!validate(data, "BAM-BI"))
     return (0);
 
-  if (data->type() ==
-      io::events::data_type<io::events::bam, bam::de_kpi_event>::value)
-    _process_kpi_event(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam, bam::de_ba_event>::value)
-    _process_ba_event(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_ba_duration_event>::value)
-    _process_ba_duration_event(data);
-  else if (data->type() ==
-               io::events::data_type<io::events::bam,
-                                     bam::de_dimension_ba_event>::value ||
-           data->type() ==
-               io::events::data_type<io::events::bam,
-                                     bam::de_dimension_bv_event>::value ||
-           data->type() == io::events::data_type<
-                               io::events::bam,
-                               bam::de_dimension_ba_bv_relation_event>::value ||
-           data->type() ==
-               io::events::data_type<io::events::bam,
-                                     bam::de_dimension_kpi_event>::value ||
-           data->type() ==
-               io::events::data_type<
-                   io::events::bam,
-                   bam::de_dimension_truncate_table_signal>::value ||
-           data->type() ==
-               io::events::data_type<io::events::bam,
-                                     bam::de_dimension_timeperiod>::value ||
-           data->type() == io::events::data_type<
-                               io::events::bam,
-                               bam::de_dimension_timeperiod_exception>::value ||
-           data->type() == io::events::data_type<
-                               io::events::bam,
-                               bam::de_dimension_timeperiod_exclusion>::value ||
-           data->type() == io::events::data_type<
-                               io::events::bam,
-                               bam::de_dimension_ba_timeperiod_relation>::value)
-    _process_dimension(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam, bam::de_rebuild>::value)
-    _process_rebuild(data);
+  switch (data->type()) {
+    case io::events::data_type<io::events::bam, bam::de_kpi_event>::value:
+      _process_kpi_event(data);
+      break;
+    case io::events::data_type<io::events::bam, bam::de_ba_event>::value:
+      _process_ba_event(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_ba_duration_event>::value:
+      _process_ba_duration_event(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_truncate_table_signal>::value:
+      _process_dimension_truncate_signal(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_ba_event>::value:
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_bv_event>::value:
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_ba_bv_relation_event>::value:
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_kpi_event>::value:
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_timeperiod>::value:
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_timeperiod_exception>::value:
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_timeperiod_exclusion>::value:
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_ba_timeperiod_relation>::value:
+      _process_dimension(data);
+      break;
+    case io::events::data_type<io::events::bam, bam::de_rebuild>::value:
+      _process_rebuild(data);
+      break;
+    default:
+      break;
+  }
 
   // Event acknowledgement.
   int retval(_ack_events);
@@ -185,18 +182,13 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
   return retval;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Apply a timeperiod declaration.
  *
  *  @param[in] tp  Timeperiod declaration.
  */
 void reporting_stream::_apply(dimension_timeperiod const& tp) {
+  log_v2::bam()->trace("BAM-BI: adding timeperiod {} to cache", tp.id);
   _timeperiods.add_timeperiod(
       tp.id, time::timeperiod::ptr(new time::timeperiod(
                  tp.id, tp.name, "", tp.sunday, tp.monday, tp.tuesday,
@@ -251,20 +243,18 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
   // Get events to close.
   std::list<std::pair<uint32_t, time_t>> events;
   {
-    std::ostringstream query;
-    query << "SELECT e1." << id << ", e1.start_time"
-          << "  FROM " << table << " As e1 INNER JOIN ("
-          << "    SELECT " << id << ", MAX(start_time) AS max_start_time"
-          << "      FROM " << table << "      GROUP BY " << id << ") AS e2"
-          << "        ON e1." << id << "=e2." << id
-          << "  WHERE e1.end_time IS NULL"
-          << "    AND e1.start_time!=e2.max_start_time";
+    std::string query(
+        fmt::format("SELECT e1.{0}, e1.start_time FROM {1} AS e1 INNER JOIN "
+                    "(SELECT {0}, MAX(start_time) AS max_start_time FROM {1} "
+                    "GROUP BY {0}) AS e2 ON e1.{0}=e2.{0} WHERE e1.end_time IS "
+                    "NULL AND e1.start_time!=e2.max_start_time",
+                    id, table));
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(query.str(), &promise);
+    _mysql.run_query_and_get_result(query, &promise);
     try {
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))
-        events.push_back(std::make_pair(
+        events.emplace_back(std::make_pair(
             res.value_as_u32(0), static_cast<time_t>(res.value_as_i32(1))));
     } catch (std::exception const& e) {
       throw exceptions::msg()
@@ -288,7 +278,7 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
       try {
         mysql_result res(promise.get_future().get());
         if (!_mysql.fetch_row(res))
-          throw(exceptions::msg() << "no event following this one");
+          throw exceptions::msg() << "no event following this one";
 
         end_time = res.value_as_i32(0);
       } catch (std::exception const& e) {
@@ -332,9 +322,8 @@ void reporting_stream::_load_timeperiods() {
   // Load timeperiods.
   {
     std::string query(
-        "SELECT timeperiod_id, name, sunday, monday, tuesday,"
-        "       wednesday, thursday, friday, saturday"
-        "  FROM mod_bam_reporting_timeperiods");
+        "SELECT timeperiod_id, name, sunday, monday, tuesday, wednesday, "
+        "thursday, friday, saturday FROM mod_bam_reporting_timeperiods");
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(query, &promise);
     try {
@@ -357,8 +346,8 @@ void reporting_stream::_load_timeperiods() {
   // Load exceptions.
   {
     std::string query(
-        "SELECT timeperiod_id, daterange, timerange"
-        "  FROM mod_bam_reporting_timeperiods_exceptions");
+        "SELECT timeperiod_id, daterange, timerange FROM "
+        "mod_bam_reporting_timeperiods_exceptions");
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(query, &promise);
     try {
@@ -620,9 +609,6 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
       _ba_full_event_insert.bind_value_as_tiny(4, be.status);
       _ba_full_event_insert.bind_value_as_bool(5, be.in_downtime);
 
-      std::ostringstream oss_err;
-      oss_err << "BAM-BI: could not insert event of BA " << be.ba_id
-              << " starting at " << be.start_time << ": ";
       std::promise<uint32_t> result;
       _mysql.run_statement_and_get_int<uint32_t>(
           _ba_full_event_insert, &result, mysql_task::LAST_INSERT_ID, -1);
@@ -811,7 +797,7 @@ void reporting_stream::_process_dimension_ba(
   _dimension_ba_insert.bind_value_as_f64(5, dba.sla_duration_crit);
   _dimension_ba_insert.bind_value_as_f64(6, dba.sla_duration_warn);
   _mysql.run_statement(_dimension_ba_insert, database::mysql_error::insert_ba,
-                       true);
+                       false);
 }
 
 /**
@@ -836,7 +822,7 @@ void reporting_stream::_process_dimension_bv(
                                 get_mod_bam_reporting_bv_col_size(
                                     mod_bam_reporting_bv_bv_description)));
   _mysql.run_statement(_dimension_bv_insert, database::mysql_error::insert_bv,
-                       true);
+                       false);
 }
 
 /**
@@ -854,7 +840,7 @@ void reporting_stream::_process_dimension_ba_bv_relation(
   _dimension_ba_bv_relation_insert.bind_value_as_i32(0, dbabv.ba_id);
   _dimension_ba_bv_relation_insert.bind_value_as_i32(1, dbabv.bv_id);
   _mysql.run_statement(_dimension_ba_bv_relation_insert,
-                       database::mysql_error::insert_dimension_ba_bv, true);
+                       database::mysql_error::insert_dimension_ba_bv, false);
 }
 
 /**
@@ -862,42 +848,95 @@ void reporting_stream::_process_dimension_ba_bv_relation(
  *
  *  @param e  The event to process.
  */
-void reporting_stream::_process_dimension(std::shared_ptr<io::data> const& e) {
-  // Cache the event until the end of the dimensions dump.
-  _dimension_data_cache.push_back(_dimension_copy(e));
+void reporting_stream::_process_dimension(const std::shared_ptr<io::data>& e) {
+  if (_processing_dimensions) {
+    // Cache the event until the end of the dimensions dump.
+    switch (e->type()) {
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_ba_event>::value: {
+        bam::dimension_ba_event const& dba =
+            *std::static_pointer_cast<bam::dimension_ba_event const>(e);
+        log_v2::bam()->debug("BAM-BI: preparing ba dimension {} ('{}' '{}')",
+                             dba.ba_id, dba.ba_name, dba.ba_description);
+      } break;
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_bv_event>::value: {
+        bam::dimension_bv_event const& dbv =
+            *std::static_pointer_cast<bam::dimension_bv_event const>(e);
+        log_v2::bam()->debug("BAM-BI: preparing bv dimension {} ('{}')",
+                             dbv.bv_id, dbv.bv_name);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_ba_bv_relation_event>::value: {
+        bam::dimension_ba_bv_relation_event const& dbabv =
+            *std::static_pointer_cast<
+                bam::dimension_ba_bv_relation_event const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing relation between ba {} and bv {}", dbabv.ba_id,
+            dbabv.bv_id);
+      } break;
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_kpi_event>::value: {
+        bam::dimension_kpi_event const& dk{
+            *std::static_pointer_cast<bam::dimension_kpi_event const>(e)};
+        std::string kpi_name;
+        if (!dk.service_description.empty())
+          kpi_name =
+              fmt::format("svc: {} {}", dk.host_name, dk.service_description);
+        else if (!dk.kpi_ba_name.empty())
+          kpi_name = fmt::format("ba: {}", dk.kpi_ba_name);
+        else if (!dk.boolean_name.empty())
+          kpi_name = fmt::format("bool: {}", dk.boolean_name);
+        else if (!dk.meta_service_name.empty())
+          kpi_name = fmt::format("meta: {}", dk.meta_service_name);
+        log_v2::bam()->debug("BAM-BI: preparing declaration of kpi {} ('{}')",
+                             dk.kpi_id, kpi_name);
+      } break;
+      case io::events::data_type<io::events::bam,
+                                 bam::de_dimension_timeperiod>::value: {
+        bam::dimension_timeperiod const& tp =
+            *std::static_pointer_cast<bam::dimension_timeperiod const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing declaration of timeperiod {} ('{}')", tp.id,
+            tp.name);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_timeperiod_exception>::value: {
+        bam::dimension_timeperiod_exception const& tpe =
+            *std::static_pointer_cast<
+                bam::dimension_timeperiod_exception const>(e);
+        log_v2::bam()->debug("BAM-BI: preparing exception of timeperiod {}",
+                             tpe.timeperiod_id);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_timeperiod_exclusion>::value: {
+        bam::dimension_timeperiod_exclusion const& tpe =
+            *std::static_pointer_cast<
+                bam::dimension_timeperiod_exclusion const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing exclusion of timeperiod {} by timeperiod {}",
+            tpe.excluded_timeperiod_id, tpe.timeperiod_id);
+      } break;
+      case io::events::data_type<
+          io::events::bam, bam::de_dimension_ba_timeperiod_relation>::value: {
+        bam::dimension_ba_timeperiod_relation const& r =
+            *std::static_pointer_cast<
+                bam::dimension_ba_timeperiod_relation const>(e);
+        log_v2::bam()->debug(
+            "BAM-BI: preparing relation of BA {} to timeperiod {}", r.ba_id,
+            r.timeperiod_id);
+      } break;
+      default:
+        log_v2::bam()->debug("BAM-BI: preparing event of type {:x}", e->type());
+        break;
+    }
+    _dimension_data_cache.emplace_back(e);
 
-  // If this is a dimension truncate table signal, it's either the beginning
-  // or the end of the dimensions dump.
-  if (e->type() ==
-      io::events::data_type<io::events::bam,
-                            bam::de_dimension_truncate_table_signal>::value) {
-    dimension_truncate_table_signal const& dtts =
-        *std::static_pointer_cast<dimension_truncate_table_signal const>(e);
-
-    if (!dtts.update_started) {
-      // Lock the availability thread.
-      std::unique_lock<availability_thread> lock(*_availabilities);
-
-      // XXX : dimension event acknowledgement might not work !!!
-      //       For this reason, ignore any db error. We wouldn't
-      //       be able to manage it on a stream level.
-      try {
-        for (std::vector<std::shared_ptr<io::data>>::const_iterator
-                 it(_dimension_data_cache.begin()),
-             end(_dimension_data_cache.end());
-             it != end; ++it)
-          _dimension_dispatch(*it);
-        _mysql.commit();
-      } catch (std::exception const& e) {
-        logging::error(logging::medium)
-            << "BAM-BI: ignored dimension insertion failure: " << e.what();
-      }
-
-      _dimension_data_cache.clear();
-    } else
-      _dimension_data_cache.erase(_dimension_data_cache.begin(),
-                                  _dimension_data_cache.end() - 1);
-  }
+  } else
+    log_v2::bam()->warn(
+        "Dimension of type {:x} not handled because dimension block not "
+        "opened.",
+        e->type());
 }
 
 /**
@@ -907,97 +946,42 @@ void reporting_stream::_process_dimension(std::shared_ptr<io::data> const& e) {
  */
 void reporting_stream::_dimension_dispatch(
     std::shared_ptr<io::data> const& data) {
-  if (data->type() ==
-      io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value)
-    _process_dimension_ba(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_bv_event>::value)
-    _process_dimension_bv(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_ba_bv_relation_event>::value)
-    _process_dimension_ba_bv_relation(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_kpi_event>::value)
-    _process_dimension_kpi(data);
-  else if (data->type() ==
-           io::events::data_type<
-               io::events::bam, bam::de_dimension_truncate_table_signal>::value)
-    _process_dimension_truncate_signal(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_timeperiod>::value)
-    _process_dimension_timeperiod(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_timeperiod_exception>::value)
-    _process_dimension_timeperiod_exception(data);
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_timeperiod_exclusion>::value)
-    _process_dimension_timeperiod_exclusion(data);
-  else if (data->type() == io::events::data_type<
-                               io::events::bam,
-                               bam::de_dimension_ba_timeperiod_relation>::value)
-    _process_dimension_ba_timeperiod_relation(data);
-}
-
-/**
- *  Copy a dimension event.
- *
- *  @param[in] data  The data to copy.
- *
- *  @return  The dimension event copied.
- */
-std::shared_ptr<io::data> reporting_stream::_dimension_copy(
-    std::shared_ptr<io::data> const& data) {
-  if (data->type() ==
-      io::events::data_type<io::events::bam, bam::de_dimension_ba_event>::value)
-    return std::make_shared<bam::dimension_ba_event>(
-        *std::static_pointer_cast<bam::dimension_ba_event>(data));
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_bv_event>::value)
-    return std::make_shared<bam::dimension_bv_event>(
-        *std::static_pointer_cast<bam::dimension_bv_event>(data));
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_ba_bv_relation_event>::value)
-    return std::make_shared<bam::dimension_ba_bv_relation_event>(
-        *std::static_pointer_cast<bam::dimension_ba_bv_relation_event>(data));
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_kpi_event>::value)
-    return std::make_shared<bam::dimension_kpi_event>(
-        *std::static_pointer_cast<bam::dimension_kpi_event>(data));
-  else if (data->type() ==
-           io::events::data_type<
-               io::events::bam, bam::de_dimension_truncate_table_signal>::value)
-    return std::make_shared<bam::dimension_truncate_table_signal>(
-        *std::static_pointer_cast<bam::dimension_truncate_table_signal>(data));
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_timeperiod>::value)
-    return std::make_shared<bam::dimension_timeperiod>(
-        *std::static_pointer_cast<bam::dimension_timeperiod>(data));
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_timeperiod_exception>::value)
-    return std::make_shared<bam::dimension_timeperiod_exception>(
-        *std::static_pointer_cast<bam::dimension_timeperiod_exception>(data));
-  else if (data->type() ==
-           io::events::data_type<io::events::bam,
-                                 bam::de_dimension_timeperiod_exclusion>::value)
-    return std::make_shared<bam::dimension_timeperiod_exclusion>(
-        *std::static_pointer_cast<bam::dimension_timeperiod_exclusion>(data));
-  else if (data->type() == io::events::data_type<
-                               io::events::bam,
-                               bam::de_dimension_ba_timeperiod_relation>::value)
-    return std::make_shared<bam::dimension_ba_timeperiod_relation>(
-        *std::static_pointer_cast<bam::dimension_ba_timeperiod_relation>(data));
-  return std::shared_ptr<io::data>();
+  switch (data->type()) {
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_ba_event>::value:
+      _process_dimension_ba(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_bv_event>::value:
+      _process_dimension_bv(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_ba_bv_relation_event>::value:
+      _process_dimension_ba_bv_relation(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_kpi_event>::value:
+      _process_dimension_kpi(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_timeperiod>::value:
+      _process_dimension_timeperiod(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_timeperiod_exception>::value:
+      _process_dimension_timeperiod_exception(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_timeperiod_exclusion>::value:
+      _process_dimension_timeperiod_exclusion(data);
+      break;
+    case io::events::data_type<io::events::bam,
+                               bam::de_dimension_ba_timeperiod_relation>::value:
+      _process_dimension_ba_timeperiod_relation(data);
+      break;
+    default:
+      break;
+  }
 }
 
 /**
@@ -1006,21 +990,41 @@ std::shared_ptr<io::data> reporting_stream::_dimension_copy(
  *  @param[in] e The event.
  */
 void reporting_stream::_process_dimension_truncate_signal(
-    std::shared_ptr<io::data> const& e) {
-  dimension_truncate_table_signal const& dtts =
-      *std::static_pointer_cast<dimension_truncate_table_signal const>(e);
+    const std::shared_ptr<io::data>& e) {
+  const dimension_truncate_table_signal& dtts =
+      *std::static_pointer_cast<const dimension_truncate_table_signal>(e);
 
   if (dtts.update_started) {
-    log_v2::bam()->debug("BAM-BI: processing table truncation signal");
+    _processing_dimensions = true;
+    log_v2::bam()->debug(
+        "BAM-BI: processing table truncation signal (opening)");
 
-    for (std::vector<mysql_stmt>::iterator
-             it(_dimension_truncate_tables.begin()),
-         end(_dimension_truncate_tables.end());
-         it != end; ++it)
-      _mysql.run_statement(*it,
+    _dimension_data_cache.clear();
+  } else {
+    log_v2::bam()->debug(
+        "BAM-BI: processing table truncation signal (closing)");
+    // Lock the availability thread.
+    std::lock_guard<availability_thread> lock(*_availabilities);
+
+    for (auto& stmt : _dimension_truncate_tables)
+      _mysql.run_statement(stmt,
                            database::mysql_error::truncate_dimension_table);
-
     _timeperiods.clear();
+
+    // XXX : dimension event acknowledgement might not work !!!
+    //       For this reason, ignore any db error. We wouldn't
+    //       be able to manage it on a stream level.
+    try {
+      for (auto& e : _dimension_data_cache)
+        _dimension_dispatch(e);
+    } catch (std::exception const& e) {
+      logging::error(logging::medium)
+          << "BAM-BI: ignored dimension insertion failure: " << e.what();
+    }
+
+    _mysql.commit();
+    _dimension_data_cache.clear();
+    _processing_dimensions = false;
   }
 }
 
@@ -1088,7 +1092,7 @@ void reporting_stream::_process_dimension_kpi(
                                      mod_bam_reporting_kpi_boolean_name)));
 
   _mysql.run_statement(_dimension_kpi_insert,
-                       database::mysql_error::insert_dimension_kpi, true);
+                       database::mysql_error::insert_dimension_kpi, false);
 }
 
 /**
@@ -1138,7 +1142,7 @@ void reporting_stream::_process_dimension_timeperiod(
                                 get_mod_bam_reporting_timeperiods_col_size(
                                     mod_bam_reporting_timeperiods_saturday)));
   _mysql.run_statement(_dimension_timeperiod_insert,
-                       database::mysql_error::insert_timeperiod, true);
+                       database::mysql_error::insert_timeperiod, false);
   _apply(tp);
 }
 
@@ -1170,7 +1174,7 @@ void reporting_stream::_process_dimension_timeperiod_exception(
 
   _mysql.run_statement(_dimension_timeperiod_exception_insert,
                        database::mysql_error::insert_timeperiod_exception,
-                       true);
+                       false);
   _apply(tpe);
 }
 
@@ -1194,7 +1198,7 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
       1, tpe.excluded_timeperiod_id);
   _mysql.run_statement(_dimension_timeperiod_exclusion_insert,
                        database::mysql_error::insert_exclusion_timeperiod,
-                       true);
+                       false);
   _apply(tpe);
 }
 
@@ -1216,7 +1220,7 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
   _dimension_ba_timeperiod_insert.bind_value_as_bool(2, r.is_default);
   _mysql.run_statement(_dimension_ba_timeperiod_insert,
                        database::mysql_error::insert_relation_ba_timeperiod,
-                       true);
+                       false);
   _timeperiods.add_relation(r.ba_id, r.timeperiod_id, r.is_default);
 }
 
@@ -1304,7 +1308,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
   // We block the availability thread to prevent it waking
   // up on truncated event durations.
   try {
-    std::unique_lock<availability_thread> lock(*_availabilities);
+    std::lock_guard<availability_thread> lock(*_availabilities);
 
     // Delete obsolete ba events durations.
     {
@@ -1350,7 +1354,6 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
 
     size_t ba_events_num = ba_events.size();
     size_t ba_events_curr = 0;
-    std::stringstream ss;
 
     // Generate new ba events durations for each ba events.
     {

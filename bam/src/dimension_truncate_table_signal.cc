@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,69 +24,9 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_truncate_table_signal::dimension_truncate_table_signal()
+dimension_truncate_table_signal::dimension_truncate_table_signal(bool update)
     : io::data(dimension_truncate_table_signal::static_type()),
-      update_started(true) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-dimension_truncate_table_signal::dimension_truncate_table_signal(
-    dimension_truncate_table_signal const& other)
-    : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-dimension_truncate_table_signal::~dimension_truncate_table_signal() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
-    dimension_truncate_table_signal const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
-
-/**
- *  Equality test operator.
- *
- *  @param[in] other  The object to test for equality.
- *
- *  @return  True if the two objects are equal.
- */
-bool dimension_truncate_table_signal::operator==(
-    dimension_truncate_table_signal const& other) const {
-  return update_started == other.update_started;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void dimension_truncate_table_signal::_internal_copy(
-    dimension_truncate_table_signal const& other) {
-  update_started = other.update_started;
-}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
+      update_started(update) {}
 
 // Mapping.
 mapping::entry const dimension_truncate_table_signal::entries[] = {
@@ -96,7 +36,7 @@ mapping::entry const dimension_truncate_table_signal::entries[] = {
 
 // Operations.
 static io::data* new_dimension_truncate_table_signal() {
-  return new dimension_truncate_table_signal;
+  return new dimension_truncate_table_signal(true);
 }
 io::event_info::event_operations const
     dimension_truncate_table_signal::operations = {
