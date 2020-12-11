@@ -590,6 +590,10 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
     _result_condition.wait(locker);
 }
 
+/**
+ * @brief Destructor. When called, the finish task is post on the stack. So
+ * the end will occur only when all the queries will be played.
+ */
 mysql_connection::~mysql_connection() {
   log_v2::sql()->info("mysql_connection: finished");
   finish();
