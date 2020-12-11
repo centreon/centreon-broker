@@ -44,7 +44,7 @@ static char* log_extract(char** lasts) {
   char* data(strtok_r(nullptr, ";", lasts));
   if (!data)
     throw(exceptions::msg() << "log: data extraction failed");
-  return (data);
+  return data;
 }
 
 /**

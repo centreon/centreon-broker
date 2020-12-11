@@ -52,49 +52,6 @@ class dimension_timeperiod_exclusion;
  *  metrics table of a centbam DB.
  */
 class reporting_stream : public io::stream {
- public:
-  reporting_stream(database_config const& db_cfg);
-  ~reporting_stream();
-  int flush();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
-  reporting_stream(reporting_stream const& other);
-  reporting_stream& operator=(reporting_stream const& other);
-  void _apply(dimension_timeperiod const& tp);
-  void _apply(dimension_timeperiod_exception const& tpe);
-  void _apply(dimension_timeperiod_exclusion const& tpe);
-  void _close_inconsistent_events(char const* event_type,
-                                  char const* table,
-                                  char const* id);
-  void _close_all_events();
-  void _load_timeperiods();
-  void _prepare();
-  void _process_ba_event(std::shared_ptr<io::data> const& e);
-  void _process_ba_duration_event(std::shared_ptr<io::data> const& e);
-  void _process_kpi_event(std::shared_ptr<io::data> const& e);
-  void _process_dimension(std::shared_ptr<io::data> const& e);
-  void _dimension_dispatch(std::shared_ptr<io::data> const& e);
-  std::shared_ptr<io::data> _dimension_copy(std::shared_ptr<io::data> const& e);
-  void _process_dimension_ba(std::shared_ptr<io::data> const& e);
-  void _process_dimension_bv(std::shared_ptr<io::data> const& e);
-  void _process_dimension_ba_bv_relation(std::shared_ptr<io::data> const& e);
-  void _process_dimension_truncate_signal(std::shared_ptr<io::data> const& e);
-  void _process_dimension_kpi(std::shared_ptr<io::data> const& e);
-  void _process_dimension_timeperiod(std::shared_ptr<io::data> const& e);
-  void _process_dimension_timeperiod_exception(
-      std::shared_ptr<io::data> const& e);
-  void _process_dimension_timeperiod_exclusion(
-      std::shared_ptr<io::data> const& e);
-  void _process_dimension_ba_timeperiod_relation(
-      std::shared_ptr<io::data> const& e);
-  void _process_rebuild(std::shared_ptr<io::data> const& e);
-  void _update_status(std::string const& status);
-  void _compute_event_durations(std::shared_ptr<ba_event> const& ev,
-                                io::stream* visitor);
-
   uint32_t _ack_events;
   uint32_t _pending_events;
   uint32_t _queries_per_transaction;
@@ -127,6 +84,49 @@ class reporting_stream : public io::stream {
   std::vector<std::shared_ptr<io::data>> _dimension_data_cache;
   std::unordered_map<uint32_t, std::map<std::time_t, uint64_t>>
       _last_inserted_kpi;  // ba_id => <time, row>
+  bool _processing_dimensions;
+
+ public:
+  reporting_stream(database_config const& db_cfg);
+  ~reporting_stream();
+  int flush();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void statistics(json11::Json::object& tree) const override;
+  int write(std::shared_ptr<io::data> const& d);
+
+ private:
+  reporting_stream(reporting_stream const& other);
+  reporting_stream& operator=(reporting_stream const& other);
+  void _apply(dimension_timeperiod const& tp);
+  void _apply(dimension_timeperiod_exception const& tpe);
+  void _apply(dimension_timeperiod_exclusion const& tpe);
+  void _close_inconsistent_events(char const* event_type,
+                                  char const* table,
+                                  char const* id);
+  void _close_all_events();
+  void _load_timeperiods();
+  void _prepare();
+  void _process_ba_event(std::shared_ptr<io::data> const& e);
+  void _process_ba_duration_event(std::shared_ptr<io::data> const& e);
+  void _process_kpi_event(std::shared_ptr<io::data> const& e);
+  void _process_dimension(std::shared_ptr<io::data> const& e);
+  void _dimension_dispatch(std::shared_ptr<io::data> const& e);
+  void _process_dimension_ba(std::shared_ptr<io::data> const& e);
+  void _process_dimension_bv(std::shared_ptr<io::data> const& e);
+  void _process_dimension_ba_bv_relation(std::shared_ptr<io::data> const& e);
+  void _process_dimension_truncate_signal(std::shared_ptr<io::data> const& e);
+  void _process_dimension_kpi(std::shared_ptr<io::data> const& e);
+  void _process_dimension_timeperiod(std::shared_ptr<io::data> const& e);
+  void _process_dimension_timeperiod_exception(
+      std::shared_ptr<io::data> const& e);
+  void _process_dimension_timeperiod_exclusion(
+      std::shared_ptr<io::data> const& e);
+  void _process_dimension_ba_timeperiod_relation(
+      std::shared_ptr<io::data> const& e);
+  void _process_rebuild(std::shared_ptr<io::data> const& e);
+  void _update_status(std::string const& status);
+  void _compute_event_durations(std::shared_ptr<ba_event> const& ev,
+                                io::stream* visitor);
 };
 }  // namespace bam
 

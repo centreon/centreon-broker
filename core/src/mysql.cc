@@ -225,7 +225,7 @@ int mysql::run_query_and_get_int(std::string const& query,
  * @return The thread id that executed the query.
  */
 int mysql::run_statement(database::mysql_stmt& stmt,
-                         std::string const& error_msg,
+                         my_error::code ec,
                          bool fatal,
                          int thread_id) {
   _check_errors();
@@ -233,7 +233,7 @@ int mysql::run_statement(database::mysql_stmt& stmt,
     // Here, we use _current_thread
     thread_id = choose_best_connection(-1);
 
-  _connection[thread_id]->run_statement(stmt, error_msg, fatal);
+  _connection[thread_id]->run_statement(stmt, ec, fatal);
   return thread_id;
 }
 
