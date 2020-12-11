@@ -54,7 +54,8 @@ using namespace com::centreon::broker::database;
  *  @param[in] db_cfg                  BAM DB configuration.
  */
 reporting_stream::reporting_stream(database_config const& db_cfg)
-    : io::stream("BAM-BI"), _ack_events(0), _pending_events(0), _mysql(db_cfg) {
+    : io::stream("BAM-BI"), _ack_events(0), _pending_events(0), _mysql(db_cfg),
+      _processing_dimensions(false) {
   // Prepare queries.
   _prepare();
 
