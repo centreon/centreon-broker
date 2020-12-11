@@ -1186,6 +1186,7 @@ TEST_F(LuaTest, BamCacheTestBaV2) {
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
+  l.unload();
 }
 
 // Given a ba id,
