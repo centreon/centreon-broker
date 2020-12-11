@@ -82,8 +82,6 @@ namespace          bam {
     void           _process_kpi_event(std::shared_ptr<io::data> const& e);
     void           _process_dimension(std::shared_ptr<io::data> const& e);
     void           _dimension_dispatch(std::shared_ptr<io::data> const& e);
-    std::shared_ptr<io::data>
-                   _dimension_copy(std::shared_ptr<io::data> const& e);
     void           _process_dimension_ba(std::shared_ptr<io::data> const& e);
     void           _process_dimension_bv(std::shared_ptr<io::data> const& e);
     void           _process_dimension_ba_bv_relation(std::shared_ptr<io::data> const& e);
@@ -132,6 +130,7 @@ namespace          bam {
                    _dimension_data_cache;
 
     std::unordered_map<uint32_t , std::map<std::time_t, quint64>> _last_inserted_kpi;// ba_id => <time, row>
+    bool _processing_dimensions;
   };
 }
 

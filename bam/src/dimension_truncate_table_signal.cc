@@ -24,42 +24,13 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
- */
-dimension_truncate_table_signal::dimension_truncate_table_signal()
-  : update_started(true) {}
-
-/**
- *  Copy constructor.
+ *  Constructor.
  *
- *  @param[in] other  Object to copy.
+ *  @param update: Are we opening the dimension construction or closing it? true for opening, false
+ *  otherwise.
  */
-dimension_truncate_table_signal::dimension_truncate_table_signal(
-    dimension_truncate_table_signal const& other)
-  : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-dimension_truncate_table_signal::~dimension_truncate_table_signal() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
-                                                                    dimension_truncate_table_signal const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
+dimension_truncate_table_signal::dimension_truncate_table_signal(bool update)
+  : update_started(update) {}
 
 /**
  *  Equality test operator.
@@ -92,23 +63,6 @@ unsigned int dimension_truncate_table_signal::static_type() {
                                 bam::de_dimension_truncate_table_signal>::value);
 }
 
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void dimension_truncate_table_signal::_internal_copy(
-    dimension_truncate_table_signal const& other) {
-  update_started = other.update_started;
-  return ;
-}
-
-/**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
-
 // Mapping.
 mapping::entry const dimension_truncate_table_signal::entries[] = {
   mapping::entry(
@@ -119,7 +73,7 @@ mapping::entry const dimension_truncate_table_signal::entries[] = {
 
 // Operations.
 static io::data* new_dimension_truncate_table_signal() {
-  return (new dimension_truncate_table_signal);
+  return new dimension_truncate_table_signal(true);
 }
 io::event_info::event_operations const dimension_truncate_table_signal::operations = {
   &new_dimension_truncate_table_signal

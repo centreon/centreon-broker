@@ -720,9 +720,7 @@ void reader::_load_dimensions() {
   // we cache the data until we are sure we have all the data
   // needed from the database.
   std::vector<std::shared_ptr<io::data> > datas;
-  std::shared_ptr<dimension_truncate_table_signal> dtts(
-                      new dimension_truncate_table_signal);
-  dtts->update_started = true;
+  auto dtts(std::make_shared<dimension_truncate_table_signal>(true));
   datas.push_back(dtts);
 
   // Get the data from the DB.
@@ -996,8 +994,7 @@ void reader::_load_dimensions() {
     }
 
     // End the update.
-    dtts = std::shared_ptr<dimension_truncate_table_signal>(
-             new dimension_truncate_table_signal);
+    dtts = std::make_shared<dimension_truncate_table_signal>(false);
     dtts->update_started = false;
     datas.push_back(dtts);
 
@@ -1017,6 +1014,4 @@ void reader::_load_dimensions() {
     throw (reader_exception()
            << "BAM: could not load some dimension table: " << e.what());
   }
-
-  return ;
 }
