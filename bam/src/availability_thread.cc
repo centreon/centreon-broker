@@ -259,7 +259,7 @@ void availability_thread::_build_daily_availabilities(
            "       a.timeperiod_is_default, b.status, b.in_downtime"
            "  FROM mod_bam_reporting_ba_events_durations AS a"
            "    INNER JOIN mod_bam_reporting_ba_events AS b"
-           "  ON a.ba_event_id = b.ba_event_id"
+           "  ON a.ba_event_id = b.ba_event_id AND b.end_time IS NOT NULL"
            "  WHERE ";
   if (_should_rebuild_all)
     query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
