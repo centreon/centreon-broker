@@ -41,18 +41,18 @@ mysql_manager::mysql_manager()
 }
 
 /**
- *  Destructor
+ *  Destructor The mysql manager does not own events on its side. It just holds
+ *  connections to the database. When this destructor is called, we wait for
+ *  each connection to be stopped before exiting. So no events could stay
+ *  pending.
  */
 mysql_manager::~mysql_manager() {
   log_v2::sql()->trace("mysql_manager destruction");
   // If connections are still active but unique here, we can remove them
   std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
 
-  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
-           it(_connection.begin()),
-       end(_connection.end());
-       it != end; ++it) {
-    while (!it->unique()) {
+  for (const auto& conn : _connection) {
+    while (!conn.unique()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
