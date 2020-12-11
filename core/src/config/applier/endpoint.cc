@@ -111,9 +111,9 @@ endpoint::~endpoint() {
  */
 void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   // Log messages.
-  logging::config(logging::medium) << "endpoint applier: loading configuration";
-  logging::debug(logging::high)
-      << "endpoint applier: " << endpoints.size() << " endpoints to apply";
+  log_v2::config()->info("endpoint applier: loading configuration");
+  log_v2::config()->debug("endpoint applier: {} endpoints to apply",
+                          endpoints.size());
 
   {
     std::vector<std::string> eps;
