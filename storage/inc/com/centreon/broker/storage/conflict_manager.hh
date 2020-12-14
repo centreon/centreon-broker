@@ -325,7 +325,7 @@ class conflict_manager {
                            uint32_t interval_length,
                            uint32_t max_pending_queries);
   static conflict_manager& instance();
-  static void unload();
+  int32_t unload(stream_type type);
   json11::Json::object get_statistics();
 
   int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
