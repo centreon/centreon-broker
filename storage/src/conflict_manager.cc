@@ -517,9 +517,8 @@ void conflict_manager::_callback() {
 
               _events_handled = events.size();
               float s = 0.0f;
-              for (auto it = _stats_count.begin(); it != _stats_count.end();
-                   ++it)
-                s += *it;
+              for (const auto& c : _stats_count)
+                s += c;
 
               std::lock_guard<std::mutex> lk(_stat_m);
               _speed = s / _stats_count.size();
@@ -705,13 +704,17 @@ json11::Json::object conflict_manager::get_statistics() {
 /**
  * @brief Delete the conflict_manager singleton.
  */
-void conflict_manager::unload() {
-  if (!_singleton)
+int32_t conflict_manager::unload(stream_type type) {
+  if (!_singleton) {
     log_v2::sql()->info("conflict_manager: already unloaded.");
+    return 0;
+  }
   else {
     uint32_t count = --_singleton->_ref_count;
+    int retval;
     if (count == 0) {
-      _singleton->__exit();
+      __exit();
+      retval = _fifo.get_acks(type);
       delete _singleton;
       _singleton = nullptr;
       log_v2::sql()->info(
@@ -720,6 +723,11 @@ void conflict_manager::unload() {
       log_v2::sql()->info(
           "conflict_manager: still {} stream{} using the conflict manager.",
           count, count > 1 ? "s" : "");
+      retval = _fifo.get_acks(type);
+      log_v2::sql()->info(
+          "conflict_manager: still {} events handled but not acknowledged.",
+          retval);
     }
+    return retval;
   }
 }
