@@ -57,6 +57,10 @@ stream::stream(std::string const& lua_script,
       _flush{false} {
   bool fail = false;
   std::string fail_msg;
+  std::mutex init_m;
+  std::condition_variable init_cv;
+  std::unique_lock<std::mutex> lock(init_m);
+  bool configured = false;
 
   /* The lua interpreter does not support exchanges with several threads from
    * the outside. By design, the filter is called from another thread than the
@@ -66,6 +70,7 @@ stream::stream(std::string const& lua_script,
    * function just increases an _acks_count to inform broker on treated events.
    */
   _thread = std::thread([&] {
+    std::unique_lock<std::mutex> lock(init_m);
     // Access to the Lua interpreter
     luabinding* lb = nullptr;
     bool has_flush = false;
@@ -78,9 +83,12 @@ stream::stream(std::string const& lua_script,
       fail_msg = e.what();
       fail = true;
       _exit = true;
-      return;
     }
 
+    configured = true;
+    init_cv.notify_all();
+    if (fail)
+      return;
     /**
      * Events handling starts really here. */
 
@@ -138,8 +146,8 @@ stream::stream(std::string const& lua_script,
         log_v2::lua()->debug("stream: exit");
         break;
       } else
-      /* We did nothing, let's wait for 500ms. We don't cook an egg with our
-       * cpus. */
+        /* We did nothing, let's wait for 500ms. We don't cook an egg with our
+         * cpus. */
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
@@ -147,6 +155,7 @@ stream::stream(std::string const& lua_script,
     delete lb;
   });
 
+  init_cv.wait(lock, [&configured] { return configured; });
   if (fail) {
     _thread.join();
     throw exceptions::msg() << fail_msg;
