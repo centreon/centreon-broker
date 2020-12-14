@@ -41,6 +41,13 @@ class muxer;
  *  Core multiplexing engine. Send events to and receive events from
  *  muxer objects.
  *
+ *  This class has a unique instance. Before calling the instance() method,
+ *  we have to call the static load() one. And to close this instance, we
+ *  have to call the static method unload().
+ *
+ *  The instance initialization/deinitialization are guarded by a mutex
+ *  _load_m. It is only used for that purpose.
+ *
  *  @see muxer
  */
 class engine {
@@ -62,6 +69,8 @@ class engine {
   std::vector<muxer*> _muxers;
   std::mutex _muxers_m;
 
+  static std::mutex _load_m;
+
   engine();
   std::string _cache_file_path() const;
   void _nop(std::shared_ptr<io::data> const& d);
@@ -73,21 +82,21 @@ class engine {
   void (engine::*_write_func)(std::shared_ptr<io::data> const&);
 
  public:
-  engine(engine const& other) = delete;
-  engine& operator=(engine const& other) = delete;
-  ~engine();
-  void clear();
-  void hook(hooker& h, bool with_data = true);
-  static engine& instance();
   static void load();
-  static std::mutex _load_m;
-  void publish(std::shared_ptr<io::data> const& d);
-  void publish(std::list<std::shared_ptr<io::data>> const& to_publish);
+  static void unload();
+  static engine& instance();
+
+  engine(engine const&) = delete;
+  engine& operator=(engine const&) = delete;
+  ~engine() noexcept = default;
+  void clear();
+  void publish(const std::shared_ptr<io::data>& d);
+  void publish(std::list<const std::shared_ptr<io::data>>& to_publish);
   void start();
   void stop();
-  void subscribe(muxer* subscriber);
+  void hook(hooker& h, bool with_data = true);
   void unhook(hooker& h);
-  static void unload();
+  void subscribe(muxer* subscriber);
   void unsubscribe(muxer* subscriber);
 };
 }  // namespace multiplexing
