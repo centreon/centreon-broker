@@ -90,24 +90,19 @@ luabinding::~luabinding() {
 void luabinding::_update_lua_path(std::string const& path) {
   /* Working on path: lua scripts */
   lua_getglobal(_L, "package");
-  lua_getfield(_L, -1, "path");
-  std::string current_path(lua_tostring(_L, -1));
-  current_path.append(";");
-  current_path.append(path);
-  current_path.append("/?.lua");
+  lua_getfield(_L, 1, "path");
+  std::string current_path(
+      fmt::format("{};{}/?.lua", lua_tostring(_L, 2), path));
   lua_pop(_L, 1);
-  lua_pushstring(_L, current_path.c_str());
-  lua_setfield(_L, -2, "path");
+  lua_pushlstring(_L, current_path.c_str(), current_path.size());
+  lua_setfield(_L, 1, "path");
 
   /* Working on cpath: so libraries */
-  lua_getfield(_L, -1, "cpath");
-  current_path = lua_tostring(_L, -1);
-  current_path.append(";");
-  current_path.append(path);
-  current_path.append("/lib/?.so");
+  lua_getfield(_L, 1, "cpath");
+  current_path = fmt::format("{};{}/lib/?.so", lua_tostring(_L, 2), path);
   lua_pop(_L, 1);
-  lua_pushstring(_L, current_path.c_str());
-  lua_setfield(_L, -2, "cpath");
+  lua_pushlstring(_L, current_path.c_str(), current_path.size());
+  lua_setfield(_L, 1, "cpath");
   lua_pop(_L, 1);
 }
 
