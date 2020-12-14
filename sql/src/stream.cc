@@ -461,7 +461,7 @@ stream::~stream() {
   // Stop cleanup thread.
   //_cleanup_thread.exit();
   log_v2::sql()->debug("sql: stream destruction");
-  storage::conflict_manager::unload();
+  storage::conflict_manager::instance().unload(storage::conflict_manager::sql);
 }
 
 /**

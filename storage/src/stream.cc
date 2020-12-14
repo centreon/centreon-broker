@@ -87,7 +87,7 @@ stream::stream(database_config const& dbcfg,
 stream::~stream() {
   // Stop cleanup thread.
   log_v2::sql()->debug("storage: stream destruction");
-  conflict_manager::unload();
+  conflict_manager::instance().unload(conflict_manager::storage);
 }
 
 /**
