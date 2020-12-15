@@ -395,7 +395,7 @@ void conflict_manager::_process_comment(
   auto& d = std::get<0>(t);
   _finish_action(-1, actions::hosts | actions::instances |
                          actions::host_parents | actions::host_dependencies |
-                         actions::service_dependencies);
+                         actions::service_dependencies | actions::comments);
 
   // Cast object.
   neb::comment const& cmmnt{*static_cast<neb::comment const*>(d.get())};
@@ -422,6 +422,7 @@ void conflict_manager::_process_comment(
   _comment_insupdate << cmmnt;
   _mysql.run_statement(_comment_insupdate, database::mysql_error::store_comment,
                        true, conn);
+  _add_action(conn, actions::comments);
   *std::get<2>(t) = true;
 }
 
