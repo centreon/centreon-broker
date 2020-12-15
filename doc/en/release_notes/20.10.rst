@@ -6,6 +6,11 @@ Centreon Broker 20.10.3
 Bugs
 ****
 
+Conflict manager and comments
+=============================
+It is possible to lock the database during comments insertion. This new version
+fixes that.
+
 Bam reporting dimensions computation
 ====================================
 If there are retention files, dimensions computation could fail because of
