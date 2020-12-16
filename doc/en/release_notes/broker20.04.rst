@@ -22,6 +22,10 @@ Bam reporting durations
 When availabilities are computed, durations can be doubled. This new version
 fixes this issue.
 
+Tcp connections
+===============
+A keep alive is added on acceptor side sockets.
+
 ************
 Enhancements
 ************
