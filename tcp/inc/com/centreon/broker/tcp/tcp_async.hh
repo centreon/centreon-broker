@@ -30,10 +30,6 @@ CCB_BEGIN()
 namespace tcp {
 
 class tcp_async {
-  std::mutex _m_read_data;
-  std::mutex _closed_m;
-  bool _closed;
-
   /* The acceptors open by this tcp_async */
   std::list<std::shared_ptr<asio::ip::tcp::acceptor>> _acceptor;
 
@@ -43,12 +39,14 @@ class tcp_async {
   std::unordered_multimap<asio::ip::tcp::acceptor*, tcp_connection::pointer>
       _acceptor_available_con;
 
-  tcp_async();
-  ~tcp_async();
-  void _start();
-  void _stop();
+  tcp_async() = default;
+  ~tcp_async() noexcept = default;
 
  public:
+  static tcp_async& instance();
+
+  tcp_async(const tcp_async&) = delete;
+  tcp_async& operator=(const tcp_async&) = delete;
   std::shared_ptr<asio::ip::tcp::acceptor> create_acceptor(uint16_t port);
   void start_acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor);
   void stop_acceptor(std::shared_ptr<asio::ip::tcp::acceptor> acceptor);
@@ -64,8 +62,6 @@ class tcp_async {
       uint32_t timeout_s);
   bool contains_available_acceptor_connections(
       asio::ip::tcp::acceptor* acceptor) const;
-
-  static tcp_async& instance();
 };
 }  // namespace tcp
 
