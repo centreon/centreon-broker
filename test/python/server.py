@@ -51,7 +51,7 @@ count = 0
 
 try:
   while 1:
-    newSocket, address = sock.accept(  )
+    newSocket, address = sock.accept()
     print ("Connected from", address)
     # loop serving the new client
     first = True
@@ -75,5 +75,4 @@ try:
     newSocket.close()
     print ("Disconnected from", address)
 finally:
-  sock.close(  )
-
+  sock.close()
