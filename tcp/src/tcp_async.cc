@@ -138,8 +138,6 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
   /* If we got a connection, we store it */
   if (!ec) {
     new_connection->update_peer();
-    asio::socket_base::keep_alive option{true};
-    new_connection->socket().set_option(option);
     std::lock_guard<std::mutex> lck(_acceptor_con_m);
     _acceptor_available_con.insert(
         std::make_pair(acceptor.get(), new_connection));
