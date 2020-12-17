@@ -24,7 +24,9 @@ fixes this issue.
 
 Tcp connections
 ===============
-A keep alive is added on acceptor side sockets.
+If the connection between two peers is flapping, it could be difficult for one
+to reconnect to the other and this could lead to many CLOSE_WAIT on the
+acceptor side.
 
 ************
 Enhancements
