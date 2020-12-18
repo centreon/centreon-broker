@@ -56,11 +56,17 @@ if [ -r /etc/centos-release ] ; then
   done
 elif [ -r /etc/issue ] ; then
   maj=$(cat /etc/issue | awk '{print $1}')
+  version=$(cat /etc/issue | awk '{print $2}')
+  if [ $version -le 9 ] ; then
+    dpkg="dpkg"
+  else
+    dpkg="dpkg --no-pager"
+  fi
   v=$(cmake --version)
   if [[ $v =~ "version 3" ]] ; then
     cmake='cmake'
   elif [ $maj = "Debian" ] ; then
-    if dpkg -l --no-pager cmake ; then
+    if $dpkg -l cmake ; then
       echo "Bad version of cmake..."
       exit 1
     else
@@ -84,7 +90,7 @@ elif [ -r /etc/issue ] ; then
       python3-pip
     )
     for i in "${pkgs[@]}"; do
-      if ! dpkg -l --no-pager $i | grep "^ii" ; then
+      if ! $dpkg -l --no-pager $i | grep "^ii" ; then
         if [ $my_id -eq 0 ] ; then
           apt install -y $i
         else
@@ -104,7 +110,7 @@ elif [ -r /etc/issue ] ; then
   else
     echo "python3 already installed"
   fi
-  if ! dpkg -l --no-pager python3-pip ; then
+  if ! $dpkg -l --no-pager python3-pip ; then
     if [ $my_id -eq 0 ] ; then
       apt install -y python3-pip
     else
