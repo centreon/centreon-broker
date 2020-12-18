@@ -41,6 +41,12 @@ broker_api_version 1, by setting the variable to 1 or by removing this variable
 declaration in the script. Why should we use the v2 version? Because it is
 faster, really faster.
 
+Tcp connections
+===============
+If the connection between two peers is flapping, it may be difficult for one
+to reconnect to the other and this could lead to many CLOSE_WAIT on the
+acceptor side. This new version fixes this issue.
+
 =======================
 Centreon Broker 20.10.2
 =======================

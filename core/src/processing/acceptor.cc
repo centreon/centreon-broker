@@ -212,7 +212,7 @@ void acceptor::_callback() noexcept {
           << "acceptor: endpoint '" << _name << "' will wait "
           << _retry_interval << "s before attempting to accept a new client";
       time_t limit{time(nullptr) + _retry_interval};
-      while (!_should_exit && time(nullptr) < limit) {
+      while (!_endp->is_ready() && !_should_exit && time(nullptr) < limit) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
       }
     }
