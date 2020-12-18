@@ -37,42 +37,6 @@ tcp_async& tcp_async::instance() {
 }
 
 /**
- * @brief tcp_aysnc constructor. It is private and should not be called
- * directly.
- */
-tcp_async::tcp_async() : _closed{true} {
-  _start();
-}
-
-/**
- * @brief Start the thread pool used for the tcp connections.
- *
- */
-void tcp_async::_start() {
-  std::lock_guard<std::mutex> lock(_closed_m);
-  if (_closed)
-    _closed = false;
-}
-
-/**
- * @brief Stop the thread pool.
- */
-void tcp_async::_stop() {
-  std::lock_guard<std::mutex> lock(_closed_m);
-  if (!_closed) {
-    _closed = true;
-    // FIXME DBR: We must wait for the pool to be stopped.
-  }
-}
-
-/**
- * @brief tcp_async destructor.
- */
-tcp_async::~tcp_async() {
-  _stop();
-}
-
-/**
  * @brief If the acceptor given in parameter has established a connection.
  * This method returns it. Otherwise, it returns an empty connection.
  *
@@ -132,9 +96,6 @@ std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
  */
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-  std::lock_guard<std::mutex> lock(_closed_m);
-  if (_closed)
-    return;
 
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
@@ -151,8 +112,6 @@ void tcp_async::start_acceptor(
  */
 void tcp_async::stop_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-  if (_closed)
-    return;
 
   std::lock_guard<std::mutex> lck(_acceptor_con_m);
 
