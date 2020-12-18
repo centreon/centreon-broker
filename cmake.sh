@@ -67,6 +67,11 @@ elif [ -r /etc/issue ] ; then
       echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
       cmake='cmake'
     fi
+  else
+    echo "Bad version of cmake..."
+    exit 1
+  fi
+  if [ $maj = "Debian" ] ; then
     pkgs=(
       gcc
       g++
@@ -88,9 +93,6 @@ elif [ -r /etc/issue ] ; then
         fi
       fi
     done
-  else
-    echo "Bad version of cmake..."
-    exit 1
   fi
   if [[ ! -x /usr/bin/python3 ]] ; then
     if [ $my_id -eq 0 ] ; then
