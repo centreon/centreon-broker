@@ -22,6 +22,12 @@ Bam reporting durations
 When availabilities are computed, durations can be doubled. This new version
 fixes this issue.
 
+Tcp connections
+===============
+If the connection between two peers is flapping, it could be difficult for one
+to reconnect to the other and this could lead to many CLOSE_WAIT on the
+acceptor side.
+
 ************
 Enhancements
 ************
