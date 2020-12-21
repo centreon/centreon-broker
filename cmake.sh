@@ -39,6 +39,18 @@ if [ -r /etc/centos-release ] ; then
     yum -y install gcc-c++
   fi
 
+  if [ $maj = "centos7" ] ; then
+    curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-shared-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-shared-10.5.8-1.el7.centos.x86_64.rpm
+    curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm
+    curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm
+    yum install -y MariaDB*.rpm
+  else
+    curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-shared-10.5.8-1.el8.x86_64.rpm --output MariaDB-shared-10.5.8-1.el8.x86_64.rpm
+    curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-common-10.5.8-1.el8.x86_64.rpm --output MariaDB-common-10.5.8-1.el8.x86_64.rpm
+    curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-compat-10.5.8-1.el8.x86_64.rpm --output MariaDB-compat-10.5.8-1.el8.x86_64.rpm
+    dnf install -y MariaDB-*.rpm
+  fi
+
   pkgs=(
     ninja-build
     rrdtool-devel
@@ -56,29 +68,51 @@ if [ -r /etc/centos-release ] ; then
   done
 elif [ -r /etc/issue ] ; then
   maj=$(cat /etc/issue | awk '{print $1}')
+  version=$(cat /etc/issue | awk '{print $3}')
+  if [ $version = "9" ] ; then
+    dpkg="dpkg"
+  else
+    dpkg="dpkg --no-pager"
+  fi
   v=$(cmake --version)
   if [[ $v =~ "version 3" ]] ; then
     cmake='cmake'
   elif [ $maj = "Debian" ] ; then
-    if dpkg -l --no-pager cmake ; then
+    if $dpkg -l cmake ; then
       echo "Bad version of cmake..."
       exit 1
     else
       echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
       cmake='cmake'
     fi
-    count=$(dpkg --no-pager -l gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev | grep "^ii" | wc -l)
-    if [ $count -lt 6 ] ; then
-      if [ $my_id -eq 0 ] ; then
-        apt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev
-      else
-        echo -e "One or packages among these ones, gcc, cmake, librrd-dev, libgnutls28-dev, ninja-build, liblua5.3-dev, are not installed. You could enter, as root:\n\tapt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev\n\n"
-        exit 1
-      fi
-    fi
   else
     echo "Bad version of cmake..."
     exit 1
+  fi
+
+  if [ $maj = "Debian" ] ; then
+    pkgs=(
+      gcc
+      g++
+      pkg-config
+      libmariadb3
+      librrd-dev
+      libgnutls28-dev
+      ninja-build
+      liblua5.3-dev
+      python3
+      python3-pip
+    )
+    for i in "${pkgs[@]}"; do
+      if ! $dpkg -l $i | grep "^ii" ; then
+        if [ $my_id -eq 0 ] ; then
+          apt install -y $i
+        else
+          echo -e "The package \"$i\" is not installed, you can install it, as root, with the command:\n\tapt install -y $i\n\n"
+          exit 1
+        fi
+      fi
+    done
   fi
   if [[ ! -x /usr/bin/python3 ]] ; then
     if [ $my_id -eq 0 ] ; then
@@ -90,7 +124,7 @@ elif [ -r /etc/issue ] ; then
   else
     echo "python3 already installed"
   fi
-  if ! dpkg -l --no-pager python3-pip ; then
+  if ! $dpkg -l python3-pip ; then
     if [ $my_id -eq 0 ] ; then
       apt install -y python3-pip
     else
