@@ -152,16 +152,37 @@ bool conflict_manager::init_storage(bool store_in_db,
   return false;
 }
 
-void conflict_manager::init_sql(database_config const& dbcfg,
+/**
+ * @brief This fonction is the one that initializes the conflict_manager.
+ *
+ * @param dbcfg The database configuration
+ * @param loop_timeout A duration in seconds. During this interval received
+ *        events are handled. If there are no more events to handle, new
+ *        available ones are taken from the fifo. If none, the loop waits during
+ *        500ms. After this loop others things are done, cleanups, etc. And then
+ *        the loop is started again.
+ * @param instance_timeout A duration in seconds. This interval is used for
+ *        sending data in bulk. We wait for this interval at least between two
+ *        bulks.
+ *
+ * @return A boolean true if the function went good, false otherwise.
+ */
+bool conflict_manager::init_sql(database_config const& dbcfg,
                                 uint32_t loop_timeout,
                                 uint32_t instance_timeout) {
   log_v2::sql()->debug("conflict_manager: sql stream initialization");
   std::lock_guard<std::mutex> lk(_init_m);
   _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
+  if (!_singleton) {
+    _state = finished;
+    return false;
+  }
+
   _state = running;
   _singleton->_action.resize(_singleton->_mysql.connections_count());
   _init_cv.notify_all();
   _singleton->_ref_count++;
+  return true;
 }
 
 void conflict_manager::_load_deleted_instances() {
