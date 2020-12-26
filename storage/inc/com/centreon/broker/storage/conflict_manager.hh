@@ -319,7 +319,7 @@ class conflict_manager {
   void __exit();
 
  public:
-  static void init_sql(database_config const& dbcfg,
+  static bool init_sql(database_config const& dbcfg,
                        uint32_t loop_timeout,
                        uint32_t instance_timeout);
   static bool init_storage(bool store_in_db,
