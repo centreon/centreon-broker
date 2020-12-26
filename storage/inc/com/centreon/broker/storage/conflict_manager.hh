@@ -70,6 +70,7 @@ namespace storage {
 class conflict_manager {
   /* Forward declarations */
  public:
+  enum instance_state { not_started, running, finished };
   enum stream_type { sql, storage };
 
  private:
@@ -128,6 +129,7 @@ class conflict_manager {
   static void (conflict_manager::*const _neb_processing_table[])(
       std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>&);
   static conflict_manager* _singleton;
+  static instance_state _state;
   static std::mutex _init_m;
   static std::condition_variable _init_cv;
 

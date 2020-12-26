@@ -91,7 +91,7 @@ class engine {
   ~engine() noexcept = default;
   void clear();
   void publish(const std::shared_ptr<io::data>& d);
-  void publish(std::list<const std::shared_ptr<io::data>>& to_publish);
+  void publish(const std::list<std::shared_ptr<io::data>>& to_publish);
   void start();
   void stop();
   void hook(hooker& h, bool with_data = true);

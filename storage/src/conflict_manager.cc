@@ -34,6 +34,7 @@ using namespace com::centreon::broker::database;
 using namespace com::centreon::broker::storage;
 
 conflict_manager* conflict_manager::_singleton = nullptr;
+conflict_manager::instance_state conflict_manager::_state{conflict_manager::not_started};
 std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
@@ -126,7 +127,9 @@ bool conflict_manager::init_storage(bool store_in_db,
   for (;;) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
     if (_init_cv.wait_for(lk, std::chrono::seconds(1),
-                          [&]() { return _singleton != nullptr; })) {
+                          [&] { return _singleton != nullptr || _state == finished; })) {
+      if (_state == finished)
+        return false;
       std::lock_guard<std::mutex> lk(_singleton->_loop_m);
       _singleton->_store_in_db = store_in_db;
       _singleton->_rrd_len = rrd_len;
@@ -155,6 +158,7 @@ void conflict_manager::init_sql(database_config const& dbcfg,
   log_v2::sql()->debug("conflict_manager: sql stream initialization");
   std::lock_guard<std::mutex> lk(_init_m);
   _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
+  _state = running;
   _singleton->_action.resize(_singleton->_mysql.connections_count());
   _init_cv.notify_all();
   _singleton->_ref_count++;
@@ -715,8 +719,12 @@ int32_t conflict_manager::unload(stream_type type) {
     if (count == 0) {
       __exit();
       retval = _fifo.get_acks(type);
-      delete _singleton;
-      _singleton = nullptr;
+      {
+        std::lock_guard<std::mutex> lck(_init_m);
+        _state = finished;
+        delete _singleton;
+        _singleton = nullptr;
+      }
       log_v2::sql()->info(
           "conflict_manager: no more user of the conflict manager.");
     } else {
