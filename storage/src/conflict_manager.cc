@@ -120,13 +120,13 @@ bool conflict_manager::init_storage(bool store_in_db,
                                     uint32_t interval_length,
                                     uint32_t queries_per_transaction) {
   log_v2::sql()->debug("conflict_manager: storage stream initialization");
-  int count = 0;
+  int count;
 
   std::unique_lock<std::mutex> lk(_init_m);
 
-  for (;;) {
-    /* The loop is waiting for 1s or for _mysql to be initialized */
-    if (_init_cv.wait_for(lk, std::chrono::seconds(1),
+  for (count = 0; count < 10; count++) {
+    /* Let's wait for 10s for the conflict_manager to be initialized */
+    if (_init_cv.wait_for(lk, std::chrono::seconds(10),
                           [&] { return _singleton != nullptr || _state == finished; })) {
       if (_state == finished)
         return false;
@@ -143,7 +143,6 @@ bool conflict_manager::init_storage(bool store_in_db,
           std::move(std::thread(&conflict_manager::_callback, _singleton));
       return true;
     }
-    count++;
     log_v2::sql()->info(
         "conflict_manager: Waiting for the sql stream initialization for {} "
         "seconds",
