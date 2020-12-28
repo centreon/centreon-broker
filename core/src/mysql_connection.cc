@@ -24,6 +24,7 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -516,7 +517,8 @@ void mysql_connection::_run() {
     set_error_message(::mysql_error(_conn));
     return;
   } else {
-    while (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
+    while (config::applier::state != config::applier::finished &&
+           !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
       logging::error(logging::high)
@@ -527,43 +529,44 @@ void mysql_connection::_run() {
     }
   }
 
-  mysql_set_character_set(_conn, "utf8mb4");
+  if (config::applier::state != config::applier::finished) {
+    mysql_set_character_set(_conn, "utf8mb4");
 
-  if (_qps > 1)
-    mysql_autocommit(_conn, 0);
-  else
-    mysql_autocommit(_conn, 1);
+    if (_qps > 1)
+      mysql_autocommit(_conn, 0);
+    else
+      mysql_autocommit(_conn, 1);
 
-  _started = true;
-  locker.unlock();
-  _result_condition.notify_all();
+    _started = true;
+    locker.unlock();
+    _result_condition.notify_all();
 
-  while (!_finished) {
-    std::list<std::shared_ptr<database::mysql_task>> tasks_list;
-    std::unique_lock<std::mutex> locker(_list_mutex);
-    if (!_tasks_list.empty()) {
-      std::swap(_tasks_list, tasks_list);
-      locker.unlock();
-    } else {
-      _tasks_count = 0;
-      _tasks_condition.wait(locker);
-      continue;
-    }
-    for (auto task : tasks_list) {
-      --_tasks_count;
-      if (_task_processing_table[task->type])
-        (this->*(_task_processing_table[task->type]))(task.get());
-      else {
-        logging::error(logging::medium)
-            << "mysql_connection: Error type not managed...";
+    while (!_finished) {
+      std::list<std::shared_ptr<database::mysql_task>> tasks_list;
+      std::unique_lock<std::mutex> locker(_list_mutex);
+      if (!_tasks_list.empty()) {
+        std::swap(_tasks_list, tasks_list);
+        locker.unlock();
+      } else {
+        _tasks_count = 0;
+        _tasks_condition.wait(locker);
+        continue;
+      }
+      for (auto task : tasks_list) {
+        --_tasks_count;
+        if (_task_processing_table[task->type])
+          (this->*(_task_processing_table[task->type]))(task.get());
+        else {
+          logging::error(logging::medium)
+              << "mysql_connection: Error type not managed...";
+        }
       }
     }
+    for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),
+         end(_stmt.end());
+         it != end; ++it)
+      mysql_stmt_close(it->second);
   }
-  for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),
-       end(_stmt.end());
-       it != end; ++it)
-    mysql_stmt_close(it->second);
-
   mysql_close(_conn);
   mysql_thread_end();
 }
@@ -586,8 +589,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
       _qps(db_cfg.get_queries_per_transaction()) {
   std::unique_lock<std::mutex> locker(_result_mutex);
   _thread.reset(new std::thread(&mysql_connection::_run, this));
-  while (!_started)
-    _result_condition.wait(locker);
+  _result_condition.wait(locker, [this] { return _started; });
 }
 
 /**
