@@ -92,7 +92,7 @@ state parser::parse(std::string const& file) {
   if (js.is_null())
     throw exceptions::msg()
         << "config parser: cannot parse file '" << file << "': " << err;
-
+  
   if (js.is_object() && js["centreonBroker"].is_object()) {
     for (std::pair<std::string const, Json> const& object :
          js["centreonBroker"].object_items()) {
@@ -184,7 +184,6 @@ state parser::parse(std::string const& file) {
           throw exceptions::msg() << "config parser: cannot parse key '"
                                   << "'input':  value type must be an object";
       }
-
       else if (object.first == "logger") {
         if (object.second.is_array()) {
           for (Json const& node : object.second.array_items()) {
@@ -200,6 +199,7 @@ state parser::parse(std::string const& file) {
           throw exceptions::msg() << "config parser: cannot parse key "
                                   << "'logger':  value type must be an object";
         }
+    
       } else
         retval.params()[object.first] = object.second.dump();
     }

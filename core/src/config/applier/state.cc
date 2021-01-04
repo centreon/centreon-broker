@@ -61,8 +61,9 @@ state::~state() {}
  */
 void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   // Sanity checks.
+  logger::instance().apply(s.loggers());
   static char const* const allowed_chars(
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_");
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_.");
   if (!s.poller_id() || s.poller_name().empty())
     throw exceptions::msg()
           << "state applier: poller information are "
