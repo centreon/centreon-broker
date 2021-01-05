@@ -224,7 +224,7 @@ static void broker_json_encode_broker_event(std::shared_ptr<io::data> e,
         }
       }
     }
-    oss << "}}";
+    oss << "}";
   } else
     throw exceptions::msg() << "cannot bind object of type " << e->type()
                             << " to database query: mapping does not exist";
