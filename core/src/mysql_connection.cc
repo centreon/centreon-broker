@@ -25,7 +25,6 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
-#include "com/centreon/broker/config/applier/init.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -553,7 +552,7 @@ void mysql_connection::_run() {
     _result_condition.notify_all();
 
     while (!_finished) {
-      std::list<std::shared_ptr<database::mysql_task>> tasks_list;
+      std::list<std::shared_ptr<database::mysql_task> > tasks_list;
       std::unique_lock<std::mutex> locker(_list_mutex);
       if (!_tasks_list.empty()) {
         std::swap(_tasks_list, tasks_list);

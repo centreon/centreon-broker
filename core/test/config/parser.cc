@@ -41,7 +41,7 @@ TEST(parser, endpoint) {
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-    throw exceptions::msg() << "could not open '" << config_file.c_str() << "'";
+    throw exceptions::msg() << "could not open '" << config_file << "'";
 
   // Data.
   std::string data{
