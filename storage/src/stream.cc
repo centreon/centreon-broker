@@ -66,19 +66,21 @@ stream::stream(database_config const& dbcfg,
                uint32_t rebuild_check_interval,
                bool store_in_db)
     : io::stream("storage"),
-      _pending_events(0),
+      _pending_events(0)/*,
       _rebuilder(dbcfg,
                  rebuild_check_interval,
                  rrd_len ? rrd_len : 15552000,
-                 interval_length) {
+                 interval_length)*/ {
   log_v2::sql()->debug("storage stream instanciation");
   if (!rrd_len)
     rrd_len = 15552000;
 
   if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length,
-                                      dbcfg.get_queries_per_transaction()))
+                                      dbcfg.get_queries_per_transaction())) {
+    log_v2::sql()->trace("storage: Unable to initialize the storage connection");
     throw broker::exceptions::msg()
         << "storage: Unable to initialize the storage connection to the database";
+  }
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
-** Copyright 2017 Centreon
+** Copyright 2017-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -161,7 +161,9 @@ stream::stream(std::string const& lua_script,
     delete lb;
   });
 
-  init_cv.wait(lock, [&configured] { return configured; });
+  init_cv.wait(lock, [&configured] {
+      return configured;
+  });
   if (fail) {
     _thread.join();
     throw exceptions::msg() << fail_msg;

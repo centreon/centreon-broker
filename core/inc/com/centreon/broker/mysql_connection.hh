@@ -44,6 +44,12 @@ using my_error = database::mysql_error;
  */
 class mysql_connection {
  public:
+  enum connection_state {
+    not_started,
+    running,
+    finished
+  };
+
   /**************************************************************************/
   /*                  Methods executed by the main thread                   */
   /**************************************************************************/
@@ -148,7 +154,7 @@ class mysql_connection {
   std::string _pwd;
   std::string _name;
   int _port;
-  bool _started;
+  connection_state _state;
   uint32_t _qps;
 
   /* mutex to protect the string access in _error */

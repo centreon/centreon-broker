@@ -26,9 +26,8 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
-mysql_manager mysql_manager::_singleton;
-
 mysql_manager& mysql_manager::instance() {
+  static mysql_manager _singleton;
   return _singleton;
 }
 
@@ -62,6 +61,7 @@ mysql_manager::~mysql_manager() {
 
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     database_config const& db_cfg) {
+  log_v2::sql()->trace("mysql_manager::get_connections");
   std::vector<std::shared_ptr<mysql_connection>> retval;
   uint32_t connection_count(db_cfg.get_connections_count());
 
