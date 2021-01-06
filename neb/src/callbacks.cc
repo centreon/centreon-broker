@@ -853,20 +853,11 @@ int neb::callback_flapping_status(int callback_type, void* data) {
     flapping_status->event_time = flapping_data->timestamp.tv_sec;
     flapping_status->event_type = flapping_data->type;
     flapping_status->high_threshold = flapping_data->high_threshold;
-    if (!flapping_data->host_id)
-      throw(exceptions::msg() << "unnamed host");
-    if (flapping_data->service_description) {
+    if (flapping_data->service_id == 0) {
       flapping_status->host_id = flapping_data->host_id;
-      flapping_status->service_id = flapping_data->service_id;
-      if (flapping_status->host_id == 0 || flapping_status->service_id == 0)
-        throw(exceptions::msg()
-              << "could not find ID of service ('" << flapping_data->host_id
-              << "', '" << flapping_data->service_description << "')");
     } else {
       flapping_status->host_id = flapping_data->host_id;
-      if (flapping_status->host_id == 0)
-        throw(exceptions::msg() << "could not find ID of host '"
-                                << flapping_data->host_id << "'");
+      flapping_status->service_id = flapping_data->service_id;
     }
     flapping_status->low_threshold = flapping_data->low_threshold;
     flapping_status->percent_state_change = flapping_data->percent_change;
