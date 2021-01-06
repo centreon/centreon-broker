@@ -60,9 +60,11 @@ state::~state() {}
  *  @param[in] run_mux Set to true if multiplexing must be run.
  */
 void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
+  // Apply logging configuration
+  logger::instance().apply(s.loggers());
   // Sanity checks.
   static char const* const allowed_chars(
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_");
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_.");
   if (!s.poller_id() || s.poller_name().empty())
     throw exceptions::msg()
           << "state applier: poller information are "
@@ -110,9 +112,6 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
     _cache_dir.append(PREFIX_VAR);
   _cache_dir.append("/");
   _cache_dir.append(s.broker_name());
-
-  // Apply logging configuration.
-  logger::instance().apply(s.loggers());
 
   // Flush logs or not.
   com::centreon::broker::logging::file::with_flush(s.flush_logs());
