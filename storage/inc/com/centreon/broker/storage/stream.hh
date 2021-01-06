@@ -71,7 +71,7 @@ class stream : public io::stream {
   };
 
   int32_t _pending_events;
-  //rebuilder _rebuilder;
+  rebuilder _rebuilder;
   std::string _status;
   mutable std::mutex _statusm;
 
