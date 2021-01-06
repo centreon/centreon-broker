@@ -112,9 +112,6 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   _cache_dir.append("/");
   _cache_dir.append(s.broker_name());
 
-  // Apply logging configuration.
-  logger::instance().apply(s.loggers());
-
   // Flush logs or not.
   com::centreon::broker::logging::file::with_flush(s.flush_logs());
 

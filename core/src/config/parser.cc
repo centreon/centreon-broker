@@ -199,7 +199,6 @@ state parser::parse(std::string const& file) {
           throw exceptions::msg() << "config parser: cannot parse key "
                                   << "'logger':  value type must be an object";
         }
-    
       } else
         retval.params()[object.first] = object.second.dump();
     }
