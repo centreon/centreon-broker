@@ -25,6 +25,7 @@
 #include <fmt/format.h>
 #include <fstream>
 #include <json11.hpp>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/logging/logging.hh"
 
