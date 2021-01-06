@@ -629,9 +629,11 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
 
 /**
  *  This method is called from the stream and returns how many events should
- *  be released. By the way, it removed those objects from the queue.
+ *  be released. By the way, it removes those objects from the queue.
  *
- * @param c
+ * @param c a stream_type (we have two kinds of data arriving in the
+ * conflict_manager, those from the sql connector and those from the storage
+ * connector, so this stream_type is an enum containing those types).
  *
  * @return the number of events to ack.
  */
@@ -711,6 +713,12 @@ void conflict_manager::__exit() {
     _thread.join();
 }
 
+/**
+ * @brief Returns statistics about the conflict_manager. Those statistics
+ * are stored directly in a json tree.
+ *
+ * @return A json11::Json::object with the statistics.
+ */
 json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
   retval["max pending events"] = static_cast<int32_t>(_max_pending_queries);
