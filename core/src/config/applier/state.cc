@@ -60,8 +60,9 @@ state::~state() {}
  *  @param[in] run_mux Set to true if multiplexing must be run.
  */
 void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
-  // Sanity checks.
+  // Apply logging configuration
   logger::instance().apply(s.loggers());
+  // Sanity checks.
   static char const* const allowed_chars(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_.");
   if (!s.poller_id() || s.poller_name().empty())
