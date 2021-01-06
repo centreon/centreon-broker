@@ -72,7 +72,7 @@ mysql_manager::~mysql_manager() {
  *
  * @return a vector of connections.
  */
-std::vector<std::shared_ptr<mysql_connection> > mysql_manager::get_connections(
+std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     database_config const& db_cfg) {
   log_v2::sql()->trace("mysql_manager::get_connections");
   std::vector<std::shared_ptr<mysql_connection> > retval;
