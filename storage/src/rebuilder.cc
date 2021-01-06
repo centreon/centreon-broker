@@ -38,12 +38,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -65,7 +59,8 @@ rebuilder::rebuilder(database_config const& db_cfg,
       _rrd_len(rrd_length) {
   _db_cfg.set_connections_count(1);
   _db_cfg.set_queries_per_transaction(1);
-  _run();
+  _timer.expires_after(std::chrono::seconds(1));
+  _timer.async_wait(std::bind(&rebuilder::_run, this, std::placeholders::_1));
 }
 
 /**
@@ -97,7 +92,10 @@ uint32_t rebuilder::get_rrd_length() const noexcept {
 /**
  *  Thread entry point.
  */
-void rebuilder::_run() {
+void rebuilder::_run(asio::error_code ec) {
+  if (ec)
+    log_v2::sql()->info("storage: rebuilder timer error: {}", ec.message());
+  else {
     try {
       // Open DB.
       std::unique_ptr<mysql> ms;
@@ -207,8 +205,11 @@ void rebuilder::_run() {
     } catch (...) {
       logging::error(logging::high) << "storage: rebuilder: unknown error";
     }
-    _timer.expires_after(std::chrono::seconds(_rebuild_check_interval));
-    _timer.async_wait(std::bind(&rebuilder::_run, this));
+    if (!_should_exit) {
+      _timer.expires_after(std::chrono::seconds(_rebuild_check_interval));
+      _timer.async_wait(std::bind(&rebuilder::_run, this, std::placeholders::_1));
+    }
+  }
 }
 
 ///**

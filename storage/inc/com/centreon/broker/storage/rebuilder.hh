@@ -85,7 +85,7 @@ class rebuilder {
                        uint32_t length);
   void _send_rebuild_event(bool end, uint32_t id, bool is_index);
   void _set_index_rebuild(mysql& db, uint32_t index_id, short state);
-  void _run();
+  void _run(asio::error_code ec);
 
 };
 }  // namespace storage
