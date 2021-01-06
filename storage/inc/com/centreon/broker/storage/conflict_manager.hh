@@ -1,5 +1,5 @@
 /*
-** Copyright 2019-2020 Centreon
+** Copyright 2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -66,6 +66,16 @@ namespace storage {
  * Metrics, customvariables are sent in bulk to avoid locks on the database,
  * so we keep some containers here to build those big queries.
  *
+ * The conflict manager works with two streams: sql and storage.
+ *
+ * To initialize it, two functions are used:
+ * * init_sql(): initialization of the sql part.
+ * * init_storage(): initialization of the storage part. This one needs the
+ *   sql part to be initialized before. If it is not already initialized, this
+ *   function waits for it (with a timeout).
+ *
+ * Once the object is initialized, we have the classical static internal method
+ * `instance()`.
  */
 class conflict_manager {
   /* Forward declarations */

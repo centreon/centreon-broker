@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012,2015 Centreon
+** Copyright 2009-2012,2015,2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class muxer;
  *  @class engine engine.hh "com/centreon/broker/multiplexing/engine.hh"
  *  @brief Multiplexing engine.
  *
- *  Core multiplexing engine. Send events to and receive events from
+ *  Core multiplexing engine. Sends events to and receives events from
  *  muxer objects.
  *
  *  This class has a unique instance. Before calling the instance() method,
