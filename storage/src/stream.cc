@@ -66,12 +66,11 @@ stream::stream(database_config const& dbcfg,
                uint32_t rebuild_check_interval,
                bool store_in_db)
     : io::stream("storage"),
-      _pending_events(0) /*,
-_rebuilder(dbcfg,
-rebuild_check_interval,
-rrd_len ? rrd_len : 15552000,
-interval_length)*/
-{
+      _pending_events(0),
+      _rebuilder(dbcfg,
+                 rebuild_check_interval,
+                 rrd_len ? rrd_len : 15552000,
+                 interval_length) {
   log_v2::sql()->debug("storage stream instanciation");
   if (!rrd_len)
     rrd_len = 15552000;
