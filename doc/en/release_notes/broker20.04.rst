@@ -1,4 +1,17 @@
 ========================
+Centreon Broker 20.04.13
+========================
+
+****
+Bugs
+****
+
+log file configuration
+======================
+log file configuration is applied even if the configuration contains errors.
+Now '.' is allowed in names.
+
+========================
 Centreon Broker 20.04.12
 ========================
 
