@@ -65,7 +65,7 @@ CCB_BEGIN()
  */
 class mysql_manager {
   mutable std::mutex _cfg_mutex;
-  std::vector<std::shared_ptr<mysql_connection>> _connection;
+  std::vector<std::shared_ptr<mysql_connection> > _connection;
 
   // last stats update timestamp
   time_t _stats_connections_timestamp;
@@ -77,7 +77,7 @@ class mysql_manager {
  public:
   ~mysql_manager();
   static mysql_manager& instance();
-  std::vector<std::shared_ptr<mysql_connection>> get_connections(
+  std::vector<std::shared_ptr<mysql_connection> > get_connections(
       database_config const& db_cfg);
   std::map<std::string, std::string> get_stats();
   void update_connections();

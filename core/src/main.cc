@@ -329,7 +329,7 @@ int main(int argc, char* argv[]) {
         default_port += gl_state.broker_id();
       else
         default_port = gl_state.rpc_port();
-      std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)>> rpc(
+      std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)> > rpc(
           new brokerrpc("0.0.0.0", default_port, broker_name),
           [](brokerrpc* rpc) {
             rpc->shutdown();
