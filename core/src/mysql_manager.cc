@@ -26,16 +26,21 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
+/**
+ * @brief The function to use to call the unique instance of mysql_manager.
+ *
+ * @return A reference to the mysql_manager object.
+ */
 mysql_manager& mysql_manager::instance() {
   static mysql_manager _singleton;
   return _singleton;
 }
 
 /**
- *  Constructor
+ *  The default constructor
  */
 mysql_manager::mysql_manager()
-    : _current_thread(0), _stats_connections_timestamp(time(nullptr)) {
+    : _stats_connections_timestamp(time(nullptr)) {
   log_v2::sql()->trace("mysql_manager instanciation");
 }
 
@@ -59,6 +64,15 @@ mysql_manager::~mysql_manager() {
   mysql_library_end();
 }
 
+/**
+ * @brief This is the main function, called by the mysql object. Given a
+ * configuration, the manager returns the connections needed by the mysql object
+ * as a vector. Those connections can be shared between several mysql objects.
+ *
+ * @param db_cfg The configuration.
+ *
+ * @return a vector of connections.
+ */
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     database_config const& db_cfg) {
   log_v2::sql()->trace("mysql_manager::get_connections");
@@ -97,6 +111,9 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   return retval;
 }
 
+/**
+ * @brief Closes all the running connections and then removes them.
+ */
 void mysql_manager::clear() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
@@ -112,6 +129,9 @@ void mysql_manager::clear() {
   logging::debug(logging::low) << "mysql_manager: clear finished";
 }
 
+/**
+ * @brief This internal function removes the not used connections.
+ */
 void mysql_manager::update_connections() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
@@ -131,6 +151,12 @@ void mysql_manager::update_connections() {
     mysql_library_end();
 }
 
+/**
+ * @brief Returns statistics about the mysql connections.
+ *
+ * @return A map containing various informations. This map is changed into
+ * a json file later.
+ */
 std::map<std::string, std::string> mysql_manager::get_stats() {
   int delay(0);
   std::unique_lock<std::mutex> locker(_cfg_mutex, std::defer_lock);
