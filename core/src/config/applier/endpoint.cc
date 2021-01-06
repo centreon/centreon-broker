@@ -47,11 +47,10 @@ using namespace com::centreon::broker::config::applier;
 // Class instance.
 static config::applier::endpoint* gl_endpoint = nullptr;
 
-/**************************************
- *                                     *
- *            Local Objects            *
- *                                     *
- **************************************/
+/**
+ * @brief Default constructor.
+ */
+endpoint::endpoint() : _discarding{false} {}
 
 /**
  *  Comparison classes.
@@ -160,6 +159,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
 
   // Create new endpoints.
   for (config::endpoint& ep : endp_to_create) {
+    assert(!_discarding);
     // Check that output is not a failover.
     if (ep.name.empty() ||
         (std::find_if(endp_to_create.begin(), endp_to_create.end(),
@@ -184,10 +184,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       }
 
       // Run thread.
-      logging::debug(logging::medium) << "endpoint applier: endpoint "
-                                         "thread "
-                                      << endp.get() << " of '" << ep.name
-                                      << "' is registered and ready to run";
+      log_v2::config()->debug("endpoint applier: endpoint thread {} of '{}' is registered and ready to run", static_cast<void*>(endp.get()), ep.name);
       endp.release()->start();
     }
   }
@@ -197,6 +194,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
  *  Discard applied configuration.
  */
 void endpoint::discard() {
+  _discarding = true;
   log_v2::config()->debug("endpoint applier: destruction");
 
   // Stop multiplexing.
@@ -272,16 +270,6 @@ void endpoint::unload() {
   delete gl_endpoint;
   gl_endpoint = nullptr;
 }
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-endpoint::endpoint() {}
 
 /**
  *  Create a muxer for a chain of failovers / endpoints. This method

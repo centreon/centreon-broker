@@ -49,7 +49,7 @@ grpc::Status broker_impl::DebugConfReload(grpc::ServerContext* context,
                                           const GenericString* request,
                                           GenericResponse* response) {
   std::string err;
-  if (log_v2::instance().load(request->str_arg(), _broker_name, err)) {
+  if (log_v2::instance().load(request->str_arg().c_str(), _broker_name, err)) {
     response->set_ok(true);
     response->set_err_msg("");
   } else {

@@ -46,7 +46,7 @@ class log_v2 {
 
  public:
   static log_v2& instance();
-  bool load(std::string const& file,
+  bool load(const char* file,
             std::string const& broker_name,
             std::string& err);
 

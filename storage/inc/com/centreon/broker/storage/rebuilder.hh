@@ -24,6 +24,7 @@
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/pool.hh"
 
 CCB_BEGIN()
 
@@ -35,12 +36,22 @@ namespace storage {
  *  Check for graphs to be rebuild at fixed interval.
  */
 class rebuilder {
+  asio::steady_timer _timer;
+  std::atomic_bool _should_exit;
+  database_config _db_cfg;
+  std::shared_ptr<mysql_connection> _connection;
+  uint32_t _interval_length;
+  uint32_t _rebuild_check_interval;
+  uint32_t _rrd_len;
+
  public:
   rebuilder(database_config const& db_cfg,
             uint32_t rebuild_check_interval = 600,
             uint32_t rrd_length = 15552000,
             uint32_t interval_length = 60);
   ~rebuilder();
+  rebuilder(rebuilder const& other) = delete;
+  rebuilder& operator=(rebuilder const& other) = delete;
   uint32_t get_rebuild_check_interval() const throw();
   uint32_t get_rrd_length() const throw();
 
@@ -59,8 +70,6 @@ class rebuilder {
     short metric_type;
   };
 
-  rebuilder(rebuilder const& other);
-  rebuilder& operator=(rebuilder const& other);
   void _next_index_to_rebuild(index_info& info, mysql& ms);
   void _rebuild_metric(mysql& ms,
                        uint32_t metric_id,
@@ -78,15 +87,6 @@ class rebuilder {
   void _set_index_rebuild(mysql& db, uint32_t index_id, short state);
   void _run();
 
-  std::unique_ptr<std::thread> _thread;
-  database_config _db_cfg;
-  std::shared_ptr<mysql_connection> _connection;
-  uint32_t _interval_length;
-  uint32_t _rebuild_check_interval;
-  uint32_t _rrd_len;
-  std::condition_variable _cond_should_exit;
-  std::mutex _mutex_should_exit;
-  volatile bool _should_exit;
 };
 }  // namespace storage
 

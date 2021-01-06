@@ -80,6 +80,10 @@ static void hup_handler(int signum) {
     // Parse configuration file.
     config::parser parsr;
     config::state conf{parsr.parse(gl_mainconfigfiles.front())};
+    std::string err;
+    if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
+          conf.broker_name(), err))
+      logging::error(logging::low) << err;
 
     try {
       // Apply resulting configuration.
@@ -152,7 +156,7 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
  */
 int main(int argc, char* argv[]) {
   // Initialization.
-  int opt, option_index = 0, n_thread = 0; 
+  int opt, option_index = 0, n_thread = 0;
   config::applier::init();
   std::string broker_name = "unknown";
   uint16_t default_port{51000};
@@ -274,6 +278,10 @@ int main(int argc, char* argv[]) {
         // Parse configuration file.
         config::parser parsr;
         config::state conf{parsr.parse(gl_mainconfigfiles.front())};
+        std::string err;
+        if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
+              conf.broker_name(), err))
+          logging::error(logging::low) << err;
 
         // Verification modifications.
         if (check) {
@@ -298,11 +306,7 @@ int main(int argc, char* argv[]) {
 
         // Apply resulting configuration totally or partially.
         config::applier::state::instance().apply(conf, !check);
-        std::string err;
         broker_name = conf.broker_name();
-        if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-                                     broker_name, err))
-          logging::error(logging::low) << err;
         gl_state = conf;
       }
 
