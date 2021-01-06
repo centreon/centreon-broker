@@ -92,7 +92,6 @@ state parser::parse(std::string const& file) {
   if (js.is_null())
     throw exceptions::msg()
         << "config parser: cannot parse file '" << file << "': " << err;
-
   if (js.is_object() && js["centreonBroker"].is_object()) {
     for (std::pair<std::string const, Json> const& object :
          js["centreonBroker"].object_items()) {
