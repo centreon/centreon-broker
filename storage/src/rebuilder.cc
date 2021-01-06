@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2015,2017,2020 Centreon
+** Copyright 2012-2015,2017,2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -69,24 +69,6 @@ rebuilder::rebuilder(database_config const& db_cfg,
 rebuilder::~rebuilder() {
   _should_exit = true;
   asio::post(_timer.get_executor(), [this]{ _timer.cancel(); });
-}
-
-/**
- *  Get the rebuild check interval.
- *
- *  @return Rebuild check interval in seconds.
- */
-uint32_t rebuilder::get_rebuild_check_interval() const noexcept {
-  return _rebuild_check_interval;
-}
-
-/**
- *  Get the RRD length in seconds.
- *
- *  @return RRD length in seconds.
- */
-uint32_t rebuilder::get_rrd_length() const noexcept {
-  return _rrd_len;
 }
 
 /**
