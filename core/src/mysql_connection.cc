@@ -515,21 +515,31 @@ void mysql_connection::_run() {
   _conn = mysql_init(nullptr);
   if (!_conn) {
     set_error_message(::mysql_error(_conn));
+    _state = finished;
+    _result_condition.notify_all();
     return;
   } else {
+    uint32_t timeout = 10;
+    mysql_options(_conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
     while (config::applier::state != config::applier::finished &&
            !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
-      logging::error(logging::high)
-          << "mysql_connection: The mysql/mariadb database seems not started. "
-             "Waiting before attempt to connect again: "
-          << ::mysql_error(_conn);
-      std::this_thread::sleep_for(std::chrono::seconds(5));
+      set_error_message(fmt::format("mysql_connection: The mysql/mariadb database seems not started. "
+             "Waiting before attempt to connect again: {}",
+           ::mysql_error(_conn)));
+      _state = finished;
+      _result_condition.notify_all();
+      return;
     }
   }
 
-  if (config::applier::state != config::applier::finished) {
+  if (config::applier::state == config::applier::finished) {
+    _state = finished;
+    locker.unlock();
+    _result_condition.notify_all();
+  }
+  else {
     mysql_set_character_set(_conn, "utf8mb4");
 
     if (_qps > 1)
@@ -537,7 +547,7 @@ void mysql_connection::_run() {
     else
       mysql_autocommit(_conn, 1);
 
-    _started = true;
+    _state = running;
     locker.unlock();
     _result_condition.notify_all();
 
@@ -585,11 +595,17 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
       _pwd(db_cfg.get_password()),
       _name(db_cfg.get_name()),
       _port(db_cfg.get_port()),
-      _started(false),
+      _state(not_started),
       _qps(db_cfg.get_queries_per_transaction()) {
   std::unique_lock<std::mutex> locker(_result_mutex);
+  log_v2::sql()->info("mysql_connection: starting connection");
   _thread.reset(new std::thread(&mysql_connection::_run, this));
-  _result_condition.wait(locker, [this] { return _started; });
+  _result_condition.wait(locker, [this] { return _state != not_started; });
+  if (_state == finished) {
+    _thread->join();
+    throw exceptions::msg() << "mysql_connection: error while starting connection";
+  }
+  log_v2::sql()->info("mysql_connection: connection started");
 }
 
 /**

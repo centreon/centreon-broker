@@ -53,7 +53,6 @@ class mysql_manager {
  private:
   mysql_manager();
   ~mysql_manager();
-  static mysql_manager _singleton;
   mutable std::mutex _cfg_mutex;
   std::vector<std::shared_ptr<mysql_connection>> _connection;
 

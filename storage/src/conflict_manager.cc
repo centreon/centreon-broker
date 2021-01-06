@@ -126,7 +126,7 @@ bool conflict_manager::init_storage(bool store_in_db,
 
   for (count = 0; count < 10; count++) {
     /* Let's wait for 10s for the conflict_manager to be initialized */
-    if (_init_cv.wait_for(lk, std::chrono::seconds(10),
+    if (_init_cv.wait_for(lk, std::chrono::seconds(1),
                           [&] { return _singleton != nullptr || _state == finished; })) {
       if (_state == finished)
         return false;
@@ -148,6 +148,8 @@ bool conflict_manager::init_storage(bool store_in_db,
         "seconds",
         count);
   }
+  log_v2::sql()->error("conflict_manager: not initialized after 10s. Probably "
+      "an issue in the sql output configuration.");
   return false;
 }
 
