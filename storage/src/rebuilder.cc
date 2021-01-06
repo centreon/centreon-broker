@@ -90,7 +90,13 @@ uint32_t rebuilder::get_rrd_length() const noexcept {
 }
 
 /**
- *  Thread entry point.
+ * @brief This internal function is called by the asio::steady_timer _timer
+ * every _rebuild_check_interval seconds. It is the main procedure of the
+ * rebuilder.
+ *
+ * @param ec Contains errors if any. In that case, the timer is stopped.
+ * One particular error is asio::error_code::aborted which means the rebuilder
+ * is stopped.
  */
 void rebuilder::_run(asio::error_code ec) {
   if (ec)
@@ -98,19 +104,11 @@ void rebuilder::_run(asio::error_code ec) {
   else {
     try {
       // Open DB.
-      std::unique_ptr<mysql> ms;
-      try {
-        ms.reset(new mysql(_db_cfg));
-      } catch (std::exception const& e) {
-        throw broker::exceptions::msg()
-            << "storage: rebuilder: could "
-               "not connect to Centreon Storage database: "
-            << e.what();
-      }
+      mysql ms(_db_cfg);
 
       // Fetch index to rebuild.
       index_info info;
-      _next_index_to_rebuild(info, *ms);
+      _next_index_to_rebuild(info, ms);
       while (!_should_exit && info.index_id) {
         // Get check interval of host/service.
         uint32_t index_id;
@@ -131,9 +129,9 @@ void rebuilder::_run(asio::error_code ec) {
           else
             query = fmt::format("SELECT check_interval FROM services WHERE host_id={} AND service_id={}", info.host_id, info.service_id);
           std::promise<database::mysql_result> promise;
-          ms->run_query_and_get_result(query, &promise);
+          ms.run_query_and_get_result(query, &promise);
           database::mysql_result res(promise.get_future().get());
-          if (ms->fetch_row(res))
+          if (ms.fetch_row(res))
             check_interval = res.value_as_f64(0) * _interval_length;
           if (!check_interval)
             check_interval = 5 * 60;
@@ -143,7 +141,7 @@ void rebuilder::_run(asio::error_code ec) {
             index_id, check_interval);
 
         // Set index as being rebuilt.
-        _set_index_rebuild(*ms, index_id, 2);
+        _set_index_rebuild(ms, index_id, 2);
 
         try {
           // Fetch metrics to rebuild.
@@ -152,11 +150,11 @@ void rebuilder::_run(asio::error_code ec) {
             std::string query{fmt::format("SELECT metric_id, metric_name, data_source_type FROM metrics WHERE index_id={}", index_id)};
 
             std::promise<database::mysql_result> promise;
-            ms->run_query_and_get_result(query, &promise);
+            ms.run_query_and_get_result(query, &promise);
             try {
               database::mysql_result res(promise.get_future().get());
 
-              while (!_should_exit && ms->fetch_row(res)) {
+              while (!_should_exit && ms.fetch_row(res)) {
                 metric_info info;
                 info.metric_id = res.value_as_u32(0);
                 info.metric_name = res.value_as_str(1);
@@ -173,7 +171,7 @@ void rebuilder::_run(asio::error_code ec) {
           // Browse metrics to rebuild.
           while (!_should_exit && !metrics_to_rebuild.empty()) {
             metric_info& info(metrics_to_rebuild.front());
-            _rebuild_metric(*ms, info.metric_id, host_id, service_id,
+            _rebuild_metric(ms, info.metric_id, host_id, service_id,
                             info.metric_name, info.metric_type, check_interval,
                             rrd_len);
             // We need to update the conflict_manager for metrics that could
@@ -184,10 +182,10 @@ void rebuilder::_run(asio::error_code ec) {
           }
 
           // Rebuild status.
-          _rebuild_status(*ms, index_id, check_interval, rrd_len);
+          _rebuild_status(ms, index_id, check_interval, rrd_len);
         } catch (...) {
           // Set index as to-be-rebuilt.
-          _set_index_rebuild(*ms, index_id, 1);
+          _set_index_rebuild(ms, index_id, 1);
 
           // Rethrow exception.
           throw;
@@ -195,10 +193,10 @@ void rebuilder::_run(asio::error_code ec) {
 
         // Set index as rebuilt or to-be-rebuild
         // if we were interrupted.
-        _set_index_rebuild(*ms, index_id, (_should_exit ? 1 : 0));
+        _set_index_rebuild(ms, index_id, (_should_exit ? 1 : 0));
 
         // Get next index to rebuild.
-        _next_index_to_rebuild(info, *ms);
+        _next_index_to_rebuild(info, ms);
       }
     } catch (std::exception const& e) {
       logging::error(logging::high) << e.what();
@@ -211,134 +209,6 @@ void rebuilder::_run(asio::error_code ec) {
     }
   }
 }
-
-///**
-// *  Thread entry point.
-// */
-//void rebuilder::_run() {
-//  std::unique_lock<std::mutex> locker(_mutex_should_exit);
-//  while (!_should_exit && _rebuild_check_interval) {
-//    try {
-//      // Open DB.
-//      std::unique_ptr<mysql> ms;
-//      try {
-//        ms.reset(new mysql(_db_cfg));
-//      } catch (std::exception const& e) {
-//        throw broker::exceptions::msg()
-//            << "storage: rebuilder: could "
-//               "not connect to Centreon Storage database: "
-//            << e.what();
-//      }
-//
-//      // Fetch index to rebuild.
-//      index_info info;
-//      _next_index_to_rebuild(info, *ms);
-//      while (!_should_exit && info.index_id) {
-//        // Get check interval of host/service.
-//        uint32_t index_id;
-//        uint32_t host_id;
-//        uint32_t service_id;
-//        uint32_t check_interval(0);
-//        uint32_t rrd_len;
-//        {
-//          index_id = info.index_id;
-//          host_id = info.host_id;
-//          service_id = info.service_id;
-//          rrd_len = info.rrd_retention;
-//
-//          std::string query;
-//          if (!info.service_id)
-//            query = fmt::format("SELECT check_interval FROM hosts WHERE host_id={}",
-//                info.host_id);
-//          else
-//            query = fmt::format("SELECT check_interval FROM services WHERE host_id={} AND service_id={}", info.host_id, nfo.service_id);
-//          std::promise<database::mysql_result> promise;
-//          ms->run_query_and_get_result(query, &promise);
-//          database::mysql_result res(promise.get_future().get());
-//          if (ms->fetch_row(res))
-//            check_interval = res.value_as_f64(0) * _interval_length;
-//          if (!check_interval)
-//            check_interval = 5 * 60;
-//        }
-//        log_v2::sql()->info(
-//            "storage: rebuilder: index {} (interval {}) will be rebuild",
-//            index_id, check_interval);
-//
-//        // Set index as being rebuilt.
-//        _set_index_rebuild(*ms, index_id, 2);
-//
-//        try {
-//          // Fetch metrics to rebuild.
-//          std::list<metric_info> metrics_to_rebuild;
-//          {
-//            std::string query{fmt::format("SELECT metric_id, metric_name, data_source_type FROM metrics WHERE index_id={}", index_id)};
-//
-//            std::promise<database::mysql_result> promise;
-//            ms->run_query_and_get_result(query, &promise);
-//            try {
-//              database::mysql_result res(promise.get_future().get());
-//
-//              while (!_should_exit && ms->fetch_row(res)) {
-//                metric_info info;
-//                info.metric_id = res.value_as_u32(0);
-//                info.metric_name = res.value_as_str(1);
-//                info.metric_type = res.value_as_str(2)[0] - '0';
-//                metrics_to_rebuild.push_back(info);
-//              }
-//            } catch (std::exception const& e) {
-//              throw exceptions::msg()
-//                  << "storage: rebuilder: could not fetch metrics of index "
-//                  << index_id << ": " << e.what();
-//            }
-//          }
-//
-//          // Browse metrics to rebuild.
-//          while (!_should_exit && !metrics_to_rebuild.empty()) {
-//            metric_info& info(metrics_to_rebuild.front());
-//            _rebuild_metric(*ms, info.metric_id, host_id, service_id,
-//                            info.metric_name, info.metric_type, check_interval,
-//                            rrd_len);
-//            // We need to update the conflict_manager for metrics that could
-//            // change of type.
-//            conflict_manager::instance().update_metric_info_cache(
-//                index_id, info.metric_id, info.metric_name, info.metric_type);
-//            metrics_to_rebuild.pop_front();
-//          }
-//
-//          // Rebuild status.
-//          _rebuild_status(*ms, index_id, check_interval, rrd_len);
-//        } catch (...) {
-//          // Set index as to-be-rebuilt.
-//          _set_index_rebuild(*ms, index_id, 1);
-//
-//          // Rethrow exception.
-//          throw;
-//        }
-//
-//        // Set index as rebuilt or to-be-rebuild
-//        // if we were interrupted.
-//        _set_index_rebuild(*ms, index_id, (_should_exit ? 1 : 0));
-//
-//        // Get next index to rebuild.
-//        _next_index_to_rebuild(info, *ms);
-//      }
-//    } catch (std::exception const& e) {
-//      logging::error(logging::high) << e.what();
-//    } catch (...) {
-//      logging::error(logging::high) << "storage: rebuilder: unknown error";
-//    }
-//
-//    // Sleep a while.
-//    _cond_should_exit.wait_for(locker,
-//                               std::chrono::seconds(_rebuild_check_interval));
-//  }
-//}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Get next index to rebuild.
