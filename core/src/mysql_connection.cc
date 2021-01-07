@@ -20,11 +20,11 @@
 #include <cstring>
 #include <sstream>
 
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
-#include "com/centreon/broker/config/applier/init.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -525,9 +525,10 @@ void mysql_connection::_run() {
            !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
-      set_error_message(fmt::format("mysql_connection: The mysql/mariadb database seems not started. "
-             "Waiting before attempt to connect again: {}",
-           ::mysql_error(_conn)));
+      set_error_message(fmt::format(
+          "mysql_connection: The mysql/mariadb database seems not started. "
+          "Waiting before attempt to connect again: {}",
+          ::mysql_error(_conn)));
       _state = finished;
       _result_condition.notify_all();
       return;
@@ -538,8 +539,7 @@ void mysql_connection::_run() {
     _state = finished;
     locker.unlock();
     _result_condition.notify_all();
-  }
-  else {
+  } else {
     mysql_set_character_set(_conn, "utf8mb4");
 
     if (_qps > 1)
@@ -603,7 +603,8 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
   _result_condition.wait(locker, [this] { return _state != not_started; });
   if (_state == finished) {
     _thread->join();
-    throw exceptions::msg() << "mysql_connection: error while starting connection";
+    throw exceptions::msg()
+        << "mysql_connection: error while starting connection";
   }
   log_v2::sql()->info("mysql_connection: connection started");
 }

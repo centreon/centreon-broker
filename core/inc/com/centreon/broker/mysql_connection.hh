@@ -60,11 +60,7 @@ using my_error = database::mysql_error;
  */
 class mysql_connection {
  public:
-  enum connection_state {
-    not_started,
-    running,
-    finished
-  };
+  enum connection_state { not_started, running, finished };
 
  private:
   std::unique_ptr<std::thread> _thread;

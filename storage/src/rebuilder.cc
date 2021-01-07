@@ -18,12 +18,12 @@
 
 #include "com/centreon/broker/storage/rebuilder.hh"
 
+#include <fmt/format.h>
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <fmt/format.h>
 
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -68,7 +68,7 @@ rebuilder::rebuilder(database_config const& db_cfg,
  */
 rebuilder::~rebuilder() {
   _should_exit = true;
-  asio::post(_timer.get_executor(), [this]{ _timer.cancel(); });
+  asio::post(_timer.get_executor(), [this] { _timer.cancel(); });
 }
 
 /**
@@ -106,10 +106,14 @@ void rebuilder::_run(asio::error_code ec) {
 
           std::string query;
           if (!info.service_id)
-            query = fmt::format("SELECT check_interval FROM hosts WHERE host_id={}",
-                info.host_id);
+            query =
+                fmt::format("SELECT check_interval FROM hosts WHERE host_id={}",
+                            info.host_id);
           else
-            query = fmt::format("SELECT check_interval FROM services WHERE host_id={} AND service_id={}", info.host_id, info.service_id);
+            query = fmt::format(
+                "SELECT check_interval FROM services WHERE host_id={} AND "
+                "service_id={}",
+                info.host_id, info.service_id);
           std::promise<database::mysql_result> promise;
           ms.run_query_and_get_result(query, &promise);
           database::mysql_result res(promise.get_future().get());
@@ -129,7 +133,10 @@ void rebuilder::_run(asio::error_code ec) {
           // Fetch metrics to rebuild.
           std::list<metric_info> metrics_to_rebuild;
           {
-            std::string query{fmt::format("SELECT metric_id, metric_name, data_source_type FROM metrics WHERE index_id={}", index_id)};
+            std::string query{
+                fmt::format("SELECT metric_id, metric_name, data_source_type "
+                            "FROM metrics WHERE index_id={}",
+                            index_id)};
 
             std::promise<database::mysql_result> promise;
             ms.run_query_and_get_result(query, &promise);
@@ -187,7 +194,8 @@ void rebuilder::_run(asio::error_code ec) {
     }
     if (!_should_exit) {
       _timer.expires_after(std::chrono::seconds(_rebuild_check_interval));
-      _timer.async_wait(std::bind(&rebuilder::_run, this, std::placeholders::_1));
+      _timer.async_wait(
+          std::bind(&rebuilder::_run, this, std::placeholders::_1));
     }
   }
 }
@@ -256,7 +264,10 @@ void rebuilder::_rebuild_metric(mysql& ms,
 
   try {
     // Get data.
-    std::string query{fmt::format("SELECT ctime,value FROM data_bin WHERE id_metric={} AND ctime>={} ORDER BY ctime ASC", metric_id, start)};
+    std::string query{
+        fmt::format("SELECT ctime,value FROM data_bin WHERE id_metric={} AND "
+                    "ctime>={} ORDER BY ctime ASC",
+                    metric_id, start)};
     std::promise<database::mysql_result> promise;
     ms.run_query_and_get_result(query, &promise);
     log_v2::sql()->debug(
@@ -323,7 +334,11 @@ void rebuilder::_rebuild_status(mysql& ms,
   // Database schema version.
   try {
     // Get data.
-    std::string query{fmt::format("SELECT d.ctime,d.status FROM metrics AS m JOIN data_bin AS d ON m.metric_id=d.id_metric WHERE m.index_id={} AND ctime>={} ORDER BY d.ctime ASC", index_id, start)};
+    std::string query{
+        fmt::format("SELECT d.ctime,d.status FROM metrics AS m JOIN data_bin "
+                    "AS d ON m.metric_id=d.id_metric WHERE m.index_id={} AND "
+                    "ctime>={} ORDER BY d.ctime ASC",
+                    index_id, start)};
     std::promise<database::mysql_result> promise;
     ms.run_query_and_get_result(query, &promise);
     try {
