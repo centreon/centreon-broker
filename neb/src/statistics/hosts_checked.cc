@@ -67,7 +67,7 @@ void hosts_checked::run(std::string& output, std::string& perfdata) {
   for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
        end{com::centreon::engine::host::hosts.end()};
        it != end; ++it)
-    if (it->second->get_has_been_checked())
+    if (it->second->has_been_checked())
       ++total;
 
   // Output.
