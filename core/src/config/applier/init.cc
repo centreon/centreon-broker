@@ -66,7 +66,6 @@ void config::applier::init() {
   io::protocols::load();
   config::applier::modules::load();
   file::load();
-  //extcmd::load();
   instance_broadcast::load();
   compression::load();
   bbdo::load();

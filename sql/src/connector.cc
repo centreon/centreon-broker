@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/sql/connector.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 #include "com/centreon/broker/sql/stream.hh"
 

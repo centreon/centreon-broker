@@ -59,7 +59,7 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
       _subscriber(sbscrbr),
       _update(false) {
   log_v2::core()->trace("failover '{}' construction.", _name);
-      }
+}
 
 /**
  *  Destructor.
@@ -159,7 +159,8 @@ void failover::_run() {
       {
         std::shared_ptr<io::stream> s(_endpoint->open());
         if (!s)
-          throw exceptions::msg() << "failover: '" << _name << "' cannot connect endpoint.";
+          throw exceptions::msg()
+              << "failover: '" << _name << "' cannot connect endpoint.";
         {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;
@@ -250,19 +251,23 @@ void failover::_run() {
         d.reset();
         bool timed_out_stream(true);
         if (stream_can_read) {
-          log_v2::processing()->debug("failover: reading event from endpoint '{}'", _name);
+          log_v2::processing()->debug(
+              "failover: reading event from endpoint '{}'", _name);
           _update_status("reading event from stream");
           try {
             std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
             timed_out_stream = !_stream->read(d, 0);
           } catch (exceptions::shutdown const& e) {
             log_v2::processing()->debug(
-                "failover: stream of endpoint '{}' shutdown while reading: {}", _name, e.what());
+                "failover: stream of endpoint '{}' shutdown while reading: {}",
+                _name, e.what());
             stream_can_read = false;
           }
           if (d) {
             log_v2::processing()->debug(
-                "failover: writing event of endpoint '{}' to multiplexing engine", _name);
+                "failover: writing event of endpoint '{}' to multiplexing "
+                "engine",
+                _name);
             _update_status("writing event to multiplexing engine");
             _subscriber->get_muxer().write(d);
             tick();
@@ -276,8 +281,10 @@ void failover::_run() {
         d.reset();
         bool timed_out_muxer(true);
         if (muxer_can_read) {
-          log_v2::processing()->debug("failover: reading event from "
-                                          "multiplexing engine for endpoint '{}'", _name);
+          log_v2::processing()->debug(
+              "failover: reading event from "
+              "multiplexing engine for endpoint '{}'",
+              _name);
           _update_status("reading event from multiplexing engine");
           try {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
@@ -411,8 +418,8 @@ void failover::_run() {
   }
 
   // Exit log.
-  log_v2::processing()->debug(
-      "failover: thread of endpoint '{}' is exiting", _name);
+  log_v2::processing()->debug("failover: thread of endpoint '{}' is exiting",
+                              _name);
 
   std::unique_lock<std::mutex> lock_stop(_stopped_m);
   _stopped = true;

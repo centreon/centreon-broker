@@ -112,14 +112,16 @@ grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
         }
       }
       if (!found)
-        return grpc::Status(grpc::INVALID_ARGUMENT, grpc::string("name not found"));
+        return grpc::Status(grpc::INVALID_ARGUMENT,
+                            grpc::string("name not found"));
 
       break;
 
     case GenericNameOrIndex::kIdx:
 
       if (request->idx() + 1 > value.size())
-        return grpc::Status(grpc::INVALID_ARGUMENT, grpc::string("idx too big"));
+        return grpc::Status(grpc::INVALID_ARGUMENT,
+                            grpc::string("idx too big"));
 
       val = value[request->idx()];
       response->set_str_arg(std::move(val.dump()));
@@ -167,13 +169,15 @@ grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context,
         }
       }
       if (!found)
-        return grpc::Status(grpc::INVALID_ARGUMENT, grpc::string("name not found"));
+        return grpc::Status(grpc::INVALID_ARGUMENT,
+                            grpc::string("name not found"));
       break;
 
     case GenericNameOrIndex::kIdx:
 
       if ((request->idx() + 1) > value.size())
-        return grpc::Status(grpc::INVALID_ARGUMENT, grpc::string("idx too big"));
+        return grpc::Status(grpc::INVALID_ARGUMENT,
+                            grpc::string("idx too big"));
 
       val = value[request->idx()];
       response->set_str_arg(std::move(val.dump()));
@@ -190,7 +194,6 @@ grpc::Status broker_impl::GetGenericStats(
     grpc::ServerContext* context,
     const ::google::protobuf::Empty* request,
     GenericString* response) {
-
   json11::Json::object object;
   stats::get_generic_stats(object);
 
@@ -203,7 +206,6 @@ grpc::Status broker_impl::GetGenericStats(
 grpc::Status broker_impl::GetSqlStats(grpc::ServerContext* context,
                                       const ::google::protobuf::Empty* request,
                                       GenericString* response) {
-
   json11::Json::object object;
   stats::get_mysql_stats(object);
 

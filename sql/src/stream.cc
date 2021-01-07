@@ -451,9 +451,10 @@ stream::stream(database_config const& dbcfg,
   //  // Run cleanup thread.
   //  _cleanup_thread.start();
   log_v2::sql()->debug("sql stream instanciation");
-  if (!storage::conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout))
+  if (!storage::conflict_manager::init_sql(dbcfg, loop_timeout,
+                                           instance_timeout))
     throw broker::exceptions::msg()
-      << "SQL: Unable to initialize the sql connection to the database";
+        << "SQL: Unable to initialize the sql connection to the database";
 }
 
 /**

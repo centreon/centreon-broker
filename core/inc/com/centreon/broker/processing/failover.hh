@@ -81,7 +81,6 @@ class failover : public endpoint {
   void set_failover(std::shared_ptr<processing::failover> fo);
   void set_retry_interval(time_t retry_interval);
   void update() override;
-  //bool wait(unsigned long time = ULONG_MAX);
 
  protected:
   // From stat_visitable

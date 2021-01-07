@@ -34,7 +34,8 @@ using namespace com::centreon::broker::database;
 using namespace com::centreon::broker::storage;
 
 conflict_manager* conflict_manager::_singleton = nullptr;
-conflict_manager::instance_state conflict_manager::_state{conflict_manager::not_started};
+conflict_manager::instance_state conflict_manager::_state{
+    conflict_manager::not_started};
 std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
@@ -126,8 +127,9 @@ bool conflict_manager::init_storage(bool store_in_db,
 
   for (count = 0; count < 10; count++) {
     /* Let's wait for 10s for the conflict_manager to be initialized */
-    if (_init_cv.wait_for(lk, std::chrono::seconds(1),
-                          [&] { return _singleton != nullptr || _state == finished; })) {
+    if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&] {
+          return _singleton != nullptr || _state == finished;
+        })) {
       if (_state == finished)
         return false;
       std::lock_guard<std::mutex> lk(_singleton->_loop_m);
@@ -148,7 +150,8 @@ bool conflict_manager::init_storage(bool store_in_db,
         "seconds",
         count);
   }
-  log_v2::sql()->error("conflict_manager: not initialized after 10s. Probably "
+  log_v2::sql()->error(
+      "conflict_manager: not initialized after 10s. Probably "
       "an issue in the sql output configuration.");
   return false;
 }
@@ -742,8 +745,7 @@ int32_t conflict_manager::unload(stream_type type) {
   if (!_singleton) {
     log_v2::sql()->info("conflict_manager: already unloaded.");
     return 0;
-  }
-  else {
+  } else {
     uint32_t count = --_singleton->_ref_count;
     int retval;
     if (count == 0) {
