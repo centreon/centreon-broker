@@ -196,7 +196,8 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
 }
 
 /**
- *  Discard applied configuration.
+ *  Discard applied configuration. Running endpoints are destroyed one by one.
+ *
  */
 void endpoint::discard() {
   _discarding = true;
@@ -257,6 +258,7 @@ std::timed_mutex& endpoint::endpoints_mutex() {
  *  @return Class instance.
  */
 endpoint& endpoint::instance() {
+  assert(gl_endpoint);
   return *gl_endpoint;
 }
 
@@ -391,8 +393,7 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
         std::string cache_path(config::applier::state::instance().cache_dir());
         cache_path.append(".cache.");
         cache_path.append(cfg.name);
-        cache =
-            std::shared_ptr<persistent_cache>(new persistent_cache(cache_path));
+        cache = std::make_shared<persistent_cache>(cache_path);
       }
       endp = std::shared_ptr<io::endpoint>(
           it->second.endpntfactry->new_endpoint(cfg, is_acceptor, cache));
