@@ -238,7 +238,7 @@ class notifier : public checkable {
 
   virtual bool authorized_by_dependencies(
       dependency::types dependency_type) const = 0;
-  uint64_t get_next_notification_id() const noexcept;
+  static uint64_t get_next_notification_id();
   virtual timeperiod* get_notification_timeperiod() const = 0;
   static notification_category get_category(reason_type type);
   bool is_notification_viable(notification_category cat,
@@ -320,6 +320,10 @@ class notifier : public checkable {
   bool _retain_status_information;
   bool _retain_nonstatus_information;
   bool _is_being_freshened;
+  
+  /*if notification_interval at 0 and is on time period off.
+  is set as true to send the notification on the next starting time period*/
+  bool _notification_to_interval_on_timeperiod_in; 
 
   /* New ones */
   int _notification_number;
