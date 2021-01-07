@@ -21,9 +21,10 @@
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/log_issue.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
@@ -175,10 +176,12 @@ bool node::operator!=(node const& other) const {
  */
 void node::add_child(node* n) {
   if (_parents.find(n) != _parents.end())
-    throw(exceptions::msg()
-          << "correlation: trying to insert node (" << n->host_id << ", "
-          << n->service_id << ") as children of node (" << n->host_id << ", "
-          << n->service_id << "), but this node is already a parent");
+    throw(msg_fmt(
+          "correlation: trying to insert node ({}, {}) "
+          "as children of node ({}, {}), but this node is already a parent",
+          n->host_id, 
+          n->service_id, n->host_id, 
+          n->service_id));
   _children.insert(n);
   n->_parents.insert(this);
   return;
@@ -191,12 +194,10 @@ void node::add_child(node* n) {
  */
 void node::add_depended(node* n) {
   if (_depends_on.find(n) != _depends_on.end())
-    throw(exceptions::msg() << "correlation: trying to insert node ("
-                            << n->host_id << ", " << n->service_id
-                            << ") as inverse dependency "
-                               " of node ("
-                            << n->host_id << ", " << n->service_id
-                            << "), but this node is already a dependency");
+    throw(msg_fmt("correlation: trying to insert node ({}, {}) as inverse dependency"
+                  " of node ({}, {}), but this node is already a dependency",
+                  n->host_id, n->service_id,
+                  n->host_id,  n->service_id));
   _depended_by.insert(n);
   n->_depends_on.insert(this);
   return;
@@ -209,13 +210,10 @@ void node::add_depended(node* n) {
  */
 void node::add_dependency(node* n) {
   if (_depended_by.find(n) != _depended_by.end())
-    throw(exceptions::msg()
-          << "correlation: trying to insert node (" << n->host_id << ", "
-          << n->service_id
-          << ") as dependency of"
-             " node ("
-          << n->host_id << ", " << n->service_id
-          << "), but this node is already an inverse dependency");
+    throw(msg_fmt(
+          "correlation: trying to insert node ({}, {}) as dependency of node ({}, {})"
+          "but this node is already an inverse dependeny", n->host_id, 
+          n->service_id, n->host_id, n->service_id));
   _depends_on.insert(n);
   n->_depended_by.insert(this);
   return;
@@ -228,10 +226,10 @@ void node::add_dependency(node* n) {
  */
 void node::add_parent(node* n) {
   if (_children.find(n) != _children.end())
-    throw(exceptions::msg()
-          << "correlation: trying to insert node (" << n->host_id << ", "
-          << n->service_id << ") as parent of node (" << n->host_id << ", "
-          << n->service_id << "), but this node is already a children");
+    throw(msg_fmt(
+          "correlation: trying to insert node ({}, {}) as parent of node",
+          "({}, {}), but this node is already a children",
+          n->host_id, n->service_id, n->host_id, n->service_id));
   _parents.insert(n);
   n->_children.insert(this);
   return;

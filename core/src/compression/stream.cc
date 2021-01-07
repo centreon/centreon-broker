@@ -26,9 +26,13 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
+
+int const stream::max_data_size = 100000000;
 
 /**************************************
  *                                     *
@@ -213,12 +217,12 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   if (d->type() == io::raw::static_type()) {
     io::raw& r(*std::static_pointer_cast<io::raw>(d));
 
-    // Check length.
+    //Check length.
     if (r.size() > max_data_size)
-      throw exceptions::msg()
-          << "cannot compress buffers longer than " << max_data_size
-          << " bytes: you should report this error "
-          << "to Centreon Broker developers";
+      throw msg_fmt(
+              "cannot compress buffers longer than  {}" 
+              " bytes: you should report this error "
+              "to Centreon Broker developers", max_data_size);
     else if (r.size() > 0) {
       // Append data to write buffer.
       std::copy(r.get_buffer().begin(), r.get_buffer().end(),

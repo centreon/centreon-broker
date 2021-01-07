@@ -32,9 +32,11 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
+using namespace com::centreon::exceptions;
 
 static void broker_json_encode(lua_State* L, std::ostringstream& oss);
 static void broker_json_decode(lua_State* L, json11::Json const& it);
@@ -217,17 +219,18 @@ static void broker_json_encode_broker_event(std::shared_ptr<io::data> e,
             }
             break;
           default:  // Error in one of the mappings.
-            throw exceptions::msg() << "invalid mapping for object "
-                                    << "of type '" << info->get_name()
-                                    << "': " << current_entry->get_type()
-                                    << " is not a known type ID";
+            throw msg_fmt("invalid mapping for object "
+                          "of type '{}': {}"
+                          " is not a known type ID",
+                          info->get_name(),
+                          current_entry->get_type());
         }
       }
     }
     oss << "}";
   } else
-    throw exceptions::msg() << "cannot bind object of type " << e->type()
-                            << " to database query: mapping does not exist";
+    throw msg_fmt("cannot bind object of type {}"
+                  " to database query: mapping does not exist", e->type());
 }
 
 /**

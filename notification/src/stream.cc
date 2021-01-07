@@ -30,7 +30,7 @@
 #include <limits>
 #include <mutex>
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -43,6 +43,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
+using namespace com::centreon::exceptions;
 
 /**************************************
  *                                     *
@@ -277,7 +278,7 @@ void stream::_open_db(std::unique_ptr<mysql>& ms,
   //    {
   //      QMutexLocker lock(&global_lock);
   //      if (!db->open())
-  //        throw (exceptions::msg()
+  //        throw (msg_fmt()
   //          << "notification: could not open SQL database: "
   //          << db->lastError().text());
   //    }
@@ -296,9 +297,9 @@ void stream::_open_db(std::unique_ptr<mysql>& ms,
           if ((field == "Slave_IO_Running" && res.value_as_str(i) != "Yes") ||
               (field == "Slave_SQL_Running" && res.value_as_str(i) != "Yes") ||
               (field == "Seconds_Behind_Master" && res.value_as_i32(i) != 0))
-            throw exceptions::msg() << "notification: replication is not "
+            throw msg_fmt("notification: replication is not "
                                        "complete: "
-                                    << field << "=" << res.value_as_str(i);
+                                    , field, "=", res.value_as_str(i));
         }
         logging::info(logging::medium)
             << "notification: database replication is complete, "
@@ -347,7 +348,7 @@ void stream::_open_db(std::unique_ptr<mysql>& ms,
 //    QMutexLocker lock(&global_lock);
 //    // Open database.
 //    if (!db->open())
-//      throw (exceptions::msg()
+//      throw (msg_fmt()
 //             << "notification: could not open SQL database: "
 //             << db->lastError().text());
 //  }
@@ -398,9 +399,9 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
-      throw(exceptions::msg()
-            << "notification: got an unknown service id: "
-            << id.get_service_id() << ", host_id: " << id.get_host_id());
+      throw(msg_fmt(
+            "notification: got an unknown service id: ",
+            id.get_service_id(), ", host_id: ", id.get_host_id()));
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
@@ -457,8 +458,8 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
-      throw(exceptions::msg()
-            << "notification: got an unknown host id: " << id.get_host_id());
+      throw(msg_fmt(
+            "notification: got an unknown host id: ", id.get_host_id()));
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
@@ -505,11 +506,11 @@ void stream::_process_issue_parent_event(
   std::unique_ptr<QWriteLocker> lock(_state.write_lock());
   node::ptr n = _state.get_node_by_id(child_id);
   if (!n)
-    throw(exceptions::msg()
-          << "notification: got an unknown issue parent on node ("
-          << child_id.get_host_id() << ", " << child_id.get_service_id()
-          << ") by node (" << parent_id.get_host_id() << ", "
-          << parent_id.get_service_id() << ")");
+    throw(msg_fmt(
+          "notification: got an unknown issue parent on node (",
+          , child_id.get_host_id(), ", ", child_id.get_service_id(),
+          ") by node (", parent_id.get_host_id(), ", ",
+          parent_id.get_service_id(), ")"));
 
   // Log message.
   bool terminated_event((event.end_time != (time_t)-1) &&

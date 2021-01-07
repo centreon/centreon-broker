@@ -22,7 +22,9 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/opener.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
@@ -72,9 +74,8 @@ io::endpoint* factory::new_endpoint(
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("path")};
     if (it == cfg.params.end())
-      throw exceptions::msg() << "file: no 'path' defined for file "
-                                 "endpoint '"
-                              << cfg.name << "'";
+      throw msg_fmt("file: no 'path' defined for file "
+                    "endpoint '{}'", cfg.name);
     filename = it->second;
   }
 

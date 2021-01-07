@@ -40,7 +40,9 @@
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/stats/builder.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 class StatsTest : public ::testing::Test {
@@ -293,7 +295,7 @@ TEST_F(StatsTest, Parser) {
   parser.parse(result2, "[{ \"json_fifo\":\"/tmp/test.txt\" }]");
   ASSERT_TRUE(result2.size() == 1);
 
-  ASSERT_THROW(parser.parse(result, "ds{ahsjklhdasjhdaskjh"), exceptions::msg);
+  ASSERT_THROW(parser.parse(result, "ds{ahsjklhdasjhdaskjh"), msg_fmt);
 }
 
 TEST_F(StatsTest, Worker) {
@@ -331,13 +333,13 @@ TEST_F(StatsTest, Worker) {
 TEST_F(StatsTest, WorkerPoolBadFile) {
   stats::worker_pool work;
 
-  ASSERT_THROW(work.add_worker("/unexistingdir/file"), exceptions::msg);
+  ASSERT_THROW(work.add_worker("/unexistingdir/file"), msg_fmt);
 }
 
 TEST_F(StatsTest, WorkerPoolExistingDir) {
   stats::worker_pool work;
 
-  ASSERT_THROW(work.add_worker("/tmp"), exceptions::msg);
+  ASSERT_THROW(work.add_worker("/tmp"), msg_fmt);
 }
 
 TEST_F(StatsTest, WorkerPool) {

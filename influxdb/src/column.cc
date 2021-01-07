@@ -17,8 +17,9 @@
 */
 
 #include "com/centreon/broker/influxdb/column.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
@@ -118,6 +119,5 @@ column::type column::parse_type(std::string const& type) {
     return (string);
   else if (type == "number")
     return (number);
-  throw(exceptions::msg() << "influxdb: couldn't parse column type '" << type
-                          << "'");
+  throw(msg_fmt("influxdb: couldn't parse column type '{}'", type));
 }

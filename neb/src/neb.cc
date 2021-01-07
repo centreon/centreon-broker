@@ -25,7 +25,7 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
@@ -37,6 +37,7 @@
 #include "com/centreon/engine/nebcallbacks.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
@@ -158,7 +159,7 @@ int nebmodule_init(int flags, char const* args, void* handle) {
           args += config_file_size;
         neb::gl_configuration_file = args;
       } else
-        throw(exceptions::msg() << "main: no configuration file provided");
+        throw(msg_fmt("main: no configuration file provided"));
 
       // Try configuration parsing.
       com::centreon::broker::config::parser p;

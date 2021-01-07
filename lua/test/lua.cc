@@ -35,7 +35,9 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::lua;
@@ -110,7 +112,7 @@ class LuaAsioTest : public LuaTest {
 // Then an exception is thrown
 TEST_F(LuaTest, MissingScript) {
   std::map<std::string, misc::variant> conf;
-  ASSERT_THROW(new luabinding(FILE1, conf, *_cache), exceptions::msg);
+  ASSERT_THROW(new luabinding(FILE1, conf, *_cache), msg_fmt);
 }
 
 // When a lua script with error such as number divided by nil is loaded
@@ -121,7 +123,7 @@ TEST_F(LuaTest, FaultyScript) {
   CreateScript(filename,
                "local a = { 1, 2, 3 }\n"
                "local b = 18 / a[4]");
-  ASSERT_THROW(new luabinding(filename, conf, *_cache), exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf, *_cache), msg_fmt);
   RemoveFile(filename);
 }
 
@@ -131,7 +133,7 @@ TEST_F(LuaTest, WithoutInit) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
-  ASSERT_THROW(new luabinding(filename, conf, *_cache), exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf, *_cache), msg_fmt);
   RemoveFile(filename);
 }
 
@@ -155,7 +157,7 @@ TEST_F(LuaTest, WithoutFilter) {
 // Then an exception is thrown
 TEST_F(LuaTest, IncompleteScript) {
   std::map<std::string, misc::variant> conf;
-  ASSERT_THROW(new luabinding(FILE2, conf, *_cache), exceptions::msg);
+  ASSERT_THROW(new luabinding(FILE2, conf, *_cache), msg_fmt);
 }
 
 // When a script is correctly loaded and a neb event has to be sent

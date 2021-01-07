@@ -20,11 +20,13 @@
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "memory_stream.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 class CompressionStreamWrite : public ::testing::Test {
  public:
@@ -120,7 +122,7 @@ TEST_F(CompressionStreamWrite, CompressNothing) {
 
   // Then
   std::shared_ptr<io::data> d;
-  ASSERT_THROW(_substream->read(d), exceptions::msg);
+  ASSERT_THROW(_substream->read(d),exceptions::msg);
 }
 
 // Given a compression stream
@@ -150,7 +152,7 @@ TEST_F(CompressionStreamWrite, TooMuchData) {
   r->resize(compression::stream::max_data_size + 10);
 
   // Then
-  ASSERT_THROW(_stream->write(r), exceptions::msg);
+  ASSERT_THROW(_stream->write(r), msg_fmt);
 }
 
 // Given a compression stream

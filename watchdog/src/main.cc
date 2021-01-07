@@ -29,10 +29,10 @@
 #include "com/centreon/broker/watchdog/configuration.hh"
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include "com/centreon/broker/watchdog/instance.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;

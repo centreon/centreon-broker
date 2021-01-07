@@ -20,9 +20,10 @@
 #include <ctime>
 #include <sstream>
 #include <stdexcept>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/time/timezone_locker.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::time;
 
 /**
@@ -70,26 +71,26 @@ timeperiod::timeperiod(uint32_t id,
   _exceptions.resize(daterange::daterange_types);
   std::vector<bool> success;
   if (!set_timerange(sunday, 0))
-    throw(exceptions::msg()
-          << "BAM: could not parse sunday for time period: " << id);
+    throw(msg_fmt(
+          "BAM: could not parse sunday for time period: {} ", id));
   if (!set_timerange(monday, 1))
-    throw(exceptions::msg()
-          << "BAM: could not parse monday for time period: " << id);
+    throw(msg_fmt(
+          "BAM: could not parse monday for time period: {} ", id));
   if (!set_timerange(tuesday, 2))
-    throw(exceptions::msg()
-          << "BAM: could not parse tuesday for time period: " << id);
+    throw(msg_fmt(
+          "BAM: could not parse tuesday for time period: {} ", id));
   if (!set_timerange(wednesday, 3))
-    throw(exceptions::msg()
-          << "BAM: could not parse wednesday for time period: " << id);
+    throw(msg_fmt(
+          "BAM: could not parse wednesday for time period: {} ", id));
   if (!set_timerange(thursday, 4))
-    throw(exceptions::msg()
-          << "BAM: could not parse thursday for time period: " << id);
+    throw(msg_fmt(
+          "BAM: could not parse thursday for time period: {} ", id));
   if (!set_timerange(friday, 5))
-    throw(exceptions::msg()
-          << "BAM: could not parse friday for time period: " << id);
+    throw(msg_fmt(
+          "BAM: could not parse friday for time period: {} ", id));
   if (!set_timerange(saturday, 6))
-    throw(exceptions::msg()
-          << "BAM: could not parse saturday for time period: " << id);
+    throw(msg_fmt(
+          "BAM: could not parse saturday for time period: {} ", id));
 }
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {

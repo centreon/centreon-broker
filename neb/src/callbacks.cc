@@ -29,7 +29,6 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/neb/callback.hh"
@@ -48,8 +47,10 @@
 #include "com/centreon/engine/nebstructs.hh"
 #include "com/centreon/engine/servicedependency.hh"
 #include "com/centreon/engine/servicegroup.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 // List of Nagios modules.
 extern nebmodule* neb_module_list;
@@ -164,17 +165,17 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
       ack->comment = misc::string::check_string_utf8(ack_data->comment_data);
     ack->entry_time = time(nullptr);
     if (!ack_data->host_id)
-      throw exceptions::msg() << "unnamed host";
+      throw msg_fmt("unnamed host");
     if (ack_data->service_id) {
       ack->host_id = ack_data->host_id;
       ack->service_id = ack_data->service_id;
       if (!ack->host_id || !ack->service_id)
-        throw exceptions::msg()
-            << "acknowledgement on service with host_id or service_id 0";
+        throw msg_fmt(
+            "acknowledgement on service with host_id or service_id 0");
     } else {
       ack->host_id = ack_data->host_id;
       if (ack->host_id == 0)
-        throw exceptions::msg() << "acknowledgement on host with id 0";
+        throw msg_fmt("acknowledgement on host with id 0");
     }
     ack->poller_id = config::applier::state::instance().poller_id();
     ack->is_sticky = ack_data->is_sticky;
@@ -236,12 +237,12 @@ int neb::callback_comment(int callback_type, void* data) {
       comment->host_id = comment_data->host_id;
       comment->service_id = comment_data->service_id;
       if (!comment->host_id || !comment->service_id)
-        throw exceptions::msg()
-            << "comment created from a service with host_id/service_id 0";
+        throw msg_fmt(
+            "comment created from a service with host_id/service_id 0");
     } else {
       comment->host_id = comment_data->host_id;
       if (comment->host_id == 0)
-        throw exceptions::msg() << "comment created from a host with host_id 0";
+        throw msg_fmt("comment created from a host with host_id 0");
     }
     comment->poller_id = config::applier::state::instance().poller_id();
     comment->internal_id = comment_data->comment_id;
@@ -581,7 +582,7 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->entry_time = downtime_data->entry_time;
     downtime->fixed = downtime_data->fixed;
     if (!downtime_data->host_name)
-      throw(exceptions::msg() << "unnamed host");
+      throw(msg_fmt("unnamed host"));
     if (downtime_data->service_description) {
       std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(downtime_data->host_name,
@@ -589,14 +590,17 @@ int neb::callback_downtime(int callback_type, void* data) {
       downtime->host_id = p.first;
       downtime->service_id = p.second;
       if (!downtime->host_id || !downtime->service_id)
-        throw(exceptions::msg()
-              << "could not find ID of service ('" << downtime_data->host_name
-              << "', '" << downtime_data->service_description << "')");
+        throw(msg_fmt(
+              "could not find ID of service ('{}', '{}')",
+              downtime_data->host_name,
+              downtime_data->service_description
+              ));
+
     } else {
       downtime->host_id = engine::get_host_id(downtime_data->host_name);
       if (downtime->host_id == 0)
-        throw(exceptions::msg() << "could not find ID of host '"
-                                << downtime_data->host_name << "'");
+        throw(msg_fmt("could not find ID of host '{}'",
+                      downtime_data->host_name));
     }
     downtime->poller_id = config::applier::state::instance().poller_id();
     downtime->internal_id = downtime_data->downtime_id;
@@ -678,7 +682,7 @@ int neb::callback_event_handler(int callback_type, void* data) {
     event_handler->end_time = event_handler_data->end_time.tv_sec;
     event_handler->execution_time = event_handler_data->execution_time;
     if (!event_handler_data->host_name)
-      throw(exceptions::msg() << "unnamed host");
+      throw(msg_fmt("unnamed host"));
     if (event_handler_data->service_description) {
       std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(
@@ -687,16 +691,16 @@ int neb::callback_event_handler(int callback_type, void* data) {
       event_handler->host_id = p.first;
       event_handler->service_id = p.second;
       if (!event_handler->host_id || !event_handler->service_id)
-        throw(exceptions::msg()
-              << "could not find ID of service ('"
-              << event_handler_data->host_name << "', '"
-              << event_handler_data->service_description << "')");
+        throw(msg_fmt(
+              "could not find ID of service ('",
+              event_handler_data->host_name, "', '",
+              event_handler_data->service_description, "')"));
     } else {
       event_handler->host_id =
           engine::get_host_id(event_handler_data->host_name);
       if (event_handler->host_id == 0)
-        throw(exceptions::msg() << "could not find ID of host '"
-                                << event_handler_data->host_name << "'");
+        throw(msg_fmt("could not find ID of host '",
+                      event_handler_data->host_name, "'"));
     }
     if (event_handler_data->output)
       event_handler->output =
@@ -1259,11 +1263,11 @@ int neb::callback_host_check(int callback_type, void* data) {
       host_check->command_line =
           misc::string::check_string_utf8(hcdata->command_line);
       if (!hcdata->host_name)
-        throw(exceptions::msg() << "unnamed host");
+        throw(msg_fmt("unnamed host"));
       host_check->host_id = engine::get_host_id(hcdata->host_name);
       if (host_check->host_id == 0)
-        throw(exceptions::msg()
-              << "could not find ID of host '" << hcdata->host_name << "'");
+        throw(msg_fmt(
+              "could not find ID of host '", hcdata->host_name, "'"));
       host_check->next_check = h->get_next_check();
 
       // Send event.
@@ -1328,12 +1332,12 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->flap_detection_enabled = h->get_flap_detection_enabled();
     host_status->has_been_checked = h->has_been_checked();
     if (h->get_name().empty())
-      throw(exceptions::msg() << "unnamed host");
+      throw(msg_fmt("unnamed host"));
     {
       host_status->host_id = engine::get_host_id(h->get_name());
       if (host_status->host_id == 0)
-        throw(exceptions::msg()
-              << "could not find ID of host '" << h->get_name() << "'");
+        throw(msg_fmt(
+              "could not find ID of host '", h->get_name(), "'"));
     }
     host_status->is_flapping = h->get_is_flapping();
     host_status->last_check = h->get_last_check();
@@ -1538,7 +1542,7 @@ int neb::callback_process(int callback_type, void* data) {
 
         // Set variables.
         statistics_interval = gl_generator.interval();
-      } catch (exceptions::msg const& e) {
+      } catch (msg_fmt const& e) {
         logging::config(logging::high) << e.what();
         return 0;
       }
@@ -1933,9 +1937,9 @@ int neb::callback_service_check(int callback_type, void* data) {
       service_check->command_line =
           misc::string::check_string_utf8(scdata->command_line);
       if (!scdata->host_id)
-        throw exceptions::msg() << "host without id";
+        throw msg_fmt("host without id");
       if (!scdata->service_id)
-        throw exceptions::msg() << "service without id";
+        throw msg_fmt("service without id");
       service_check->host_id = scdata->host_id;
       service_check->service_id = scdata->service_id;
       service_check->next_check = s->get_next_check();
@@ -2038,9 +2042,9 @@ int neb::callback_service_status(int callback_type, void* data) {
           misc::string::check_string_utf8(s->get_perf_data());
     service_status->retry_interval = s->get_retry_interval();
     if (s->get_hostname().empty())
-      throw exceptions::msg() << "unnamed host";
+      throw msg_fmt("unnamed host");
     if (s->get_description().empty())
-      throw exceptions::msg() << "unnamed service";
+      throw msg_fmt("unnamed service");
     service_status->host_name =
         misc::string::check_string_utf8(s->get_hostname());
     service_status->service_description =
@@ -2051,9 +2055,9 @@ int neb::callback_service_status(int callback_type, void* data) {
       service_status->host_id = p.first;
       service_status->service_id = p.second;
       if (!service_status->host_id || !service_status->service_id)
-        throw exceptions::msg()
-            << "could not find ID of service ('" << service_status->host_name
-            << "', '" << service_status->service_description << "')";
+        throw msg_fmt(
+            "could not find ID of service ('", service_status->host_name,
+            "', '", service_status->service_description, "')");
     }
     service_status->should_be_scheduled = s->get_should_be_scheduled();
     service_status->state_type =

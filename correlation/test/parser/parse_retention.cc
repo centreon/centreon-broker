@@ -24,7 +24,6 @@
 #include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/parser/common.hh"
 
 using namespace com::centreon::broker;

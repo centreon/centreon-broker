@@ -22,7 +22,6 @@
 #include <memory>
 
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/sql/connector.hh"
 
 using namespace com::centreon::broker;

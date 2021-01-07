@@ -21,11 +21,12 @@
 #include <memory>
 #include <sstream>
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/graphite/connector.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::graphite;
+using namespace com::centreon::exceptions;
 
 /**************************************
  *                                     *
@@ -45,8 +46,8 @@ static std::string find_param(config::endpoint const& cfg,
                               std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw exceptions::msg() << "graphite: no '" << key
-                            << "' defined for endpoint '" << cfg.name << "'";
+    throw msg_fmt("graphite: no '{}' defined for endpoint '{}'", key,
+                   cfg.name);
   return it->second;
 }
 
@@ -88,8 +89,8 @@ static uint32_t get_uint_param(config::endpoint const& cfg,
     try {
       return std::stoul(it->second);
     } catch (std::exception const& ex) {
-      throw exceptions::msg() << "graphite: '" << key
-                              << "' must be numeric for endpoint '" << cfg.name << "'";
+      throw msg_fmt("graphite: '{}' must be numeric for endpoint '{}'",
+                     key, cfg.name);
     }
   }
 

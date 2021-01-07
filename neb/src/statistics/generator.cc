@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -54,6 +54,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::exceptions;
 
 /**
  *  Default constructor.
@@ -149,9 +150,9 @@ void generator::add(uint32_t host_id,
                     uint32_t service_id,
                     std::shared_ptr<plugin> plugin) {
   if (!host_id)
-    throw(exceptions::msg() << "stats: invalid plugin host id");
+    throw(msg_fmt("stats: invalid plugin host id"));
   if (!service_id)
-    throw(exceptions::msg() << "stats: invalid plugin service id");
+    throw(msg_fmt("stats: invalid plugin service id"));
 
   std::pair<uint32_t, uint32_t> ids(
       std::make_pair(host_id, service_id));
@@ -172,7 +173,7 @@ void generator::add(uint32_t host_id,
   std::map<std::string, std::shared_ptr<plugin> >::const_iterator it(
       _plugins.find(name));
   if (it == _plugins.end())
-    throw(exceptions::msg() << "stats: invalid plugin name");
+    throw(msg_fmt("stats: invalid plugin name"));
   add(host_id, service_id, it->second);
   return;
 }

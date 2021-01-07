@@ -21,7 +21,6 @@
 
 #include <fmt/format.h>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/stream.hh"

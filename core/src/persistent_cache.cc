@@ -22,10 +22,11 @@
 #include <cstring>
 #include <fstream>
 #include "com/centreon/broker/bbdo/stream.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/opener.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 /**
@@ -52,8 +53,7 @@ persistent_cache::~persistent_cache() {}
  */
 void persistent_cache::add(std::shared_ptr<io::data> const& d) {
   if (!_write_file)
-    throw(exceptions::msg() << "core: cache file '" << _cache_file
-                            << "' is not open for writing");
+    throw(msg_fmt("core: cache file '{}' is not open for writing", _cache_file));
   _write_file->write(d);
   return;
 }
@@ -72,15 +72,17 @@ void persistent_cache::commit() {
     _read_file.reset();
     if (::rename(_cache_file.c_str(), _old_file().c_str())) {
       char const* msg(strerror(errno));
-      throw(exceptions::msg()
-            << "core: cache file '" << _cache_file
-            << "' could not be renamed to '" << _old_file() << "': " << msg);
+      throw(msg_fmt(
+            "core: cache file '{}' could not be renamed to '{}' : {}",
+            _cache_file,
+            _old_file(), 
+            msg));
     } else if (::rename(_new_file().c_str(), _cache_file.c_str())) {
       // .old file will be renamed by the _open() method.
       char const* msg(strerror(errno));
-      throw(exceptions::msg()
-            << "core: cache file '" << _new_file()
-            << "' could not be renamed to '" << _cache_file << "': " << msg);
+      throw(msg_fmt(
+            "core: cache file '{}' could not be renamed to '{}' : {}",
+            _new_file(),  _cache_file, msg));
     }
     // No error checking, this is a secondary issue.
     ::remove(_old_file().c_str());
@@ -122,8 +124,7 @@ void persistent_cache::rollback() {
  */
 void persistent_cache::transaction() {
   if (_write_file)
-    throw(exceptions::msg() << "core: cache file '" << _cache_file
-                            << "' is already open for writing");
+    throw(msg_fmt("core: cache file '{}' is already open for writing", _cache_file));
   file::opener opnr;
   opnr.set_filename(_new_file());
   opnr.set_auto_delete(false);

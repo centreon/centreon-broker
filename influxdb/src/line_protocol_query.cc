@@ -19,12 +19,13 @@
 #include "com/centreon/broker/influxdb/line_protocol_query.hh"
 #include <algorithm>
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
+using namespace com::centreon::exceptions;
 
 /**
  *  Create an empty query.
@@ -175,8 +176,8 @@ std::string line_protocol_query::escape_value(std::string const& str) {
  */
 std::string line_protocol_query::generate_metric(storage::metric const& me) {
   if (_type != metric)
-    throw(exceptions::msg() << "influxdb: attempt to generate metric"
-                               " with a query of the bad type");
+    throw(msg_fmt("influxdb: attempt to generate metric"
+                  " with a query of the bad type"));
   _string_index = 0;
   std::ostringstream iss;
   try {
@@ -210,8 +211,8 @@ std::string line_protocol_query::generate_metric(storage::metric const& me) {
  */
 std::string line_protocol_query::generate_status(storage::status const& st) {
   if (_type != status)
-    throw(exceptions::msg() << "influxdb: attempt to generate status"
-                               " with a query of the bad type");
+    throw(msg_fmt("influxdb: attempt to generate status"
+                  " with a query of the bad type"));
   _string_index = 0;
   std::ostringstream iss;
   try {
@@ -283,9 +284,9 @@ void line_protocol_query::_compile_scheme(
 
     if ((end_macro = scheme.find_first_of('$', found_macro + 1)) ==
         std::string::npos)
-      throw(exceptions::msg()
-            << "influxdb: can't compile query, opened macro not closed: '"
-            << scheme.substr(found_macro) << "'");
+      throw(msg_fmt(
+            "influxdb: can't compile query, opened macro not closed: '{}'",
+            scheme.substr(found_macro)));
 
     std::string macro(scheme.substr(found_macro, end_macro + 1 - found_macro));
     if (macro == "$$")
@@ -358,7 +359,7 @@ void line_protocol_query::_compile_scheme(
  */
 void line_protocol_query::_throw_on_invalid(data_type macro_type) {
   if (macro_type != _type)
-    throw(exceptions::msg() << "influxdb: macro of invalid type");
+    throw(msg_fmt("influxdb: macro of invalid type"));
 }
 
 /**

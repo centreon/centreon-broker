@@ -17,12 +17,13 @@
 */
 
 #include "com/centreon/broker/generator/receiver.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/generator/dummy.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::generator;
+using namespace com::centreon::exceptions;
 
 /**
  *  Constructor.
@@ -72,10 +73,10 @@ int receiver::write(std::shared_ptr<io::data> const& d) {
     // Check current number.
     ++(it->second);
     if (e.number > it->second)
-      throw(exceptions::msg()
-            << "invalid sequence number for Centreon Broker instance "
-            << e.source_id << ": got " << e.number << ", expected "
-            << it->second);
+      throw(msg_fmt(
+            "invalid sequence number for Centreon Broker instance {} got {},
+             expected {}",
+            e.source_id , e.number, it->second));
     it->second = e.number;
   }
   return (1);

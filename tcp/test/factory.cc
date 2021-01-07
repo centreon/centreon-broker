@@ -21,7 +21,9 @@
 #include <gtest/gtest.h>
 #include <com/centreon/broker/exceptions/msg.hh>
 #include <com/centreon/broker/tcp/acceptor.hh>
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 TEST(TcpFactory, HasEndpoint) {
@@ -46,7 +48,7 @@ TEST(TcpFactory, Exception) {
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 
-  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), msg_fmt);
 }
 
 TEST(TcpFactory, Acceptor) {
@@ -74,7 +76,7 @@ TEST(TcpFactory, BadPort) {
 
   cfg.params["port"] = "a4a343";
   cfg.params["host"] = "10.12.13.22";
-  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), msg_fmt);
 }
 
 TEST(TcpFactory, BadHost) {
@@ -85,10 +87,10 @@ TEST(TcpFactory, BadHost) {
 
   cfg.params["port"] = "4343";
   cfg.params["host"] = " 10.12.13.22";
-  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), msg_fmt);
 
   cfg.params["host"] = "10.12.13.22 ";
-  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), msg_fmt);
 }
 
 TEST(TcpFactory, Connector) {

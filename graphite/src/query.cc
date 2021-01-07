@@ -19,11 +19,12 @@
 #include "com/centreon/broker/graphite/query.hh"
 #include <algorithm>
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::graphite;
 
 /**
@@ -55,8 +56,8 @@ query::query(std::string const& naming_scheme,
  */
 std::string query::generate_metric(storage::metric const& me) {
   if (_type != metric)
-    throw (exceptions::msg() << "graphite: attempt to generate metric"
-                                " with a query of the bad type");
+    throw (msg_fmt("graphite: attempt to generate metric"
+                   " with a query of the bad type"));
   _naming_scheme_index = 0;
   std::ostringstream iss;
   std::ostringstream tmp;
@@ -93,8 +94,8 @@ std::string query::generate_metric(storage::metric const& me) {
  */
 std::string query::generate_status(storage::status const& st) {
   if (_type != status)
-    throw (exceptions::msg() << "graphite: attempt to generate status"
-                                " with a query of the bad type");
+    throw (msg_fmt("graphite: attempt to generate status"
+                   " with a query of the bad type"));
   _naming_scheme_index = 0;
   std::ostringstream iss;
   std::ostringstream tmp;
@@ -145,9 +146,9 @@ void query::_compile_naming_scheme(std::string const& naming_scheme,
 
     if ((end_macro = naming_scheme.find_first_of('$', found_macro + 1)) ==
       std::string::npos)
-      throw exceptions::msg()
-        << "graphite: can't compile query, opened macro not closed: '"
-        << naming_scheme.substr(found_macro) << "'";
+      throw msg_fmt(
+        "graphite: can't compile query, opened macro not closed: '{}'",
+        naming_scheme.substr(found_macro));
 
     std::string macro{
       naming_scheme.substr(found_macro, end_macro + 1 - found_macro)};
@@ -214,7 +215,7 @@ std::string query::_escape(std::string const& str) {
  */
 void query::_throw_on_invalid(data_type macro_type) {
   if (macro_type != _type)
-    throw exceptions::msg() << "graphite: macro of invalid type";
+    throw msg_fmt("graphite: macro of invalid type");
 }
 
 /*

@@ -23,7 +23,9 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "../../core/test/test_server.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 class graphiteStream : public testing::Test {
@@ -46,7 +48,9 @@ class graphiteStream : public testing::Test {
 TEST_F(graphiteStream, BadPort) {
   std::shared_ptr<persistent_cache> cache;
 
-  ASSERT_THROW(graphite::stream st("metric_name", "status_name", "a", "user", "pass", "localhost", 4243, 3, cache), exceptions::msg);
+  ASSERT_THROW(graphite::stream st("metric_name", "status_name", "a", 
+                                   "user", "pass", "localhost", 4243, 3, cache),
+                                   msg_fmt);
 }
 
 TEST_F(graphiteStream, Read) {

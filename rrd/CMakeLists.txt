@@ -22,6 +22,7 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/rrd/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/rrd/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # Find librrd.
 include(FindPkgConfig)

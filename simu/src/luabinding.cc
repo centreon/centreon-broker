@@ -20,13 +20,14 @@
 #include <cassert>
 #include <fstream>
 #include <memory>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::simu;
 
@@ -100,27 +101,27 @@ void luabinding::_load_script() {
   // script loading
   if (luaL_loadfile(_L, _lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
-    throw exceptions::msg()
-        << "simu: '" << _lua_script << "' could not be loaded: " << error_msg;
+    throw msg_fmt(
+        "simu: '{}' could not be loaded: {}", _lua_script, error_msg);
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
-    throw exceptions::msg()
-        << "simu: '" << _lua_script << "' could not be compiled";
+    throw msg_fmt(
+        "simu: '{}' could not be compiled", _lua_script);
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw exceptions::msg()
-        << "simu: '" << _lua_script << "' init() global function is missing";
+    throw msg_fmt(
+        "simu: '{}' init() global function is missing", _lua_script);
 
   // Checking for read() availability: this function is mandatory
   lua_getglobal(_L, "read");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw exceptions::msg()
-        << "simu: '" << _lua_script << "' read() global function is missing";
+    throw msg_fmt(
+        "simu: '{}' read() global function is missing", _lua_script);
 }
 
 /**
@@ -168,8 +169,8 @@ void luabinding::_init_script(
     }
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
-    throw exceptions::msg()
-        << "simu: error running function `init'" << lua_tostring(_L, -1);
+    throw msg_fmt(
+        "simu: error running function `init' {} ", lua_tostring(_L, -1));
 }
 
 /**
@@ -190,17 +191,17 @@ bool luabinding::read(std::shared_ptr<io::data>& data) {
   lua_getglobal(_L, "read");
 
   if (lua_pcall(_L, 0, 1, 0) != 0)
-    throw exceptions::msg()
-        << "simu: error running function `read' " << lua_tostring(_L, -1);
+    throw msg_fmt(
+        "simu: error running function `read' {} ", lua_tostring(_L, -1));
 
   if (lua_istable(_L, -1))
     retval = _parse_event(data);
   else if (lua_isnil(_L, -1))
     lua_pop(_L, -1);
   else {
-    throw exceptions::msg()
-        << "simu: `read' must return a table or a nil value ("
-        << lua_type(_L, -1) << " type return)";
+    throw msg_fmt(
+        "simu: `read' must return a table or a nil value ({})"
+         " type return)", lua_type(_L, -1));
   }
 
   return retval;
@@ -245,8 +246,8 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
       else if (lua_isstring(_L, -1))
         map.insert({key, misc::variant(lua_tostring(_L, -1))});
       else
-        throw exceptions::msg() << "simu: item with key " << key
-                                << " is not supported for a broker event";
+        throw msg_fmt("simu: item with key {}"
+                      " is not supported for a broker event", key);
     }
     lua_pop(_L, 1);  // remove value, keep key for lua_next
   }
@@ -291,18 +292,20 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
               current_entry->set_uint(*t, it->second.as_ulong());
               break;
             default:
-              throw exceptions::msg() << "simu: invalid mapping for "
-                                      << "object of type '" << info->get_name()
-                                      << "': " << current_entry->get_type()
-                                      << " is not a known type ID";
+              throw msg_fmt("simu: invalid mapping for "
+                              "object of type '{}"
+                              "': {}"
+                              " is not a known type ID", 
+                              info->get_name(),
+                              current_entry->get_type());
           }
         }
       }
       d.reset(t.release());
     } else
-      throw exceptions::msg()
-          << "simu: cannot create object of ID " << map["_type"].as_int()
-          << " whereas it has been registered";
+      throw msg_fmt(
+          "simu: cannot create object of ID {}"
+          " whereas it has been registered", map["_type"].as_int());
   } else {
     logging::info(logging::high)
         << "simu: cannot unserialize event of ID " << map["_type"].as_uint()

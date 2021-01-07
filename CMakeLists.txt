@@ -46,6 +46,7 @@ if (WITH_ASAN)
 endif ()
 
 include_directories("${PROJECT_SOURCE_DIR}/core/inc")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")

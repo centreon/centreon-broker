@@ -17,9 +17,10 @@
 */
 
 #include "com/centreon/broker/influxdb/macro_cache.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
@@ -66,8 +67,8 @@ storage::index_mapping const& macro_cache::get_index_mapping(uint64_t index_id)
     const {
   auto const found = _index_mappings.find(index_id);
   if (found == _index_mappings.end())
-    throw exceptions::msg() << "influxdb: could not find host/service of index "
-                            << index_id;
+    throw msg_fmt("influxdb: could not find host/service of index {} ",
+                  index_id);
   return *found->second;
 }
 
@@ -82,8 +83,8 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
     uint64_t metric_id) const {
   auto const found = _metric_mappings.find(metric_id);
   if (found == _metric_mappings.end())
-    throw exceptions::msg() << "influxdb: could not find index of metric "
-                            << metric_id;
+    throw msg_fmt("influxdb: could not find index of metric {} ",
+                   metric_id);
   return *found->second;
 }
 
@@ -97,8 +98,8 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
 std::string const& macro_cache::get_host_name(uint64_t host_id) const {
   auto const found = _hosts.find(host_id);
   if (found == _hosts.end())
-    throw exceptions::msg() << "influxdb: could not find information on host "
-                            << host_id;
+    throw msg_fmt("influxdb: could not find information on host {} ",
+                   host_id);
   return found->second->host_name;
 }
 
@@ -115,9 +116,10 @@ std::string const& macro_cache::get_service_description(uint64_t host_id,
     const {
   auto const found = _services.find({host_id, service_id});
   if (found == _services.end())
-    throw exceptions::msg()
-        << "influxdb: could not find information on service (" << host_id
-        << ", " << service_id << ")";
+    throw msg_fmt(
+        "influxdb: could not find information on service ({}, {})",
+        host_id,
+        service_id);
   return found->second->service_description;
 }
 
@@ -131,8 +133,8 @@ std::string const& macro_cache::get_service_description(uint64_t host_id,
 std::string const& macro_cache::get_instance(uint64_t instance_id) const {
   auto const found = _instances.find(instance_id);
   if (found == _instances.end())
-    throw exceptions::msg()
-        << "influxdb: could not find information on instance " << instance_id;
+    throw msg_fmt(
+        "influxdb: could not find information on instance {}", instance_id);
   return found->second->name;
 }
 
