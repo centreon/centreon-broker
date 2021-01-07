@@ -11,6 +11,11 @@ log file configuration
 log file configuration is applied even if the configuration contains errors.
 Now '.' is allowed in names.
 
+broker termination
+==================
+When broker is badly configured and the user wants to stop it, it may hang and
+never stop. This new version fixes this issue.
+
 ========================
 Centreon Broker 20.04.12
 ========================
