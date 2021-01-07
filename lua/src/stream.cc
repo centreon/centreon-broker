@@ -161,9 +161,7 @@ stream::stream(std::string const& lua_script,
     delete lb;
   });
 
-  init_cv.wait(lock, [&configured] {
-      return configured;
-  });
+  init_cv.wait(lock, [&configured] { return configured; });
   if (fail) {
     _thread.join();
     throw exceptions::msg() << fail_msg;

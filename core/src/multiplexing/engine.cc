@@ -306,8 +306,8 @@ engine::engine()
  *  @return Path to the multiplexing engine cache file.
  */
 std::string engine::_cache_file_path() const {
-  std::string retval(fmt::format("{}.unprocessed",
-  config::applier::state::instance().cache_dir()));
+  std::string retval(fmt::format(
+      "{}.unprocessed", config::applier::state::instance().cache_dir()));
   return retval;
 }
 

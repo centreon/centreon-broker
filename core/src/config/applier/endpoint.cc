@@ -119,7 +119,8 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
     for (auto& ep : endpoints)
       eps.push_back(ep.name);
     log_v2::core()->debug("endpoint applier: {} endpoints to apply: {}",
-                          endpoints.size(), fmt::format("{}", fmt::join(eps, ", ")));
+                          endpoints.size(),
+                          fmt::format("{}", fmt::join(eps, ", ")));
   }
 
   // Copy endpoint configurations and apply eventual modifications.
@@ -184,7 +185,10 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       }
 
       // Run thread.
-      log_v2::config()->debug("endpoint applier: endpoint thread {} of '{}' is registered and ready to run", static_cast<void*>(endp.get()), ep.name);
+      log_v2::config()->debug(
+          "endpoint applier: endpoint thread {} of '{}' is registered and "
+          "ready to run",
+          static_cast<void*>(endp.get()), ep.name);
       endp.release()->start();
     }
   }

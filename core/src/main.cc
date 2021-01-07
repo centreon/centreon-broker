@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <getopt.h>
 #include <cerrno>
 #include <chrono>
 #include <clocale>
@@ -24,7 +25,6 @@
 #include <cstring>
 #include <exception>
 #include <thread>
-#include <getopt.h>
 
 #include "com/centreon/broker/brokerrpc.hh"
 #include "com/centreon/broker/config/applier/init.hh"
@@ -34,9 +34,9 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
+#include "com/centreon/broker/pool.hh"
 
 using namespace com::centreon::broker;
 
@@ -50,15 +50,13 @@ using namespace com::centreon::broker;
 static std::vector<std::string> gl_mainconfigfiles;
 static config::state gl_state;
 
-static struct option long_options[] = {
-  {"pool_size",   required_argument, 0, 's'},
-  {"check",       no_argument,       0, 'c'},
-  {"debug",       no_argument,       0, 'd'},
-  {"diagnose",    no_argument,       0, 'D'},
-  {"version",     no_argument,       0, 'v'},
-  {"help",        no_argument,       0, 'h'},
-  {0, 0, 0, 0}
-};
+static struct option long_options[] = {{"pool_size", required_argument, 0, 's'},
+                                       {"check", no_argument, 0, 'c'},
+                                       {"debug", no_argument, 0, 'd'},
+                                       {"diagnose", no_argument, 0, 'D'},
+                                       {"version", no_argument, 0, 'v'},
+                                       {"help", no_argument, 0, 'h'},
+                                       {0, 0, 0, 0}};
 
 /**
  *  Function called when updating configuration (when program receives
@@ -82,7 +80,7 @@ static void hup_handler(int signum) {
     config::state conf{parsr.parse(gl_mainconfigfiles.front())};
     std::string err;
     if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-          conf.broker_name(), err))
+                                 conf.broker_name(), err))
       logging::error(logging::low) << err;
 
     try {
@@ -172,8 +170,7 @@ int main(int argc, char* argv[]) {
     bool help(false);
     bool version(false);
 
-    opt = getopt_long (argc, argv, "p:cdDvh",
-                        long_options, &option_index);
+    opt = getopt_long(argc, argv, "p:cdDvh", long_options, &option_index);
     switch (opt) {
       case 'p':
         n_thread = atoi(optarg);
@@ -200,8 +197,6 @@ int main(int argc, char* argv[]) {
     if (optind < argc)
       while (optind < argc)
         gl_mainconfigfiles.push_back(argv[optind++]);
-      
-    
 
     // Apply default configuration.
     config::state default_state;
@@ -241,7 +236,8 @@ int main(int argc, char* argv[]) {
       diag.generate(gl_mainconfigfiles);
     } else if (help) {
       logging::info(logging::high)
-          << "USAGE: " << argv[0] << " [-t] [-c] [-d] [-D] [-h] [-v] [<configfile>]";
+          << "USAGE: " << argv[0]
+          << " [-t] [-c] [-d] [-D] [-h] [-v] [<configfile>]";
       logging::info(logging::high) << "  -t  Set x threads.";
       logging::info(logging::high) << "  -c  Check configuration file.";
       logging::info(logging::high) << "  -d  Enable debug mode.";
@@ -261,8 +257,9 @@ int main(int argc, char* argv[]) {
       retval = 0;
     } else if (gl_mainconfigfiles.empty()) {
       logging::error(logging::high)
-          << "USAGE: " << argv[0] << " [-c] [-d] [-D] [-h] [-v] [<configfile>]\n\n";
-        return 1;
+          << "USAGE: " << argv[0]
+          << " [-c] [-d] [-D] [-h] [-v] [<configfile>]\n\n";
+      return 1;
     } else {
       logging::info(logging::medium)
           << "Centreon Broker " << CENTREON_BROKER_VERSION;
@@ -280,7 +277,7 @@ int main(int argc, char* argv[]) {
         config::state conf{parsr.parse(gl_mainconfigfiles.front())};
         std::string err;
         if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-              conf.broker_name(), err))
+                                     conf.broker_name(), err))
           logging::error(logging::low) << err;
 
         // Verification modifications.
@@ -293,9 +290,9 @@ int main(int argc, char* argv[]) {
           conf.loggers().push_back(default_state.loggers().front());
         }
 
-        if (n_thread > 0 && n_thread < 100) 
+        if (n_thread > 0 && n_thread < 100)
           pool::set_size(n_thread);
-        else 
+        else
           pool::set_size(conf.pool_size());
 
         // Add debug output if in debug mode.

@@ -127,7 +127,7 @@ static void escape_str(const char* content, std::ostringstream& oss) {
 }
 
 static void broker_json_encode_broker_event(std::shared_ptr<io::data> e,
-                                     std::ostringstream& oss) {
+                                            std::ostringstream& oss) {
   io::event_info const* info = io::events::instance().get_event_info(e->type());
   if (info) {
     oss << fmt::format("{{ \"_type\": {}, \"category\": {}, \"element\": {}",

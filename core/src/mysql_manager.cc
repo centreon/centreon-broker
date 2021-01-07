@@ -39,8 +39,7 @@ mysql_manager& mysql_manager::instance() {
 /**
  *  The default constructor
  */
-mysql_manager::mysql_manager()
-    : _stats_connections_timestamp(time(nullptr)) {
+mysql_manager::mysql_manager() : _stats_connections_timestamp(time(nullptr)) {
   log_v2::sql()->trace("mysql_manager instanciation");
 }
 
