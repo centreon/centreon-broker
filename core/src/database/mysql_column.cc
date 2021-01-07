@@ -21,7 +21,6 @@
 #include <cassert>
 #include <cstring>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;

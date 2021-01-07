@@ -25,7 +25,6 @@
 #include <iostream>
 
 #include "com/centreon/broker/database/mysql_column.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/mysql.hh"

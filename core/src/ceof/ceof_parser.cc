@@ -26,12 +26,12 @@ using namespace com::centreon::broker::ceof;
  *
  *  @param[in] str  The string to parse.
  */
-ceof_parser::ceof_parser(std::string const& str) : _string(str) {}
+ceof_parser::ceof_parser(const std::string& str) : _string(str) {}
 
 /**
  *  Destructor.
  */
-ceof_parser::~ceof_parser() throw() {}
+ceof_parser::~ceof_parser() noexcept {}
 
 /**
  *  Skip comments and whitespaces.
@@ -39,7 +39,7 @@ ceof_parser::~ceof_parser() throw() {}
  *  @param[in,out] actual  The actual index.
  */
 static void skip(size_t& actual,
-                 std::string const& string,
+                 const std::string& string,
                  const char* characters) {
   actual = string.find_first_not_of(characters, actual);
   if (actual == std::string::npos)
