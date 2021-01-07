@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/ceof/ceof_serializer.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::ceof;
 

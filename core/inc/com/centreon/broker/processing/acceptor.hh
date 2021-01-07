@@ -53,6 +53,7 @@ class acceptor : public endpoint {
     running,
     finished
   };
+
   std::thread _thread;
   state _state;
   mutable std::mutex _state_m;

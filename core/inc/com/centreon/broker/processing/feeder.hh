@@ -64,9 +64,10 @@ class feeder : public stat_visitable {
   void _callback() noexcept;
 
  protected:
-  std::string const& _get_read_filters() const override;
-  std::string const& _get_write_filters() const override;
+  const std::string& _get_read_filters() const override;
+  const std::string& _get_write_filters() const override;
   void _forward_statistic(json11::Json::object& tree) override;
+  uint32_t _get_queued_events() const override;
 
  public:
   feeder(std::string const& name,
@@ -74,13 +75,10 @@ class feeder : public stat_visitable {
          std::unordered_set<uint32_t> const& read_filters,
          std::unordered_set<uint32_t> const& write_filters);
   ~feeder();
-  feeder(feeder const&) = delete;
-  feeder& operator=(feeder const&) = delete;
+  feeder(const feeder&) = delete;
+  feeder& operator=(const feeder&) = delete;
   bool is_finished() const noexcept;
   const char* get_state() const;
-
- protected:
-  uint32_t _get_queued_events() const override;
 };
 }  // namespace processing
 

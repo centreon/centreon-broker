@@ -52,6 +52,9 @@ namespace io {
 class stream {
   const std::string _name;
 
+ protected:
+  std::shared_ptr<stream> _substream;
+
  public:
   stream(const std::string& name);
   virtual ~stream() noexcept;
@@ -68,9 +71,6 @@ class stream {
   bool validate(std::shared_ptr<io::data> const& d, std::string const& error);
   virtual int write(std::shared_ptr<data> const& d) = 0;
   const std::string& get_name() const { return _name; }
-
- protected:
-  std::shared_ptr<stream> _substream;
 };
 }  // namespace io
 

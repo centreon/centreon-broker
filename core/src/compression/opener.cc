@@ -23,12 +23,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
@@ -77,12 +71,6 @@ void opener::set_level(int level) {
 void opener::set_size(uint32_t size) {
   _size = size;
 }
-
-/**************************************
- *                                     *
- *          Private Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Open a compression stream.
