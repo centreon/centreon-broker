@@ -22,6 +22,7 @@
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
+#include <fmt/format.h>
 #include <fstream>
 #include <json11.hpp>
 
@@ -78,7 +79,7 @@ static auto json_validate = [](Json const& js) -> bool {
   return true;
 };
 
-bool log_v2::load(std::string const& file,
+bool log_v2::load(const char* file,
                   std::string const& broker_name,
                   std::string& err) {
   std::lock_guard<std::mutex> lock(_load_m);
@@ -106,7 +107,7 @@ bool log_v2::load(std::string const& file,
           sinks.push_back(
               std::make_shared<sinks::basic_file_sink_mt>(log_name));
         } catch (...) {
-          err = "log_v2 cannot log on '" + log_name + "'";
+          err = fmt::format("log_v2 cannot log on '{}'", log_name);
           return false;
         }
       }
@@ -150,11 +151,11 @@ bool log_v2::load(std::string const& file,
       return true;
     }
 
-    err = "bad format for config file '" + file + "'";
+    err = fmt::format("bad format for config file '{}'", file);
     return false;
   }
 
-  err = "file '" + file + "' does not exist";
+  err = fmt::format("file '{}' does not exist", file);
   return false;
 }
 

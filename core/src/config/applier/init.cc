@@ -36,22 +36,18 @@
 
 using namespace com::centreon::broker;
 
-/**************************************
- *                                     *
- *           Global Functions          *
- *                                     *
- **************************************/
+std::atomic<config::applier::applier_state> config::applier::state{not_started};
 
 /**
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
+  state = finished;
   config::applier::endpoint::unload();
   config::applier::logger::unload();
   config::applier::state::unload();
   bbdo::unload();
   compression::unload();
-  //extcmd::unload();
   file::unload();
   multiplexing::engine::instance().clear();
   config::applier::modules::unload();
@@ -70,11 +66,11 @@ void config::applier::init() {
   io::protocols::load();
   config::applier::modules::load();
   file::load();
-  //extcmd::load();
   instance_broadcast::load();
   compression::load();
   bbdo::load();
   config::applier::logger::load();
   config::applier::endpoint::load();
   config::applier::state::load();
+  state = initialized;
 }

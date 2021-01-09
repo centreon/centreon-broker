@@ -41,8 +41,84 @@ using my_error = database::mysql_error;
  * "com/centreon/broker/mysql_connection.hh"
  *  @brief Class representing a thread connected to the mysql server
  *
+ *  mysql_connection classes are instanciated by the mysql_manager and then
+ *  shared with the mysql objects asking for them. The developer has not to
+ *  deal directly with mysql_connection. The are private objects of the mysql
+ *  object.
+ *
+ *  When a query is asked through the mysql object, the developer sets a
+ *  connection number (an index of the connection indexed from 0) or -1. With
+ *  -1, the mysql object chooses the connection that has the least tasks.
+ *  Then it sends the query to the good connection.
+ *
+ *  Queries in a connection are done asynchronously. We know when we ask for
+ *  them, we don't know when we will have them. If a query A is sent before
+ *  a query B, then A will be sent to the database before B.
+ *
+ *  A connection works with a list. Each query is pushed back on it. An internal
+ *  thread pops them one by one to send to the database.
  */
 class mysql_connection {
+ public:
+  enum connection_state { not_started, running, finished };
+
+ private:
+  std::unique_ptr<std::thread> _thread;
+  MYSQL* _conn;
+
+  // Mutex and condition working on _tasks_list.
+  std::mutex _list_mutex;
+  std::condition_variable _tasks_condition;
+  std::atomic<bool> _finished;
+  std::list<std::shared_ptr<database::mysql_task>> _tasks_list;
+  std::atomic_int _tasks_count;
+  bool _need_commit;
+
+  std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
+  std::unordered_map<uint32_t, std::string> _stmt_query;
+
+  // Mutex and condition working on result and error_msg.
+  std::mutex _result_mutex;
+  std::condition_variable _result_condition;
+
+  // Mutex to access the configuration
+  mutable std::mutex _cfg_mutex;
+  std::string _host;
+  std::string _user;
+  std::string _pwd;
+  std::string _name;
+  int _port;
+  connection_state _state;
+  uint32_t _qps;
+
+  /* mutex to protect the string access in _error */
+  mutable std::mutex _error_m;
+  database::mysql_error _error;
+  /**************************************************************************/
+  /*                    Methods executed by this thread                     */
+  /**************************************************************************/
+
+  bool _server_error(int code) const;
+  void _run();
+  std::string _get_stack();
+  void _query(database::mysql_task* t);
+  void _query_res(database::mysql_task* t);
+  void _query_int(database::mysql_task* t);
+  void _commit(database::mysql_task* t);
+  void _prepare(database::mysql_task* t);
+  void _statement(database::mysql_task* t);
+  void _statement_res(database::mysql_task* t);
+  template <typename T>
+  void _statement_int(database::mysql_task* t);
+  void _get_result_sync(database::mysql_task* task);
+  void _fetch_row_sync(database::mysql_task* task);
+  void _finish(database::mysql_task* task);
+  void _push(std::shared_ptr<database::mysql_task> const& q);
+  void _debug(MYSQL_BIND* bind, uint32_t size);
+
+  static void (mysql_connection::*const _task_processing_table[])(
+      database::mysql_task* task);
+
  public:
   /**************************************************************************/
   /*                  Methods executed by the main thread                   */
@@ -94,66 +170,6 @@ class mysql_connection {
     if (!_error.is_active())
       _error.set_message(fmt, args...);
   }
-
- private:
-  /**************************************************************************/
-  /*                    Methods executed by this thread                     */
-  /**************************************************************************/
-
-  bool _server_error(int code) const;
-  void _run();
-  std::string _get_stack();
-  void _query(database::mysql_task* t);
-  void _query_res(database::mysql_task* t);
-  void _query_int(database::mysql_task* t);
-  void _commit(database::mysql_task* t);
-  void _prepare(database::mysql_task* t);
-  void _statement(database::mysql_task* t);
-  void _statement_res(database::mysql_task* t);
-  template <typename T>
-  void _statement_int(database::mysql_task* t);
-  void _get_result_sync(database::mysql_task* task);
-  void _fetch_row_sync(database::mysql_task* task);
-  void _finish(database::mysql_task* task);
-  void _push(std::shared_ptr<database::mysql_task> const& q);
-  void _debug(MYSQL_BIND* bind, uint32_t size);
-
-  static void (mysql_connection::*const _task_processing_table[])(
-      database::mysql_task* task);
-
-  std::unique_ptr<std::thread> _thread;
-  MYSQL* _conn;
-
-  // Mutex and condition working on _tasks_list.
-  std::mutex _list_mutex;
-  std::condition_variable _tasks_condition;
-  std::atomic<bool> _finished;
-  std::list<std::shared_ptr<database::mysql_task>> _tasks_list;
-  std::atomic_int _tasks_count;
-  bool _need_commit;
-
-  std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
-
-  // FIXME DBR: to debug: Logs must be well implemented
-  std::unordered_map<uint32_t, std::string> _stmt_query;
-
-  // Mutex and condition working on result and error_msg.
-  std::mutex _result_mutex;
-  std::condition_variable _result_condition;
-
-  // Mutex to access the configuration
-  mutable std::mutex _cfg_mutex;
-  std::string _host;
-  std::string _user;
-  std::string _pwd;
-  std::string _name;
-  int _port;
-  bool _started;
-  uint32_t _qps;
-
-  /* mutex to protect the string access in _error */
-  mutable std::mutex _error_m;
-  database::mysql_error _error;
 };
 
 CCB_END()

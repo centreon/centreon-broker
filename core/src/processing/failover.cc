@@ -49,7 +49,7 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
     : endpoint(name),
       _should_exit(false),
       _started(false),
-      _stopped(false),
+      _stopped{false},
       _buffering_timeout(0),
       _endpoint(endp),
       _failover_launched(false),
@@ -57,7 +57,9 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
       _next_timeout(0),
       _retry_interval(30),
       _subscriber(sbscrbr),
-      _update(false) {}
+      _update(false) {
+  log_v2::core()->trace("failover '{}' construction.", _name);
+}
 
 /**
  *  Destructor.
@@ -79,6 +81,7 @@ void failover::add_secondary_endpoint(std::shared_ptr<io::endpoint> endp) {
  *  Exit failover thread.
  */
 void failover::exit() {
+  log_v2::core()->trace("failover '{}' exit.", _name);
   std::unique_lock<std::mutex> lock(_stopped_m);
   if (_started) {
     if (!_should_exit) {
@@ -90,6 +93,7 @@ void failover::exit() {
     }
   }
   _subscriber->get_muxer().wake();
+  log_v2::core()->trace("failover '{}' exited.", _name);
 }
 
 /**
@@ -122,7 +126,11 @@ time_t failover::get_retry_interval() const throw() {
 /**
  *  Thread core function.
  */
-void failover::run() {
+void failover::_run() {
+  std::unique_lock<std::mutex> lock_start(_started_m);
+  _started = true;
+  _started_cv.notify_all();
+  lock_start.unlock();
   // Initial log.
   log_v2::processing()->debug("failover: thread of endpoint '{}' is starting",
                               _name);
@@ -133,6 +141,9 @@ void failover::run() {
         << "failover: thread of endpoint '" << _name << "' has no endpoint"
         << " object, this is likely a software bug that should be reported"
         << " to Centreon Broker developers";
+    std::unique_lock<std::mutex> lock_stop(_stopped_m);
+    _stopped = true;
+    _stopped_cv.notify_all();
     return;
   }
 
@@ -148,7 +159,8 @@ void failover::run() {
       {
         std::shared_ptr<io::stream> s(_endpoint->open());
         if (!s)
-          throw exceptions::msg() << "failover: cannot connect endpoint.";
+          throw exceptions::msg()
+              << "failover: '" << _name << "' cannot connect endpoint.";
         {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;
@@ -170,7 +182,7 @@ void failover::run() {
 
         // Wait loop.
         // FIXME SGA: condvar should be more elegant...
-        for (ssize_t i = 0; !should_exit() && i < (_buffering_timeout * 10);
+        for (ssize_t i = 0; !should_exit() && i < _buffering_timeout * 10;
              i++) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
@@ -202,8 +214,8 @@ void failover::run() {
 
       // Shutdown failover.
       if (_failover_launched) {
-        logging::debug(logging::medium)
-            << "failover: shutting down failover of endpoint '" << _name << "'";
+        log_v2::processing()->debug(
+            "failover: shutting down failover of endpoint '{}'", _name);
         _update_status("shutting down failover");
         _failover->exit();
         _failover_launched = false;
@@ -211,8 +223,8 @@ void failover::run() {
       }
 
       // Event processing loop.
-      logging::debug(logging::medium)
-          << "failover: launching event loop of endpoint '" << _name << "'";
+      log_v2::processing()->debug(
+          "failover: launching event loop of endpoint '{}'", _name);
       _subscriber->get_muxer().nack_events();
       bool stream_can_read(true);
       bool muxer_can_read(true);
@@ -239,22 +251,23 @@ void failover::run() {
         d.reset();
         bool timed_out_stream(true);
         if (stream_can_read) {
-          logging::debug(logging::low)
-              << "failover: reading event from endpoint '" << _name << "'";
+          log_v2::processing()->debug(
+              "failover: reading event from endpoint '{}'", _name);
           _update_status("reading event from stream");
           try {
             std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
             timed_out_stream = !_stream->read(d, 0);
           } catch (exceptions::shutdown const& e) {
-            logging::debug(logging::medium)
-                << "failover: stream of endpoint '" << _name
-                << "' shutdown while reading: " << e.what();
+            log_v2::processing()->debug(
+                "failover: stream of endpoint '{}' shutdown while reading: {}",
+                _name, e.what());
             stream_can_read = false;
           }
           if (d) {
-            logging::debug(logging::low)
-                << "failover: writing event of endpoint '" << _name
-                << "' to multiplexing engine";
+            log_v2::processing()->debug(
+                "failover: writing event of endpoint '{}' to multiplexing "
+                "engine",
+                _name);
             _update_status("writing event to multiplexing engine");
             _subscriber->get_muxer().write(d);
             tick();
@@ -268,9 +281,10 @@ void failover::run() {
         d.reset();
         bool timed_out_muxer(true);
         if (muxer_can_read) {
-          logging::debug(logging::low) << "failover: reading event from "
-                                          "multiplexing engine for endpoint '"
-                                       << _name << "'";
+          log_v2::processing()->debug(
+              "failover: reading event from "
+              "multiplexing engine for endpoint '{}'",
+              _name);
           _update_status("reading event from multiplexing engine");
           try {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
@@ -343,15 +357,17 @@ void failover::run() {
     }
     // Some real error occured.
     catch (std::exception const& e) {
-      log_v2::core()->error(e.what());
+      log_v2::core()->error("failover: global error: {}", e.what());
       logging::error(logging::high) << e.what();
       {
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
         set_state("connecting");
       }
-      _launch_failover();
-      _initialized = true;
+      if (!should_exit()) {
+        _launch_failover();
+        _initialized = true;
+      }
     } catch (...) {
       logging::error(logging::high)
           << "failover: endpoint '" << _name
@@ -363,8 +379,10 @@ void failover::run() {
         _stream.reset();
         set_state("connecting");
       }
-      _launch_failover();
-      _initialized = true;
+      if (!should_exit()) {
+        _launch_failover();
+        _initialized = true;
+      }
     }
 
     // Clear stream.
@@ -394,15 +412,18 @@ void failover::run() {
 
   // Exit failover thread if necessary.
   if (_failover) {
-    logging::info(logging::medium)
-        << "failover: requesting termination of failover of endpoint '" << _name
-        << "'";
+    log_v2::processing()->info(
+        "failover: requesting termination of failover of endpoint '{}'", _name);
     _failover->exit();
   }
 
   // Exit log.
-  logging::debug(logging::high)
-      << "failover: thread of endpoint '" << _name << "' is exiting";
+  log_v2::processing()->debug("failover: thread of endpoint '{}' is exiting",
+                              _name);
+
+  std::unique_lock<std::mutex> lock_stop(_stopped_m);
+  _stopped = true;
+  _stopped_cv.notify_all();
 }
 
 /**
@@ -508,12 +529,6 @@ void failover::_forward_statistic(json11::Json::object& tree) {
   tree["failover"] = subtree;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Launch failover of this endpoint.
  */
@@ -546,26 +561,15 @@ uint32_t failover::_get_queued_events() const {
  *  Start the internal thread.
  */
 void failover::start() {
+  log_v2::core()->trace("start failover '{}'.", _name);
   std::unique_lock<std::mutex> lock(_started_m);
   _stopped = false;
   if (!_started) {
     _should_exit = false;
-    _thread = std::thread(&failover::_callback, this);
+    _thread = std::thread(&failover::_run, this);
     _started_cv.wait(lock, [this] { return _started; });
   }
-}
-
-void failover::_callback() {
-  std::unique_lock<std::mutex> lock_start(_started_m);
-  _started = true;
-  _started_cv.notify_all();
-  lock_start.unlock();
-
-  run();
-
-  std::unique_lock<std::mutex> lock_stop(_stopped_m);
-  _stopped = true;
-  _stopped_cv.notify_all();
+  log_v2::core()->trace("failover '{}' started.", _name);
 }
 
 /**

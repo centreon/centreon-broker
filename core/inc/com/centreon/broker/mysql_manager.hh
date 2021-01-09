@@ -33,36 +33,55 @@ CCB_BEGIN()
  * "com/centreon/broker/storage/mysql_manager.hh"
  *  @brief Class managing the mysql thread connections
  *
- *  Here is a mysql threads manager. It creates, destroyes, configures
- * mysql_connections.
+ *  Here is the mysql connection manager. It creates, destroyes, configures
+ * mysql_connections. It is used as a unique instance transparently through
+ * the mysql class.
+ *
+ * The developer creates a mysql object with a little configuration. Through
+ * this object, he can get connections to the database and then send queries
+ * always through the mysql object.
+ *
+ * So from the developer point of view, only the mysql object is seen.
+ *
+ * A mysql object contains a configuration with user/password, database host,
+ * a port, a number of queries per transaction. When it is constructed, it asks
+ * the manager to get the good number of connections following its
+ * configuration. The manager owns all the databases connections, if it already
+ * has connections matching the mysql object, they are given to it. If some
+ * miss, the manager creates them and keeps them in a vector _connection.
+ *
+ * The mysql object asks for its connections using the internal function
+ * get_connections(const database_config& db_cfg) that returns a vector
+ * containing the asked connections. Connections can be shared between several
+ * mysql objects.
+ *
+ * When a connection is no more used, it is the manager work to destroy it.
+ * This work of cleanup is done when a new mysql object is created, or when
+ * a mysql object is destroyed.
+ *
+ * The manager works on the connections statistics. It centralizes the number of
+ * tasks waiting on each connection.
+ *
  */
 class mysql_manager {
- public:
-  static mysql_manager& instance();
-  std::vector<std::shared_ptr<mysql_connection>> get_connections(
-      database_config const& db_cfg);
-  bool commit_if_needed();
-  bool is_in_error() const;
-  void clear_error();
-  database::mysql_error get_error();
-  void set_error(std::string const& message);
-  std::map<std::string, std::string> get_stats();
-  void update_connections();
-  void clear();
-
- private:
-  mysql_manager();
-  ~mysql_manager();
-  static mysql_manager _singleton;
   mutable std::mutex _cfg_mutex;
   std::vector<std::shared_ptr<mysql_connection>> _connection;
-
-  int _current_thread;
 
   // last stats update timestamp
   time_t _stats_connections_timestamp;
   // Number of tasks per connection
   std::vector<int> _stats_counts;
+
+  mysql_manager();
+
+ public:
+  ~mysql_manager();
+  static mysql_manager& instance();
+  std::vector<std::shared_ptr<mysql_connection>> get_connections(
+      database_config const& db_cfg);
+  std::map<std::string, std::string> get_stats();
+  void update_connections();
+  void clear();
 };
 
 CCB_END()
