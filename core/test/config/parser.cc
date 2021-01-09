@@ -41,12 +41,10 @@ TEST(parser, endpoint) {
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-    throw(exceptions::msg()
-          << "could not open '" << config_file.c_str() << "'");
+    throw exceptions::msg() << "could not open '" << config_file.c_str() << "'";
 
   // Data.
-  std::string data;
-  data =
+  std::string data{
       "\n{"
       "  \"centreonBroker\": {\n"
       "    \"input\": {\n"
@@ -95,12 +93,12 @@ TEST(parser, endpoint) {
       "      }\n"
       "    ]\n"
       "  }\n"
-      "}\n";
+      "}\n"};
 
   // Write data.
   if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw(exceptions::msg()
-          << "could not write content of '" << config_file.c_str() << "'");
+    throw exceptions::msg()
+        << "could not write content of '" << config_file.c_str() << "'";
 
   // Close file.
   fclose(file_stream);

@@ -61,8 +61,7 @@ class failover : public endpoint {
   bool _stopped;
   mutable std::mutex _stopped_m;
   std::condition_variable _stopped_cv;
-
-  void _callback();
+  void _run();
 
  public:
   failover(std::shared_ptr<io::endpoint> endp,
@@ -75,7 +74,6 @@ class failover : public endpoint {
   time_t get_buffering_timeout() const throw();
   bool get_initialized() const throw();
   time_t get_retry_interval() const throw();
-  void run();
   void start() override;
   void exit() override;
   bool should_exit() const;
@@ -83,7 +81,6 @@ class failover : public endpoint {
   void set_failover(std::shared_ptr<processing::failover> fo);
   void set_retry_interval(time_t retry_interval);
   void update() override;
-  //bool wait(unsigned long time = ULONG_MAX);
 
  protected:
   // From stat_visitable

@@ -19,6 +19,7 @@
 #ifndef CCB_CONFIG_APPLIER_ENDPOINT_HH
 #define CCB_CONFIG_APPLIER_ENDPOINT_HH
 
+#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -55,23 +56,11 @@ namespace applier {
  *  Apply the configuration of the configured endpoints.
  */
 class endpoint {
- public:
-  typedef std::map<config::endpoint, processing::endpoint*>::iterator iterator;
+  std::map<config::endpoint, processing::endpoint*> _endpoints;
+  std::timed_mutex _endpointsm;
+  std::atomic_bool _discarding;
 
-  ~endpoint();
-  void apply(std::list<config::endpoint> const& endpoints);
-  void discard();
-  iterator endpoints_begin();
-  iterator endpoints_end();
-  std::timed_mutex& endpoints_mutex();
-  static endpoint& instance();
-  static void load();
-  static void unload();
-
- private:
   endpoint();
-  endpoint(endpoint const& other);
-  endpoint& operator=(endpoint const& other);
   processing::failover* _create_failover(
       config::endpoint& cfg,
       std::shared_ptr<multiplexing::subscriber> sbscrbr,
@@ -88,8 +77,20 @@ class endpoint {
   std::unordered_set<uint32_t> _filters(
       std::set<std::string> const& str_filters);
 
-  std::map<config::endpoint, processing::endpoint*> _endpoints;
-  std::timed_mutex _endpointsm;
+ public:
+  typedef std::map<config::endpoint, processing::endpoint*>::iterator iterator;
+
+  ~endpoint();
+  endpoint& operator=(endpoint const& other) = delete;
+  endpoint(endpoint const& other) = delete;
+  void apply(std::list<config::endpoint> const& endpoints);
+  void discard();
+  iterator endpoints_begin();
+  iterator endpoints_end();
+  std::timed_mutex& endpoints_mutex();
+  static endpoint& instance();
+  static void load();
+  static void unload();
 };
 }  // namespace applier
 }  // namespace config

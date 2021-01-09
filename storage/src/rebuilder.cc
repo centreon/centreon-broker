@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2015,2017,2020 Centreon
+** Copyright 2012-2015,2017,2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
 
 #include "com/centreon/broker/storage/rebuilder.hh"
 
+#include <fmt/format.h>
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <sstream>
 
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -38,12 +38,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -57,66 +51,46 @@ rebuilder::rebuilder(database_config const& db_cfg,
                      uint32_t rebuild_check_interval,
                      uint32_t rrd_length,
                      uint32_t interval_length)
-    : _db_cfg(db_cfg),
+    : _timer{pool::io_context()},
+      _should_exit{false},
+      _db_cfg(db_cfg),
       _interval_length(interval_length),
       _rebuild_check_interval(rebuild_check_interval),
-      _rrd_len(rrd_length),
-      _should_exit(false) {
+      _rrd_len(rrd_length) {
   _db_cfg.set_connections_count(1);
   _db_cfg.set_queries_per_transaction(1);
-  _thread.reset(new std::thread(&rebuilder::_run, this));
+  _timer.expires_after(std::chrono::seconds(1));
+  _timer.async_wait(std::bind(&rebuilder::_run, this, std::placeholders::_1));
 }
 
 /**
  *  Destructor.
  */
 rebuilder::~rebuilder() {
-  std::unique_lock<std::mutex> lock(_mutex_should_exit);
   _should_exit = true;
-  lock.unlock();
-  _cond_should_exit.notify_all();
-  _thread->join();
+  asio::post(_timer.get_executor(), [this] { _timer.cancel(); });
 }
 
 /**
- *  Get the rebuild check interval.
+ * @brief This internal function is called by the asio::steady_timer _timer
+ * every _rebuild_check_interval seconds. It is the main procedure of the
+ * rebuilder.
  *
- *  @return Rebuild check interval in seconds.
+ * @param ec Contains errors if any. In that case, the timer is stopped.
+ * One particular error is asio::error_code::aborted which means the rebuilder
+ * is stopped.
  */
-uint32_t rebuilder::get_rebuild_check_interval() const noexcept {
-  return _rebuild_check_interval;
-}
-
-/**
- *  Get the RRD length in seconds.
- *
- *  @return RRD length in seconds.
- */
-uint32_t rebuilder::get_rrd_length() const noexcept {
-  return _rrd_len;
-}
-
-/**
- *  Thread entry point.
- */
-void rebuilder::_run() {
-  std::unique_lock<std::mutex> locker(_mutex_should_exit);
-  while (!_should_exit && _rebuild_check_interval) {
+void rebuilder::_run(asio::error_code ec) {
+  if (ec)
+    log_v2::sql()->info("storage: rebuilder timer error: {}", ec.message());
+  else {
     try {
       // Open DB.
-      std::unique_ptr<mysql> ms;
-      try {
-        ms.reset(new mysql(_db_cfg));
-      } catch (std::exception const& e) {
-        throw broker::exceptions::msg()
-            << "storage: rebuilder: could "
-               "not connect to Centreon Storage database: "
-            << e.what();
-      }
+      mysql ms(_db_cfg);
 
       // Fetch index to rebuild.
       index_info info;
-      _next_index_to_rebuild(info, *ms);
+      _next_index_to_rebuild(info, ms);
       while (!_should_exit && info.index_id) {
         // Get check interval of host/service.
         uint32_t index_id;
@@ -130,18 +104,20 @@ void rebuilder::_run() {
           service_id = info.service_id;
           rrd_len = info.rrd_retention;
 
-          std::ostringstream oss;
+          std::string query;
           if (!info.service_id)
-            oss << "SELECT check_interval FROM hosts"
-                   " WHERE host_id="
-                << info.host_id;
+            query =
+                fmt::format("SELECT check_interval FROM hosts WHERE host_id={}",
+                            info.host_id);
           else
-            oss << "SELECT check_interval FROM services WHERE host_id="
-                << info.host_id << " AND service_id=" << info.service_id;
+            query = fmt::format(
+                "SELECT check_interval FROM services WHERE host_id={} AND "
+                "service_id={}",
+                info.host_id, info.service_id);
           std::promise<database::mysql_result> promise;
-          ms->run_query_and_get_result(oss.str(), &promise);
+          ms.run_query_and_get_result(query, &promise);
           database::mysql_result res(promise.get_future().get());
-          if (ms->fetch_row(res))
+          if (ms.fetch_row(res))
             check_interval = res.value_as_f64(0) * _interval_length;
           if (!check_interval)
             check_interval = 5 * 60;
@@ -151,23 +127,23 @@ void rebuilder::_run() {
             index_id, check_interval);
 
         // Set index as being rebuilt.
-        _set_index_rebuild(*ms, index_id, 2);
+        _set_index_rebuild(ms, index_id, 2);
 
         try {
           // Fetch metrics to rebuild.
           std::list<metric_info> metrics_to_rebuild;
           {
-            std::ostringstream oss;
-            oss << "SELECT metric_id, metric_name, data_source_type"
-                   " FROM metrics WHERE index_id="
-                << index_id;
+            std::string query{
+                fmt::format("SELECT metric_id, metric_name, data_source_type "
+                            "FROM metrics WHERE index_id={}",
+                            index_id)};
 
             std::promise<database::mysql_result> promise;
-            ms->run_query_and_get_result(oss.str(), &promise);
+            ms.run_query_and_get_result(query, &promise);
             try {
               database::mysql_result res(promise.get_future().get());
 
-              while (!_should_exit && ms->fetch_row(res)) {
+              while (!_should_exit && ms.fetch_row(res)) {
                 metric_info info;
                 info.metric_id = res.value_as_u32(0);
                 info.metric_name = res.value_as_str(1);
@@ -184,7 +160,7 @@ void rebuilder::_run() {
           // Browse metrics to rebuild.
           while (!_should_exit && !metrics_to_rebuild.empty()) {
             metric_info& info(metrics_to_rebuild.front());
-            _rebuild_metric(*ms, info.metric_id, host_id, service_id,
+            _rebuild_metric(ms, info.metric_id, host_id, service_id,
                             info.metric_name, info.metric_type, check_interval,
                             rrd_len);
             // We need to update the conflict_manager for metrics that could
@@ -195,10 +171,10 @@ void rebuilder::_run() {
           }
 
           // Rebuild status.
-          _rebuild_status(*ms, index_id, check_interval, rrd_len);
+          _rebuild_status(ms, index_id, check_interval, rrd_len);
         } catch (...) {
           // Set index as to-be-rebuilt.
-          _set_index_rebuild(*ms, index_id, 1);
+          _set_index_rebuild(ms, index_id, 1);
 
           // Rethrow exception.
           throw;
@@ -206,28 +182,23 @@ void rebuilder::_run() {
 
         // Set index as rebuilt or to-be-rebuild
         // if we were interrupted.
-        _set_index_rebuild(*ms, index_id, (_should_exit ? 1 : 0));
+        _set_index_rebuild(ms, index_id, (_should_exit ? 1 : 0));
 
         // Get next index to rebuild.
-        _next_index_to_rebuild(info, *ms);
+        _next_index_to_rebuild(info, ms);
       }
     } catch (std::exception const& e) {
       logging::error(logging::high) << e.what();
     } catch (...) {
       logging::error(logging::high) << "storage: rebuilder: unknown error";
     }
-
-    // Sleep a while.
-    _cond_should_exit.wait_for(locker,
-                               std::chrono::seconds(_rebuild_check_interval));
+    if (!_should_exit) {
+      _timer.expires_after(std::chrono::seconds(_rebuild_check_interval));
+      _timer.async_wait(
+          std::bind(&rebuilder::_run, this, std::placeholders::_1));
+    }
   }
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Get next index to rebuild.
@@ -293,14 +264,15 @@ void rebuilder::_rebuild_metric(mysql& ms,
 
   try {
     // Get data.
-    std::ostringstream oss;
-    oss << "SELECT ctime, value FROM data_bin WHERE id_metric=" << metric_id
-        << " AND ctime>=" << start << " ORDER BY ctime ASC";
+    std::string query{
+        fmt::format("SELECT ctime,value FROM data_bin WHERE id_metric={} AND "
+                    "ctime>={} ORDER BY ctime ASC",
+                    metric_id, start)};
     std::promise<database::mysql_result> promise;
-    ms.run_query_and_get_result(oss.str(), &promise);
+    ms.run_query_and_get_result(query, &promise);
     log_v2::sql()->debug(
         "storage(rebuilder): rebuild of metric {}: SQL query: \"{}\"",
-        metric_id, oss.str());
+        metric_id, query);
 
     try {
       database::mysql_result res(promise.get_future().get());
@@ -362,12 +334,13 @@ void rebuilder::_rebuild_status(mysql& ms,
   // Database schema version.
   try {
     // Get data.
-    std::ostringstream oss;
-    oss << "SELECT d.ctime, d.status FROM metrics AS m JOIN data_bin AS d"
-           " ON m.metric_id=d.id_metric WHERE m.index_id="
-        << index_id << " AND ctime>=" << start << " ORDER BY d.ctime ASC";
+    std::string query{
+        fmt::format("SELECT d.ctime,d.status FROM metrics AS m JOIN data_bin "
+                    "AS d ON m.metric_id=d.id_metric WHERE m.index_id={} AND "
+                    "ctime>={} ORDER BY d.ctime ASC",
+                    index_id, start)};
     std::promise<database::mysql_result> promise;
-    ms.run_query_and_get_result(oss.str(), &promise);
+    ms.run_query_and_get_result(query, &promise);
     try {
       database::mysql_result res(promise.get_future().get());
       while (!_should_exit && ms.fetch_row(res)) {

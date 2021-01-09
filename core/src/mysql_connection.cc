@@ -20,6 +20,7 @@
 #include <cstring>
 #include <sstream>
 
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -514,56 +515,68 @@ void mysql_connection::_run() {
   _conn = mysql_init(nullptr);
   if (!_conn) {
     set_error_message(::mysql_error(_conn));
+    _state = finished;
+    _result_condition.notify_all();
     return;
   } else {
-    while (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
+    uint32_t timeout = 10;
+    mysql_options(_conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+    while (config::applier::state != config::applier::finished &&
+           !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
-      logging::error(logging::high)
-          << "mysql_connection: The mysql/mariadb database seems not started. "
-             "Waiting before attempt to connect again: "
-          << ::mysql_error(_conn);
-      std::this_thread::sleep_for(std::chrono::seconds(5));
+      set_error_message(fmt::format(
+          "mysql_connection: The mysql/mariadb database seems not started. "
+          "Waiting before attempt to connect again: {}",
+          ::mysql_error(_conn)));
+      _state = finished;
+      _result_condition.notify_all();
+      return;
     }
   }
 
-  mysql_set_character_set(_conn, "utf8mb4");
+  if (config::applier::state == config::applier::finished) {
+    _state = finished;
+    locker.unlock();
+    _result_condition.notify_all();
+  } else {
+    mysql_set_character_set(_conn, "utf8mb4");
 
-  if (_qps > 1)
-    mysql_autocommit(_conn, 0);
-  else
-    mysql_autocommit(_conn, 1);
+    if (_qps > 1)
+      mysql_autocommit(_conn, 0);
+    else
+      mysql_autocommit(_conn, 1);
 
-  _started = true;
-  locker.unlock();
-  _result_condition.notify_all();
+    _state = running;
+    locker.unlock();
+    _result_condition.notify_all();
 
-  while (!_finished) {
-    std::list<std::shared_ptr<database::mysql_task>> tasks_list;
-    std::unique_lock<std::mutex> locker(_list_mutex);
-    if (!_tasks_list.empty()) {
-      std::swap(_tasks_list, tasks_list);
-      locker.unlock();
-    } else {
-      _tasks_count = 0;
-      _tasks_condition.wait(locker);
-      continue;
-    }
-    for (auto task : tasks_list) {
-      --_tasks_count;
-      if (_task_processing_table[task->type])
-        (this->*(_task_processing_table[task->type]))(task.get());
-      else {
-        logging::error(logging::medium)
-            << "mysql_connection: Error type not managed...";
+    while (!_finished) {
+      std::list<std::shared_ptr<database::mysql_task>> tasks_list;
+      std::unique_lock<std::mutex> locker(_list_mutex);
+      if (!_tasks_list.empty()) {
+        std::swap(_tasks_list, tasks_list);
+        locker.unlock();
+      } else {
+        _tasks_count = 0;
+        _tasks_condition.wait(locker);
+        continue;
+      }
+      for (auto task : tasks_list) {
+        --_tasks_count;
+        if (_task_processing_table[task->type])
+          (this->*(_task_processing_table[task->type]))(task.get());
+        else {
+          logging::error(logging::medium)
+              << "mysql_connection: Error type not managed...";
+        }
       }
     }
+    for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),
+         end(_stmt.end());
+         it != end; ++it)
+      mysql_stmt_close(it->second);
   }
-  for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),
-       end(_stmt.end());
-       it != end; ++it)
-    mysql_stmt_close(it->second);
-
   mysql_close(_conn);
   mysql_thread_end();
 }
@@ -582,14 +595,24 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
       _pwd(db_cfg.get_password()),
       _name(db_cfg.get_name()),
       _port(db_cfg.get_port()),
-      _started(false),
+      _state(not_started),
       _qps(db_cfg.get_queries_per_transaction()) {
   std::unique_lock<std::mutex> locker(_result_mutex);
+  log_v2::sql()->info("mysql_connection: starting connection");
   _thread.reset(new std::thread(&mysql_connection::_run, this));
-  while (!_started)
-    _result_condition.wait(locker);
+  _result_condition.wait(locker, [this] { return _state != not_started; });
+  if (_state == finished) {
+    _thread->join();
+    throw exceptions::msg()
+        << "mysql_connection: error while starting connection";
+  }
+  log_v2::sql()->info("mysql_connection: connection started");
 }
 
+/**
+ * @brief Destructor. When called, the finish task is post on the stack. So
+ * the end will occur only when all the queries will be played.
+ */
 mysql_connection::~mysql_connection() {
   log_v2::sql()->info("mysql_connection: finished");
   finish();
