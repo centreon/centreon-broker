@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 
+#include <fmt/format.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
@@ -35,26 +36,9 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
-/**************************************
- *                                     *
- *            Local Objects            *
- *                                     *
- **************************************/
-
 // Class instance.
 engine* engine::_instance(nullptr);
 std::mutex engine::_load_m;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
-/**
- *  Destructor.
- */
-engine::~engine() {}
 
 /**
  *  Clear events stored in the multiplexing engine.
@@ -102,13 +86,13 @@ void engine::load() {
  *
  *  @param[in] e  Event to publish.
  */
-void engine::publish(std::shared_ptr<io::data> const& e) {
+void engine::publish(const std::shared_ptr<io::data>& e) {
   // Lock mutex.
   std::lock_guard<std::mutex> lock(_engine_m);
   _publish(e);
 }
 
-void engine::publish(std::list<std::shared_ptr<io::data>> const& to_publish) {
+void engine::publish(const std::list<std::shared_ptr<io::data>>& to_publish) {
   std::lock_guard<std::mutex> lock(_engine_m);
   for (auto& e : to_publish)
     _publish(e);
@@ -322,8 +306,8 @@ engine::engine()
  *  @return Path to the multiplexing engine cache file.
  */
 std::string engine::_cache_file_path() const {
-  std::string retval(config::applier::state::instance().cache_dir());
-  retval.append(".unprocessed");
+  std::string retval(fmt::format(
+      "{}.unprocessed", config::applier::state::instance().cache_dir()));
   return retval;
 }
 

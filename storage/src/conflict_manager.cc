@@ -25,7 +25,6 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -35,6 +34,8 @@ using namespace com::centreon::broker::database;
 using namespace com::centreon::broker::storage;
 
 conflict_manager* conflict_manager::_singleton = nullptr;
+conflict_manager::instance_state conflict_manager::_state{
+    conflict_manager::not_started};
 std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
@@ -120,14 +121,17 @@ bool conflict_manager::init_storage(bool store_in_db,
                                     uint32_t interval_length,
                                     uint32_t queries_per_transaction) {
   log_v2::sql()->debug("conflict_manager: storage stream initialization");
-  int count = 0;
+  int count;
 
   std::unique_lock<std::mutex> lk(_init_m);
 
-  for (;;) {
-    /* The loop is waiting for 1s or for _mysql to be initialized */
-    if (_init_cv.wait_for(lk, std::chrono::seconds(1),
-                          [&]() { return _singleton != nullptr; })) {
+  for (count = 0; count < 10; count++) {
+    /* Let's wait for 10s for the conflict_manager to be initialized */
+    if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&] {
+          return _singleton != nullptr || _state == finished;
+        })) {
+      if (_state == finished)
+        return false;
       std::lock_guard<std::mutex> lk(_singleton->_loop_m);
       _singleton->_store_in_db = store_in_db;
       _singleton->_rrd_len = rrd_len;
@@ -141,24 +145,48 @@ bool conflict_manager::init_storage(bool store_in_db,
           std::move(std::thread(&conflict_manager::_callback, _singleton));
       return true;
     }
-    count++;
     log_v2::sql()->info(
         "conflict_manager: Waiting for the sql stream initialization for {} "
         "seconds",
         count);
   }
+  log_v2::sql()->error(
+      "conflict_manager: not initialized after 10s. Probably "
+      "an issue in the sql output configuration.");
   return false;
 }
 
-void conflict_manager::init_sql(database_config const& dbcfg,
+/**
+ * @brief This fonction is the one that initializes the conflict_manager.
+ *
+ * @param dbcfg The database configuration
+ * @param loop_timeout A duration in seconds. During this interval received
+ *        events are handled. If there are no more events to handle, new
+ *        available ones are taken from the fifo. If none, the loop waits during
+ *        500ms. After this loop others things are done, cleanups, etc. And then
+ *        the loop is started again.
+ * @param instance_timeout A duration in seconds. This interval is used for
+ *        sending data in bulk. We wait for this interval at least between two
+ *        bulks.
+ *
+ * @return A boolean true if the function went good, false otherwise.
+ */
+bool conflict_manager::init_sql(database_config const& dbcfg,
                                 uint32_t loop_timeout,
                                 uint32_t instance_timeout) {
   log_v2::sql()->debug("conflict_manager: sql stream initialization");
   std::lock_guard<std::mutex> lk(_init_m);
   _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
+  if (!_singleton) {
+    _state = finished;
+    return false;
+  }
+
+  _state = running;
   _singleton->_action.resize(_singleton->_mysql.connections_count());
   _init_cv.notify_all();
   _singleton->_ref_count++;
+  return true;
 }
 
 void conflict_manager::_load_deleted_instances() {
@@ -516,9 +544,8 @@ void conflict_manager::_callback() {
 
               _events_handled = events.size();
               float s = 0.0f;
-              for (auto it = _stats_count.begin(); it != _stats_count.end();
-                   ++it)
-                s += *it;
+              for (const auto& c : _stats_count)
+                s += c;
 
               std::lock_guard<std::mutex> lk(_stat_m);
               _speed = s / _stats_count.size();
@@ -603,9 +630,11 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
 
 /**
  *  This method is called from the stream and returns how many events should
- *  be released. By the way, it removed those objects from the queue.
+ *  be released. By the way, it removes those objects from the queue.
  *
- * @param c
+ * @param c a stream_type (we have two kinds of data arriving in the
+ * conflict_manager, those from the sql connector and those from the storage
+ * connector, so this stream_type is an enum containing those types).
  *
  * @return the number of events to ack.
  */
@@ -685,6 +714,12 @@ void conflict_manager::__exit() {
     _thread.join();
 }
 
+/**
+ * @brief Returns statistics about the conflict_manager. Those statistics
+ * are stored directly in a json tree.
+ *
+ * @return A json11::Json::object with the statistics.
+ */
 json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
   retval["max pending events"] = static_cast<int32_t>(_max_pending_queries);
@@ -704,21 +739,33 @@ json11::Json::object conflict_manager::get_statistics() {
 /**
  * @brief Delete the conflict_manager singleton.
  */
-void conflict_manager::unload() {
-  if (!_singleton)
+int32_t conflict_manager::unload(stream_type type) {
+  if (!_singleton) {
     log_v2::sql()->info("conflict_manager: already unloaded.");
-  else {
+    return 0;
+  } else {
     uint32_t count = --_singleton->_ref_count;
+    int retval;
     if (count == 0) {
-      _singleton->__exit();
-      delete _singleton;
-      _singleton = nullptr;
+      __exit();
+      retval = _fifo.get_acks(type);
+      {
+        std::lock_guard<std::mutex> lck(_init_m);
+        _state = finished;
+        delete _singleton;
+        _singleton = nullptr;
+      }
       log_v2::sql()->info(
           "conflict_manager: no more user of the conflict manager.");
     } else {
       log_v2::sql()->info(
           "conflict_manager: still {} stream{} using the conflict manager.",
           count, count > 1 ? "s" : "");
+      retval = _fifo.get_acks(type);
+      log_v2::sql()->info(
+          "conflict_manager: still {} events handled but not acknowledged.",
+          retval);
     }
+    return retval;
   }
 }

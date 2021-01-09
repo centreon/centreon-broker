@@ -1,5 +1,5 @@
 /*
-** Copyright 2017 Centreon
+** Copyright 2017-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,25 +70,31 @@ stream::stream(std::string const& lua_script,
    * function just increases an _acks_count to inform broker on treated events.
    */
   _thread = std::thread([&] {
-    std::unique_lock<std::mutex> lock(init_m);
     // Access to the Lua interpreter
     luabinding* lb = nullptr;
     bool has_flush = false;
     std::deque<std::shared_ptr<io::data>> events;
 
-    try {
-      lb = new luabinding(lua_script, conf_params, _cache);
-      has_flush = lb->has_flush();
-    } catch (std::exception const& e) {
-      fail_msg = e.what();
-      fail = true;
-      _exit = true;
+    // Access to external variables, encapsulated because the thread will
+    // continue whereas the output function will be over.
+    {
+      std::unique_lock<std::mutex> lock(init_m);
+
+      try {
+        lb = new luabinding(lua_script, conf_params, _cache);
+        has_flush = lb->has_flush();
+      } catch (std::exception const& e) {
+        fail_msg = e.what();
+        fail = true;
+        _exit = true;
+      }
+
+      configured = true;
+      init_cv.notify_all();
+      if (fail)
+        return;
     }
 
-    configured = true;
-    init_cv.notify_all();
-    if (fail)
-      return;
     /**
      * Events handling starts really here. */
 

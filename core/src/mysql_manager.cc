@@ -26,33 +26,36 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
-mysql_manager mysql_manager::_singleton;
-
+/**
+ * @brief The function to use to call the unique instance of mysql_manager.
+ *
+ * @return A reference to the mysql_manager object.
+ */
 mysql_manager& mysql_manager::instance() {
+  static mysql_manager _singleton;
   return _singleton;
 }
 
 /**
- *  Constructor
+ *  The default constructor
  */
-mysql_manager::mysql_manager()
-    : _current_thread(0), _stats_connections_timestamp(time(nullptr)) {
+mysql_manager::mysql_manager() : _stats_connections_timestamp(time(nullptr)) {
   log_v2::sql()->trace("mysql_manager instanciation");
 }
 
 /**
- *  Destructor
+ *  Destructor The mysql manager does not own events on its side. It just holds
+ *  connections to the database. When this destructor is called, we wait for
+ *  each connection to be stopped before exiting. So no events could stay
+ *  pending.
  */
 mysql_manager::~mysql_manager() {
   log_v2::sql()->trace("mysql_manager destruction");
   // If connections are still active but unique here, we can remove them
   std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
 
-  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
-           it(_connection.begin()),
-       end(_connection.end());
-       it != end; ++it) {
-    while (!it->unique()) {
+  for (const auto& conn : _connection) {
+    while (!conn.unique()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
@@ -60,8 +63,18 @@ mysql_manager::~mysql_manager() {
   mysql_library_end();
 }
 
+/**
+ * @brief This is the main function, called by the mysql object. Given a
+ * configuration, the manager returns the connections needed by the mysql object
+ * as a vector. Those connections can be shared between several mysql objects.
+ *
+ * @param db_cfg The configuration.
+ *
+ * @return a vector of connections.
+ */
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     database_config const& db_cfg) {
+  log_v2::sql()->trace("mysql_manager::get_connections");
   std::vector<std::shared_ptr<mysql_connection>> retval;
   uint32_t connection_count(db_cfg.get_connections_count());
 
@@ -97,6 +110,9 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   return retval;
 }
 
+/**
+ * @brief Closes all the running connections and then removes them.
+ */
 void mysql_manager::clear() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
@@ -112,6 +128,9 @@ void mysql_manager::clear() {
   logging::debug(logging::low) << "mysql_manager: clear finished";
 }
 
+/**
+ * @brief This internal function removes the not used connections.
+ */
 void mysql_manager::update_connections() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
@@ -131,6 +150,12 @@ void mysql_manager::update_connections() {
     mysql_library_end();
 }
 
+/**
+ * @brief Returns statistics about the mysql connections.
+ *
+ * @return A map containing various informations. This map is changed into
+ * a json file later.
+ */
 std::map<std::string, std::string> mysql_manager::get_stats() {
   int delay(0);
   std::unique_lock<std::mutex> locker(_cfg_mutex, std::defer_lock);

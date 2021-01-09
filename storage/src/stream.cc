@@ -76,9 +76,10 @@ stream::stream(database_config const& dbcfg,
     rrd_len = 15552000;
 
   if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length,
-                                      dbcfg.get_queries_per_transaction()))
-    throw broker::exceptions::shutdown()
-        << "Unable to initialize the storage connection to the database";
+                                      dbcfg.get_queries_per_transaction())) {
+    throw broker::exceptions::msg() << "storage: Unable to initialize the "
+                                       "storage connection to the database";
+  }
 }
 
 /**
@@ -86,8 +87,8 @@ stream::stream(database_config const& dbcfg,
  */
 stream::~stream() {
   // Stop cleanup thread.
-  log_v2::sql()->debug("storage: stream destruction");
-  conflict_manager::unload();
+  log_v2::sql()->trace("storage: stream destruction");
+  conflict_manager::instance().unload(conflict_manager::storage);
 }
 
 /**
