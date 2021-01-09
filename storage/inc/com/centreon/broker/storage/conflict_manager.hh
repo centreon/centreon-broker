@@ -1,5 +1,5 @@
 /*
-** Copyright 2019-2020 Centreon
+** Copyright 2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -66,10 +66,21 @@ namespace storage {
  * Metrics, customvariables are sent in bulk to avoid locks on the database,
  * so we keep some containers here to build those big queries.
  *
+ * The conflict manager works with two streams: sql and storage.
+ *
+ * To initialize it, two functions are used:
+ * * init_sql(): initialization of the sql part.
+ * * init_storage(): initialization of the storage part. This one needs the
+ *   sql part to be initialized before. If it is not already initialized, this
+ *   function waits for it (with a timeout).
+ *
+ * Once the object is initialized, we have the classical static internal method
+ * `instance()`.
  */
 class conflict_manager {
   /* Forward declarations */
  public:
+  enum instance_state { not_started, running, finished };
   enum stream_type { sql, storage };
 
  private:
@@ -128,6 +139,7 @@ class conflict_manager {
   static void (conflict_manager::*const _neb_processing_table[])(
       std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>&);
   static conflict_manager* _singleton;
+  static instance_state _state;
   static std::mutex _init_m;
   static std::condition_variable _init_cv;
 
@@ -317,7 +329,7 @@ class conflict_manager {
   void __exit();
 
  public:
-  static void init_sql(database_config const& dbcfg,
+  static bool init_sql(database_config const& dbcfg,
                        uint32_t loop_timeout,
                        uint32_t instance_timeout);
   static bool init_storage(bool store_in_db,
@@ -325,7 +337,7 @@ class conflict_manager {
                            uint32_t interval_length,
                            uint32_t max_pending_queries);
   static conflict_manager& instance();
-  static void unload();
+  int32_t unload(stream_type type);
   json11::Json::object get_statistics();
 
   int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);

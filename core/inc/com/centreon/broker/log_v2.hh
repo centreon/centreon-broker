@@ -46,9 +46,7 @@ class log_v2 {
 
  public:
   static log_v2& instance();
-  bool load(std::string const& file,
-            std::string const& broker_name,
-            std::string& err);
+  bool load(const char* file, std::string const& broker_name, std::string& err);
 
   static std::shared_ptr<spdlog::logger> core();
   static std::shared_ptr<spdlog::logger> config();
