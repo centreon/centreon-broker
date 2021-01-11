@@ -101,13 +101,13 @@ stream::stream(std::string const& metric_naming,
 
     if (err) {
       throw msg_fmt(
-          "graphite: can't connect to graphite on host '", _db_host,
-          "', port '", _db_port, "': ", err.message());
+          "graphite: can't connect to graphite on host '{}', port '{}' : {}", _db_host,
+           _db_port, err.message());
     }
   } catch (std::system_error const& se) {
-    throw msg_fmt(
-        "graphite: can't connect to graphite on host '", _db_host,
-        "', port '", _db_port, "': ", se.what());
+      throw msg_fmt(
+        "graphite: can't connect to graphite on host '{}', port '{}' : {}", _db_host,
+        _db_port, se.what());
   }
 }
 
@@ -145,7 +145,7 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw exceptions::shutdown() << "cannot read from Graphite database";
+  throw com::centreon::exceptions::shutdown("cannot read from Graphite database");
   return true;
 }
 

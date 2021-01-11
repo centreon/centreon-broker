@@ -41,13 +41,14 @@ class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
     (void)deadline;
     d.reset();
     if (_shutdown)
-      throw(exceptions::shutdown() << __FUNCTION__ << " is shutdown");
+      throw(com::centreon::exceptions::shutdown("{} is shutdown", __FUNCTION__));
     else if (_timeout)
       return false;
     d = _buffer;
     _buffer = std::shared_ptr<io::raw>();
     if (!d)
-      throw(exceptions::shutdown() << __FUNCTION__ << " has no more data");
+      throw(com::centreon::exceptions::shutdown("{} has no more data", 
+                                                __FUNCTION__));
     return true;
   }
 

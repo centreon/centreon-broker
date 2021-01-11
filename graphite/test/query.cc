@@ -19,7 +19,6 @@
 
 #include "com/centreon/broker/graphite/query.hh"
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 

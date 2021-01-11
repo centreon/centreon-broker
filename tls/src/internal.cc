@@ -25,7 +25,6 @@
 
 #include <cerrno>
 #endif  // GNU TLS < 3.0.0
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/log_v2.hh"

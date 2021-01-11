@@ -22,7 +22,9 @@
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 class FileSplitterDefault : public ::testing::Test {
@@ -74,7 +76,7 @@ TEST_F(FileSplitterDefault, WriteReturnsNumberOfBytes) {
 TEST_F(FileSplitterDefault, FirstReadNoDataAndRemove) {
   // Then
   char buffer[10];
-  ASSERT_THROW(_file->read(buffer, sizeof(buffer)), exceptions::msg);
+  ASSERT_THROW(_file->read(buffer, sizeof(buffer)), msg_fmt);
   std::list<std::string> removed;
   removed.push_back(_path);
   ASSERT_FALSE(misc::filesystem::file_exists(_path));

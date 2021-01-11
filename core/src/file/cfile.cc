@@ -104,7 +104,7 @@ long cfile::read(void* buffer, long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
-      throw(exceptions::shutdown() << "end of file reached");
+      throw(com::centreon::exceptions::shutdown("end of file reached"));
     else if ((EAGAIN == errno) || (EINTR == errno))
       retval = 0;
     else {

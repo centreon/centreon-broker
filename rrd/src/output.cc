@@ -23,7 +23,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
@@ -147,8 +146,7 @@ template <typename T>
 bool output<T>::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw com::centreon::broker::exceptions::shutdown()
-      << "cannot read from RRD stream";
+  throw com::centreon::exceptions::shutdown("cannot read from RRD stream");
   return true;
 }
 

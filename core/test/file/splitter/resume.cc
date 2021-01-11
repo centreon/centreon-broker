@@ -106,7 +106,7 @@ TEST_F(FileSplitterResume, AutoDelete) {
   char buffer[10000];
   for (int i(2); i <= 10; ++i)
     _file->read(buffer, sizeof(buffer));
-  ASSERT_THROW(_file->read(buffer, 1), exceptions::shutdown);
+  ASSERT_THROW(_file->read(buffer, 1), com::centreon::exceptions::shutdown);
 
   // Then
   for (int i(2); i <= 10; ++i) {

@@ -19,7 +19,6 @@
 
 #include "com/centreon/broker/influxdb/line_protocol_query.hh"
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;

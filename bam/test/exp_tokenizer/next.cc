@@ -18,8 +18,9 @@
 
 #include <gtest/gtest.h>
 #include "com/centreon/broker/bam/exp_tokenizer.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 // Given an exp_tokenizer object
@@ -235,7 +236,7 @@ TEST(BamExpTokenizerNext, UnterminatedSingleQuote) {
         for (int i(0); i < 100; ++i)
           toknzr.next();
       },
-      exceptions::msg);
+      msg_fmt);
 }
 
 // Given an exp_tokenizer object
@@ -248,7 +249,7 @@ TEST(BamExpTokenizerNext, UnterminatedDoubleQuote) {
         for (int i(0); i < 100; ++i)
           toknzr.next();
       },
-      exceptions::msg);
+      msg_fmt);
 }
 
 // Given an exp_tokenizer object
@@ -261,7 +262,7 @@ TEST(BamExpTokenizerNext, UnterminatedBrace1) {
         for (int i(0); i < 100; ++i)
           toknzr.next();
       },
-      exceptions::msg);
+      msg_fmt);
 }
 
 // Given an exp_tokenizer object
@@ -274,7 +275,7 @@ TEST(BamExpTokenizerNext, UnterminatedBrace2) {
         for (int i(0); i < 100; ++i)
           toknzr.next();
       },
-      exceptions::msg);
+      msg_fmt);
 }
 
 // Given an exp_tokenizer object

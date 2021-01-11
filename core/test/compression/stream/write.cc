@@ -19,7 +19,6 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -122,7 +121,7 @@ TEST_F(CompressionStreamWrite, CompressNothing) {
 
   // Then
   std::shared_ptr<io::data> d;
-  ASSERT_THROW(_substream->read(d),exceptions::msg);
+  ASSERT_THROW(_substream->read(d), msg_fmt);
 }
 
 // Given a compression stream
@@ -162,10 +161,10 @@ TEST_F(CompressionStreamWrite, WriteOnShutdown) {
   // Given
   _substream->shutdown(true);
   std::shared_ptr<io::data> d;
-  ASSERT_THROW(_stream->read(d), exceptions::shutdown);
+  ASSERT_THROW(_stream->read(d), com::centreon::exceptions::shutdown);
 
   // When, Then
-  ASSERT_THROW(_stream->write(new_data()), exceptions::shutdown);
+  ASSERT_THROW(_stream->write(new_data()), com::centreon::exceptions::shutdown);
 }
 
 // Given a compression stream

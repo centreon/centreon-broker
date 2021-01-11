@@ -156,7 +156,7 @@ void feeder::_callback() noexcept {
         try {
           misc::read_lock lock(_client_m);
           timed_out_stream = !_client->read(d, 0);
-        } catch (exceptions::shutdown const& e) {
+        } catch (com::centreon::exceptions::shutdown const& e) {
           stream_can_read = false;
         }
         if (d) {
@@ -177,7 +177,7 @@ void feeder::_callback() noexcept {
       if (muxer_can_read)
         try {
           timed_out_muxer = !_subscriber.get_muxer().read(d, 0);
-        } catch (exceptions::shutdown const& e) {
+        } catch (com::centreon::exceptions::shutdown const& e) {
           muxer_can_read = false;
         }
       if (d) {
@@ -200,7 +200,7 @@ void feeder::_callback() noexcept {
         ::usleep(100000);
       }
     }
-  } catch (exceptions::shutdown const& e) {
+  } catch (com::centreon::exceptions::shutdown const& e) {
     // Normal termination.
     (void)e;
     log_v2::core()->info("feeder '{}' shut down", get_name());

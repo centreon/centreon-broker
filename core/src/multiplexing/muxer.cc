@@ -61,7 +61,7 @@ muxer::muxer(std::string const& name, bool persistent)
           ++_events_size;
         }
       }
-    } catch (exceptions::shutdown const& e) {
+    } catch (com::centreon::exceptions::shutdown const& e) {
       // Memory file was properly read back in memory.
       (void)e;
     }
@@ -82,7 +82,7 @@ muxer::muxer(std::string const& name, bool persistent)
       _events.push_back(e);
       ++_events_size;
     } while (_events_size < event_queue_max_size());
-  } catch (exceptions::shutdown const& e) {
+  } catch (com::centreon::exceptions::shutdown const& e) {
     // Queue file was entirely read back.
     (void)e;
   }
@@ -415,7 +415,7 @@ void muxer::_get_event_from_file(std::shared_ptr<io::data>& event) {
       do {
         _file->read(event);
       } while (!event);
-    } catch (exceptions::shutdown const& e) {
+    } catch (com::centreon::exceptions::shutdown const& e) {
       // The file end was reach.
       (void)e;
       _file.reset();

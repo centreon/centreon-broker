@@ -26,7 +26,6 @@
 
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"

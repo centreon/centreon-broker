@@ -180,7 +180,7 @@ long splitter::read(void* buffer, long max_size) {
         _open_read_file();
         return read(static_cast<char*>(buffer), max_size);
       } else
-        throw exceptions::shutdown() << "No more data to read";
+        throw com::centreon::exceptions::shutdown("No more data to read");
     } else {
       if (errno == EAGAIN || errno == EINTR)
         return 0;

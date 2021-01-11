@@ -19,7 +19,6 @@
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/host.hh"

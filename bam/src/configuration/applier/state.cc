@@ -20,8 +20,9 @@
 #include <sstream>
 #include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
@@ -288,7 +289,7 @@ void applier::state::_circular_check(configuration::state const& my_state) {
  */
 void applier::state::_circular_check(applier::state::circular_check_node& n) {
   if (n.in_visit)
-    throw(exceptions::msg() << "BAM: loop found in BA graph");
+    throw(msg_fmt("BAM: loop found in BA graph"));
   if (!n.visited) {
     n.in_visit = true;
     for (std::set<std::string>::const_iterator it(n.targets.begin()),

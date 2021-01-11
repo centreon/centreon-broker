@@ -119,7 +119,7 @@ class st : public io::stream {
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override {
     (void)deadline;
     d.reset();
-    throw exceptions::shutdown() << "cannot read from connector";
+    throw com::centreon::exceptions::shutdown("cannot read from connector");
   }
 
   virtual int write(std::shared_ptr<io::data> const& d

@@ -23,7 +23,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"

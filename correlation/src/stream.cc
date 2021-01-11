@@ -20,7 +20,6 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/correlation/engine_state.hh"
 #include "com/centreon/broker/correlation/node.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -96,7 +95,7 @@ stream::~stream() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(exceptions::shutdown() << "cannot read from correlation stream");
+  throw(com::centreon::exceptions::shutdown("cannot read from correlation stream"));
   return true;
 }
 

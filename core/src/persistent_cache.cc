@@ -101,7 +101,7 @@ void persistent_cache::get(std::shared_ptr<io::data>& d) {
     _open();
   try {
     _read_file->read(d);
-  } catch (exceptions::shutdown const& e) {
+  } catch (com::centreon::exceptions::shutdown const& e) {
     (void)e;
     d.reset();
   }
