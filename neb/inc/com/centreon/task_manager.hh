@@ -20,8 +20,8 @@
 #define CC_TASK_MANAGER_HH
 
 #include <condition_variable>
-#include <map>
 #include <deque>
+#include <map>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -38,7 +38,7 @@ class task_manager {
     uint64_t id;
     bool is_runnable;
     bool should_delete;
-    uint32_t interval;    // When 0, this task is in auto_delete
+    uint32_t interval;  // When 0, this task is in auto_delete
     task* tsk;
 
     internal_task(task* tsk,
