@@ -97,7 +97,7 @@ TEST_F(OutputTest, WriteService) {
   svc->host_id = 12345;
   svc->service_id = 18;
   svc->output = "Bonjour";
-  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+  svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
@@ -111,8 +111,6 @@ TEST_F(OutputTest, WriteService) {
 
   ASSERT_EQ(mem1.size(), 276u);
   // The size is 276 - 16: 16 is the header size.
-  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 146)),
-            0x11223344u);
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 150)),
             0x55667788u);
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260u);
@@ -211,7 +209,7 @@ TEST_F(OutputTest, WriteReadService) {
       c = '0';
     ASSERT_EQ(svc->perf_data.size(), i + 1);
   }
-  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+  svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(new into_memory());
@@ -228,6 +226,7 @@ TEST_F(OutputTest, WriteReadService) {
       std::static_pointer_cast<neb::service>(e);
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
+  ASSERT_EQ(svc->last_time_ok, new_svc->last_time_ok);
   l.unload();
 }
 
@@ -255,7 +254,7 @@ TEST_F(OutputTest, ShortPersistentFile) {
     if (c > '9')
       c = '0';
   }
-  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+  svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::unique_ptr<io::stream> mf(new persistent_file("/tmp/test_output"));
   mf->write(svc);
@@ -300,7 +299,7 @@ TEST_F(OutputTest, LongPersistentFile) {
     if (c > '9')
       c = '0';
   }
-  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+  svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::unique_ptr<io::stream> mf(new persistent_file("/tmp/long_output"));
   mf->write(svc);
@@ -331,7 +330,7 @@ TEST_F(OutputTest, WriteReadBadChksum) {
 
   svc->output = "ServiceOutput";
   svc->perf_data = "value=18.0";
-  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+  svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
@@ -372,7 +371,7 @@ TEST_F(OutputTest, ServiceTooShort) {
 
   svc->output = "ServiceOutput";
   svc->perf_data = "value=18.0";
-  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+  svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
@@ -419,7 +418,7 @@ TEST_F(OutputTest, ServiceTooShortAndAGoodOne) {
 
   svc->output = "ServiceOutput";
   svc->perf_data = "value=18.0";
-  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+  svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
