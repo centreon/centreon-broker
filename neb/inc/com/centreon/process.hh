@@ -72,6 +72,7 @@ class process {
   static void _pipe(int fds[2]);
   ssize_t do_read(int fd);
   void do_close(int fd);
+  static void _set_cloexec(int fd);
 
  public:
   process(process_listener* l = nullptr,
@@ -99,8 +100,6 @@ class process {
   void update_ending_process(int status);
   uint32_t write(std::string const& data);
   uint32_t write(void const* data, uint32_t size);
-
-  static void set_cloexec(int fd);
 };
 
 CC_END()
