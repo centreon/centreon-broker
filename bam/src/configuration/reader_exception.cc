@@ -18,25 +18,26 @@
 
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 
-using namespace com::centreon::broker::bam::configuration;
+using namespace com::centreon::bam::configuration;
+using namespace com::centreon::exceptions;
 
 /**
  *  Constructor
  */
-reader_exception::reader_exception() : msg() {}
+//reader_exception::reader_exception() : msg_fmt() {}
 
 /**
  *  Copy constructor
  *
  *  @param[in] Other object
  */
-reader_exception::reader_exception(reader_exception const& other)
-    : msg(other) {}
+//reader_exception::reader_exception(reader_exception const& other)
+ //   : msg_fmt(other) {}
 
 /**
  *  Destructor
  */
-reader_exception::~reader_exception() throw() {}
+//reader_exception::~reader_exception() throw() {}
 
 /**
  *  Assignment operator

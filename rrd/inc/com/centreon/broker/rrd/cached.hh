@@ -29,6 +29,9 @@
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 
+using namespace com::centreon;
+using namespace com::centreon::exceptions;
+
 CCB_BEGIN()
 
 namespace rrd {
@@ -55,8 +58,8 @@ class cached : public backend {
 
     // Check that the file exists.
     if (access(filename.c_str(), F_OK))
-      throw exceptions::open()
-          << "RRD: file '" << filename << "' does not exist";
+      throw broker::rrd::exceptions::open(
+          "RRD: file '{}' does not exist", filename);
 
     // Remember information for further operations.
     _filename = filename;
@@ -113,7 +116,7 @@ class cached : public backend {
 
     try {
       _send_to_cached(cmd);
-    } catch (broker::exceptions::msg const& e) {
+    } catch (msg_fmt const& e) {
       logging::error(logging::medium) << e.what();
     }
 
@@ -133,9 +136,9 @@ class cached : public backend {
     asio::write(_socket, asio::buffer(command), asio::transfer_all(), err);
 
     if (err)
-      throw broker::exceptions::msg() << "RRD: error while sending "
-                                         "command to rrdcached: "
-                                      << err.message();
+      throw msg_fmt("RRD: error while sending "
+                            "command to rrdcached: {}",
+                            err.message());
 
     // Read response.
     if (!_batch) {
@@ -145,9 +148,9 @@ class cached : public backend {
       asio::read_until(_socket, stream, '\n', err);
 
       if (err)
-        throw broker::exceptions::msg() << "RRD: error while getting "
-                                           "response from rrdcached: "
-                                        << err.message();
+        throw msg_fmt("RRD: error while getting "
+                      "response from rrdcached: {}",
+                      err.message());
 
       std::istream is(&stream);
       std::getline(is, line);
@@ -160,16 +163,16 @@ class cached : public backend {
       }
 
       if (lines < 0)
-        throw broker::exceptions::msg()
-            << "RRD: rrdcached query failed on file '" << _filename << "' ("
-            << command << "): " << line;
+        throw msg_fmt(
+            "RRD: rrdcached query failed on file '{}' ({}"
+            "): {}", _filename, command, line);
       while (lines > 0) {
         asio::read_until(_socket, stream, '\n', err);
         if (err)
-          throw broker::exceptions::msg()
-              << "RRD: error while getting "
-              << "response from rrdcached for file '" << _filename
-              << "': " << err.message();
+          throw msg_fmt(
+              "RRD: error while getting "
+              "response from rrdcached for file '{}" 
+              "': {}",  _filename, err.message());
 
         std::istream is(&stream);
         std::getline(is, line);
@@ -199,10 +202,8 @@ class cached : public backend {
     try {
       _socket.connect(ep);
     } catch (std::system_error const& se) {
-      broker::exceptions::msg e;
-      e << "RRD: could not connect to local socket '" << name << ": "
-        << se.what();
-      throw e;
+      throw msg_fmt("RRD: could not connect to local socket '{}: {}",
+                    name, se.what());
     }
   }
 
@@ -234,19 +235,15 @@ class cached : public backend {
       }
 
       if (err) {
-        broker::exceptions::msg e;
-        e << "RRD: could not connect to remote server '" << address << ":"
-          << port << "': " << err.message();
-        throw e;
+        throw msg_fmt("RRD: could not connect to remote server '{}" 
+                                  ":{} : {}", address, port, err.message());
       }
 
       asio::socket_base::keep_alive option{true};
       _socket.set_option(option);
     } catch (std::system_error const& se) {
-      broker::exceptions::msg e;
-      e << "RRD: could not resolve remote server '" << address << ":" << port
-        << "': " << se.what();
-      throw e;
+        throw msg_fmt("RRD: could not resolve remove server '{}" 
+                                  ":{} : {}", address, port, se.what());
     }
   }
 
@@ -276,9 +273,9 @@ class cached : public backend {
         << "RRD: updating file '" << _filename << "' (" << cmd << ")";
     try {
       _send_to_cached(cmd);
-    } catch (broker::exceptions::msg const& e) {
+    } catch (msg_fmt const& e) {
       if (!strstr(e.what(), "illegal attempt to update using time"))
-        throw exceptions::update() << e.what();
+        throw exceptions::update(e.what());
       else
         logging::error(logging::low) << "RRD: ignored update error in file '"
                                      << _filename << "': " << e.what() + 5;

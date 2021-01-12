@@ -19,7 +19,6 @@
 #ifndef CC_EXCEPTIONS_SHUTDOWN_HH
 #define CC_EXCEPTIONS_SHUTDOWN_HH
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
 

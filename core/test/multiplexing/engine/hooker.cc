@@ -18,9 +18,10 @@
  */
 #include "hooker.hh"
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/raw.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 /**************************************
@@ -54,7 +55,7 @@ bool hooker::read(std::shared_ptr<io::data>& d, time_t deadline) {
     d = _queue.front();
     _queue.pop();
   } else if (!_registered)
-    throw exceptions::msg() << "hooker test object is shutdown";
+    throw msg_fmt("hooker test object is shutdown");
   return true;
 }
 
@@ -90,6 +91,6 @@ int hooker::write(std::shared_ptr<io::data> const& d) {
     raw->append(HOOKMSG2);
     _queue.push(std::static_pointer_cast<io::data>(raw));
   } else
-    throw exceptions::msg() << "hooker test object is shutdown";
+    throw msg_fmt("hooker test object is shutdown");
   return 1;
 }

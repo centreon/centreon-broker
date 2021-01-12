@@ -20,7 +20,6 @@
 
 #include <sstream>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/file/stream.hh"
 

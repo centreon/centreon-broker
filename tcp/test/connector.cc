@@ -25,7 +25,6 @@
 #include <thread>
 
 #include "../../core/test/test_server.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;

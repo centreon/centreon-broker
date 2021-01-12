@@ -24,7 +24,6 @@
 #include <sstream>
 
 #include "com/centreon/broker/database/table_max_size.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -95,7 +94,7 @@ void conflict_manager::_storage_process_service_status(
              uint32_t& rrd_len) -> void {
     if (index_id == 0) {
       throw msg_fmt(
-          "storage: could not fetch index_id of newly inserted index ( {}"
+          "storage: could not fetch index_id of newly inserted index ({}"
           ", {})", host_id, service_id);
     }
 
@@ -182,7 +181,7 @@ void conflict_manager::_storage_process_service_status(
 
         if (index_id == 0)
           throw msg_fmt(
-              "storage: could not fetch index_id of newly inserted index ( {}"
+              "storage: could not fetch index_id of newly inserted index ({}"
               ", {})", host_id, service_id);
 
         if (!_index_data_update.prepared())

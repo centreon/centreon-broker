@@ -90,7 +90,7 @@ void lib::open(std::string const& filename) {
 
   // Check that the file exists.
   if (access(filename.c_str(), F_OK))
-    throw exceptions::open() << "RRD: file '" << filename << "' does not exist";
+    throw exceptions::open("RRD: file '{}' does not exist", filename);
 
   // Remember information for further operations.
   _filename = filename;

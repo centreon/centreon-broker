@@ -30,19 +30,19 @@ using namespace com::centreon::broker::rrd::exceptions;
 /**
  *  Default constructor.
  */
-open::open() noexcept {}
+//open::open() noexcept {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] o Object to copy.
  */
-open::open(open const& o) noexcept : broker::exceptions::msg(o) {}
+//open::open(open const& o) noexcept : broker::exceptions::msg(o) {}
 
 /**
  *  Destructor.
  */
-open::~open() noexcept {}
+//open::~open() noexcept {}
 
 /**
  *  Assignment operator.
@@ -57,14 +57,15 @@ open::~open() noexcept {}
  *
  *  @return Copy of this exception object.
  */
-exceptions::msg* open::clone() const {
+/*exceptions::msg* open::clone() const {
   return (new open(*this));
-}
+}*/
 
 /**
  *  Rethrow the exception.
  */
+/*
 void open::rethrow() const {
   throw(*this);
   return;
-}
+}*/

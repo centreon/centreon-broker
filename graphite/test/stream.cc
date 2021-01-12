@@ -23,7 +23,6 @@
 #include "com/centreon/broker/logging/manager.hh"
 #include "../../core/test/test_server.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;

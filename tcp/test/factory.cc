@@ -19,7 +19,6 @@
 
 #include "com/centreon/broker/tcp/factory.hh"
 #include <gtest/gtest.h>
-#include <com/centreon/broker/exceptions/msg.hh>
 #include <com/centreon/broker/tcp/acceptor.hh>
 #include "com/centreon/exceptions/msg_fmt.hh"
 

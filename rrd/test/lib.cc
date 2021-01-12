@@ -23,15 +23,16 @@
 
 #include <fstream>
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 TEST(RRDLib, Simple) {
   rrd::lib lib{"/tmp/", 42};
 
   ::remove("/tmp/rrd_test_file");
-  ASSERT_THROW(lib.open("/tmp/rrd_test_file"), exceptions::msg);
+  ASSERT_THROW(lib.open("/tmp/rrd_test_file"), msg_fmt);
   std::ofstream ofs;
   ofs.open("/tmp/rrd_test_file");
   ofs.close();

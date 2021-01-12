@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/time/timezone_locker.hh"
@@ -43,6 +43,7 @@
 // exclusion=name....
 // timeperiod=testing
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 struct options {
@@ -58,7 +59,7 @@ static time_t string_to_time_t(std::string const& data) {
   memset(&t, 0, sizeof(t));
   char* ptr(strptime(data.c_str(), "%Y-%m-%d %H:%M:%S", &t));
   if (!ptr)
-    throw exceptions::msg() << "invalid date format";
+    throw msg_fmt("invalid date format");
   t.tm_isdst = -1;  // Not set by strptime().
   time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : nullptr);
   return mktime(&t);
@@ -72,10 +73,10 @@ static time_t string_to_time_t(std::string const& data) {
  */
 static void parse_file(char const* filename, options& opt) {
   if (!filename)
-    throw exceptions::msg() << "null file name";
+    throw msg_fmt("null file name");
   std::ifstream stream(filename);
   if (!stream.is_open())
-    throw exceptions::msg() << "could not open file '" << filename << "'";
+    throw msg_fmt("could not open file '{}'", filename); 
   std::vector<std::string> range;
   std::vector<std::string> exclude;
   std::shared_ptr<time::timeperiod> current_tp(new time::timeperiod);
@@ -87,8 +88,8 @@ static void parse_file(char const* filename, options& opt) {
       continue;
     size_t pos(line.find_first_of('='));
     if (pos == std::string::npos)
-      throw exceptions::msg() << "parsing of file '" << filename
-                              << "' failed because of line: " << line;
+      throw msg_fmt("parsing of file '{}'" 
+                    " failed because of line: {}", filename, line);
     std::string key(line.substr(0, pos));
     std::string value(line.substr(pos + 1));
     if (key == "preferred_time")
@@ -111,8 +112,8 @@ static void parse_file(char const* filename, options& opt) {
     } else if (key == "speday") {
       size_t pos(value.find_first_of(" \t\n"));
       if (pos == std::string::npos)
-        throw exceptions::msg()
-            << "invalid timeperiod exception format: " << value;
+        throw msg_fmt(
+            "invalid timeperiod exception format: {}", value);
       std::string v{value.substr(pos)};
       misc::string::trim(v);
       current_tp->add_exception(value.substr(0, pos), v);
@@ -132,13 +133,13 @@ static void parse_file(char const* filename, options& opt) {
       opt.period.push_back(current_tp);
       current_tp = std::shared_ptr<time::timeperiod>(new time::timeperiod);
     } else
-      throw exceptions::msg() << "parsing of file '" << filename
-                              << "' failed because of line: " << line;
+      throw msg_fmt("parsing of file '{}'" 
+                    " failed because of line: {}", filename, line);
   }
   if (!opt.preferred_time || !opt.current_time || !opt.ref_time ||
       !opt.period.size())
-    throw exceptions::msg() << "invalid configuration file: "
-                            << "not all required parameters are set";
+    throw msg_fmt("invalid configuration file: "
+                  "not all required parameters are set");
 }
 
 class BamTime : public ::testing::Test {
@@ -169,9 +170,9 @@ bool checkPeriod(char const* file) {
       misc::string::trim(ref_str);
       std::string valid_str(ctime(&valid));
       misc::string::trim(valid_str);
-      throw exceptions::msg()
-          << "next valid time of timeperiod is " << valid_str
-          << " but does not match reference time " << ref_str;
+      throw msg_fmt(
+          "next valid time of timeperiod is {}" 
+          " but does not match reference time {}", valid_str, ref_str);
     }
 
     // Success.

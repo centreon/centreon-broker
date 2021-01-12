@@ -24,7 +24,6 @@
 #include <com/centreon/broker/rrd/connector.hh>
 #include <com/centreon/broker/rrd/output.hh>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;

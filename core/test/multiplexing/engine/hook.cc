@@ -22,7 +22,7 @@
 #include <iostream>
 
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -30,6 +30,7 @@
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "hooker.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 const std::string MSG1("0123456789abcdef");
@@ -81,7 +82,7 @@ TEST_F(Hook, EngineWorks) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (data)
-        throw exceptions::msg() << "error at step #1";
+        throw msg_fmt("error at step #1");
     }
 
     // Start multiplexing engine.
@@ -114,17 +115,17 @@ TEST_F(Hook, EngineWorks) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
         if (!d || (d->type() != io::raw::static_type()))
-          throw exceptions::msg() << "error at step #2";
+          throw msg_fmt("error at step #2");
         else {
           std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(d));
           if (strncmp(raw->const_data(), m.c_str(), m.size()))
-            throw exceptions::msg() << "error at step #3";
+            throw msg_fmt("error at step #3");
         }
       }
       std::shared_ptr<io::data> d;
       s.get_muxer().read(d, 0);
       if (d)
-        throw exceptions::msg() << "error at step #4";
+        throw msg_fmt("error at step #4");
     }
 
     // Unhook.

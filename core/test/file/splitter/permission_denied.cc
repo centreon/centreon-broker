@@ -17,10 +17,11 @@
  *
  */
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
@@ -46,6 +47,6 @@ TEST_F(FileSplitterPermissionDenied, DefaultFile) {
   if (getuid() != 0) {
     ASSERT_THROW(new splitter(_path, file::fs_file::open_read_write_truncate,
                               10000, true),
-                 exceptions::msg);
+                 msg_fmt);
   }
 }
