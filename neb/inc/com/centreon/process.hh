@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013,2019 Centreon
+** Copyright 2012-2013,2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@
 #ifndef CC_PROCESS_POSIX_HH
 #define CC_PROCESS_POSIX_HH
 
+#include <sys/types.h>
 #include <condition_variable>
 #include <mutex>
 #include <string>
-#include <sys/types.h>
-#include "com/centreon/namespace.hh"
 #include "com/centreon/timestamp.hh"
 
 CC_BEGIN()
@@ -41,20 +40,49 @@ class process {
   friend class process_manager;
 
  public:
-  enum status {
-    normal = 0,
-    crash = 1,
-    timeout = 2
-  };
-  enum stream {
-    in = 0,
-    out = 1,
-    err = 2
-  };
+  enum status { normal = 0, crash = 1, timeout = 2 };
+  enum stream { in = 0, out = 1, err = 2 };
 
-  process(process_listener* l = NULL);
+ private:
+  std::string _buffer_err;
+  std::string _buffer_out;
+  pid_t (*_create_process)(char**, char**);
+  mutable std::condition_variable _cv_buffer_err;
+  mutable std::condition_variable _cv_buffer_out;
+  mutable std::condition_variable _cv_process_running;
+  const std::array<bool, 3> _enable_stream;
+  std::array<int, 3> _stream;
+  timestamp _end_time;
+  bool _is_timeout;
+  process_listener* _listener;
+  mutable std::mutex _lock_process;
+  pid_t _process;
+  timestamp _start_time;
+  int _status;
+  uint32_t _timeout;
+
+  static void _close(int& fd) noexcept;
+  static pid_t _create_process_with_setpgid(char** args, char** env);
+  static pid_t _create_process_without_setpgid(char** args, char** env);
+  static void _dev_null(int fd, int flags);
+  static int _dup(int oldfd);
+  static void _dup2(int oldfd, int newfd);
+  bool _is_running() const noexcept;
+  void _kill(int sig);
+  static void _pipe(int fds[2]);
+  ssize_t do_read(int fd);
+  void do_close(int fd);
+  static void _set_cloexec(int fd);
+
+ public:
+  process(process_listener* l = nullptr,
+          bool in_stream = true,
+          bool out_stream = true,
+          bool err_stream = true);
   virtual ~process() noexcept;
-  void enable_stream(stream s, bool enable);
+  process(const process&) = delete;
+  process& operator=(const process&) = delete;
+  // void enable_stream(stream s, bool enable);
   timestamp const& end_time() const noexcept;
   void exec(char const* cmd, char** env = nullptr, uint32_t timeout = 0);
   void exec(std::string const& cmd, uint32_t timeout = 0);
@@ -72,39 +100,6 @@ class process {
   void update_ending_process(int status);
   uint32_t write(std::string const& data);
   uint32_t write(void const* data, uint32_t size);
-
- private:
-  process(process const& p);
-  process& operator=(process const& p);
-  static void _close(int& fd) noexcept;
-  static pid_t _create_process_with_setpgid(char** args, char** env);
-  static pid_t _create_process_without_setpgid(char** args, char** env);
-  static void _dev_null(int fd, int flags);
-  static int _dup(int oldfd);
-  static void _dup2(int oldfd, int newfd);
-  bool _is_running() const noexcept;
-  void _kill(int sig);
-  static void _pipe(int fds[2]);
-  ssize_t do_read(int fd);
-  void do_close(int fd);
-  static void _set_cloexec(int fd);
-
-  std::string _buffer_err;
-  std::string _buffer_out;
-  pid_t (*_create_process)(char**, char**);
-  mutable std::condition_variable _cv_buffer_err;
-  mutable std::condition_variable _cv_buffer_out;
-  mutable std::condition_variable _cv_process_running;
-  bool _enable_stream[3];
-  timestamp _end_time;
-  bool _is_timeout;
-  process_listener* _listener;
-  mutable std::mutex _lock_process;
-  pid_t _process;
-  timestamp _start_time;
-  int _status;
-  int _stream[3];
-  uint32_t _timeout;
 };
 
 CC_END()
