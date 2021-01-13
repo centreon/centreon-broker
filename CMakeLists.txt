@@ -497,7 +497,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/database_config.hh
   ${INC_DIR}/exceptions/config.hh
   ${INC_DIR}/exceptions/interrupt.hh
-  ${INC_DIR}/exceptions/msg.hh
   ${INC_DIR}/exceptions/shutdown.hh
   ${INC_DIR}/exceptions/timeout.hh
   ${INC_DIR}/file/cfile.hh
