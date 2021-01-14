@@ -57,8 +57,6 @@ add_library("${RRD}" SHARED
   "${SRC_DIR}/backend.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/creator.cc"
-  "${SRC_DIR}/exceptions/open.cc"
-  "${SRC_DIR}/exceptions/update.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/lib.cc"
   "${SRC_DIR}/main.cc"
