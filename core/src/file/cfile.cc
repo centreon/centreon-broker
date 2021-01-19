@@ -76,8 +76,7 @@ void cfile::_open() {
   _stream = fopen(_path.c_str(), cfile_mode);
   if (!_stream) {
     char const* msg(strerror(errno));
-    throw msg_fmt(
-        "cannot open '{}' (mode {}): {}", _path, cfile_mode, msg);
+    throw msg_fmt("cannot open '{}' (mode {}): {}", _path, cfile_mode, msg);
   }
 }
 
@@ -104,12 +103,12 @@ long cfile::read(void* buffer, long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
-      throw(com::centreon::exceptions::shutdown("end of file reached"));
+      throw(exceptions::shutdown("end of file reached"));
     else if ((EAGAIN == errno) || (EINTR == errno))
       retval = 0;
     else {
       char const* msg(strerror(errno));
-      throw(msg_fmt("error while reading file: {}", msg));
+      throw msg_fmt("error while reading file: {}", msg);
     }
   }
   return retval;
@@ -143,11 +142,9 @@ void cfile::seek(long offset, fs_file::seek_whence whence) {
     ;
   if (retval) {
     char const* msg(strerror(errno));
-    throw(msg_fmt("cannot seek in file to position ({}, {}): {}", 
-                  seek_whence, offset, msg));
+    throw msg_fmt("cannot seek in file to position ({}, {}): {}", seek_whence,
+                  offset, msg);
   }
-
-  return;
 }
 
 /**
@@ -160,7 +157,7 @@ long cfile::tell() {
   long retval(ftell(_stream));
   if (-1 == retval) {
     char const* msg(strerror(errno));
-    throw(msg_fmt("cannot tell position in file: {}", msg));
+    throw msg_fmt("cannot tell position in file: {}", msg);
   }
   return retval;
 }
@@ -178,8 +175,7 @@ long cfile::write(void const* buffer, long size) {
   size_t retval(fwrite(buffer, 1, size, _stream));
   if (ferror(_stream)) {
     char const* msg(strerror(errno));
-    throw msg_fmt(
-        "cannot write {} bytes to file: {}", size, msg);
+    throw msg_fmt("cannot write {} bytes to file: {}", size, msg);
   }
   return retval;
 }

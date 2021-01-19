@@ -52,7 +52,7 @@ publisher::~publisher() noexcept {}
 bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw com::centreon::exceptions::shutdown("cannot read from publisher");
+  throw exceptions::shutdown("cannot read from publisher");
   return true;
 }
 

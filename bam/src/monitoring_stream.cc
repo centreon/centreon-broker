@@ -137,7 +137,7 @@ void monitoring_stream::initialize() {
 bool monitoring_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(com::centreon::exceptions::shutdown("cannot read from BAM monitoring stream"));
+  throw exceptions::shutdown("cannot read from BAM monitoring stream");
   return true;
 }
 /**
@@ -165,7 +165,7 @@ void monitoring_stream::update() {
     _rebuild();
     initialize();
   } catch (std::exception const& e) {
-    throw(msg_fmt("BAM: could not process configuration update: {}", e.what()));
+    throw msg_fmt("BAM: could not process configuration update: {}", e.what());
   }
 }
 
@@ -367,7 +367,8 @@ void monitoring_stream::_rebuild() {
       while (_mysql.fetch_row(res))
         bas_to_rebuild.push_back(res.value_as_u32(0));
     } catch (std::exception const& e) {
-      throw msg_fmt("BAM: could not select the list of BAs to rebuild: {}", e.what());
+      throw msg_fmt("BAM: could not select the list of BAs to rebuild: {}",
+                    e.what());
     }
   }
 

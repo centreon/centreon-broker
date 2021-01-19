@@ -113,12 +113,12 @@ TEST_F(StatsTest, BuilderWithModules) {
 }
 
 class st : public io::stream {
-  public:
-    st() : io::stream("st") {}
+ public:
+  st() : io::stream("st") {}
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override {
     (void)deadline;
     d.reset();
-    throw com::centreon::exceptions::shutdown("cannot read from connector");
+    throw exceptions::shutdown("cannot read from connector");
   }
 
   virtual int write(std::shared_ptr<io::data> const& d
@@ -144,8 +144,8 @@ class fact : public io::factory {
  public:
   fact() {}
 
-  bool has_endpoint(config::endpoint& cfg
-                    __attribute__((__unused__)), flag* flag) override {
+  bool has_endpoint(config::endpoint& cfg __attribute__((__unused__)),
+                    flag* flag) override {
     if (flag)
       *flag = no;
     return true;
@@ -258,7 +258,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
   ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() ==
-                  "listening");
+              "listening");
 }
 
 TEST_F(StatsTest, CopyCtor) {

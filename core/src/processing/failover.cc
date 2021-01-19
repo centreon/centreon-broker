@@ -257,7 +257,7 @@ void failover::_run() {
           try {
             std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
             timed_out_stream = !_stream->read(d, 0);
-          } catch (com::centreon::exceptions::shutdown const& e) {
+          } catch (exceptions::shutdown const& e) {
             log_v2::processing()->debug(
                 "failover: stream of endpoint '{}' shutdown while reading: {}",
                 _name, e.what());
@@ -289,7 +289,7 @@ void failover::_run() {
           try {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
             should_commit = should_commit || d;
-          } catch (com::centreon::exceptions::shutdown const& e) {
+          } catch (exceptions::shutdown const& e) {
             log_v2::processing()->debug(
                 "failover: muxer of endpoint '{}' "
                 "shutdown while reading: {}",
@@ -307,7 +307,7 @@ void failover::_run() {
             try {
               std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
               we = _stream->write(d);
-            } catch (com::centreon::exceptions::shutdown const& e) {
+            } catch (exceptions::shutdown const& e) {
               log_v2::processing()->debug(
                   "failover: stream of endpoint '{}' shutdown while writing: "
                   "{}",

@@ -190,7 +190,7 @@ stream::~stream() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw com::centreon::exceptions::shutdown("cannot read from lua generic connector");
+  throw exceptions::shutdown("cannot read from lua generic connector");
 }
 
 /**

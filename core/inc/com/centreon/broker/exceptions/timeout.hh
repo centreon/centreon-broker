@@ -20,7 +20,6 @@
 #define CCB_EXCEPTIONS_TIMEOUT_HH
 
 #include <exception>
-#include "com/centreon/broker/misc/stringifier.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -32,24 +31,10 @@ namespace exceptions {
  *
  *  Exception that is thrown upon timeout.
  */
-class timeout : protected misc::stringifier, public std::exception {
+class timeout : public std::exception {
  public:
-  timeout() = default;
-  timeout(timeout const& other) : misc::stringifier(other), std::exception(other) {}
-  virtual ~timeout() noexcept {}
+  timeout() noexcept : std::exception() {}
   timeout& operator=(const timeout&) = delete;
-  virtual char const* what() const noexcept { return misc::stringifier::data(); }
-
-  /**
-   *  Insert data in message.
-   *
-   *  @param[in] t  Data to insert.
-   */
-  template <typename T>
-  timeout& operator<<(T t) {
-    *(misc::stringifier*)this << t;
-    return *this;
-  }
 };
 }  // namespace exceptions
 

@@ -87,7 +87,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         // We do not have enough data to get the next chunk's size.
         // Stream is shutdown.
         if (_rbuffer.size() < static_cast<int>(sizeof(int32_t)))
-          throw com::centreon::exceptions::shutdown("no more data to uncompress");
+          throw exceptions::shutdown("no more data to uncompress");
 
         // Extract next chunk's size.
         {
@@ -160,7 +160,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
   } catch (exceptions::timeout const& e) {
     (void)e;
     return false;
-  } catch (com::centreon::exceptions::shutdown const& e) {
+  } catch (exceptions::shutdown const& e) {
     _shutdown = true;
     if (!_wbuffer.empty()) {
       std::shared_ptr<io::raw> r(new io::raw);
@@ -210,20 +210,22 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
   // Check if substream is shutdown.
   if (_shutdown)
-    throw com::centreon::exceptions::shutdown("cannot write to compression "
-                                              "stream: sub-stream is "
-                                              "already shutdown");
+    throw exceptions::shutdown(
+        "cannot write to compression "
+        "stream: sub-stream is "
+        "already shutdown");
 
   // Process raw data only.
   if (d->type() == io::raw::static_type()) {
     io::raw& r(*std::static_pointer_cast<io::raw>(d));
 
-    //Check length.
+    // Check length.
     if (r.size() > max_data_size)
       throw msg_fmt(
-              "cannot compress buffers longer than  {}" 
-              " bytes: you should report this error "
-              "to Centreon Broker developers", max_data_size);
+          "cannot compress buffers longer than  {}"
+          " bytes: you should report this error "
+          "to Centreon Broker developers",
+          max_data_size);
     else if (r.size() > 0) {
       // Append data to write buffer.
       std::copy(r.get_buffer().begin(), r.get_buffer().end(),
@@ -249,9 +251,10 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 void stream::_flush() {
   // Check for shutdown stream.
   if (_shutdown)
-    throw com::centreon::exceptions::shutdown("cannot flush compression "
-                                              "stream: sub-stream is already "
-                                              "shutdown");
+    throw exceptions::shutdown(
+        "cannot flush compression "
+        "stream: sub-stream is already "
+        "shutdown");
 
   if (_wbuffer.size() > 0) {
     // Compress data.
@@ -300,7 +303,7 @@ void stream::_get_data(int size, time_t deadline) {
   }
   // If the substream is shutdown, just indicates it and return already
   // read data. Caller will handle missing data.
-  catch (com::centreon::exceptions::shutdown const& e) {
+  catch (exceptions::shutdown const& e) {
     (void)e;
     _shutdown = true;
   }

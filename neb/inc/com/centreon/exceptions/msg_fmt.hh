@@ -37,14 +37,13 @@ class msg_fmt : public std::exception {
   const std::string _msg;
 
  public:
-  msg_fmt() = delete;
-
   template <typename... Args>
-  explicit msg_fmt(std::string const& str, const Args&... args)
+  explicit msg_fmt(const std::string& str, const Args&... args)
       : _msg(fmt::format(str, args...)) {}
 
-  virtual msg_fmt& operator=(msg_fmt const&) = delete;
-  virtual char const* what() const noexcept { return _msg.c_str(); }
+  msg_fmt() = delete;
+  msg_fmt& operator=(const msg_fmt&) = delete;
+  const char* what() const noexcept final { return _msg.c_str(); }
 };
 }  // namespace exceptions
 CC_END()

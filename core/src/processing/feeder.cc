@@ -56,8 +56,7 @@ feeder::feeder(std::string const& name,
       _client(client),
       _subscriber(name, false) {
   if (!client)
-    throw msg_fmt(
-        "could not process '{}' with no client stream", _name);
+    throw msg_fmt("could not process '{}' with no client stream", _name);
 
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
@@ -68,7 +67,7 @@ feeder::feeder(std::string const& name,
   std::unique_lock<std::mutex> lck(_state_m);
   _thread = std::thread(&feeder::_callback, this);
   _state_cv.wait(lck,
-                 [& state = this->_state] { return state != feeder::stopped; });
+                 [&state = this->_state] { return state != feeder::stopped; });
 }
 
 /**
@@ -156,7 +155,7 @@ void feeder::_callback() noexcept {
         try {
           misc::read_lock lock(_client_m);
           timed_out_stream = !_client->read(d, 0);
-        } catch (com::centreon::exceptions::shutdown const& e) {
+        } catch (exceptions::shutdown const& e) {
           stream_can_read = false;
         }
         if (d) {
@@ -177,7 +176,7 @@ void feeder::_callback() noexcept {
       if (muxer_can_read)
         try {
           timed_out_muxer = !_subscriber.get_muxer().read(d, 0);
-        } catch (com::centreon::exceptions::shutdown const& e) {
+        } catch (exceptions::shutdown const& e) {
           muxer_can_read = false;
         }
       if (d) {
@@ -200,7 +199,7 @@ void feeder::_callback() noexcept {
         ::usleep(100000);
       }
     }
-  } catch (com::centreon::exceptions::shutdown const& e) {
+  } catch (exceptions::shutdown const& e) {
     // Normal termination.
     (void)e;
     log_v2::core()->info("feeder '{}' shut down", get_name());

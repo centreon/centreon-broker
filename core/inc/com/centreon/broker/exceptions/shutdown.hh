@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CC_EXCEPTIONS_SHUTDOWN_HH
-#define CC_EXCEPTIONS_SHUTDOWN_HH
+#ifndef CCB_EXCEPTIONS_SHUTDOWN_HH
+#define CCB_EXCEPTIONS_SHUTDOWN_HH
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
-CC_BEGIN()
+CCB_BEGIN()
 
 namespace exceptions {
 /**
@@ -32,17 +32,17 @@ namespace exceptions {
  *  This exception is thrown when someone attemps to read from a
  *  stream that has been shutdown.
  */
-class shutdown : public msg_fmt {
+class shutdown : public com::centreon::exceptions::msg_fmt {
  public:
   template <typename... Args>
   explicit shutdown(std::string const& str, const Args&... args)
-    : msg_fmt(str, args...) {}
+      : msg_fmt(str, args...) {}
   shutdown() = delete;
   ~shutdown() noexcept {}
   shutdown& operator=(const shutdown&) = delete;
-  };
+};
 }  // namespace exceptions
 
-CC_END()
+CCB_END()
 
 #endif  // !CCB_EXCEPTIONS_SHUTDOWN_HH

@@ -55,7 +55,10 @@ using namespace com::centreon::broker::database;
  *  @param[in] db_cfg                  BAM DB configuration.
  */
 reporting_stream::reporting_stream(database_config const& db_cfg)
-    : io::stream("BAM-BI"), _ack_events(0), _pending_events(0), _mysql(db_cfg),
+    : io::stream("BAM-BI"),
+      _ack_events(0),
+      _pending_events(0),
+      _mysql(db_cfg),
       _processing_dimensions(false) {
   // Prepare queries.
   _prepare();
@@ -97,7 +100,7 @@ reporting_stream::~reporting_stream() {
 bool reporting_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw com::centreon::exceptions::shutdown("cannot read from BAM reporting stream");
+  throw exceptions::shutdown("cannot read from BAM reporting stream");
   return true;
 }
 /**
@@ -258,8 +261,7 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
         events.emplace_back(std::make_pair(
             res.value_as_u32(0), static_cast<time_t>(res.value_as_i32(1))));
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "BAM-BI: could not get inconsistent events: {}", e.what());
+      throw msg_fmt("BAM-BI: could not get inconsistent events: {}", e.what());
     }
   }
 
@@ -284,8 +286,10 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
         end_time = res.value_as_i32(0);
       } catch (std::exception const& e) {
         throw msg_fmt(
-            "BAM-BI: could not get end time of inconsistent event of {} {} starting"
-            " at {} : {}", event_type, it->first,  it->second,  e.what());
+            "BAM-BI: could not get end time of inconsistent event of {} {} "
+            "starting"
+            " at {} : {}",
+            event_type, it->first, it->second, e.what());
       }
     }
     {
@@ -407,7 +411,8 @@ void reporting_stream::_load_timeperiods() {
         _timeperiods.add_relation(res.value_as_u32(0), res.value_as_u32(1),
                                   res.value_as_bool(2));
     } catch (std::exception const& e) {
-      throw msg_fmt("BAM-BI: could not load BA/timeperiods relations: {}", e.what());
+      throw msg_fmt("BAM-BI: could not load BA/timeperiods relations: {}",
+                    e.what());
     }
   }
 }
@@ -632,7 +637,7 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
     }
   } catch (std::exception const& e) {
     throw msg_fmt(
-        "BAM-BI: could not update event of BA {} " 
+        "BAM-BI: could not update event of BA {} "
         " starting at {} and ending at {}: {}",
         be.ba_id, be.start_time, be.end_time, e.what());
   }
@@ -693,8 +698,9 @@ void reporting_stream::_process_ba_duration_event(
     }
   } catch (std::exception const& e) {
     throw msg_fmt(
-        "BAM-BI: could not insert duration event of BA {}" 
-        " starting at {} : {}", bde.ba_id, bde.start_time, e.what());
+        "BAM-BI: could not insert duration event of BA {}"
+        " starting at {} : {}",
+        bde.ba_id, bde.start_time, e.what());
   }
 }
 
@@ -1342,7 +1348,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
         }
       } catch (std::exception const& e) {
         throw msg_fmt("BAM-BI: could not get BA events of {} : {}",
-                       r.bas_to_rebuild, e.what());
+                      r.bas_to_rebuild, e.what());
       }
     }
 

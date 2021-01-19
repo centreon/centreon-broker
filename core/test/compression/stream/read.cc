@@ -130,7 +130,7 @@ TEST_F(CompressionStreamRead, Shutdown) {
   _stream->read(d);
 
   // When, Then
-  ASSERT_THROW(_stream->read(d), com::centreon::exceptions::shutdown);
+  ASSERT_THROW(_stream->read(d), exceptions::shutdown);
 }
 
 // Given a compression stream
