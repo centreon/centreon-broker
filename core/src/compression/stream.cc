@@ -126,7 +126,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
               zlib::uncompress(reinterpret_cast<unsigned char const*>(
                                    (_rbuffer.data() + sizeof(int32_t))),
                                size);
-        } catch (corruption const& e) {
+        } catch (exceptions::corruption const& e) {
           logging::debug(logging::medium) << e.what();
         }
       }

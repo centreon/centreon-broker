@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CC_EXCEPTIONS_CORRUPTION_HH
-#define CC_EXCEPTIONS_CORRUPTION_HH
+#ifndef CCB_EXCEPTIONS_CORRUPTION_HH
+#define CCB_EXCEPTIONS_CORRUPTION_HH
 
 #include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
 
-CC_BEGIN()
+CCB_BEGIN()
 
 namespace exceptions {
 /**
@@ -33,7 +33,7 @@ namespace exceptions {
  *  This exception is thrown when someone attemps to read from a
  *  stream that has been corruption.
  */
-class corruption : public msg_fmt {
+class corruption : public com::centreon::exceptions::msg_fmt {
  public:
   template <typename... Args>
   explicit corruption(std::string const& str, const Args&... args)
@@ -42,10 +42,9 @@ class corruption : public msg_fmt {
   corruption() = delete;
   ~corruption() noexcept {}
   corruption& operator=(const corruption&) = delete;
-
 };
 }  // namespace exceptions
 
-CC_END()
+CCB_END()
 
-#endif  // !CC_EXCEPTIONS_CORRUPTION_HH
+#endif  // !CCB_EXCEPTIONS_CORRUPTION_HH
