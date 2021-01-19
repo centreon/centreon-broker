@@ -163,8 +163,10 @@ std::string exp_tokenizer::_extract_token() {
     if ((_next < _size) && (_text[_next] == '}')) {
       ++_next;
     } else
-      throw(msg_fmt("opening brace at position {}" 
-                    " has no ending brace ", _current));
+      throw msg_fmt(
+          "opening brace at position {}"
+          " has no ending brace ",
+          _current);
   }
   // Extract classical token.
   else {
@@ -206,9 +208,8 @@ std::string exp_tokenizer::_extract_until(bool (exp_tokenizer::*predicate)()) {
           }
         }
         if (!quote_matched)
-          throw(msg_fmt(
-                "unterminated {} quote in the following expression: {}",
-                (process_metachars ? "double" : "single"), _text));
+          throw msg_fmt("unterminated {} quote in the following expression: {}",
+                        (process_metachars ? "double" : "single"), _text);
       } break;
       case '\\':
         if (++_next < _size)
