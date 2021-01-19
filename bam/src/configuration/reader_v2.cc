@@ -43,7 +43,6 @@
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
-using namespace com::centreon::bam::configuration;
 
 /**
  *  Constructor.

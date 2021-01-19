@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CC_CONFIGURATION_READER_EXCEPTION_HH
-#define CC_CONFIGURATION_READER_EXCEPTION_HH
+#ifndef CCB_CONFIGURATION_READER_EXCEPTION_HH
+#define CCB_CONFIGURATION_READER_EXCEPTION_HH
 
 #include "com/centreon/exceptions/msg_fmt.hh"
 
-CC_BEGIN()
+CCB_BEGIN()
 
 namespace bam {
 namespace configuration {
@@ -45,6 +45,6 @@ class reader_exception : public com::centreon::exceptions::msg_fmt {
 }  // namespace configuration
 }  // namespace bam
 
-CC_END()
+CCB_END()
 
-#endif  // !CC_CONFIGURATION_READER_EXCEPTION_HH
+#endif  // !CCB_CONFIGURATION_READER_EXCEPTION_HH
