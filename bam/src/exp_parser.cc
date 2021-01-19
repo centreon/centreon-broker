@@ -135,15 +135,18 @@ exp_parser::notation const& exp_parser::get_postfix() {
         stack.pop();
       }
       if (stack.empty()) {
-        throw(msg_fmt("mismatched parentheses found while parsing "
-                      "the following expression: {}", _exp));
+        throw msg_fmt(
+            "mismatched parentheses found while parsing "
+            "the following expression: {}",
+            _exp);
       }
 
       // Increment function arity.
       if (arity.empty()) {
-        throw(msg_fmt(
-              "found comma outside function call while parsing "
-              "the following expression: {}", _exp));
+        throw msg_fmt(
+            "found comma outside function call while parsing "
+            "the following expression: {}",
+            _exp);
       }
       ++arity.top();
 
@@ -186,8 +189,10 @@ exp_parser::notation const& exp_parser::get_postfix() {
         stack.pop();
       }
       if (stack.empty()) {
-        throw(msg_fmt("mismatched parentheses found while parsing "
-                      "the following expression: {}", _exp));
+        throw msg_fmt(
+            "mismatched parentheses found while parsing "
+            "the following expression: {}",
+            _exp);
       }
 
       // Pop left parenthesis off the stack.
@@ -220,8 +225,10 @@ exp_parser::notation const& exp_parser::get_postfix() {
     std::string token(stack.top());
     stack.pop();
     if (token == "(") {
-      throw(msg_fmt("mismatched parentheses found while parsing "
-                    "the following expression: {}", _exp));
+      throw msg_fmt(
+          "mismatched parentheses found while parsing "
+          "the following expression: {}",
+          _exp);
     }
     // Or pop the operator onto the output queue.
     _postfix.push_back(token);
