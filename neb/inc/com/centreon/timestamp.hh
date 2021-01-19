@@ -19,6 +19,7 @@
 #ifndef CC_TIMESTAMP_HH
 #define CC_TIMESTAMP_HH
 
+#include <cstdint>
 #include <ctime>
 #include "com/centreon/namespace.hh"
 
@@ -31,41 +32,38 @@ CC_BEGIN()
  *  Allow to manage time easily.
  */
 class timestamp {
- public:
-  timestamp(time_t secs = 0, int usecs = 0);
-  timestamp(timestamp const& right);
-  ~timestamp() throw();
-  timestamp& operator=(timestamp const& right);
-  bool operator==(timestamp const& right) const throw();
-  bool operator!=(timestamp const& right) const throw();
-  bool operator<(timestamp const& right) const throw();
-  bool operator<=(timestamp const& right) const throw();
-  bool operator>(timestamp const& right) const throw();
-  bool operator>=(timestamp const& right) const throw();
-  timestamp operator+(timestamp const& right) const;
-  timestamp operator-(timestamp const& right) const;
-  timestamp& operator+=(timestamp const& right);
-  timestamp& operator-=(timestamp const& right);
-  void add_mseconds(long msecs);
-  void add_seconds(time_t secs);
-  void add_useconds(long usecs);
-  void clear() throw();
-  static timestamp max_time() throw();
-  static timestamp min_time() throw();
-  static timestamp now() throw();
-  void sub_mseconds(long msecs);
-  void sub_seconds(time_t secs);
-  void sub_useconds(long usecs);
-  long long to_mseconds() const throw();
-  time_t to_seconds() const throw();
-  long long to_useconds() const throw();
-
  private:
-  void _internal_copy(timestamp const& right);
-  static void _transfer(time_t* secs, unsigned int* usecs);
-
   time_t _secs;
-  unsigned int _usecs;
+  uint32_t _usecs;
+
+ public:
+  timestamp(time_t secs = 0, int32_t usecs = 0);
+  timestamp(const timestamp& right);
+  ~timestamp() noexcept = default;
+  timestamp& operator=(const timestamp& right);
+  bool operator==(const timestamp& right) const noexcept;
+  bool operator!=(const timestamp& right) const noexcept;
+  bool operator<(const timestamp& right) const noexcept;
+  bool operator<=(const timestamp& right) const noexcept;
+  bool operator>(const timestamp& right) const noexcept;
+  bool operator>=(const timestamp& right) const noexcept;
+  timestamp operator+(const timestamp& right) const;
+  timestamp operator-(const timestamp& right) const;
+  timestamp& operator+=(const timestamp& right);
+  timestamp& operator-=(const timestamp& right);
+  void add_mseconds(int32_t msecs);
+  void add_seconds(time_t secs) noexcept;
+  void add_useconds(int32_t usecs);
+  void clear() noexcept;
+  static timestamp max_time() noexcept;
+  static timestamp min_time() noexcept;
+  static timestamp now() noexcept;
+  void sub_mseconds(int32_t msecs);
+  void sub_seconds(time_t secs) noexcept;
+  void sub_useconds(int32_t usecs);
+  int64_t to_mseconds() const noexcept;
+  time_t to_seconds() const noexcept;
+  int64_t to_useconds() const noexcept;
 };
 
 CC_END()

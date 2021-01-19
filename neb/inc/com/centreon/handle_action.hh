@@ -20,7 +20,6 @@
 #define CC_HANDLE_ACTION_HH
 
 #include <atomic>
-#include "com/centreon/namespace.hh"
 #include "com/centreon/task.hh"
 
 CC_BEGIN()

@@ -20,7 +20,6 @@
 #define CC_HANDLE_LISTENER_HH
 
 #include "com/centreon/handle.hh"
-#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
