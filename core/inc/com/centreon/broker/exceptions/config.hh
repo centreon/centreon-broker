@@ -22,7 +22,7 @@
 #include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
 
-CC_BEGIN()
+CCB_BEGIN()
 
 namespace exceptions {
 /**
@@ -31,7 +31,7 @@ namespace exceptions {
  *
  *  Such exceptions are thrown in case of configuration errors.
  */
-class config : public msg_fmt {
+class config : public com::centreon::exceptions::msg_fmt {
  public:
   template <typename...Args>
   explicit config(std::string const& str, const Args&... args)
@@ -42,6 +42,6 @@ class config : public msg_fmt {
 };
 }  // namespace exceptions
 
-CC_END()
+CCB_END()
 
 #endif  // !CC_EXCEPTIONS_CONFIG_HH

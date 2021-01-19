@@ -85,7 +85,7 @@ database_config::database_config(config::endpoint const& cfg) {
   if (it != end)
     _type = it->second;
   else
-    throw com::centreon::exceptions::config(
+    throw exceptions::config(
         "no 'db_type' defined for endpoint '{}'", cfg.name);
 
   // db_host
@@ -117,7 +117,7 @@ database_config::database_config(config::endpoint const& cfg) {
   if (it != end)
     _name = it->second;
   else
-    throw com::centreon::exceptions::config(
+    throw exceptions::config(
         "no 'db_name' defined for endpoint '{}'", cfg.name);
 
   // queries_per_transaction
