@@ -160,7 +160,7 @@ void failover::_run() {
       {
         std::shared_ptr<io::stream> s(_endpoint->open());
         if (!s)
-          throw msg_fmt("failover: cannot connect endpoint.");
+          throw msg_fmt("failover: '{}' cannot connect endpoint.", _name);
         {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;
