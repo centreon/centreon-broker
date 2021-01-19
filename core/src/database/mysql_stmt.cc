@@ -259,15 +259,18 @@ void mysql_stmt::operator<<(io::data const& d) {
             }
           } break;
           default:  // Error in one of the mappings.
-            throw(msg_fmt("invalid mapping for object "
-                          "of type '{}': {} is not a know type ID",
-                          info->get_name(), current_entry->get_type()));
+            throw msg_fmt(
+                "invalid mapping for object "
+                "of type '{}': {} is not a know type ID",
+                info->get_name(), current_entry->get_type());
         };
       }
     }
   } else
-    throw msg_fmt("cannot bind object of type {}"
-                  " to database query: mapping does not exist", d.type());
+    throw msg_fmt(
+        "cannot bind object of type {}"
+        " to database query: mapping does not exist",
+        d.type());
 }
 
 void mysql_stmt::bind_value_as_i32(int range, int value) {

@@ -26,13 +26,12 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
 
-int const stream::max_data_size = 100000000;
+const size_t stream::max_data_size = 100000000u;
 
 /**************************************
  *                                     *
@@ -97,7 +96,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         }
 
         // Check if size is within bounds.
-        if ((size <= 0) || (size > max_data_size)) {
+        if (size <= 0 || size > max_data_size) {
           // Skip corrupted data, one byte at a time.
           logging::error(logging::low)
               << "compression: " << this << " got corrupted packet size of "

@@ -367,7 +367,7 @@ void splitter::_open_read_file() {
     if (errno == ENOENT)
       return;
     else
-      throw msg_fmt("cannot open '{}' to read/write: ", get_file_path(_rid),
+      throw msg_fmt("cannot open '{}' to read/write: {}", get_file_path(_rid),
                     strerror(errno));
   }
   std::lock_guard<std::mutex> lck(*_rmutex);

@@ -68,8 +68,10 @@ std::vector<char> zlib::compress(std::vector<char> const& data,
         retval[3] = (nbytes & 0xff);
         break;
       case Z_MEM_ERROR:
-        throw(msg_fmt("compression: not enough memory to compress {} "
-                      " bytes", nbytes));
+        throw msg_fmt(
+            "compression: not enough memory to compress {} "
+            " bytes",
+            nbytes);
         break;
       case Z_BUF_ERROR:
         len <<= 1;
@@ -97,7 +99,8 @@ std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
   if (nbytes <= 4) {
     if (nbytes < 4 ||
         (data[0] != 0 || data[1] != 0 || data[2] != 0 || data[3] != 0))
-      throw exceptions::corruption("compression: attempting to uncompress data with invalid size");
+      throw exceptions::corruption(
+          "compression: attempting to uncompress data with invalid size");
   }
   ulong expected_size =
       (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
@@ -119,13 +122,13 @@ std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
     case Z_MEM_ERROR:
       throw msg_fmt(
           "compression: not enough memory to uncompress {}"
-          " compressed bytes to {} uncompressed bytes", nbytes, len);
+          " compressed bytes to {} uncompressed bytes",
+          nbytes, len);
     case Z_BUF_ERROR:
     case Z_DATA_ERROR:
       throw exceptions::corruption(
           "compression: compressed input data is corrupted, "
           "unable to uncompress it");
-          
   }
   return uncompressed_array;
 }

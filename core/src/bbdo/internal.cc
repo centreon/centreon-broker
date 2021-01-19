@@ -51,9 +51,11 @@ void bbdo::load() {
         "BBDO: category {} is already registered whereas it should be reserved "
         "for the BBDO core",
         io::events::bbdo);
-    throw(msg_fmt("BBDO: category {} " 
-                  " is already registered whereas it should be "
-                  "reserved for the BBDO core", io::events::bbdo));
+    throw msg_fmt(
+        "BBDO: category {} "
+        " is already registered whereas it should be "
+        "reserved for the BBDO core",
+        io::events::bbdo);
   }
 
   // Register BBDO events.

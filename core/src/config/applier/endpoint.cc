@@ -321,17 +321,16 @@ processing::failover* endpoint::_create_failover(
     std::list<config::endpoint>::iterator it(
         std::find_if(l.begin(), l.end(), failover_match_name(front_failover)));
     if (it == l.end())
-      throw(msg_fmt(
-            "endpoint applier: could not find failover '{}' for endpoint '{}'", 
-               front_failover,
-               cfg.name));
+      throw msg_fmt(
+          "endpoint applier: could not find failover '{}' for endpoint '{}'",
+          front_failover, cfg.name);
     bool is_acceptor;
     std::shared_ptr<io::endpoint> e(_create_endpoint(*it, is_acceptor));
     if (is_acceptor)
-      throw(msg_fmt(
-            "endpoint applier: cannot allow acceptor '{}' "
-            "as failover for endpoint '{}'", 
-            front_failover, cfg.name));
+      throw msg_fmt(
+          "endpoint applier: cannot allow acceptor '{}' "
+          "as failover for endpoint '{}'",
+          front_failover, cfg.name);
     failovr = std::shared_ptr<processing::failover>(
         _create_failover(*it, sbscrbr, e, l));
 
@@ -402,9 +401,10 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
     }
   }
   if (!endp)
-    throw msg_fmt("endpoint applier: no matching "
-                  "type found for endpoint '{}'",
-                  cfg.name);
+    throw msg_fmt(
+        "endpoint applier: no matching "
+        "type found for endpoint '{}'",
+        cfg.name);
 
   // Create remaining objects.
   while (level <= 7) {
@@ -426,9 +426,10 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
       ++it;
     }
     if (7 == level && it == end)
-      throw msg_fmt("endpoint applier: no matching "
-                    "protocol found for endpoint '{}'",
-                    cfg.name);
+      throw msg_fmt(
+          "endpoint applier: no matching "
+          "protocol found for endpoint '{}'",
+          cfg.name);
     ++level;
   }
 
@@ -462,8 +463,9 @@ void endpoint::_diff_endpoints(
                         name_match_failover(list_it->name)) != new_ep.end())
       ++list_it;
     if (list_it == new_ep.end())
-      throw msg_fmt("endpoint applier: error while "
-                    "diff'ing new and old configuration");
+      throw msg_fmt(
+          "endpoint applier: error while "
+          "diff'ing new and old configuration");
     std::list<config::endpoint> entries;
     entries.push_back(*list_it);
     new_ep.erase(list_it);
@@ -477,8 +479,9 @@ void endpoint::_diff_endpoints(
                                  failover_match_name(failover));
           if (list_it == new_ep.end())
             throw msg_fmt(
-                "endpoint applier: could not find failover '{}'" 
-                "' for endpoint '{}'", failover, entry.name);
+                "endpoint applier: could not find failover '{}'"
+                "' for endpoint '{}'",
+                failover, entry.name);
           entries.push_back(*list_it);
           new_ep.erase(list_it);
         }

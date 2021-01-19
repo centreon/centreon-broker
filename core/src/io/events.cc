@@ -125,11 +125,10 @@ uint32_t events::register_event(unsigned short category_id,
   categories_container::iterator it(_elements.find(category_id));
   if (it == _elements.end())
     throw msg_fmt(
-        "core: could not register event '{}': category {} was not registered", 
+        "core: could not register event '{}': category {} was not registered",
         name, category_id);
   int type(make_type(category_id, event_id));
-  it->second.events.emplace(type,
-                            event_info(name, ops, entries, table_v2));
+  it->second.events.emplace(type, event_info(name, ops, entries, table_v2));
   return type;
 }
 
@@ -196,7 +195,7 @@ events::events_container events::get_events_by_category_name(
         return it->second.events;
     }
   }
-  throw(msg_fmt("core: cannot find event category '{}'", name));
+  throw msg_fmt("core: cannot find event category '{}'", name);
 }
 
 /**
@@ -249,9 +248,9 @@ events::events_container events::get_matching_events(
         return res;
       }
     }
-    throw(msg_fmt("core: cannot find event '{}'in '{}'", event_name, name));
+    throw msg_fmt("core: cannot find event '{}'in '{}'", event_name, name);
   } else
-    throw(msg_fmt("core: too many ':' in '{}'", name));
+    throw msg_fmt("core: too many ':' in '{}'", name);
 }
 
 /**************************************

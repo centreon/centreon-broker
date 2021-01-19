@@ -23,9 +23,9 @@
 #include <cstring>
 #include <sstream>
 #include <string>
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 CCB_BEGIN()
 
@@ -75,16 +75,19 @@ class tokenizer {
     arg = std::string(_index, position - _index);
 
     if (arg.empty() && !optional)
-      throw(com::centreon::exceptions::msg_fmt("expected non optional argument {}" 
-                                               " empty or not found", _pos));
+      throw com::centreon::exceptions::msg_fmt(
+          "expected non optional argument {}"
+          " empty or not found",
+          _pos);
 
     std::stringstream ss;
     ss << arg;
     T ret = from_string_stream<T>(ss);
     if (ss.fail())
-      throw(com::centreon::exceptions::msg_fmt("can't convert '{}"
-                                                "' to expected type for pos {}", 
-                                                ss.str(), _pos));
+      throw com::centreon::exceptions::msg_fmt(
+          "can't convert '{}"
+          "' to expected type for pos {}",
+          ss.str(), _pos);
 
     _index = *position ? position + 1 : position;
     ++_pos;

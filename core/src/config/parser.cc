@@ -65,7 +65,8 @@ static bool get_conf(std::pair<std::string const, Json> const& obj,
     else
       throw msg_fmt(
           "config parser: cannot parse key '{}': "
-          "value type is invalid", key);
+          "value type is invalid",
+          key);
     ;
     return true;
   }
@@ -91,8 +92,7 @@ state parser::parse(std::string const& file) {
   Json const& js{Json::parse(json_to_parse, err)};
 
   if (js.is_null())
-    throw msg_fmt(
-        "config parser: cannot parse file '{}' : {}", file, err);
+    throw msg_fmt("config parser: cannot parse file '{}' : {}", file, err);
   if (js.is_object() && js["centreonBroker"].is_object()) {
     for (std::pair<std::string const, Json> const& object :
          js["centreonBroker"].object_items()) {
@@ -126,9 +126,9 @@ state parser::parse(std::string const& file) {
                    object, "cache_directory", retval, &state::cache_directory,
                    &Json::is_string, &Json::string_value))
         ;
-      else if (get_conf<int, state>(
-                   object, "pool_size", retval, &state::pool_size,
-                   &Json::is_number, &Json::int_value))
+      else if (get_conf<int, state>(object, "pool_size", retval,
+                                    &state::pool_size, &Json::is_number,
+                                    &Json::int_value))
         ;
       else if (get_conf<std::string const&, state>(
                    object, "command_file", retval, &state::command_file,
@@ -163,8 +163,9 @@ state parser::parse(std::string const& file) {
           _parse_endpoint(object.second, out);
           retval.endpoints().push_back(out);
         } else
-          throw msg_fmt("config parser: cannot parse key '"
-                        "'output':  value type must be an object");
+          throw msg_fmt(
+              "config parser: cannot parse key '"
+              "'output':  value type must be an object");
       }
 
       else if (object.first == "input") {
@@ -181,8 +182,9 @@ state parser::parse(std::string const& file) {
           _parse_endpoint(object.second, in);
           retval.endpoints().push_back(in);
         } else
-          throw msg_fmt("config parser: cannot parse key '"
-                        "'input':  value type must be an object");
+          throw msg_fmt(
+              "config parser: cannot parse key '"
+              "'input':  value type must be an object");
       }
 
       else if (object.first == "logger") {
@@ -197,8 +199,9 @@ state parser::parse(std::string const& file) {
           _parse_logger(object.second, logr);
           retval.loggers().push_back(logr);
         } else {
-          throw msg_fmt("config parser: cannot parse key "
-                        "'logger':  value type must be an object");
+          throw msg_fmt(
+              "config parser: cannot parse key "
+              "'logger':  value type must be an object");
         }
       } else
         retval.params()[object.first] = object.second.dump();
@@ -268,8 +271,9 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
                object.second.string_value() == "all")
         (e.*member).insert("all");
       else
-        throw msg_fmt("config parser: cannot parse key "
-                      "'filters':  value is invalid");
+        throw msg_fmt(
+            "config parser: cannot parse key "
+            "'filters':  value is invalid");
     } else if (object.first == "cache")
       e.cache_enabled = parse_boolean(object.second.string_value());
     else if (object.first == "type")
@@ -389,8 +393,7 @@ void parser::_parse_logger(Json const& elem, logger& l) {
       else if (val == "syslog")
         l.type(logger::syslog);
       else
-        throw(msg_fmt(
-              "config parser: unknown logger type '{}'", val));
+        throw msg_fmt("config parser: unknown logger type '{}'", val);
     }
   }
 }
