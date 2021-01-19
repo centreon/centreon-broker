@@ -19,9 +19,7 @@
 #ifndef CC_LOGGING_LOGGER_HH
 #define CC_LOGGING_LOGGER_HH
 
-#include "com/centreon/logging/engine.hh"
 #include "com/centreon/logging/temp_logger.hh"
-#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
