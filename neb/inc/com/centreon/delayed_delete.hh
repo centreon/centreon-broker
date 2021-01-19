@@ -43,9 +43,7 @@ class delayed_delete : public task {
    *
    *  @param[in] dd Object to copy.
    */
-  void _internal_copy(delayed_delete const& dd) {
-    _ptr = dd._ptr;
-  }
+  void _internal_copy(delayed_delete const& dd) { _ptr = dd._ptr; }
 
  public:
   /**
