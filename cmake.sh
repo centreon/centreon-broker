@@ -1,9 +1,36 @@
 #!/bin/bash
 
-if [ "$1" = "-f" ] ; then
-  force=1
-  shift
-fi
+show_help() {
+cat << EOF
+Usage: ${0##*/} -n=[yes|no] -v
+
+This program build Centreon-broker
+
+    -f|--force    : force rebuild
+    -r|--release  : Build on release mode
+    -h|--help     : help
+EOF
+}
+BUILD_TYPE="Debug"
+for i in "$@"
+do
+  case $i in
+    -f|--force)
+      force=1
+      shift
+      ;;
+    -r|--release)
+      BUILD_TYPE="Release"
+      ;;
+    -h|--help)
+      show_help
+      exit 2
+      ;;
+    *)
+            # unknown option
+    ;;
+  esac
+done
 
 # Am I root?
 my_id=$(id -u)
@@ -67,18 +94,66 @@ elif [ -r /etc/issue ] ; then
       echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
       cmake='cmake'
     fi
-    count=$(dpkg --no-pager -l gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev | grep "^ii" | wc -l)
-    if [ $count -lt 6 ] ; then
-      if [ $my_id -eq 0 ] ; then
-        apt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev
-      else
-        echo -e "One or packages among these ones, gcc, cmake, librrd-dev, libgnutls28-dev, ninja-build, liblua5.3-dev, are not installed. You could enter, as root:\n\tapt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev\n\n"
-        exit 1
-      fi
+  elif [ $maj = "Raspbian" ] ; then
+    if $dpkg -l cmake ; then
+      echo "Bad version of cmake..."
+      exit 1
+    else
+      echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
+      cmake='cmake'
     fi
   else
     echo "Bad version of cmake..."
     exit 1
+  fi
+
+  if [ $maj = "Debian" ] ; then
+    pkgs=(
+      gcc
+      g++
+      pkg-config
+      libmariadb3
+      librrd-dev
+      libgnutls28-dev
+      ninja-build
+      liblua5.3-dev
+      python3
+      python3-pip
+    )
+    for i in "${pkgs[@]}"; do
+      if ! $dpkg -l $i | grep "^ii" ; then
+        if [ $my_id -eq 0 ] ; then
+          apt install -y $i
+        else
+          echo -e "The package \"$i\" is not installed, you can install it, as root, with the command:\n\tapt install -y $i\n\n"
+          exit 1
+        fi
+      fi
+    done
+  fi
+  elif [ $maj = "Raspbian" ] ; then
+    pkgs=(
+      gcc
+      g++
+      pkg-config
+      libmariadb3
+      librrd-dev
+      libgnutls28-dev
+      ninja-build
+      liblua5.3-dev
+      python3
+      python3-pip
+    )
+    for i in "${pkgs[@]}"; do
+      if ! $dpkg -l $i | grep "^ii" ; then
+        if [ $my_id -eq 0 ] ; then
+          apt install -y $i
+        else
+          echo -e "The package \"$i\" is not installed, you can install it, as root, with the command:\n\tapt install -y $i\n\n"
+          exit 1
+        fi
+      fi
+    done
   fi
   if [[ ! -x /usr/bin/python3 ]] ; then
     if [ $my_id -eq 0 ] ; then
@@ -100,7 +175,7 @@ elif [ -r /etc/issue ] ; then
   else
     echo "pip3 already installed"
   fi
-fi
+
 
 pip3 install conan --upgrade
 
@@ -133,5 +208,10 @@ else
   $conan install .. --remote centreon -s compiler.libcxx=libstdc++
 fi
 
-CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
-
+if [ $maj = "Raspbian" ] ; then
+  CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On -DUSE_CXX11_ABI=1 $* ..
+elif [ $maj = "Debian" ] ; then
+  CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On -DUSE_CXX11_ABI=1 $* ..
+else
+  CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On -DUSE_CXX11_ABI=0 $* ..
+fi
