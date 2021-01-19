@@ -420,14 +420,13 @@ void kpi_service::_fill_impact(impact_values& impact,
                                kpi_service::state state) {
   if ((state < 0) ||
       (static_cast<size_t>(state) >= (sizeof(_impacts) / sizeof(*_impacts))))
-    throw(msg_fmt(
-          "BAM: could not get impact introduced by state {}", state));
+    throw msg_fmt(
+          "BAM: could not get impact introduced by state {}", state);
   double nominal(_impacts[state]);
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);
   impact.set_downtime(_downtimed ? nominal : 0.0);
   impact.set_state(state);
-  return;
 }
 /**
  *  Open a new event for this KPI.

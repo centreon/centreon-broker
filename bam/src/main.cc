@@ -98,9 +98,11 @@ void broker_module_init(void const* arg) {
     if (bam_category != io::events::bam) {
       e.unregister_category(bam_category);
       --instances;
-      throw(msg_fmt("bam: category {}" 
-                    " is already registered whereas it should be "
-                    "reserved for the bam module", io::events::bam));
+      throw msg_fmt(
+          "bam: category {}"
+          " is already registered whereas it should be "
+          "reserved for the bam module",
+          io::events::bam);
     }
 
     // Register bam events.
