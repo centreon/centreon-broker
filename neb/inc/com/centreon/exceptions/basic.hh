@@ -20,8 +20,6 @@
 #define CC_EXCEPTIONS_BASIC_HH
 
 #include <exception>
-#include <string>
-#include "com/centreon/namespace.hh"
 #include "com/centreon/misc/stringifier.hh"
 
 CC_BEGIN()
