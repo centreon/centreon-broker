@@ -89,7 +89,8 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   if (!info)
     throw msg_fmt(
         "could not prepare insertion query for event of type {}: "
-        "event is not registered", _event_id);
+        "event is not registered",
+        _event_id);
 
   // Build query string.
   std::string query;
@@ -134,10 +135,9 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   try {
     retval = ms.prepare_query(query, bind_mapping);
   } catch (std::exception const& e) {
-    throw(msg_fmt(
-          "could not prepare insertion query for event '{}' in table '{}': {}",
-          info->get_name(),
-          info->get_table_v2(), e.what()));
+    throw msg_fmt(
+        "could not prepare insertion query for event '{}' in table '{}': {}",
+        info->get_name(), info->get_table_v2(), e.what());
   }
   return retval;
 }
@@ -148,9 +148,10 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
   // Find event info.
   io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw(msg_fmt(
-          "could not prepare insertion query for event of type {} : "
-          "eventis not registered ", _event_id));
+    throw msg_fmt(
+        "could not prepare insertion query for event of type {} : "
+        "eventis not registered ",
+        _event_id);
 
   // Build query string.
   std::string insert("INSERT INTO ");
@@ -211,9 +212,10 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
   try {
     retval = ms.prepare_query(insert, insert_bind_mapping);
   } catch (std::exception const& e) {
-    throw(msg_fmt(
-          "could not prepare insert or update query for event '{}' in table '{}': {}",
-          info->get_name(), info->get_table_v2(), e.what()));
+    throw msg_fmt(
+        "could not prepare insert or update query for event '{}' in table "
+        "'{}': {}",
+        info->get_name(), info->get_table_v2(), e.what());
   }
   return retval;
 }
@@ -230,8 +232,9 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
     throw msg_fmt(
-        "could not prepare update query for event of type {}:" 
-        "event is not registered", _event_id);
+        "could not prepare update query for event of type {}:"
+        "event is not registered",
+        _event_id);
 
   // Build query string.
   std::string query("UPDATE ");
@@ -280,7 +283,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
     retval = ms.prepare_query(query, query_bind_mapping);
   } catch (std::exception const& e) {
     throw msg_fmt(
-        "could not prepare update query for event '{}': on table '{}': {}", 
+        "could not prepare update query for event '{}': on table '{}': {}",
         info->get_name(), info->get_table_v2(), e.what());
   }
   return retval;
@@ -296,10 +299,10 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   // Find event info.
   io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw(msg_fmt(
-          "could not prepare deletion query for event of type "
-          " {}: event is not registered"
-          , _event_id));
+    throw msg_fmt(
+        "could not prepare deletion query for event of type "
+        " {}: event is not registered",
+        _event_id);
 
   // Prepare query.
   std::string query("DELETE FROM ");
