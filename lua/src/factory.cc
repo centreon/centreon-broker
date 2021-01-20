@@ -40,8 +40,7 @@ static std::string find_param(config::endpoint const& cfg,
                               std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw msg_fmt(
-        "lua: no '{}' defined for endpoint '{}'", key, cfg.name);
+    throw msg_fmt("lua: no '{}' defined for endpoint '{}'", key, cfg.name);
   return it->second;
 }
 
@@ -129,10 +128,8 @@ io::endpoint* factory::new_endpoint(
         }
       }
       if (ko)
-        throw msg_fmt(
-            "lua: unable to read '{}' content ({}) as a number",
-            name.string_value(), 
-            value.string_value());
+        throw msg_fmt("lua: unable to read '{}' content ({}) as a number",
+                      name.string_value(), value.string_value());
     }
   } else if (js.is_array()) {
     for (Json const& obj : js.array_items()) {
@@ -147,7 +144,7 @@ io::endpoint* factory::new_endpoint(
       if (value.string_value().empty())
         throw msg_fmt(
             "lua: couldn't read a configuration field because"
-            "' configuration field because its value is empty");
+            " its value is empty");
       std::string t((type.string_value().empty()) ? "string"
                                                   : type.string_value());
       if (t == "string" || t == "password")
@@ -158,9 +155,8 @@ io::endpoint* factory::new_endpoint(
           int val = std::stol(value.string_value());
           conf_map.insert({name.string_value(), misc::variant(val)});
         } catch (std::exception const& e) {
-          throw msg_fmt(
-              "lua: unable to read '{}' content ({}) as a number",
-              name.string_value(), value.string_value());
+          throw msg_fmt("lua: unable to read '{}' content ({}) as a number",
+                        name.string_value(), value.string_value());
         }
       }
     }
