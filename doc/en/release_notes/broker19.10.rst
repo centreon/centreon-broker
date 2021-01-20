@@ -6,6 +6,11 @@ Centreon Broker 19.10.6
 Bug fixes
 *********
 
+Bam reporting
+=============
+When availabilities are computed, durations can be doubled. This new version
+fixes this issue.
+
 Bam reporting dimensions computation
 ====================================
 If there are retention files, dimensions computation could fail because of
