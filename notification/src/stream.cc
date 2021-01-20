@@ -170,7 +170,6 @@ stream::~stream() {
  */
 void stream::initialize() {
   // Not used anymore.
-  return;
 }
 
 /**
@@ -184,8 +183,8 @@ void stream::initialize() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(exceptions::shutdown() << "attempt to read from a notification stream");
-  return (true);
+  throw exceptions::shutdown("attempt to read from a notification stream");
+  return true;
 }
 
 /**
@@ -193,7 +192,6 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  */
 void stream::update() {
   _update_objects_from_db();
-  return;
 }
 
 /**
@@ -400,8 +398,8 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
-      throw(msg_fmt("notification: got an unknown service id: ",
-                    id.get_service_id(), ", host_id: ", id.get_host_id()));
+      throw msg_fmt("notification: got an unknown service id: {}, host id: {}",
+                    id.get_service_id(), id.get_host_id());
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
@@ -458,8 +456,8 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
-      throw(
-          msg_fmt("notification: got an unknown host id: ", id.get_host_id()));
+      throw msg_fmt("notification: got an unknown host id: {}",
+                    id.get_host_id());
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
@@ -506,10 +504,11 @@ void stream::_process_issue_parent_event(
   std::unique_ptr<QWriteLocker> lock(_state.write_lock());
   node::ptr n = _state.get_node_by_id(child_id);
   if (!n)
-    throw(msg_fmt("notification: got an unknown issue parent on node (", ,
-                  child_id.get_host_id(), ", ", child_id.get_service_id(),
-                  ") by node (", parent_id.get_host_id(), ", ",
-                  parent_id.get_service_id(), ")"));
+    throw msg_fmt(
+        "notification: got an unknown issue parent on node ({}, {}) by node "
+        "({}, {})",
+        child_id.get_host_id(), child_id.get_service_id(),
+        parent_id.get_host_id(), parent_id.get_service_id());
 
   // Log message.
   bool terminated_event((event.end_time != (time_t)-1) &&
@@ -526,8 +525,6 @@ void stream::_process_issue_parent_event(
   // Remove a parent relationship between correlated node.
   else
     n->remove_parent(parent_id);
-
-  return;
 }
 
 /**
