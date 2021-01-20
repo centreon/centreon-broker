@@ -1,0 +1,12 @@
+=======================
+Centreon Broker 21.04.0
+=======================
+
+************
+Enhancements
+************
+
+Broker exceptions
+=================
+They are all based on a small msg_fmt exception that is lighter than the old
+msg one.
