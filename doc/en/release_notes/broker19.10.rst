@@ -2,7 +2,15 @@
 Centreon Broker 19.10.6
 =======================
 
+*********
+Bug fixes
+*********
 
+Bam reporting dimensions computation
+====================================
+If there are retention files, dimensions computation could fail because of
+conflicts between new block computation and old ones (the ones in the
+retention).
 
 =======================
 Centreon Broker 19.10.5
