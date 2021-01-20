@@ -81,10 +81,11 @@ void broker_module_init(void const* arg) {
     if (correlation_category != io::events::correlation) {
       e.unregister_category(correlation_category);
       --instances;
-      throw(msg_fmt(
-            "correlation: category {}"
-            " is already registered whereas it should be "
-            "reserved for the correlation module", io::events::correlation));
+      throw msg_fmt(
+          "correlation: category {}"
+          " is already registered whereas it should be "
+          "reserved for the correlation module",
+          io::events::correlation);
     }
 
     // Register events.

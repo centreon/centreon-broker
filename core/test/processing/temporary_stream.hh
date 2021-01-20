@@ -23,9 +23,9 @@
 #include <mutex>
 #include <queue>
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 CCB_BEGIN()
 
@@ -62,7 +62,7 @@ class temporary_stream : public io::stream {
     (void)deadline;
     std::lock_guard<std::mutex> lock(_events_m);
     if (_events.empty())
-      throw com::centreon::exceptions::msg_fmt(
+      throw exceptions::msg_fmt(
           "temporary stream does not have any more event");
     else
       d = _events.front();

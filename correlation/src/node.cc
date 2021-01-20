@@ -91,7 +91,7 @@ node& node::operator=(node const& other) {
     correlation::state::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -155,7 +155,7 @@ bool node::operator==(node const& other) const {
     }
   } else
     retval = false;
-  return (retval);
+  return retval;
 }
 
 /**
@@ -166,7 +166,7 @@ bool node::operator==(node const& other) const {
  *  @return True if both nodes are not equal.
  */
 bool node::operator!=(node const& other) const {
-  return (!this->operator==(other));
+  return !this->operator==(other);
 }
 
 /**
@@ -176,15 +176,12 @@ bool node::operator!=(node const& other) const {
  */
 void node::add_child(node* n) {
   if (_parents.find(n) != _parents.end())
-    throw(msg_fmt(
-          "correlation: trying to insert node ({}, {}) "
-          "as children of node ({}, {}), but this node is already a parent",
-          n->host_id, 
-          n->service_id, n->host_id, 
-          n->service_id));
+    throw msg_fmt(
+        "correlation: trying to insert node ({}, {}) "
+        "as children of node ({}, {}), but this node is already a parent",
+        n->host_id, n->service_id, n->host_id, n->service_id);
   _children.insert(n);
   n->_parents.insert(this);
-  return;
 }
 
 /**
@@ -194,13 +191,12 @@ void node::add_child(node* n) {
  */
 void node::add_depended(node* n) {
   if (_depends_on.find(n) != _depends_on.end())
-    throw(msg_fmt("correlation: trying to insert node ({}, {}) as inverse dependency"
-                  " of node ({}, {}), but this node is already a dependency",
-                  n->host_id, n->service_id,
-                  n->host_id,  n->service_id));
+    throw msg_fmt(
+        "correlation: trying to insert node ({}, {}) as inverse dependency"
+        " of node ({}, {}), but this node is already a dependency",
+        n->host_id, n->service_id, n->host_id, n->service_id);
   _depended_by.insert(n);
   n->_depends_on.insert(this);
-  return;
 }
 
 /**
@@ -210,13 +206,13 @@ void node::add_depended(node* n) {
  */
 void node::add_dependency(node* n) {
   if (_depended_by.find(n) != _depended_by.end())
-    throw(msg_fmt(
-          "correlation: trying to insert node ({}, {}) as dependency of node ({}, {})"
-          "but this node is already an inverse dependeny", n->host_id, 
-          n->service_id, n->host_id, n->service_id));
+    throw msg_fmt(
+        "correlation: trying to insert node ({}, {}) as dependency of node "
+        "({}, {})"
+        "but this node is already an inverse dependeny",
+        n->host_id, n->service_id, n->host_id, n->service_id);
   _depends_on.insert(n);
   n->_depended_by.insert(this);
-  return;
 }
 
 /**
@@ -226,13 +222,12 @@ void node::add_dependency(node* n) {
  */
 void node::add_parent(node* n) {
   if (_children.find(n) != _children.end())
-    throw(msg_fmt(
-          "correlation: trying to insert node ({}, {}) as parent of node",
-          "({}, {}), but this node is already a children",
-          n->host_id, n->service_id, n->host_id, n->service_id));
+    throw msg_fmt(
+        "correlation: trying to insert node ({}, {}) as parent of node",
+        "({}, {}), but this node is already a children", n->host_id,
+        n->service_id, n->host_id, n->service_id);
   _parents.insert(n);
   n->_children.insert(this);
-  return;
 }
 
 /**
@@ -240,8 +235,8 @@ void node::add_parent(node* n) {
  *
  *  @return  The list of children.
  */
-node::node_map const& node::get_children() const {
-  return (_children);
+const node::node_map& node::get_children() const {
+  return _children;
 }
 
 /**
@@ -249,8 +244,8 @@ node::node_map const& node::get_children() const {
  *
  *  @return  The list of depended.
  */
-node::node_map const& node::get_dependeds() const {
-  return (_depended_by);
+const node::node_map& node::get_dependeds() const {
+  return _depended_by;
 }
 
 /**
@@ -258,8 +253,8 @@ node::node_map const& node::get_dependeds() const {
  *
  *  @return  The list of dependencies.
  */
-node::node_map const& node::get_dependencies() const {
-  return (_depends_on);
+const node::node_map& node::get_dependencies() const {
+  return _depends_on;
 }
 
 /**
@@ -267,8 +262,8 @@ node::node_map const& node::get_dependencies() const {
  *
  *  @return  The list of parents.
  */
-node::node_map const& node::get_parents() const {
-  return (_parents);
+const node::node_map& node::get_parents() const {
+  return _parents;
 }
 
 /**
@@ -279,7 +274,6 @@ node::node_map const& node::get_parents() const {
 void node::remove_child(node* n) {
   _children.erase(n);
   n->_parents.erase(this);
-  return;
 }
 
 /**
@@ -290,7 +284,6 @@ void node::remove_child(node* n) {
 void node::remove_depended(node* n) {
   _depended_by.erase(n);
   n->_depends_on.erase(this);
-  return;
 }
 
 /**
@@ -301,7 +294,6 @@ void node::remove_depended(node* n) {
 void node::remove_dependency(node* n) {
   _depends_on.erase(n);
   n->_depended_by.erase(this);
-  return;
 }
 
 /**
@@ -312,7 +304,6 @@ void node::remove_dependency(node* n) {
 void node::remove_parent(node* n) {
   _parents.erase(n);
   n->_children.erase(this);
-  return;
 }
 
 /**
@@ -321,7 +312,7 @@ void node::remove_parent(node* n) {
  *  @return  A pair of host_id, service_id.
  */
 std::pair<uint32_t, uint32_t> node::get_id() const {
-  return (std::make_pair(host_id, service_id));
+  return std::make_pair(host_id, service_id);
 }
 
 /**
@@ -339,11 +330,11 @@ bool node::all_parents_with_issues_and_get_start_time(
   for (node_map::const_iterator it = _parents.begin(), end = _parents.end();
        it != end; ++it) {
     if (!(*it)->my_issue)
-      return (false);
+      return false;
     if (start_time.is_null() || start_time < (*it)->my_issue->start_time)
       start_time = (*it)->my_issue->start_time;
   }
-  return (true);
+  return true;
 }
 
 /**
@@ -439,7 +430,6 @@ void node::manage_ack(neb::acknowledgement const& ack, io::stream* stream) {
         << " was deleted at " << ack.deletion_time;
     acknowledgement.reset();
   }
-  return;
 }
 
 /**
@@ -472,7 +462,6 @@ void node::manage_downtime(neb::downtime const& dwn, io::stream* stream) {
                               stream);
     }
   }
-  return;
 }
 
 /**
@@ -565,9 +554,8 @@ void node::serialize(persistent_cache& cache) const {
   if (my_issue)
     cache.add(std::make_shared<issue>(*my_issue));
   cache.add(std::make_shared<correlation::state>(*this));
-  for (std::map<uint32_t, neb::downtime>::const_iterator
-           it = downtimes.begin(),
-           end = downtimes.end();
+  for (std::map<uint32_t, neb::downtime>::const_iterator it = downtimes.begin(),
+                                                         end = downtimes.end();
        it != end; ++it)
     cache.add(std::make_shared<neb::downtime>(it->second));
   if (acknowledgement)
@@ -620,8 +608,6 @@ void node::_internal_copy(node const& n) {
   _parents = n._parents;
   for (it = _parents.begin(), end = _parents.end(); it != end; ++it)
     (*it)->_children.insert(this);
-
-  return;
 }
 
 /**
@@ -661,7 +647,6 @@ void node::_generate_state_event(timestamp start_time,
   in_downtime = new_in_downtime;
   if (stream)
     stream->write(std::make_shared<correlation::state>(*this));
-  return;
 }
 
 /**
@@ -678,8 +663,7 @@ correlation::state node::_open_state_event(timestamp start_time) const {
   st.host_id = host_id;
   st.current_state = current_state;
   timestamp earliest_downtime;
-  for (std::map<uint32_t, neb::downtime>::const_iterator
-           it(downtimes.begin()),
+  for (std::map<uint32_t, neb::downtime>::const_iterator it(downtimes.begin()),
        end(downtimes.end());
        it != end; ++it)
     if (earliest_downtime.is_null() ||
@@ -691,7 +675,7 @@ correlation::state node::_open_state_event(timestamp start_time) const {
     st.ack_time = acknowledgement->entry_time > start_time
                       ? acknowledgement->entry_time
                       : start_time;
-  return (st);
+  return st;
 }
 
 /**
