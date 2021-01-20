@@ -66,8 +66,8 @@ storage::index_mapping const& macro_cache::get_index_mapping(
     uint64_t index_id) const {
   auto found = _index_mappings.find(index_id);
   if (found == _index_mappings.end())
-    throw msg_fmt(
-        "graphite: could not find host/service of index {}", index_id);
+    throw msg_fmt("graphite: could not find host/service of index {}",
+                  index_id);
   return *found->second;
 }
 
@@ -82,8 +82,7 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
     uint64_t metric_id) const {
   auto const found = _metric_mappings.find(metric_id);
   if (found == _metric_mappings.end())
-    throw msg_fmt("graphite: could not find index of metric {}",
-                  metric_id);
+    throw msg_fmt("graphite: could not find index of metric {}", metric_id);
   return *found->second;
 }
 
@@ -97,8 +96,7 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
 std::string const& macro_cache::get_host_name(uint64_t host_id) const {
   auto const found = _hosts.find(host_id);
   if (found == _hosts.end())
-    throw msg_fmt("graphite: could not find information on host {}",
-                  host_id);
+    throw msg_fmt("graphite: could not find information on host {}", host_id);
   return found->second->host_name;
 }
 
@@ -110,14 +108,13 @@ std::string const& macro_cache::get_host_name(uint64_t host_id) const {
  *
  *  @return             The description of the service.
  */
-std::string const& macro_cache::get_service_description(uint64_t host_id,
-                                                        uint64_t service_id)
-    const {
+std::string const& macro_cache::get_service_description(
+    uint64_t host_id,
+    uint64_t service_id) const {
   auto const found = _services.find({host_id, service_id});
   if (found == _services.end())
-    throw msg_fmt(
-        "graphite: could not find information on service ({}, {})",
-        host_id, service_id);
+    throw msg_fmt("graphite: could not find information on service ({}, {})",
+                  host_id, service_id);
   return found->second->service_description;
 }
 
@@ -131,8 +128,8 @@ std::string const& macro_cache::get_service_description(uint64_t host_id,
 std::string const& macro_cache::get_instance(uint64_t instance_id) const {
   auto const found = _instances.find(instance_id);
   if (found == _instances.end())
-    throw msg_fmt(
-        "graphite: could not find information on instance {}", instance_id);
+    throw msg_fmt("graphite: could not find information on instance {}",
+                  instance_id);
   return found->second->name;
 }
 
@@ -229,8 +226,7 @@ void macro_cache::_save_to_disk() {
     _cache->add(it->second);
 
   for (auto it = _metric_mappings.begin(), end = _metric_mappings.end();
-       it != end;
-       ++it)
+       it != end; ++it)
     _cache->add(it->second);
 
   _cache->commit();

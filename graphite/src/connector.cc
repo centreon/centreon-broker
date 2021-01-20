@@ -33,7 +33,6 @@ using namespace com::centreon::broker::graphite;
  */
 connector::connector() : io::endpoint(false) {}
 
-
 /**
  *  Set connection parameters.
  *

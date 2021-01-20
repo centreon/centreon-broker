@@ -23,9 +23,9 @@
 #include <sstream>
 #include <vector>
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/influxdb/column.hh"
 #include "com/centreon/broker/influxdb/connector.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -50,8 +50,7 @@ static std::string find_param(config::endpoint const& cfg,
                               std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw msg_fmt("influxdb: no '{}' defined for endpoint '{}'", 
-                  key, cfg.name);
+    throw msg_fmt("influxdb: no '{}' defined for endpoint '{}'", key, cfg.name);
   return it->second;
 }
 
@@ -109,7 +108,7 @@ io::endpoint* factory::new_endpoint(
       ss >> port;
       if (!ss.eof())
         throw msg_fmt(
-            "influxdb: couldn't parse port '{}' defined for endpoint '{}'", 
+            "influxdb: couldn't parse port '{}' defined for endpoint '{}'",
             ss.str(), cfg.name);
     }
   }
