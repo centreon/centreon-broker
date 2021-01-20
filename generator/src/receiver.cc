@@ -46,9 +46,9 @@ receiver::~receiver() {}
 bool receiver::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(exceptions::shutdown()
-        << "cannot read from event receiver (generator)");
-  return (true);
+  throw exceptions::shutdown(
+        "cannot read from event receiver (generator)");
+  return true;
 }
 
 /**
@@ -73,11 +73,11 @@ int receiver::write(std::shared_ptr<io::data> const& d) {
     // Check current number.
     ++(it->second);
     if (e.number > it->second)
-      throw(msg_fmt(
+      throw msg_fmt(
             "invalid sequence number for Centreon Broker instance {} got {},
              expected {}",
-            e.source_id , e.number, it->second));
+            e.source_id , e.number, it->second);
     it->second = e.number;
   }
-  return (1);
+  return 1;
 }
