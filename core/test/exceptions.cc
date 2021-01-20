@@ -22,12 +22,11 @@
 
 using namespace com::centreon::exceptions;
 
-
 TEST(Exceptions, Throw) {
   // First throw.
   try {
     try {
-      throw(msg_fmt("{}{}{}", "foobar", 42, -789654ll));
+      throw msg_fmt("{}{}{}", "foobar", 42, -789654ll);
       ASSERT_FALSE(true);
     } catch (msg_fmt const& e) {  // Properly caught.
       ASSERT_STREQ(e.what(), "foobar42-789654");
@@ -39,7 +38,7 @@ TEST(Exceptions, Throw) {
   // Second throw.
   try {
     try {
-      throw(msg_fmt("{}{}{}", "bazqux", -74125896321445ll, 36));
+      throw msg_fmt("{}{}{}", "bazqux", -74125896321445ll, 36);
       ASSERT_FALSE(true);
     } catch (std::exception const& e) {
       ASSERT_STREQ(e.what(), "bazqux-7412589632144536");
