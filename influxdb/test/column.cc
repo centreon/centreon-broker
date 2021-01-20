@@ -19,8 +19,9 @@
 
 #include "com/centreon/broker/influxdb/column.hh"
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 TEST(InfluxDbColumn, Simple) {
@@ -66,5 +67,5 @@ TEST(InfluxDbColumn, Assign) {
 TEST(InfluxDbColumn, ParseType) {
   ASSERT_EQ(influxdb::column::parse_type("string"), influxdb::column::string);
   ASSERT_EQ(influxdb::column::parse_type("number"), influxdb::column::number);
-  ASSERT_THROW(influxdb::column::parse_type("other"), exceptions::msg);
+  ASSERT_THROW(influxdb::column::parse_type("other"), msg_fmt);
 }

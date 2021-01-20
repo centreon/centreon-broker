@@ -21,13 +21,14 @@
 #include <list>
 #include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::simu;
@@ -69,7 +70,7 @@ class SimuGenericTest : public ::testing::Test {
 TEST_F(SimuGenericTest, MissingScript) {
   std::map<std::string, misc::variant> conf;
   ASSERT_THROW(new luabinding("/tmp/this_script_does_not_exist.lua", conf),
-               exceptions::msg);
+               msg_fmt);
 }
 
 // When a lua script with error such as number divided by nil is loaded
@@ -80,7 +81,7 @@ TEST_F(SimuGenericTest, FaultyScript) {
   CreateScript(filename,
                "local a = { 1, 2, 3 }\n"
                "local b = 18 / a[4]");
-  ASSERT_THROW(new luabinding(filename, conf), exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf), msg_fmt);
   RemoveFile(filename);
 }
 
@@ -90,7 +91,7 @@ TEST_F(SimuGenericTest, WithoutInit) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
-  ASSERT_THROW(new luabinding(filename, conf), exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf), msg_fmt);
   RemoveFile(filename);
 }
 
@@ -103,7 +104,7 @@ TEST_F(SimuGenericTest, IncompleteScript) {
                "end\n"
                "local a = { 1, 2, 3 }\n");
   std::map<std::string, misc::variant> conf;
-  ASSERT_THROW(new luabinding(filename, conf), exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf), msg_fmt);
   RemoveFile(filename);
 }
 
@@ -120,7 +121,7 @@ TEST_F(SimuGenericTest, ReadReturnValue1) {
   std::map<std::string, misc::variant> conf;
   std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
   std::shared_ptr<io::data> d;
-  ASSERT_THROW(lb->read(d), exceptions::msg);
+  ASSERT_THROW(lb->read(d), msg_fmt);
   RemoveFile(filename);
 }
 

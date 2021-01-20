@@ -19,8 +19,9 @@
 
 #include "com/centreon/broker/stats/parser.hh"
 #include <json11.hpp>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::stats;
 using namespace json11;
 
@@ -32,7 +33,7 @@ parser::parser() {}
 /**
  *  Destructor.
  */
-parser::~parser() throw() {}
+parser::~parser() noexcept {}
 
 /**
  *  Parse a XML buffer.
@@ -49,7 +50,7 @@ void parser::parse(std::vector<std::string>& cfg, std::string const& content) {
 
   Json const& js{Json::parse(content, err)};
   if (!err.empty())
-    throw(exceptions::msg() << "stats: invalid json file");
+    throw msg_fmt("stats: invalid json file");
 
   if (js.is_object()) {
     Json const& field{js["json_fifo"]};
@@ -61,6 +62,4 @@ void parser::parse(std::vector<std::string>& cfg, std::string const& content) {
       json_fifo(field);
     }
   }
-
-  return;
 }

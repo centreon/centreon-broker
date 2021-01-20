@@ -22,10 +22,9 @@
 #include <gtest/gtest.h>
 
 #include "com/centreon/broker/exceptions/config.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/storage/factory.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 TEST(StorageFactory, Factory) {
@@ -37,7 +36,7 @@ TEST(StorageFactory, Factory) {
 
   storage::factory factory;
 
-  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), msg_fmt);
   cfg.params["length"] = "42";
   ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache),
                exceptions::config);
@@ -67,7 +66,7 @@ TEST(StorageFactory, FactoryWithFullConf) {
 
   storage::factory factory;
 
-  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+  ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache), msg_fmt);
   cfg.params["length"] = "42";
   ASSERT_THROW(factory.new_endpoint(cfg, is_acceptor, cache),
                exceptions::config);

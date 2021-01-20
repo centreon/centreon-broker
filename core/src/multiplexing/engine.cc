@@ -28,7 +28,6 @@
 #include <vector>
 
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"

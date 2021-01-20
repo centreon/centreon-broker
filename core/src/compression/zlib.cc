@@ -21,7 +21,9 @@
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/exceptions/corruption.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::compression;
 
 /**************************************
@@ -66,8 +68,10 @@ std::vector<char> zlib::compress(std::vector<char> const& data,
         retval[3] = (nbytes & 0xff);
         break;
       case Z_MEM_ERROR:
-        throw(exceptions::msg() << "compression: not enough memory to compress "
-                                << nbytes << " bytes");
+        throw msg_fmt(
+            "compression: not enough memory to compress {} "
+            " bytes",
+            nbytes);
         break;
       case Z_BUF_ERROR:
         len <<= 1;
@@ -95,15 +99,14 @@ std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
   if (nbytes <= 4) {
     if (nbytes < 4 ||
         (data[0] != 0 || data[1] != 0 || data[2] != 0 || data[3] != 0))
-      throw exceptions::corruption()
-          << "compression: attempting to uncompress data with invalid size";
+      throw exceptions::corruption(
+          "compression: attempting to uncompress data with invalid size");
   }
   ulong expected_size =
       (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
   ulong len = (expected_size > 1ul) ? expected_size : 1ul;
   if (len > stream::max_data_size)
-    throw exceptions::corruption()
-        << "compression: data expected size is too big";
+    throw exceptions::corruption("compression: data expected size is too big");
   std::vector<char> uncompressed_array(len, '\0');
 
   ulong alloc = len;
@@ -117,14 +120,15 @@ std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
         uncompressed_array.resize(len);
       break;
     case Z_MEM_ERROR:
-      throw exceptions::msg()
-          << "compression: not enough memory to uncompress " << nbytes
-          << " compressed bytes to " << len << " uncompressed bytes";
+      throw msg_fmt(
+          "compression: not enough memory to uncompress {}"
+          " compressed bytes to {} uncompressed bytes",
+          nbytes, len);
     case Z_BUF_ERROR:
     case Z_DATA_ERROR:
-      throw exceptions::corruption()
-          << "compression: compressed input data is corrupted, "
-          << "unable to uncompress it";
+      throw exceptions::corruption(
+          "compression: compressed input data is corrupted, "
+          "unable to uncompress it");
   }
   return uncompressed_array;
 }

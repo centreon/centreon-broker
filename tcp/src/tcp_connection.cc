@@ -19,9 +19,10 @@
 
 #include <functional>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::tcp;
 
 /**
@@ -93,7 +94,7 @@ int32_t tcp_connection::flush() {
     if (_current_error) {
       std::string msg{std::move(_current_error.message())};
       _current_error.clear();
-      throw exceptions::msg() << msg;
+      throw msg_fmt(msg);
     }
   }
   if (_write_queue_has_events && !_writing) {
@@ -172,7 +173,7 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
     if (_current_error) {
       std::string msg{std::move(_current_error.message())};
       _current_error.clear();
-      throw exceptions::msg() << msg;
+      throw msg_fmt(msg);
     }
   }
 
@@ -213,7 +214,6 @@ void tcp_connection::writing() {
     _write_queue_has_events = !_write_queue.empty();
   }
   if (!_write_queue_has_events) {
-
     _writing = false;
     return;
   }
@@ -316,7 +316,7 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
     if (_current_error) {
       std::string msg{std::move(_current_error.message())};
       _current_error.clear();
-      throw exceptions::msg() << msg;
+      throw msg_fmt(msg);
     }
   }
 
@@ -347,8 +347,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
           _read_queue_cv.wait(
               lck, [this] { return !_read_queue.empty() || _closing; });
           if (_read_queue.empty())
-            throw exceptions::msg() << "Attempt to read data from peer "
-                                    << _peer << " on a closing socket";
+            throw msg_fmt(
+                "Attempt to read data from peer {} on a closing socket", _peer);
           /* Timeout on wait */
         } else {
           time_t now;
@@ -360,8 +360,9 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
                 return !_read_queue.empty() || _closing;
               })) {
             if (_read_queue.empty())
-              throw exceptions::msg() << "Attempt to read data from peer "
-                                      << _peer << " on a closing socket";
+              throw msg_fmt(
+                  "Attempt to read data from peer {} on a closing socket",
+                  _peer);
           } else {
             log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
                                  timeout_time);

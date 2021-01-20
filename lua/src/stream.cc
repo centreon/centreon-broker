@@ -27,9 +27,11 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/misc/math.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::lua;
 
 /**************************************
@@ -164,7 +166,7 @@ stream::stream(std::string const& lua_script,
   init_cv.wait(lock, [&configured] { return configured; });
   if (fail) {
     _thread.join();
-    throw exceptions::msg() << fail_msg;
+    throw msg_fmt(fail_msg);
   }
 }
 
@@ -188,7 +190,7 @@ stream::~stream() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw exceptions::shutdown() << "cannot read from lua generic connector";
+  throw exceptions::shutdown("cannot read from lua generic connector");
 }
 
 /**

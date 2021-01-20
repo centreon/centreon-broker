@@ -62,7 +62,7 @@ stream::~stream() {
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
   (void)d;
-  throw exceptions::shutdown() << "cannot write from simu connector";
+  throw exceptions::shutdown("cannot write from simu connector");
   return 0;
 }
 

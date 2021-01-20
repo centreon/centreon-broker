@@ -19,10 +19,11 @@
 
 #include <chrono>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
@@ -80,8 +81,8 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
 
   if (_connection.size() == 0) {
     if (mysql_library_init(0, nullptr, nullptr))
-      throw exceptions::msg()
-          << "mysql_manager: unable to initialize the MySQL connector";
+      throw msg_fmt(
+          "mysql_manager: unable to initialize the MySQL connector");
   }
 
   {

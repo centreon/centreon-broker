@@ -20,14 +20,15 @@
 
 #include <unistd.h>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
@@ -55,8 +56,7 @@ feeder::feeder(std::string const& name,
       _client(client),
       _subscriber(name, false) {
   if (!client)
-    throw exceptions::msg()
-        << "could not process '" << _name << "' with no client stream";
+    throw msg_fmt("could not process '{}' with no client stream", _name);
 
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
@@ -67,7 +67,7 @@ feeder::feeder(std::string const& name,
   std::unique_lock<std::mutex> lck(_state_m);
   _thread = std::thread(&feeder::_callback, this);
   _state_cv.wait(lck,
-                 [& state = this->_state] { return state != feeder::stopped; });
+                 [&state = this->_state] { return state != feeder::stopped; });
 }
 
 /**

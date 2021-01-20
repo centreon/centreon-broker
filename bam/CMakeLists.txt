@@ -64,7 +64,6 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/configuration/bool_expression.cc"
   "${SRC_DIR}/configuration/kpi.cc"
   "${SRC_DIR}/configuration/meta_service.cc"
-  "${SRC_DIR}/configuration/reader_exception.cc"
   "${SRC_DIR}/configuration/reader_v2.cc"
   "${SRC_DIR}/configuration/state.cc"
   "${SRC_DIR}/connector.cc"

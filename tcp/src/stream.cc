@@ -28,7 +28,7 @@
 #include <system_error>
 #include <thread>
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -38,6 +38,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
+using namespace com::centreon::exceptions;
 
 size_t stream::_total_tcp_count{0};
 
@@ -131,7 +132,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 
   if (_connection->is_closed()) {
     d.reset(new io::raw);
-    throw exceptions::msg() << "Connection lost";
+    throw msg_fmt("Connection lost");
   }
 
   bool timeout = false;
@@ -167,7 +168,7 @@ int32_t stream::write(std::shared_ptr<io::data> const& d) {
   assert(d);
 
   if (_connection->is_closed())
-    throw exceptions::msg() << "Connection lost";
+    throw msg_fmt("Connection lost");
 
   if (d->type() == io::raw::static_type()) {
     std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));

@@ -24,7 +24,7 @@
 #include <ctime>
 #include <iostream>
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "test/cbd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -33,6 +33,7 @@
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 #define DB_NAME "broker_tls_to_sql"
 
@@ -98,10 +99,10 @@ int main() {
             << "  FROM rt_hosts";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw(exceptions::msg() << "cannot read host count from DB: "
-                                << q.lastError().text().toStdString().c_str());
+        throw msg_fmt("cannot read host count from DB: {}",
+                      q.lastError().text().toStdString().c_str());
       if (!q.next() || (q.value(0).toUInt() != 10) || q.next())
-        throw(exceptions::msg() << "invalid host count");
+        throw msg_fmt("invalid host count");
     }
 
     // Check service count.
@@ -111,10 +112,10 @@ int main() {
             << "  FROM rt_services";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw(exceptions::msg() << "cannot read service count from DB: "
-                                << q.lastError().text().toStdString().c_str());
+        throw msg_fmt("cannot read service count from DB: {}",
+                      q.lastError().text().toStdString().c_str());
       if (!q.next() || (q.value(0).toUInt() != 50) || q.next())
-        throw(exceptions::msg() << "invalid service count");
+        throw msg_fmt("invalid service count");
     }
 
     // Success.

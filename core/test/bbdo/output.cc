@@ -26,7 +26,6 @@
 
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"

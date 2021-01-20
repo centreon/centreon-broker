@@ -17,6 +17,7 @@
  *
  */
 #include <gtest/gtest.h>
+#include <fmt/format.h>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
@@ -28,7 +29,6 @@ using namespace com::centreon::broker;
 class FileSplitterResume : public ::testing::Test {
  public:
   void SetUp() override {
-
     std::list<std::string> lst{
         misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
     for (std::string const& f : lst)
@@ -40,24 +40,24 @@ class FileSplitterResume : public ::testing::Test {
     char buffer[10008];
     for (int i(2); i < 10; ++i) {
       memset(buffer, i, sizeof(buffer));
-      std::ostringstream oss;
-      oss << _path << i;
-      f.reset(new file::cfile(oss.str(), file::fs_file::open_read_write_truncate));
+      std::string ff{fmt::format("{}{}", _path, i)};
+      f.reset(
+          new file::cfile(ff, file::fs_file::open_read_write_truncate));
       f->write(buffer, sizeof(buffer));
     }
 
     // Create the last file.
     std::string last_file(_path);
     last_file.append("10");
-    f.reset(new file::cfile(last_file, file::fs_file::open_read_write_truncate));
+    f.reset(
+        new file::cfile(last_file, file::fs_file::open_read_write_truncate));
     memset(buffer, 10, sizeof(buffer));
     f->write(buffer, 108);
     f.reset();
 
     // Create new splitter.
-    _file.reset(new file::splitter(_path,
-                                   file::fs_file::open_read_write_truncate,
-                                   10000, true));
+    _file.reset(new file::splitter(
+        _path, file::fs_file::open_read_write_truncate, 10000, true));
   }
 
  protected:
@@ -104,14 +104,12 @@ TEST_F(FileSplitterResume, ResumeWrite) {
 TEST_F(FileSplitterResume, AutoDelete) {
   // When
   char buffer[10000];
-  for (int i(2); i <= 10; ++i)
+  for (int i = 2; i <= 10; ++i)
     _file->read(buffer, sizeof(buffer));
   ASSERT_THROW(_file->read(buffer, 1), exceptions::shutdown);
 
   // Then
-  for (int i(2); i <= 10; ++i) {
-    std::ostringstream oss;
-    oss << _path << i;
-    ASSERT_FALSE(misc::filesystem::file_exists(oss.str()));
+  for (int i = 2; i <= 10; ++i) {
+    ASSERT_FALSE(misc::filesystem::file_exists(fmt::format("{}{}", _path, i)));
   }
 }

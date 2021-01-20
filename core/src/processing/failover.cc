@@ -20,13 +20,14 @@
 
 #include <unistd.h>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
@@ -159,8 +160,7 @@ void failover::_run() {
       {
         std::shared_ptr<io::stream> s(_endpoint->open());
         if (!s)
-          throw exceptions::msg()
-              << "failover: '" << _name << "' cannot connect endpoint.";
+          throw msg_fmt("failover: '{}' cannot connect endpoint.", _name);
         {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;

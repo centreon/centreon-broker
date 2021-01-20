@@ -20,13 +20,14 @@
 
 #include <gnutls/gnutls.h>
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/params.hh"
 #include "com/centreon/broker/tls/stream.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::tls;
 
 /**************************************
@@ -104,8 +105,8 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
       if (ret != GNUTLS_E_SUCCESS) {
         log_v2::tls()->error("TLS: cannot initialize session: {}",
                              gnutls_strerror(ret));
-        throw exceptions::msg()
-            << "TLS: cannot initialize session: " << gnutls_strerror(ret);
+        throw msg_fmt(
+            "TLS: cannot initialize session: {}", gnutls_strerror(ret));
       }
 
       // Apply TLS parameters.
@@ -135,8 +136,8 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error("TLS: handshake failed: {}", gnutls_strerror(ret));
-      throw exceptions::msg()
-          << "TLS: handshake failed: " << gnutls_strerror(ret);
+      throw msg_fmt(
+          "TLS: handshake failed: {} ", gnutls_strerror(ret));
     }
     log_v2::tls()->debug("TLS: successful handshake");
 

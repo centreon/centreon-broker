@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/influxdb/stream.hh"
-#include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/influxdb/influxdb12.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -94,7 +92,7 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw exceptions::shutdown() << "cannot read from InfluxDB database";
+  throw exceptions::shutdown("cannot read from InfluxDB database");
   return true;
 }
 

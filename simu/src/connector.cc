@@ -19,7 +19,6 @@
 #include "com/centreon/broker/simu/connector.hh"
 #include <fstream>
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/simu/stream.hh"
 
 using namespace com::centreon::broker;

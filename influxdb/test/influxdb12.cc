@@ -19,10 +19,11 @@
 
 #include "com/centreon/broker/influxdb/influxdb12.hh"
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "../../core/test/test_server.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 class InfluxDB12 : public testing::Test {
@@ -51,7 +52,7 @@ TEST_F(InfluxDB12, BadConnection) {
 
   ASSERT_THROW(influxdb::influxdb12 idb
                  ("centreon", "pass", "localhost", 4243, "centreon", "host_status", scolumns, "host_metrics", mcolumns, mcache),
-               exceptions::msg);
+               msg_fmt);
 }
 
 TEST_F(InfluxDB12, Empty) {
@@ -173,7 +174,7 @@ TEST_F(InfluxDB12, BadServerResponse1) {
   idb.write(m2);
   idb.write(m3);
 
-  ASSERT_THROW(idb.commit(), exceptions::msg);
+  ASSERT_THROW(idb.commit(), msg_fmt);
 }
 
 TEST_F(InfluxDB12, BadServerResponse2) {
@@ -233,6 +234,6 @@ TEST_F(InfluxDB12, BadServerResponse2) {
   idb.write(m2);
   idb.write(m3);
 
-  ASSERT_THROW(idb.commit(), exceptions::msg);
+  ASSERT_THROW(idb.commit(), msg_fmt);
 }
 

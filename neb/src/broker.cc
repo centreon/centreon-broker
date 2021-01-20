@@ -16,14 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 static uint32_t neb_instances(0);
 
@@ -63,9 +64,11 @@ void broker_module_init(void const* arg) {
     if (neb_category != io::events::neb) {
       e.unregister_category(neb_category);
       --neb_instances;
-      throw(exceptions::msg() << "NEB: category " << io::events::neb
-                              << " is already registered whereas it should be "
-                              << "reserved for the NEB module");
+      throw msg_fmt(
+          "NEB: category {}"
+          " is already registered whereas it should be "
+          "reserved for the NEB module",
+          io::events::neb);
     }
 
     // Register events.
@@ -95,10 +98,10 @@ void broker_module_init(void const* arg) {
       e.register_event(io::events::neb, neb::de_host_check, "host_check",
                        &neb::host_check::operations, neb::host_check::entries,
                        "hosts");
-      e.register_event(
-          io::events::neb, neb::de_host_dependency, "host_dependency",
-          &neb::host_dependency::operations, neb::host_dependency::entries,
-          "hosts_hosts_dependencies");
+      e.register_event(io::events::neb, neb::de_host_dependency,
+                       "host_dependency", &neb::host_dependency::operations,
+                       neb::host_dependency::entries,
+                       "hosts_hosts_dependencies");
       e.register_event(io::events::neb, neb::de_host, "host",
                        &neb::host::operations, neb::host::entries, "hosts");
       e.register_event(io::events::neb, neb::de_host_group, "host_group",
@@ -118,8 +121,7 @@ void broker_module_init(void const* arg) {
                        "instances");
       e.register_event(io::events::neb, neb::de_instance_status,
                        "instance_status", &neb::instance_status::operations,
-                       neb::instance_status::entries,
-                       "instances");
+                       neb::instance_status::entries, "instances");
       e.register_event(io::events::neb, neb::de_log_entry, "log_entry",
                        &neb::log_entry::operations, neb::log_entry::entries,
                        "logs");
@@ -142,7 +144,7 @@ void broker_module_init(void const* arg) {
       e.register_event(
           io::events::neb, neb::de_service_group_member, "service_group_member",
           &neb::service_group_member::operations,
-          neb::service_group_member::entries,"services_servicegroups");
+          neb::service_group_member::entries, "services_servicegroups");
       e.register_event(io::events::neb, neb::de_service_status,
                        "service_status", &neb::service_status::operations,
                        neb::service_status::entries, "services");

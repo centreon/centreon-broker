@@ -19,8 +19,9 @@
 
 #include "com/centreon/broker/graphite/factory.hh"
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 TEST(graphiteFactory, HasEndpoint) {
@@ -41,7 +42,7 @@ TEST(graphiteFactory, MissingParams) {
   std::shared_ptr<persistent_cache> cache;
   bool is_acceptor;
 
-  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
+  ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), msg_fmt);
   cfg.params["db_host"] = "host";
   ASSERT_NO_THROW(delete fact.new_endpoint(cfg, is_acceptor, cache));
   cfg.params["db_port"] = "toto";

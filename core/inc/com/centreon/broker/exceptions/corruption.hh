@@ -19,7 +19,7 @@
 #ifndef CCB_EXCEPTIONS_CORRUPTION_HH
 #define CCB_EXCEPTIONS_CORRUPTION_HH
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -33,23 +33,15 @@ namespace exceptions {
  *  This exception is thrown when someone attemps to read from a
  *  stream that has been corruption.
  */
-class corruption : public msg {
+class corruption : public com::centreon::exceptions::msg_fmt {
  public:
-  corruption() = default;
-  corruption(corruption const&) = default;
+  template <typename... Args>
+  explicit corruption(std::string const& str, const Args&... args)
+    : msg_fmt(str, args...) {}
+
+  corruption() = delete;
   ~corruption() noexcept {}
   corruption& operator=(const corruption&) = delete;
-
-  /**
-   *  Insert data in message.
-   *
-   *  @param[in] t Data to insert.
-   */
-  template <typename T>
-  corruption& operator<<(T t) noexcept {
-    *(misc::stringifier*)this << t;
-    return *this;
-  }
 };
 }  // namespace exceptions
 

@@ -19,7 +19,6 @@
 
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/database/table_max_size.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"

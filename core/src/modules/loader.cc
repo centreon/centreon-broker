@@ -18,10 +18,11 @@
 
 #include "com/centreon/broker/modules/loader.hh"
 #include <sys/stat.h>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
 
@@ -76,7 +77,7 @@ void loader::load_dir(std::string const& dirname, void const* arg) {
        it != end; ++it) {
     try {
       load_file(*it, arg);
-    } catch (exceptions::msg const& e) {
+    } catch (msg_fmt const& e) {
       logging::error(logging::high) << e.what();
     }
   }

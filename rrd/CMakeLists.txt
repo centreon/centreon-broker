@@ -22,6 +22,7 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/rrd/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/rrd/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # Find librrd.
 include(FindPkgConfig)
@@ -56,8 +57,6 @@ add_library("${RRD}" SHARED
   "${SRC_DIR}/backend.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/creator.cc"
-  "${SRC_DIR}/exceptions/open.cc"
-  "${SRC_DIR}/exceptions/update.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/lib.cc"
   "${SRC_DIR}/main.cc"

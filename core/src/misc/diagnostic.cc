@@ -27,11 +27,12 @@
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/misc/misc.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 
@@ -86,7 +87,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
     tmp_dir = temp_path();
     std::ifstream dir(tmp_dir);
     if (!dir.good())
-      throw exceptions::msg() << "diagnostic: cannot create temporary file";
+      throw msg_fmt("diagnostic: cannot create temporary file");
   }
 
   // Files to remove.

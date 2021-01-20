@@ -27,11 +27,12 @@
 
 #include <cstring>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 #define BUF_SIZE 4096 * 4
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
@@ -81,8 +82,7 @@ std::string fifo::read_line(int usecs_timeout) {
   if (::select(_fd + 1, &polled_fd, nullptr, nullptr,
                ((usecs_timeout == -1) ? nullptr : &tv)) == -1) {
     char const* msg = ::strerror(errno);
-    throw(exceptions::msg()
-          << "fifo: can't poll file '" << _path << "': " << msg);
+    throw msg_fmt("fifo: can't poll file '{}': {}", _path, msg);
   }
 
   // Read everything.
@@ -92,8 +92,7 @@ std::string fifo::read_line(int usecs_timeout) {
     return ("");
   if (ret == -1) {
     const char* msg = ::strerror(errno);
-    throw(exceptions::msg()
-          << "fifo: can't read file '" << _path << "': " << msg);
+    throw msg_fmt("fifo: can't read file '{}: {}", _path, msg);
   }
   buf[ret] = '\0';
   _polled_line.append(buf);
@@ -123,12 +122,10 @@ void fifo::_open_fifo() {
     if (::mkfifo(_path.c_str(),
                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH) != 0) {
       char const* msg(strerror(errno));
-      throw(exceptions::msg()
-            << "fifo: can't create fifo '" << _path << "' :" << msg);
+      throw msg_fmt("fifo: can't create fifo '{}' : {}", _path, msg);
     }
   } else if (!S_ISFIFO(s.st_mode))
-    throw(exceptions::msg()
-          << "fifo: file '" << _path << "' exists but is not a FIFO");
+    throw msg_fmt("fifo: file '{}' exists but is not a FIFO", _path);
 
   // Open fifo.
   // We use O_RDWR because select flag a FIFO at EOF when there is
@@ -138,7 +135,6 @@ void fifo::_open_fifo() {
   _fd = ::open(_path.c_str(), O_RDWR | O_NONBLOCK);
   if (_fd == -1) {
     const char* msg(::strerror(errno));
-    throw(exceptions::msg()
-          << "fifo: can't open file '" << _path << "' : " << msg);
+    throw msg_fmt("fifo: can't open file '{}' : {}", _path, msg);
   }
 }

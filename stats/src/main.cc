@@ -19,7 +19,6 @@
 
 #include <vector>
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/stats/parser.hh"
 #include "com/centreon/broker/stats/worker_pool.hh"

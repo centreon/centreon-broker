@@ -25,7 +25,6 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
@@ -35,8 +34,10 @@
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
@@ -126,7 +127,8 @@ int nebmodule_init(int flags, char const* args, void* handle) {
     setlocale(LC_NUMERIC, "C");
 
     // Default logging object.
-    std::shared_ptr<neb::monitoring_logger> monlog{std::make_shared<neb::monitoring_logger>()};
+    std::shared_ptr<neb::monitoring_logger> monlog{
+        std::make_shared<neb::monitoring_logger>()};
 
     try {
       // Default logging object.
@@ -158,7 +160,7 @@ int nebmodule_init(int flags, char const* args, void* handle) {
           args += config_file_size;
         neb::gl_configuration_file = args;
       } else
-        throw(exceptions::msg() << "main: no configuration file provided");
+        throw msg_fmt("main: no configuration file provided");
 
       // Try configuration parsing.
       com::centreon::broker::config::parser p;
@@ -170,7 +172,8 @@ int nebmodule_init(int flags, char const* args, void* handle) {
           s.loggers());
 
       std::string err;
-      if (!log_v2::instance().load("/etc/centreon-broker/log-config.json", s.broker_name(), err))
+      if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
+                                   s.broker_name(), err))
         logging::error(logging::low) << err;
 
       // Remove monitoring log.

@@ -20,10 +20,11 @@
 #include <cstring>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/correlation/connector.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
+using namespace com::centreon::exceptions;
 
 /**
  *  Check if an endpoint configuration matches streams build by this
@@ -63,8 +64,8 @@ io::endpoint* factory::new_endpoint(
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("file")};
     if (it == cfg.params.end())
-      throw exceptions::msg()
-          << "correlation: no 'file' defined for endpoint '" << cfg.name << "'";
+      throw msg_fmt(
+          "correlation: no 'file' defined for endpoint '{}'", cfg.name);
     correlation_file = it->second;
   }
 

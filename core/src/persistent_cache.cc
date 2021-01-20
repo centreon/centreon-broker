@@ -1,20 +1,20 @@
 /*
  * Copyright 2020 Centreon (https://www.centreon.com/)
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-**
-** For more information : contact@centreon.com
-*/
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at
+ **
+ **     http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ** See the License for the specific language governing permissions and
+ ** limitations under the License.
+ **
+ ** For more information : contact@centreon.com
+ */
 
 #include "com/centreon/broker/persistent_cache.hh"
 #include <cerrno>
@@ -22,10 +22,11 @@
 #include <cstring>
 #include <fstream>
 #include "com/centreon/broker/bbdo/stream.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/opener.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 /**
@@ -52,10 +53,8 @@ persistent_cache::~persistent_cache() {}
  */
 void persistent_cache::add(std::shared_ptr<io::data> const& d) {
   if (!_write_file)
-    throw(exceptions::msg() << "core: cache file '" << _cache_file
-                            << "' is not open for writing");
+    throw msg_fmt("core: cache file '{}' is not open for writing", _cache_file);
   _write_file->write(d);
-  return;
 }
 
 /**
@@ -72,20 +71,17 @@ void persistent_cache::commit() {
     _read_file.reset();
     if (::rename(_cache_file.c_str(), _old_file().c_str())) {
       char const* msg(strerror(errno));
-      throw(exceptions::msg()
-            << "core: cache file '" << _cache_file
-            << "' could not be renamed to '" << _old_file() << "': " << msg);
+      throw msg_fmt("core: cache file '{}' could not be renamed to '{}' : {}",
+                    _cache_file, _old_file(), msg);
     } else if (::rename(_new_file().c_str(), _cache_file.c_str())) {
       // .old file will be renamed by the _open() method.
       char const* msg(strerror(errno));
-      throw(exceptions::msg()
-            << "core: cache file '" << _new_file()
-            << "' could not be renamed to '" << _cache_file << "': " << msg);
+      throw msg_fmt("core: cache file '{}' could not be renamed to '{}' : {}",
+                    _new_file(), _cache_file, msg);
     }
     // No error checking, this is a secondary issue.
     ::remove(_old_file().c_str());
   }
-  return;
 }
 
 /**
@@ -103,7 +99,6 @@ void persistent_cache::get(std::shared_ptr<io::data>& d) {
     (void)e;
     d.reset();
   }
-  return;
 }
 
 /**
@@ -112,7 +107,6 @@ void persistent_cache::get(std::shared_ptr<io::data>& d) {
 void persistent_cache::rollback() {
   _write_file.reset();
   ::remove(_new_file().c_str());
-  return;
 }
 
 /**
@@ -122,8 +116,8 @@ void persistent_cache::rollback() {
  */
 void persistent_cache::transaction() {
   if (_write_file)
-    throw(exceptions::msg() << "core: cache file '" << _cache_file
-                            << "' is already open for writing");
+    throw msg_fmt("core: cache file '{}' is already open for writing",
+                  _cache_file);
   file::opener opnr;
   opnr.set_filename(_new_file());
   opnr.set_auto_delete(false);
@@ -133,7 +127,6 @@ void persistent_cache::transaction() {
   bs->set_substream(fs);
   bs->set_coarse(true);
   _write_file = std::static_pointer_cast<io::stream>(bs);
-  return;
 }
 
 /**

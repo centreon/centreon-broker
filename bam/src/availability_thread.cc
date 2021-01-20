@@ -19,14 +19,14 @@
 #include "com/centreon/broker/bam/availability_thread.hh"
 
 #include <ctime>
-#include <sstream>
 
 #include "com/centreon/broker/database/mysql_error.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -192,7 +192,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
       thread_id = _mysql->run_query_and_get_result(query_str, &promise);
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
-        throw exceptions::msg() << "no events matching BAs to rebuild";
+        throw msg_fmt("no events matching BAs to rebuild");
       first_day = res.value_as_i32(0);
       first_day = _compute_start_of_day(first_day);
       // If there is opened events, rebuild until midnight of this day.
@@ -206,10 +206,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
           "BAM-BI: availability thread could not select the BA durations from "
           "the reporting database: {}",
           e.what());
-      throw exceptions::msg()
-          << "BAM-BI: availability thread could not select the BA durations "
-             "from the reporting database: "
-          << e.what();
+      throw msg_fmt(
+          "BAM-BI: availability thread could not select the BA durations "
+          "from the reporting database: {}",
+          e.what());
     }
 
   } else {
@@ -220,7 +220,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res)) {
         log_v2::bam()->error("no availability in table");
-        throw exceptions::msg() << "no availability in table";
+        throw msg_fmt("no availability in table");
       }
       first_day = res.value_as_i32(0);
       first_day =
@@ -230,10 +230,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
           "BAM-BI: availability thread could not select the BA availabilities "
           "from the reporting database: {}",
           e.what());
-      throw exceptions::msg() << "BAM-BI: availability thread "
-                                 "could not select the BA availabilities "
-                                 "from the reporting database: "
-                              << e.what();
+      throw msg_fmt("BAM-BI: availability thread "
+                    "could not select the BA availabilities "
+                    "from the reporting database: {}",
+                    e.what());
     }
   }
 
@@ -319,8 +319,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       found->second.set_timeperiod_is_default(res.value_as_bool(7));
     }
   } catch (const std::exception& e) {
-    throw exceptions::msg()
-        << "BAM-BI: availability thread could not build the data" << e.what();
+    throw msg_fmt("BAM-BI: availability thread could not build the data {}", e.what());
   }
 
   log_v2::bam()->debug("{} builders of availabilities created",
@@ -372,8 +371,8 @@ void availability_thread::_build_daily_availabilities(int thread_id,
                            ba_id);
     }
   } catch (const std::exception& e) {
-    throw exceptions::msg()
-        << "BAM-BI: availability thread could not build the data: " << e.what();
+    throw msg_fmt("BAM-BI: availability thread could not build the data: {}", 
+                  e.what());
   }
 
   log_v2::bam()->debug("{} builder(s) to write availabilities",
@@ -443,8 +442,7 @@ time_t availability_thread::_compute_next_midnight() {
 time_t availability_thread::_compute_start_of_day(time_t when) {
   struct tm tmv;
   if (!localtime_r(&when, &tmv))
-    throw exceptions::msg()
-        << "BAM-BI: availability thread could not compute start of day";
+    throw msg_fmt("BAM-BI: availability thread could not compute start of day");
   tmv.tm_sec = tmv.tm_min = tmv.tm_hour = 0;
   return mktime(&tmv);
 }
@@ -457,10 +455,8 @@ void availability_thread::_open_database() {
   try {
     _mysql.reset(new mysql(_db_cfg));
   } catch (const std::exception& e) {
-    throw exceptions::msg()
-        << "BAM-BI: availability thread could not connect to "
-           "reporting database '"
-        << e.what();
+    throw msg_fmt("BAM-BI: availability thread could not connect to "
+                  "reporting database '{}'", e.what());
   }
 }
 

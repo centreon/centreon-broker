@@ -15,11 +15,12 @@
 **
 ** For more information : contact@centreon.com
 */
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
@@ -128,7 +129,7 @@ bool mysql::commit_if_needed() {
 void mysql::_check_errors() {
   for (auto it = _connection.begin(), end = _connection.end(); it != end; ++it)
     if ((*it)->is_in_error())
-      throw exceptions::msg() << (*it)->get_error_message();
+      throw msg_fmt((*it)->get_error_message());
 }
 
 /**

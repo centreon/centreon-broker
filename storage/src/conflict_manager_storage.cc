@@ -24,7 +24,6 @@
 #include <sstream>
 
 #include "com/centreon/broker/database/table_max_size.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -38,7 +37,9 @@
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
@@ -92,9 +93,9 @@ void conflict_manager::_storage_process_service_status(
              neb::service_status const& ss, bool index_locked, bool special,
              uint32_t& rrd_len) -> void {
     if (index_id == 0) {
-      throw broker::exceptions::msg()
-          << "storage: could not fetch index_id of newly inserted index ("
-          << host_id << ", " << service_id << ")";
+      throw msg_fmt(
+          "storage: could not fetch index_id of newly inserted index ({}"
+          ", {})", host_id, service_id);
     }
 
     /* Insert index in cache. */
@@ -179,9 +180,9 @@ void conflict_manager::_storage_process_service_status(
         }
 
         if (index_id == 0)
-          throw broker::exceptions::msg()
-              << "storage: could not fetch index_id of newly inserted index ("
-              << host_id << ", " << service_id << ")";
+          throw msg_fmt(
+              "storage: could not fetch index_id of newly inserted index ({}"
+              ", {})", host_id, service_id);
 
         if (!_index_data_update.prepared())
           _index_data_update = _mysql.prepare_query(
@@ -211,9 +212,9 @@ void conflict_manager::_storage_process_service_status(
             "Index {} stored in cache for host_id={} and service_id={}",
             index_id, host_id, service_id);
       } catch (std::exception const& e) {
-        throw broker::exceptions::msg()
-            << "storage: insertion of index (" << host_id << ", " << service_id
-            << ") failed: " << e.what();
+        throw msg_fmt(
+            "storage: insertion of index ( {}, {}"
+            ") failed: {}", host_id, service_id, e.what());
       }
     }
   } else {
@@ -324,9 +325,9 @@ void conflict_manager::_storage_process_service_status(
                   metric_id, type, pd.value(), pd.unit(), pd.warning(),
                   pd.warning_low(), pd.warning_mode(), pd.critical(),
                   pd.critical_low(), pd.critical_mode(), pd.min(), pd.max());
-              throw broker::exceptions::msg()
-                  << "storage: insertion of metric '" << pd.name()
-                  << "' of index " << index_id << " failed: " << e.what();
+              throw msg_fmt(
+                  "storage: insertion of metric '{}"
+                  "' of index {} failed: {}", pd.name(), index_id, e.what());
             }
           } else {
             std::lock_guard<std::mutex> lock(_metric_cache_m);
@@ -539,8 +540,8 @@ void conflict_manager::_check_deleted_index() {
         metrics_to_delete.push_back(res.value_as_u64(1));
       }
     } catch (std::exception const& e) {
-      throw broker::exceptions::msg()
-          << "could not query index table to get index to delete: " << e.what();
+      throw msg_fmt(
+          "could not query index table to get index to delete: {} ", e.what());
     }
 
     // Delete metrics.

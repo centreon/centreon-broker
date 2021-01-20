@@ -23,14 +23,15 @@
 #include <string>
 
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/connector.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
+using namespace com::centreon::exceptions;
 
 /**
  *  Check if a configuration supports this protocol.
@@ -73,9 +74,10 @@ io::endpoint* factory::new_endpoint(
           "TCP: 'host' must be a string matching a host, not beginning or "
           "ending with spaces for endpoint {}, it contains '{}'",
           cfg.name, host);
-      throw exceptions::msg()
-          << "TCP: invalid host value '" << host << "' defined for endpoint '"
-          << cfg.name << "', it must not begin or end with spaces.";
+      throw msg_fmt(
+          "TCP: invalid host value '{}' defined for endpoint '{}"
+          "', it must not begin or end with spaces.",
+          host, cfg.name);
     }
   }
 
@@ -87,9 +89,7 @@ io::endpoint* factory::new_endpoint(
     if (it == cfg.params.end()) {
       log_v2::tcp()->error("TCP: no 'port' defined for endpoint '{}'",
                            cfg.name);
-      throw exceptions::msg() << "TCP: no 'port' defined for "
-                                 "endpoint '"
-                              << cfg.name << "'";
+      throw msg_fmt("TCP: no 'port' defined for endpoint '{}'", cfg.name);
     }
     try {
       port = static_cast<uint16_t>(std::stol(it->second));
@@ -97,8 +97,8 @@ io::endpoint* factory::new_endpoint(
       log_v2::tcp()->error(
           "TCP: 'port' must be an integer and not '{}' for endpoint '{}'",
           it->second, cfg.name);
-      throw exceptions::msg() << "TCP: invalid port value '" << it->second
-                              << "' defined for endpoint '" << cfg.name << "'";
+      throw msg_fmt("TCP: invalid port value '{}' defined for endpoint '{}'",
+                    it->second, cfg.name);
     }
   }
 

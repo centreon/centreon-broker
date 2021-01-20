@@ -19,12 +19,13 @@
 #include "com/centreon/broker/influxdb/line_protocol_query.hh"
 #include <algorithm>
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
+using namespace com::centreon::exceptions;
 
 /**
  *  Create an empty query.
@@ -175,8 +176,9 @@ std::string line_protocol_query::escape_value(std::string const& str) {
  */
 std::string line_protocol_query::generate_metric(storage::metric const& me) {
   if (_type != metric)
-    throw(exceptions::msg() << "influxdb: attempt to generate metric"
-                               " with a query of the bad type");
+    throw msg_fmt(
+        "influxdb: attempt to generate metric"
+        " with a query of the bad type");
   _string_index = 0;
   std::ostringstream iss;
   try {
@@ -210,8 +212,9 @@ std::string line_protocol_query::generate_metric(storage::metric const& me) {
  */
 std::string line_protocol_query::generate_status(storage::status const& st) {
   if (_type != status)
-    throw(exceptions::msg() << "influxdb: attempt to generate status"
-                               " with a query of the bad type");
+    throw msg_fmt(
+        "influxdb: attempt to generate status"
+        " with a query of the bad type");
   _string_index = 0;
   std::ostringstream iss;
   try {
@@ -283,9 +286,9 @@ void line_protocol_query::_compile_scheme(
 
     if ((end_macro = scheme.find_first_of('$', found_macro + 1)) ==
         std::string::npos)
-      throw(exceptions::msg()
-            << "influxdb: can't compile query, opened macro not closed: '"
-            << scheme.substr(found_macro) << "'");
+      throw msg_fmt(
+          "influxdb: can't compile query, opened macro not closed: '{}'",
+          scheme.substr(found_macro));
 
     std::string macro(scheme.substr(found_macro, end_macro + 1 - found_macro));
     if (macro == "$$")
@@ -293,7 +296,7 @@ void line_protocol_query::_compile_scheme(
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
       _append_compiled_getter(
-          &line_protocol_query::_get_member<uint32_t , storage::metric,
+          &line_protocol_query::_get_member<uint32_t, storage::metric,
                                             &storage::metric::metric_id>,
           escaper);
     } else if (macro == "$INSTANCE$")
@@ -358,7 +361,7 @@ void line_protocol_query::_compile_scheme(
  */
 void line_protocol_query::_throw_on_invalid(data_type macro_type) {
   if (macro_type != _type)
-    throw(exceptions::msg() << "influxdb: macro of invalid type");
+    throw msg_fmt("influxdb: macro of invalid type");
 }
 
 /**
@@ -406,9 +409,8 @@ uint32_t line_protocol_query::_get_index_id(io::data const& d) {
     return static_cast<storage::status const&>(d).index_id;
   else
     return _cache
-                ->get_metric_mapping(
-                    static_cast<storage::metric const&>(d).metric_id)
-                .index_id;
+        ->get_metric_mapping(static_cast<storage::metric const&>(d).metric_id)
+        .index_id;
 }
 
 /**
@@ -429,7 +431,8 @@ void line_protocol_query::_get_index_id(io::data const& d, std::ostream& is) {
  */
 void line_protocol_query::_get_host(io::data const& d, std::ostream& is) {
   if (_type == status)
-    is << _cache->get_host_name(_cache->get_index_mapping(_get_index_id(d)).host_id);
+    is << _cache->get_host_name(
+        _cache->get_index_mapping(_get_index_id(d)).host_id);
   else
     is << _cache->get_host_name(static_cast<storage::metric const&>(d).host_id);
 }
@@ -459,8 +462,9 @@ void line_protocol_query::_get_service(io::data const& d, std::ostream& is) {
         _cache->get_index_mapping(_get_index_id(d)));
     is << _cache->get_service_description(stm.host_id, stm.service_id);
   } else {
-    is << _cache->get_service_description(static_cast<storage::metric const&>(d).host_id,
-                                          static_cast<storage::metric const&>(d).service_id);
+    is << _cache->get_service_description(
+        static_cast<storage::metric const&>(d).host_id,
+        static_cast<storage::metric const&>(d).service_id);
   }
 }
 

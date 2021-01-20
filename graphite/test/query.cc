@@ -19,9 +19,10 @@
 
 #include "com/centreon/broker/graphite/query.hh"
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 TEST(graphiteQuery, ComplexMetric) {
@@ -124,21 +125,21 @@ TEST(graphiteQuery, Except) {
     graphite::query q3{"test . $METRICID$", "a", graphite::query::status,
                        cache};
     ASSERT_TRUE(false);
-  } catch (exceptions::msg const& ex) {
+  } catch (msg_fmt const& ex) {
     ASSERT_TRUE(true);
   }
 
   try {
     graphite::query q3{"test . $METRIC$", "a", graphite::query::status, cache};
     ASSERT_TRUE(false);
-  } catch (exceptions::msg const& ex) {
+  } catch (msg_fmt const& ex) {
     ASSERT_TRUE(true);
   }
 
   try {
     graphite::query q3{"test . $METRIC", "a", graphite::query::status, cache};
     ASSERT_TRUE(false);
-  } catch (exceptions::msg const& ex) {
+  } catch (msg_fmt const& ex) {
     ASSERT_TRUE(true);
   }
 
@@ -148,8 +149,8 @@ TEST(graphiteQuery, Except) {
   graphite::query q4{"test . $METRICID$ $METRIC$", "a", graphite::query::metric,
                      cache};
 
-  ASSERT_THROW(q.generate_status(s), exceptions::msg);
-  ASSERT_THROW(q2.generate_metric(m), exceptions::msg);
+  ASSERT_THROW(q.generate_status(s), msg_fmt);
+  ASSERT_THROW(q2.generate_metric(m), msg_fmt);
   ASSERT_EQ(q4.generate_metric(m), "test_._3_A nan 0\n");
 
   graphite::query q5{"test . $INSTANCE$", "a", graphite::query::metric, cache};

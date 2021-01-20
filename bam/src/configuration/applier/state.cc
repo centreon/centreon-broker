@@ -17,11 +17,12 @@
 */
 
 #include "com/centreon/broker/bam/configuration/applier/state.hh"
-#include <sstream>
+#include <fmt/format.h>
 #include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
@@ -37,9 +38,7 @@ using namespace com::centreon::broker::bam::configuration;
  *  @return BA identifier for circular path search.
  */
 static std::string ba_node_id(uint32_t ba_id) {
-  std::ostringstream oss;
-  oss << "BA " << ba_id;
-  return oss.str();
+  return fmt::format("BA {}", ba_id);
 }
 
 /**
@@ -48,9 +47,7 @@ static std::string ba_node_id(uint32_t ba_id) {
  *  @return Boolean expression identifier for circular path search.
  */
 static std::string boolexp_node_id(uint32_t boolexp_id) {
-  std::ostringstream oss;
-  oss << "boolean expression " << boolexp_id;
-  return oss.str();
+  return fmt::format("boolean expression {}", boolexp_id);
 }
 
 /**
@@ -59,9 +56,7 @@ static std::string boolexp_node_id(uint32_t boolexp_id) {
  *  @return KPI identifier for circular path search.
  */
 static std::string kpi_node_id(uint32_t kpi_id) {
-  std::ostringstream oss;
-  oss << "KPI " << kpi_id;
-  return oss.str();
+  return fmt::format("KPI {}", kpi_id);
 }
 
 /**
@@ -70,9 +65,7 @@ static std::string kpi_node_id(uint32_t kpi_id) {
  *  @return Meta-service identifier for circular path search.
  */
 static std::string meta_node_id(uint32_t meta_id) {
-  std::ostringstream oss;
-  oss << "meta-service " << meta_id;
-  return oss.str();
+  return fmt::format("meta-service {}", meta_id);
 }
 
 /**
@@ -80,11 +73,8 @@ static std::string meta_node_id(uint32_t meta_id) {
  *
  *  @return Service identifier for circular path search.
  */
-static std::string service_node_id(uint32_t host_id,
-                                   uint32_t service_id) {
-  std::ostringstream oss;
-  oss << "service (" << host_id << ", " << service_id << ")";
-  return oss.str();
+static std::string service_node_id(uint32_t host_id, uint32_t service_id) {
+  return fmt::format("service ({}, {})", host_id, service_id);
 }
 
 /**************************************
@@ -288,7 +278,7 @@ void applier::state::_circular_check(configuration::state const& my_state) {
  */
 void applier::state::_circular_check(applier::state::circular_check_node& n) {
   if (n.in_visit)
-    throw(exceptions::msg() << "BAM: loop found in BA graph");
+    throw(msg_fmt("BAM: loop found in BA graph"));
   if (!n.visited) {
     n.in_visit = true;
     for (std::set<std::string>::const_iterator it(n.targets.begin()),

@@ -41,20 +41,21 @@ class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
     (void)deadline;
     d.reset();
     if (_shutdown)
-      throw(exceptions::shutdown() << __FUNCTION__ << " is shutdown");
+      throw exceptions::shutdown("{} is shutdown", __FUNCTION__);
     else if (_timeout)
       return false;
     d = _buffer;
     _buffer = std::shared_ptr<io::raw>();
     if (!d)
-      throw(exceptions::shutdown() << __FUNCTION__ << " has no more data");
+      throw exceptions::shutdown("{} has no more data", __FUNCTION__);
     return true;
   }
 
   int write(std::shared_ptr<com::centreon::broker::io::data> const& d) {
     using namespace com::centreon::broker;
     if (!d || d->type() != io::raw::static_type())
-      throw(exceptions::msg() << "invalid data sent to " << __FUNCTION__);
+      throw com::centreon::exceptions::msg_fmt("invalid data sent to {}",
+                                               __FUNCTION__);
     io::raw& e(*std::static_pointer_cast<io::raw>(d));
     if (!_buffer)
       _buffer.reset(new io::raw(e));
@@ -66,9 +67,7 @@ class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
 
   void shutdown(bool shut_it_down = true) { _shutdown = shut_it_down; }
 
-  void timeout(bool time_it_out = true) {
-    _timeout = time_it_out;
-  }
+  void timeout(bool time_it_out = true) { _timeout = time_it_out; }
 
  private:
   std::shared_ptr<com::centreon::broker::io::raw> _buffer;

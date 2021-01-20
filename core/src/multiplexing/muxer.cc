@@ -47,7 +47,10 @@ uint32_t muxer::_event_queue_max_size = std::numeric_limits<uint32_t>::max();
  *                         unprocessed events in a persistent storage.
  */
 muxer::muxer(std::string const& name, bool persistent)
-    : io::stream("muxer"), _events_size(0), _name(name), _persistent(persistent) {
+    : io::stream("muxer"),
+      _events_size(0),
+      _name(name),
+      _persistent(persistent) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {
@@ -61,7 +64,7 @@ muxer::muxer(std::string const& name, bool persistent)
           ++_events_size;
         }
       }
-    } catch (exceptions::shutdown const& e) {
+    } catch (const exceptions::shutdown& e) {
       // Memory file was properly read back in memory.
       (void)e;
     }

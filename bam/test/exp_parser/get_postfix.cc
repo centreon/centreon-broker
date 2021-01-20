@@ -20,8 +20,9 @@
 #include <list>
 #include <string>
 #include "com/centreon/broker/bam/exp_parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 /**
@@ -177,7 +178,7 @@ TEST(BamExpParserGetPostfix, Copy) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, MissingParenthesis1) {
   bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK(");
-  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+  ASSERT_THROW(p.get_postfix(), msg_fmt);
 }
 
 // Given an exp_parser object
@@ -185,7 +186,7 @@ TEST(BamExpParserGetPostfix, MissingParenthesis1) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, MissingParenthesis2) {
   bam::exp_parser p("HOSTSTATUS(Host, Service)) IS OK");
-  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+  ASSERT_THROW(p.get_postfix(), msg_fmt);
 }
 
 // Given an exp_parser object
@@ -193,7 +194,7 @@ TEST(BamExpParserGetPostfix, MissingParenthesis2) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, BadComma1) {
   bam::exp_parser p("HOSTSTATUS(Host, Service), IS OK");
-  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+  ASSERT_THROW(p.get_postfix(), msg_fmt);
 }
 
 // Given an exp_parser object
@@ -201,7 +202,7 @@ TEST(BamExpParserGetPostfix, BadComma1) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, BadComma2) {
   bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK,");
-  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+  ASSERT_THROW(p.get_postfix(), msg_fmt);
 }
 
 // Given an exp_parser object
@@ -209,5 +210,5 @@ TEST(BamExpParserGetPostfix, BadComma2) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, BadComma3) {
   bam::exp_parser p("(OK,OK)");
-  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+  ASSERT_THROW(p.get_postfix(), msg_fmt);
 }

@@ -26,7 +26,6 @@
 #include <ctime>
 
 #include "com/centreon/broker/database/mysql_error.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -34,7 +33,9 @@
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
@@ -87,7 +88,6 @@ void rebuilder::_run(asio::error_code ec) {
     try {
       // Open DB.
       mysql ms(_db_cfg);
-
       // Fetch index to rebuild.
       index_info info;
       _next_index_to_rebuild(info, ms);
@@ -151,9 +151,10 @@ void rebuilder::_run(asio::error_code ec) {
                 metrics_to_rebuild.push_back(info);
               }
             } catch (std::exception const& e) {
-              throw exceptions::msg()
-                  << "storage: rebuilder: could not fetch metrics of index "
-                  << index_id << ": " << e.what();
+              throw msg_fmt(
+                  "storage: rebuilder: could not fetch metrics of index {}"
+                  ": {}",
+                  index_id, e.what());
             }
           }
 
@@ -226,8 +227,8 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
     } else
       memset(&info, 0, sizeof(info));
   } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "storage: rebuilder: could not fetch index to rebuild: " << e.what();
+    throw msg_fmt("storage: rebuilder: could not fetch index to rebuild: {} ",
+                  e.what());
   }
 }
 
@@ -295,9 +296,8 @@ void rebuilder::_rebuild_metric(mysql& ms,
         multiplexing::publisher().write(entry);
       }
     } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "storage: rebuilder: "
-          << "cannot fetch data of metric " << metric_id << ": " << e.what();
+      throw msg_fmt("storage: rebuilder: cannot fetch data of metric {} : {}",
+                    metric_id, e.what());
     }
   } catch (...) {
     // Send rebuild end event.
@@ -351,9 +351,8 @@ void rebuilder::_rebuild_status(mysql& ms,
         multiplexing::publisher().write(entry);
       }
     } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "storage: rebuilder: "
-          << "cannot fetch data of index " << index_id << ": " << e.what();
+      throw msg_fmt("storage: rebuilder: cannot fetch data of index {} : {}",
+                    index_id, e.what());
     }
   } catch (...) {
     // Send rebuild end event.

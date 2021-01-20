@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/generator/factory.hh"
 #include <memory>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/generator/endpoint.hh"
 
 using namespace com::centreon::broker;

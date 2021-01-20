@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -51,9 +50,11 @@
 #include "com/centreon/broker/neb/statistics/total_hosts.hh"
 #include "com/centreon/broker/neb/statistics/total_service_state_change.hh"
 #include "com/centreon/broker/neb/statistics/total_services.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::exceptions;
 
 /**
  *  Default constructor.
@@ -135,7 +136,7 @@ generator& generator::operator=(generator const& right) {
     _interval = right._interval;
     _registers = right._registers;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -149,14 +150,12 @@ void generator::add(uint32_t host_id,
                     uint32_t service_id,
                     std::shared_ptr<plugin> plugin) {
   if (!host_id)
-    throw(exceptions::msg() << "stats: invalid plugin host id");
+    throw msg_fmt("stats: invalid plugin host id");
   if (!service_id)
-    throw(exceptions::msg() << "stats: invalid plugin service id");
+    throw msg_fmt("stats: invalid plugin service id");
 
-  std::pair<uint32_t, uint32_t> ids(
-      std::make_pair(host_id, service_id));
+  std::pair<uint32_t, uint32_t> ids(std::make_pair(host_id, service_id));
   _registers.insert(std::make_pair(ids, plugin));
-  return;
 }
 
 /**
@@ -172,9 +171,8 @@ void generator::add(uint32_t host_id,
   std::map<std::string, std::shared_ptr<plugin> >::const_iterator it(
       _plugins.find(name));
   if (it == _plugins.end())
-    throw(exceptions::msg() << "stats: invalid plugin name");
+    throw msg_fmt("stats: invalid plugin name");
   add(host_id, service_id, it->second);
-  return;
 }
 
 /**
@@ -182,7 +180,6 @@ void generator::add(uint32_t host_id,
  */
 void generator::clear() {
   _registers.clear();
-  return;
 }
 
 /**
@@ -190,8 +187,8 @@ void generator::clear() {
  *
  *  @return The interval to generate statistics.
  */
-uint32_t generator::interval() const throw() {
-  return (_interval);
+uint32_t generator::interval() const noexcept {
+  return _interval;
 }
 
 /**
@@ -247,7 +244,6 @@ void generator::run() {
     // Send event.
     gl_publisher.write(ss);
   }
-  return;
 }
 
 /**

@@ -20,7 +20,7 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/tls/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/tls/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/tls/test")
-include_directories("${INC_DIR}")
+include_directories(${INC_DIR} ${PROJECT_SOURCE_DIR}/neb/inc/)
 set(INC_DIR "${INC_DIR}/com/centreon/broker/tls")
 
 # Find GNU TLS.

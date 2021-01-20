@@ -24,7 +24,6 @@
 #include <sstream>
 
 #include "com/centreon/broker/database/mysql_error.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql.hh"
 

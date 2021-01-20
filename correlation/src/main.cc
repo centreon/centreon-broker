@@ -24,13 +24,14 @@
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/log_issue.hh"
 #include "com/centreon/broker/correlation/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 // Load count.
 static uint32_t instances(0);
@@ -80,10 +81,11 @@ void broker_module_init(void const* arg) {
     if (correlation_category != io::events::correlation) {
       e.unregister_category(correlation_category);
       --instances;
-      throw(exceptions::msg()
-            << "correlation: category " << io::events::correlation
-            << " is already registered whereas it should be "
-            << "reserved for the correlation module");
+      throw msg_fmt(
+          "correlation: category {}"
+          " is already registered whereas it should be "
+          "reserved for the correlation module",
+          io::events::correlation);
     }
 
     // Register events.

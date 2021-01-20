@@ -24,12 +24,13 @@
 
 #include <json11.hpp>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/tcp/connector.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 const static std::string test_addr("127.0.0.1");
 constexpr static uint16_t test_port(4444);
@@ -893,7 +894,7 @@ TEST(TcpAcceptor, CloseRead) {
   for (;;) {
     try {
       io->read(data_read, -1);
-    } catch (exceptions::msg const& ex) {
+    } catch (msg_fmt const& ex) {
       break;
     }
   }

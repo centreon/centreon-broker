@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/neb/downtime_serializable.hh"
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::neb;
 

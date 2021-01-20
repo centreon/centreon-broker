@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -29,7 +28,9 @@
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/broker/storage/stream.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 // Load count.
@@ -75,9 +76,11 @@ void broker_module_init(void const* arg) {
     if (storage_category != io::events::storage) {
       e.unregister_category(storage_category);
       --instances;
-      throw(exceptions::msg() << "storage: category " << io::events::storage
-                              << " is already registered whereas it should be "
-                              << "reserved for the storage module");
+      throw msg_fmt(
+          "storage: category {}"
+          " is already registered whereas it should be "
+          "reserved for the storage module",
+          io::events::storage);
     }
 
     // Register events.

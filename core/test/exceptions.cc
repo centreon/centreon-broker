@@ -18,35 +18,17 @@
  */
 
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
-using namespace com::centreon::broker;
-
-// Given an exceptions::msg object
-// When it is default constructed
-// Then its error message is empty
-TEST(Exceptions, DefaultConstructor) {
-  exceptions::msg e;
-  ASSERT_STREQ(e.what(), "");
-}
-
-// Given an exceptions::msg object with an error message
-// When a copy of this object is created through the copy constructor
-// Then the error messages of the two objects are equal
-TEST(Exceptions, CopyConstructor) {
-  exceptions::msg e1;
-  e1 << "This is my test error message (" << 42 << ") !";
-  exceptions::msg e2(e1);
-  ASSERT_STREQ(e1.what(), e2.what());
-}
+using namespace com::centreon::exceptions;
 
 TEST(Exceptions, Throw) {
   // First throw.
   try {
     try {
-      throw(exceptions::msg() << "foobar" << 42 << -789654ll);
+      throw msg_fmt("{}{}{}", "foobar", 42, -789654ll);
       ASSERT_FALSE(true);
-    } catch (exceptions::msg const& e) {  // Properly caught.
+    } catch (msg_fmt const& e) {  // Properly caught.
       ASSERT_STREQ(e.what(), "foobar42-789654");
     }
   } catch (...) {
@@ -56,7 +38,7 @@ TEST(Exceptions, Throw) {
   // Second throw.
   try {
     try {
-      throw(exceptions::msg() << "bazqux" << -74125896321445ll << 36);
+      throw msg_fmt("{}{}{}", "bazqux", -74125896321445ll, 36);
       ASSERT_FALSE(true);
     } catch (std::exception const& e) {
       ASSERT_STREQ(e.what(), "bazqux-7412589632144536");

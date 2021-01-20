@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_EXCEPTIONS_CONFIG_HH
-#define CCB_EXCEPTIONS_CONFIG_HH
+#ifndef CC_EXCEPTIONS_CONFIG_HH
+#define CC_EXCEPTIONS_CONFIG_HH
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -31,28 +31,17 @@ namespace exceptions {
  *
  *  Such exceptions are thrown in case of configuration errors.
  */
-class config : public msg {
+class config : public com::centreon::exceptions::msg_fmt {
  public:
-  config() = default;
-  config(const config&) = default;
+  template <typename...Args>
+  explicit config(std::string const& str, const Args&... args)
+    : msg_fmt(str, args...) {}
+  config() = delete;
   ~config() noexcept {}
   config& operator=(const config&) = delete;
-
-  /**
-   *  Insert data in message.
-   *
-   *  @param[in] t  Data to insert.
-   *
-   *  @return This object.
-   */
-  template <typename T>
-  config& operator<<(T t) noexcept {
-    *(misc::stringifier*)this << t;
-    return *this;
-  }
 };
 }  // namespace exceptions
 
 CCB_END()
 
-#endif  // !CCB_EXCEPTIONS_CONFIG_HH
+#endif  // !CC_EXCEPTIONS_CONFIG_HH

@@ -31,24 +31,6 @@
 
 using namespace com::centreon::broker;
 
-TEST(StoragePerfdataException, All) {
-  bool success{false};
-  try {
-    throw storage::exceptions::perfdata() << "test exception";
-  } catch (storage::exceptions::perfdata const& e) {
-    try {
-      e.rethrow();
-    } catch (storage::exceptions::perfdata const& e) {
-      exceptions::msg* msg{e.clone()};
-      if (std::string{msg->what()} == "test exception")
-        success = true;
-      delete msg;
-    }
-  }
-
-  ASSERT_TRUE(success);
-}
-
 /**
  *  Check that the perfdata assignment operator works properly.
  */

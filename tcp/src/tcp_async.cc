@@ -19,10 +19,11 @@
 
 #include <functional>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/pool.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
@@ -96,7 +97,6 @@ std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
  */
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
 
@@ -112,7 +112,6 @@ void tcp_async::start_acceptor(
  */
 void tcp_async::stop_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-
   std::lock_guard<std::mutex> lck(_acceptor_con_m);
 
   std::error_code ec;
@@ -183,7 +182,7 @@ tcp_connection::pointer tcp_async::create_connection(std::string const& host,
     throw std::system_error(err);
   } else if (err) {
     log_v2::tcp()->error("TCP: could not connect to {}:{}", host, port);
-    throw exceptions::msg() << err.message();
+    throw msg_fmt(err.message());
   } else {
     asio::socket_base::keep_alive option{true};
     sock.set_option(option);

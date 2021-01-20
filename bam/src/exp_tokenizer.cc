@@ -19,9 +19,9 @@
 #include "com/centreon/broker/bam/exp_tokenizer.hh"
 
 #include <cctype>
+#include "com/centreon/exceptions/msg_fmt.hh"
 
-#include "com/centreon/broker/exceptions/msg.hh"
-
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -126,18 +126,17 @@ std::string exp_tokenizer::_extract_token() {
   */
 
   // Brace-delimited token, this is special.
-  if ((_current < _size) && (_text[_current] == '{')) {
+  if (_current < _size && _text[_current] == '{') {
     // Extract token.
     ++_current;
     retval = _extract_until(&exp_tokenizer::_is_space_or_right_brace);
 
     // If it's an operator or a constant, leave it as it is.
     // Otherwise this express the STATUS of a host/service.
-    if ((retval != "IS") && (retval != "NOT") && (retval != "AND") &&
-        (retval != "XOR") && (retval != "OR") && (retval != "OK") &&
-        (retval != "WARNING") && (retval != "CRITICAL") &&
-        (retval != "UNKNOWN") && (retval != "UP") && (retval != "DOWN") &&
-        (retval != "UNREACHABLE")) {
+    if (retval != "IS" && retval != "NOT" && retval != "AND" &&
+        retval != "XOR" && retval != "OR" && retval != "OK" &&
+        retval != "WARNING" && retval != "CRITICAL" && retval != "UNKNOWN" &&
+        retval != "UP" && retval != "DOWN" && retval != "UNREACHABLE") {
       // Host name is retrieved first.
       _queue.push("(");
       _queue.push(retval);
@@ -163,8 +162,10 @@ std::string exp_tokenizer::_extract_token() {
     if ((_next < _size) && (_text[_next] == '}')) {
       ++_next;
     } else
-      throw(exceptions::msg() << "opening brace at position " << _current
-                              << " has no ending brace ");
+      throw msg_fmt(
+          "opening brace at position {}"
+          " has no ending brace ",
+          _current);
   }
   // Extract classical token.
   else {
@@ -206,9 +207,8 @@ std::string exp_tokenizer::_extract_until(bool (exp_tokenizer::*predicate)()) {
           }
         }
         if (!quote_matched)
-          throw(exceptions::msg()
-                << "unterminated " << (process_metachars ? "double" : "single")
-                << " quote in the following expression: " << _text);
+          throw msg_fmt("unterminated {} quote in the following expression: {}",
+                        (process_metachars ? "double" : "single"), _text);
       } break;
       case '\\':
         if (++_next < _size)

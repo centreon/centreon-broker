@@ -20,12 +20,13 @@
 
 #include <cstring>
 
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
+using namespace com::centreon::exceptions;
 
 /**
  *  The Lua broker_event constructor
@@ -37,7 +38,7 @@ using namespace com::centreon::broker::lua;
 void broker_event::create(lua_State* L, std::shared_ptr<io::data> e) {
   void* userdata = lua_newuserdata(L, sizeof(std::shared_ptr<io::data>));
   if (!userdata)
-    throw exceptions::msg() << "Unable to build a lua broker_event";
+    throw msg_fmt("Unable to build a lua broker_event");
 
   new (userdata) std::shared_ptr<io::data>(e);
 
@@ -159,17 +160,19 @@ void broker_event::create_as_table(lua_State* L, const io::data& d) {
             }
             break;
           default:  // Error in one of the mappings.
-            throw exceptions::msg() << "invalid mapping for object "
-                                    << "of type '" << info->get_name()
-                                    << "': " << current_entry->get_type()
-                                    << " is not a known type ID";
+            throw msg_fmt("invalid mapping for object "
+                          "of type '{}': {}"
+                          " is not a known type ID",
+                          info->get_name(),
+                          current_entry->get_type());
+
         }
         lua_rawset(L, -3);
       }
     }
   } else
-    throw exceptions::msg() << "cannot bind object of type " << d.type()
-                            << " to database query: mapping does not exist";
+    throw msg_fmt("cannot bind object of type {}"
+                  " to database query: mapping does not exist", d.type());
 }
 
 /**
@@ -343,8 +346,8 @@ static int l_broker_event_next(lua_State* L) {
     lua_pushnil(L);
     return 1;
   } else
-    throw exceptions::msg() << "unable to parse object of type " << e->type()
-                            << " ; it does not look like a BBDO event";
+    throw msg_fmt("unable to parse object of type {}"
+                  " ; it does not look like a BBDO event", e->type());
 }
 
 /**
@@ -461,17 +464,18 @@ static int l_broker_event_index(lua_State* L) {
             }
             break;
           default:  // Error in one of the mappings.
-            throw exceptions::msg() << "invalid mapping for object "
-                                    << "of type '" << info->get_name()
-                                    << "': " << current_entry->get_type()
-                                    << " is not a known type ID";
+            throw msg_fmt("invalid mapping for object "
+                          "of type '{}': {}"
+                          " is not a known type ID", 
+                          info->get_name(), 
+                          current_entry->get_type());
         }
         return 1;
       }
     }
   } else
-    throw exceptions::msg() << "cannot bind object of type " << e->type()
-                            << " to lua userdata: mapping does not exist";
+    throw msg_fmt("cannot bind object of type {} "
+                  " to lua userdata: mapping does not exist", e->type());
   return 0;
 }
 

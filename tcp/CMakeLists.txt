@@ -20,7 +20,9 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/tcp/inc/com/centreon/broker/tcp")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/tcp/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/tcp/test")
-include_directories("${PROJECT_SOURCE_DIR}/tcp/inc")
+include_directories(${PROJECT_SOURCE_DIR}/tcp/inc 
+                    ${PROJECT_SOURCE_DIR}/neb/inc 
+)
 
 # Sources.
 set(SOURCES

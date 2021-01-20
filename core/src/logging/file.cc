@@ -22,8 +22,9 @@
 #include <cstring>
 #include <ctime>
 #include <iostream>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::logging;
 
 // Messages.
@@ -86,8 +87,8 @@ file::file(std::string const& path, uint64_t max)
   try {
     _file.open(_filename, std::ofstream::out | std::ofstream::app);
   } catch (std::system_error const& se) {
-    throw exceptions::msg()
-        << "log: could not open file '" << path << "': " << se.what();
+    throw msg_fmt(
+        "log: could not open file '{}': {}", path, se.what());
   }
 
   if (!max)

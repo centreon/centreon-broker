@@ -20,10 +20,11 @@
 #include "com/centreon/broker/influxdb/stream.hh"
 #include <gtest/gtest.h>
 #include <com/centreon/broker/influxdb/connector.hh>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "../../core/test/test_server.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 class InfluxDBStream : public testing::Test {
@@ -49,7 +50,10 @@ TEST_F(InfluxDBStream, BadPort) {
   std::vector<influxdb::column> mcolumns;
   std::vector<influxdb::column> scolumns;
 
-  ASSERT_THROW(influxdb::stream st("centreon", "pass", "localhost", 4243, "centreon", 3, "host_status", scolumns, "host_metrics", mcolumns, cache), exceptions::msg);
+  ASSERT_THROW(influxdb::stream st("centreon", "pass", "localhost", 4243,
+                                   "centreon", 3, "host_status", 
+                                    scolumns, "host_metrics", mcolumns, cache), 
+                                    msg_fmt);
 }
 
 TEST_F(InfluxDBStream, Read) {
@@ -60,7 +64,7 @@ TEST_F(InfluxDBStream, Read) {
   std::shared_ptr<io::data> data;
   influxdb::stream st("centreon", "pass", "localhost", 4242, "centreon", 3, "host_status", scolumns, "host_metrics", mcolumns, cache);
 
-  ASSERT_THROW(st.read(data, -1), exceptions::msg);
+  ASSERT_THROW(st.read(data, -1), msg_fmt);
 }
 
 TEST_F(InfluxDBStream, Write) {

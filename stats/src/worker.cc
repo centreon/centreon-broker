@@ -29,10 +29,11 @@
 #include <sstream>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/stats/builder.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::stats;
 
 /**************************************
@@ -102,12 +103,12 @@ bool worker::_open() {
   if (_fd < 0) {
     if (errno != ENXIO) {
       char const* msg(strerror(errno));
-      throw(exceptions::msg() << "cannot open FIFO file: " << msg);
+      throw msg_fmt("cannot open FIFO file: {}", msg);
     } else
       retval = false;
   } else
     retval = true;
-  return (retval);
+  return retval;
 }
 
 /**
@@ -138,12 +139,12 @@ void worker::_run() {
         // Unrecoverable.
         if (errno != EINTR) {
           char const* msg(strerror(errno));
-          throw exceptions::msg() << "multiplexing failure: " << msg;
+          throw msg_fmt("multiplexing failure: {}", msg);
         }
       } else if (flagged > 0) {
         // FD error.
         if ((fds.revents & (POLLERR | POLLNVAL | POLLHUP)))
-          throw exceptions::msg() << "FIFO fd has pending error";
+          throw msg_fmt("FIFO fd has pending error");
         // Readable.
         else if ((fds.revents & POLLOUT)) {
           if (_buffer.empty()) {

@@ -16,15 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/generator/dummy.hh"
 #include "com/centreon/broker/generator/factory.hh"
 #include "com/centreon/broker/generator/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 
 // Load count.
 namespace {
@@ -49,7 +50,6 @@ void broker_module_deinit() {
     // Deregister generator events.
     io::events::instance().unregister_category(io::events::generator);
   }
-  return;
 }
 
 /**
@@ -77,9 +77,11 @@ void broker_module_init(void const* arg) {
     if (category != io::events::generator) {
       e.unregister_category(category);
       --instances;
-      throw(exceptions::msg() << "generator: category " << io::events::generator
-                              << " is already registered whereas it should be "
-                              << "reserved for the generator module");
+      throw msg_fmt(
+          "generator: category {}"
+          " is already registered whereas it should be "
+          "reserved for the generator module",
+          io::events::generator);
     }
 
     // Register bam events.
@@ -87,6 +89,5 @@ void broker_module_init(void const* arg) {
                      io::event_info("dummy", &generator::dummy::operations,
                                     generator::dummy::entries));
   }
-  return;
 }
 }

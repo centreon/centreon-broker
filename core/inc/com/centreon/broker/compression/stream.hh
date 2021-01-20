@@ -35,7 +35,7 @@ namespace compression {
  */
 class stream : public io::stream {
  public:
-  static int const max_data_size = 100000000;
+  static size_t const max_data_size;
 
   stream(int level = -1, size_t size = 0);
   ~stream() noexcept;

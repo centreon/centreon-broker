@@ -21,14 +21,15 @@
 #include <cstring>
 
 #include "com/centreon/broker/database/mysql_result.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 using namespace com::centreon::broker::storage;
@@ -199,8 +200,8 @@ void conflict_manager::_load_deleted_instances() {
     while (_mysql.fetch_row(res))
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
   } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "could not get list of deleted instances: " << e.what();
+    throw msg_fmt(
+        "could not get list of deleted instances: {}", e.what());
   }
 }
 
@@ -227,9 +228,9 @@ void conflict_manager::_load_caches() {
         ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
       }
     } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "conflict_manager: could not get the list of outdated instances: "
-          << e.what();
+      throw msg_fmt(
+          "conflict_manager: could not get the list of outdated instances: {}",
+          e.what());
     }
   }
 
@@ -270,8 +271,8 @@ void conflict_manager::_load_caches() {
         pblshr.write(im);
       }
     } catch (std::exception const& e) {
-      throw broker::exceptions::msg()
-          << "storage: could not fetch index list from data DB: " << e.what();
+      throw msg_fmt(
+          "storage: could not fetch index list from data DB: {}", e.what());
     }
   }
 
@@ -288,8 +289,8 @@ void conflict_manager::_load_caches() {
       while (_mysql.fetch_row(res))
         _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
     } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not get the list of host/instance pairs: " << e.what();
+      throw msg_fmt(
+          "SQL: could not get the list of host/instance pairs: {}", e.what());
     }
   }
 
@@ -306,8 +307,8 @@ void conflict_manager::_load_caches() {
       while (_mysql.fetch_row(res))
         _hostgroup_cache.insert(res.value_as_u32(0));
     } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not get the list of hostgroups id: " << e.what();
+      throw msg_fmt(
+          "SQL: could not get the list of hostgroups id: {}", e.what());
     }
   }
 
@@ -324,8 +325,8 @@ void conflict_manager::_load_caches() {
       while (_mysql.fetch_row(res))
         _servicegroup_cache.insert(res.value_as_u32(0));
     } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not get the list of servicegroups id: " << e.what();
+      throw msg_fmt(
+          "SQL: could not get the list of servicegroups id: {}", e.what());
     }
   }
 
@@ -366,9 +367,9 @@ void conflict_manager::_load_caches() {
         _metric_cache[{res.value_as_u32(1), res.value_as_str(2)}] = info;
       }
     } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "conflict_manager: could not get the list of metrics: "
-          << e.what();
+      throw msg_fmt(
+          "conflict_manager: could not get the list of metrics: {}",
+          e.what());
     }
   }
 }
@@ -619,7 +620,7 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
                                      std::shared_ptr<io::data> const& e) {
   assert(e);
   if (_broken)
-    throw exceptions::msg() << "conflict_manager: events loop interrupted";
+    throw msg_fmt("conflict_manager: events loop interrupted");
 
   log_v2::sql()->trace(
       "conflict_manager: send_event category:{}, element:{} from {}",
@@ -640,7 +641,7 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
  */
 int32_t conflict_manager::get_acks(stream_type c) {
   if (_broken)
-    throw exceptions::msg() << "conflict_manager: events loop interrupted";
+    throw msg_fmt("conflict_manager: events loop interrupted");
 
   return _fifo.get_acks(c);
 }

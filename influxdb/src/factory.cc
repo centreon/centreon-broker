@@ -23,13 +23,14 @@
 #include <sstream>
 #include <vector>
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/column.hh"
 #include "com/centreon/broker/influxdb/connector.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 using namespace json11;
+using namespace com::centreon::exceptions;
 
 /**************************************
  *                                     *
@@ -49,8 +50,7 @@ static std::string find_param(config::endpoint const& cfg,
                               std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw exceptions::msg() << "influxdb: no '" << key
-                            << "' defined for endpoint '" << cfg.name << "'";
+    throw msg_fmt("influxdb: no '{}' defined for endpoint '{}'", key, cfg.name);
   return it->second;
 }
 
@@ -107,9 +107,9 @@ io::endpoint* factory::new_endpoint(
       ss << it->second;
       ss >> port;
       if (!ss.eof())
-        throw exceptions::msg()
-            << "influxdb: couldn't parse port '" << ss.str()
-            << "' defined for endpoint '" << cfg.name << "'";
+        throw msg_fmt(
+            "influxdb: couldn't parse port '{}' defined for endpoint '{}'",
+            ss.str(), cfg.name);
     }
   }
 
@@ -121,9 +121,10 @@ io::endpoint* factory::new_endpoint(
       try {
         queries_per_transaction = std::stoul(it->second);
       } catch (std::exception const& ex) {
-        throw exceptions::msg()
-            << "influxdb: couldn't parse queries_per_transaction '"
-            << it->second << "' defined for endpoint '" << cfg.name << "'";
+        throw msg_fmt(
+            "influxdb: couldn't parse queries_per_transaction '{}' defined for "
+            "endpoint '{}'",
+            it->second, cfg.name);
       }
     else
       queries_per_transaction = 1000;
@@ -131,8 +132,8 @@ io::endpoint* factory::new_endpoint(
 
   auto chk_str = [](Json const& js) -> std::string {
     if (!js.is_string() || js.string_value().empty()) {
-      throw exceptions::msg()
-          << "influxdb: couldn't get the configuration of a metric column name";
+      throw msg_fmt(
+          "influxdb: couldn't get the configuration of a metric column name");
     }
     return js.string_value();
   };

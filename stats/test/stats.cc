@@ -30,7 +30,6 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/factory.hh"
@@ -40,7 +39,9 @@
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/stats/builder.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 class StatsTest : public ::testing::Test {
@@ -112,12 +113,12 @@ TEST_F(StatsTest, BuilderWithModules) {
 }
 
 class st : public io::stream {
-  public:
-    st() : io::stream("st") {}
+ public:
+  st() : io::stream("st") {}
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override {
     (void)deadline;
     d.reset();
-    throw exceptions::shutdown() << "cannot read from connector";
+    throw exceptions::shutdown("cannot read from connector");
   }
 
   virtual int write(std::shared_ptr<io::data> const& d
@@ -143,8 +144,8 @@ class fact : public io::factory {
  public:
   fact() {}
 
-  bool has_endpoint(config::endpoint& cfg
-                    __attribute__((__unused__)), flag* flag) override {
+  bool has_endpoint(config::endpoint& cfg __attribute__((__unused__)),
+                    flag* flag) override {
     if (flag)
       *flag = no;
     return true;
@@ -257,7 +258,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
   ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() ==
-                  "listening");
+              "listening");
 }
 
 TEST_F(StatsTest, CopyCtor) {
@@ -293,7 +294,7 @@ TEST_F(StatsTest, Parser) {
   parser.parse(result2, "[{ \"json_fifo\":\"/tmp/test.txt\" }]");
   ASSERT_TRUE(result2.size() == 1);
 
-  ASSERT_THROW(parser.parse(result, "ds{ahsjklhdasjhdaskjh"), exceptions::msg);
+  ASSERT_THROW(parser.parse(result, "ds{ahsjklhdasjhdaskjh"), msg_fmt);
 }
 
 TEST_F(StatsTest, Worker) {
@@ -331,13 +332,13 @@ TEST_F(StatsTest, Worker) {
 TEST_F(StatsTest, WorkerPoolBadFile) {
   stats::worker_pool work;
 
-  ASSERT_THROW(work.add_worker("/unexistingdir/file"), exceptions::msg);
+  ASSERT_THROW(work.add_worker("/unexistingdir/file"), msg_fmt);
 }
 
 TEST_F(StatsTest, WorkerPoolExistingDir) {
   stats::worker_pool work;
 
-  ASSERT_THROW(work.add_worker("/tmp"), exceptions::msg);
+  ASSERT_THROW(work.add_worker("/tmp"), msg_fmt);
 }
 
 TEST_F(StatsTest, WorkerPool) {

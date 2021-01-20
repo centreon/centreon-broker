@@ -29,12 +29,13 @@
 #include <list>
 #include <memory>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
@@ -179,13 +180,13 @@ long splitter::read(void* buffer, long max_size) {
         _open_read_file();
         return read(static_cast<char*>(buffer), max_size);
       } else
-        throw exceptions::shutdown() << "No more data to read";
+        throw exceptions::shutdown("No more data to read");
     } else {
       if (errno == EAGAIN || errno == EINTR)
         return 0;
       else
-        throw exceptions::msg() << "error while reading file '" << file_path
-                                << "': " << strerror(errno);
+        throw msg_fmt("error while reading file '{}': {}", file_path,
+                      strerror(errno));
     }
   }
   return rb;
@@ -200,7 +201,7 @@ long splitter::read(void* buffer, long max_size) {
 void splitter::seek(long offset, fs_file::seek_whence whence) {
   (void)offset;
   (void)whence;
-  throw exceptions::msg() << "cannot seek within a splitted file";
+  throw msg_fmt("cannot seek within a splitted file");
 }
 
 /**
@@ -258,9 +259,8 @@ long splitter::write(void const* buffer, long size) {
  */
 void splitter::flush() {
   if (fflush(_wfile.get()) == EOF)
-    throw exceptions::msg()
-        << "error while writing the file '" << get_file_path(_wid)
-        << "' content: " << strerror(errno);
+    throw msg_fmt("error while writing the file '{}' content: {}",
+                  get_file_path(_wid), strerror(errno));
 }
 
 /**
@@ -367,8 +367,8 @@ void splitter::_open_read_file() {
     if (errno == ENOENT)
       return;
     else
-      throw exceptions::msg() << "cannot open '" << get_file_path(_rid)
-                              << "' to read/write: " << strerror(errno);
+      throw msg_fmt("cannot open '{}' to read/write: {}", get_file_path(_rid),
+                    strerror(errno));
   }
   std::lock_guard<std::mutex> lck(*_rmutex);
   _roffset = 2 * sizeof(uint32_t);
@@ -393,8 +393,8 @@ void splitter::_open_write_file() {
   }
 
   if (!_wfile)
-    throw exceptions::msg() << "cannot open '" << get_file_path(_wid)
-                            << "' to read/write: " << strerror(errno);
+    throw msg_fmt("cannot open '{}' to read/write: {}", get_file_path(_wid),
+                  strerror(errno));
 
   std::lock_guard<std::mutex> lck(*_wmutex);
   fseek(_wfile.get(), 0, SEEK_END);

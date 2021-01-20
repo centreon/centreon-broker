@@ -24,7 +24,6 @@
 
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
@@ -38,7 +37,9 @@
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::sql;
@@ -453,8 +454,8 @@ stream::stream(database_config const& dbcfg,
   log_v2::sql()->debug("sql stream instanciation");
   if (!storage::conflict_manager::init_sql(dbcfg, loop_timeout,
                                            instance_timeout))
-    throw broker::exceptions::msg()
-        << "SQL: Unable to initialize the sql connection to the database";
+    throw msg_fmt(
+        "SQL: Unable to initialize the sql connection to the database");
 }
 
 /**
@@ -494,7 +495,7 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw exceptions::shutdown() << "cannot read from SQL database";
+  throw exceptions::shutdown("cannot read from SQL database");
   return true;
 }
 

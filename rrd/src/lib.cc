@@ -27,7 +27,6 @@
 #include <cstdio>
 #include <cstring>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
@@ -91,7 +90,7 @@ void lib::open(std::string const& filename) {
 
   // Check that the file exists.
   if (access(filename.c_str(), F_OK))
-    throw exceptions::open() << "RRD: file '" << filename << "' does not exist";
+    throw exceptions::open("RRD: file '{}' does not exist", filename);
 
   // Remember information for further operations.
   _filename = filename;

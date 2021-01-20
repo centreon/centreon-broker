@@ -24,7 +24,6 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/notification/macro_context.hh"
 #include "com/centreon/broker/notification/utilities/get_datetime_string.hh"

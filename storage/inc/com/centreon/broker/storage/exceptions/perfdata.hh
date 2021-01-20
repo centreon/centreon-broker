@@ -19,8 +19,10 @@
 #ifndef CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
 #define CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
+
+using namespace com::centreon::exceptions;
 
 CCB_BEGIN()
 
@@ -33,24 +35,14 @@ namespace exceptions {
  *
  *  Exception thrown when handling performance data.
  */
-class perfdata : public broker::exceptions::msg {
+class perfdata : public msg_fmt {
  public:
-  perfdata() noexcept {}
-  perfdata(perfdata const& pd) noexcept : broker::exceptions::msg(pd) {}
+  template <typename... Args>
+  explicit perfdata(std::string const& str, const Args&... args)
+      : msg_fmt(str, args...) {}
+  perfdata() = delete;
   ~perfdata() noexcept {}
-  virtual broker::exceptions::msg* clone() const;
-  virtual void rethrow() const;
-
-  /**
-   *  Insert data in message.
-   *
-   *  @param[in] t Data to insert.
-   */
-  template <typename T>
-  perfdata& operator<<(T t) noexcept {
-    broker::exceptions::msg::operator<<(t);
-    return *this;
-  }
+  perfdata& operator=(const perfdata&) = delete;
 };
 }  // namespace exceptions
 }  // namespace storage

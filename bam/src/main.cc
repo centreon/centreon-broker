@@ -35,11 +35,12 @@
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 // Load count.
@@ -97,9 +98,11 @@ void broker_module_init(void const* arg) {
     if (bam_category != io::events::bam) {
       e.unregister_category(bam_category);
       --instances;
-      throw(exceptions::msg() << "bam: category " << io::events::bam
-                              << " is already registered whereas it should be "
-                              << "reserved for the bam module");
+      throw msg_fmt(
+          "bam: category {}"
+          " is already registered whereas it should be "
+          "reserved for the bam module",
+          io::events::bam);
     }
 
     // Register bam events.

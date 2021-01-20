@@ -22,7 +22,6 @@
 #include <string>
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 

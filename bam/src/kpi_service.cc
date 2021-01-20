@@ -22,12 +22,13 @@
 
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
@@ -419,14 +420,13 @@ void kpi_service::_fill_impact(impact_values& impact,
                                kpi_service::state state) {
   if ((state < 0) ||
       (static_cast<size_t>(state) >= (sizeof(_impacts) / sizeof(*_impacts))))
-    throw(exceptions::msg()
-          << "BAM: could not get impact introduced by state " << state);
+    throw msg_fmt(
+          "BAM: could not get impact introduced by state {}", state);
   double nominal(_impacts[state]);
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);
   impact.set_downtime(_downtimed ? nominal : 0.0);
   impact.set_state(state);
-  return;
 }
 /**
  *  Open a new event for this KPI.

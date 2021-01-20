@@ -26,7 +26,6 @@
 #include <vector>
 
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -40,7 +39,9 @@
 #include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/endpoint.hh"
 #include "com/centreon/broker/processing/failover.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
@@ -320,16 +321,16 @@ processing::failover* endpoint::_create_failover(
     std::list<config::endpoint>::iterator it(
         std::find_if(l.begin(), l.end(), failover_match_name(front_failover)));
     if (it == l.end())
-      throw(exceptions::msg()
-            << "endpoint applier: could not find "
-               "failover '"
-            << front_failover << "' for endpoint '" << cfg.name << "'");
+      throw msg_fmt(
+          "endpoint applier: could not find failover '{}' for endpoint '{}'",
+          front_failover, cfg.name);
     bool is_acceptor;
     std::shared_ptr<io::endpoint> e(_create_endpoint(*it, is_acceptor));
     if (is_acceptor)
-      throw(exceptions::msg()
-            << "endpoint applier: cannot allow acceptor '" << front_failover
-            << "' as failover for endpoint '" << cfg.name << "'");
+      throw msg_fmt(
+          "endpoint applier: cannot allow acceptor '{}' "
+          "as failover for endpoint '{}'",
+          front_failover, cfg.name);
     failovr = std::shared_ptr<processing::failover>(
         _create_failover(*it, sbscrbr, e, l));
 
@@ -341,10 +342,10 @@ processing::failover* endpoint::_create_failover(
       auto it =
           std::find_if(l.begin(), l.end(), failover_match_name(*failover_it));
       if (it == l.end())
-        throw exceptions::msg()
-            << "endpoint applier: could not find "
-               "secondary failover '"
-            << *failover_it << "' for endpoint '" << cfg.name << "'";
+        throw msg_fmt(
+            "endpoint applier: could not find "
+            "secondary failover '{}' for endpoint '{}'",
+            *failover_it, cfg.name);
       bool is_acceptor(false);
       std::shared_ptr<io::endpoint> endp(_create_endpoint(*it, is_acceptor));
       if (is_acceptor) {
@@ -400,9 +401,10 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
     }
   }
   if (!endp)
-    throw exceptions::msg() << "endpoint applier: no matching "
-                               "type found for endpoint '"
-                            << cfg.name << "'";
+    throw msg_fmt(
+        "endpoint applier: no matching "
+        "type found for endpoint '{}'",
+        cfg.name);
 
   // Create remaining objects.
   while (level <= 7) {
@@ -424,9 +426,10 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
       ++it;
     }
     if (7 == level && it == end)
-      throw exceptions::msg() << "endpoint applier: no matching "
-                                 "protocol found for endpoint '"
-                              << cfg.name << "'";
+      throw msg_fmt(
+          "endpoint applier: no matching "
+          "protocol found for endpoint '{}'",
+          cfg.name);
     ++level;
   }
 
@@ -460,8 +463,9 @@ void endpoint::_diff_endpoints(
                         name_match_failover(list_it->name)) != new_ep.end())
       ++list_it;
     if (list_it == new_ep.end())
-      throw exceptions::msg() << "endpoint applier: error while "
-                                 "diff'ing new and old configuration";
+      throw msg_fmt(
+          "endpoint applier: error while "
+          "diff'ing new and old configuration");
     std::list<config::endpoint> entries;
     entries.push_back(*list_it);
     new_ep.erase(list_it);
@@ -474,9 +478,10 @@ void endpoint::_diff_endpoints(
           list_it = std::find_if(new_ep.begin(), new_ep.end(),
                                  failover_match_name(failover));
           if (list_it == new_ep.end())
-            throw exceptions::msg()
-                << "endpoint applier: could not find failover '" << failover
-                << "' for endpoint '" << entry.name << "'";
+            throw msg_fmt(
+                "endpoint applier: could not find failover '{}'"
+                "' for endpoint '{}'",
+                failover, entry.name);
           entries.push_back(*list_it);
           new_ep.erase(list_it);
         }

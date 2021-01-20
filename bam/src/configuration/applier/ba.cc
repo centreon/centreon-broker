@@ -17,13 +17,12 @@
 */
 
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
-#include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/service.hh"
+#include <fmt/format.h>
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -57,7 +56,7 @@ applier::ba::~ba() {}
 applier::ba& applier::ba::operator=(applier::ba const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -167,8 +166,6 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
        end(_applied.end());
        it != end; ++it)
     it->second.obj->set_valid(true);
-
-  return;
 }
 
 /**
@@ -180,7 +177,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
  */
 std::shared_ptr<bam::ba> applier::ba::find_ba(uint32_t id) {
   std::map<uint32_t, applied>::iterator it(_applied.find(id));
-  return ((it != _applied.end()) ? it->second.obj : std::shared_ptr<bam::ba>());
+  return (it != _applied.end()) ? it->second.obj : std::shared_ptr<bam::ba>();
 }
 
 /**
@@ -193,7 +190,6 @@ void applier::ba::visit(io::stream* visitor) {
        end(_applied.end());
        it != end; ++it)
     it->second.obj->visit(visitor);
-  return;
 }
 
 /**
@@ -208,13 +204,9 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(uint32_t host_id) {
   h->poller_id =
       com::centreon::broker::config::applier::state::instance().poller_id();
   h->host_id = host_id;
-  {
-    std::ostringstream oss;
-    oss << "_Module_BAM_" << h->poller_id;
-    h->host_name = oss.str();
-  }
+  h->host_name = fmt::format("_Module_BAM_{}", h->poller_id);
   h->last_update = time(nullptr);
-  return (h);
+  return h;
 }
 
 /**
@@ -233,13 +225,9 @@ std::shared_ptr<neb::service> applier::ba::_ba_service(
   std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;
-  {
-    std::ostringstream oss;
-    oss << "ba_" << ba_id;
-    s->service_description = oss.str();
-  }
+  s->service_description = fmt::format("ba_{}", ba_id);
   s->last_update = time(nullptr);
-  return (s);
+  return s;
 }
 
 /**
@@ -249,7 +237,6 @@ std::shared_ptr<neb::service> applier::ba::_ba_service(
  */
 void applier::ba::_internal_copy(applier::ba const& other) {
   _applied = other._applied;
-  return;
 }
 
 /**
@@ -273,7 +260,7 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
   if (cfg.get_opened_event().ba_id)
     obj->set_initial_event(cfg.get_opened_event());
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
-  return (obj);
+  return obj;
 }
 
 /**

@@ -17,8 +17,9 @@
 */
 
 #include "com/centreon/broker/ceof/ceof_parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::ceof;
 
 /**
@@ -26,12 +27,12 @@ using namespace com::centreon::broker::ceof;
  *
  *  @param[in] str  The string to parse.
  */
-ceof_parser::ceof_parser(std::string const& str) : _string(str) {}
+ceof_parser::ceof_parser(const std::string& str) : _string(str) {}
 
 /**
  *  Destructor.
  */
-ceof_parser::~ceof_parser() throw() {}
+ceof_parser::~ceof_parser() noexcept {}
 
 /**
  *  Skip comments and whitespaces.
@@ -39,7 +40,7 @@ ceof_parser::~ceof_parser() throw() {}
  *  @param[in,out] actual  The actual index.
  */
 static void skip(size_t& actual,
-                 std::string const& string,
+                 const std::string& string,
                  const char* characters) {
   actual = string.find_first_not_of(characters, actual);
   if (actual == std::string::npos)
@@ -89,8 +90,7 @@ ceof_iterator ceof_parser::parse() {
     switch (state) {
       case waiting_for_define:
         if (substr != "define")
-          throw(exceptions::msg()
-                << "expected 'define' at position " << actual);
+          throw msg_fmt("expected 'define' at position {}", actual);
         state = waiting_for_object_name;
         break;
       case waiting_for_object_name:
@@ -101,7 +101,7 @@ ceof_iterator ceof_parser::parse() {
         break;
       case waiting_for_object_opening:
         if (substr != "{")
-          throw(exceptions::msg() << "expected '{' at position " << actual);
+          throw msg_fmt("expected '{{' at position {}", actual);
         state = in_object_waiting_for_key;
         break;
       case in_object_waiting_for_key:
@@ -115,8 +115,8 @@ ceof_iterator ceof_parser::parse() {
         break;
       case in_object_waiting_for_value:
         if (substr == "}")
-          throw(exceptions::msg()
-                << "expected value instead of '{' at position " << actual);
+          throw msg_fmt("expected value instead of '{{' at position {}",
+                        actual);
         size_t trimmed(substr.find_last_not_of(" \t"));
         substr =
             substr.substr(0, (trimmed == std::string::npos) ? std::string::npos

@@ -27,8 +27,11 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
+
+const size_t stream::max_data_size = 100000000u;
 
 /**************************************
  *                                     *
@@ -83,7 +86,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         // We do not have enough data to get the next chunk's size.
         // Stream is shutdown.
         if (_rbuffer.size() < static_cast<int>(sizeof(int32_t)))
-          throw exceptions::shutdown() << "no more data to uncompress";
+          throw exceptions::shutdown("no more data to uncompress");
 
         // Extract next chunk's size.
         {
@@ -93,7 +96,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         }
 
         // Check if size is within bounds.
-        if ((size <= 0) || (size > max_data_size)) {
+        if (size <= 0 || size > max_data_size) {
           // Skip corrupted data, one byte at a time.
           logging::error(logging::low)
               << "compression: " << this << " got corrupted packet size of "
@@ -206,8 +209,10 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
   // Check if substream is shutdown.
   if (_shutdown)
-    throw exceptions::shutdown() << "cannot write to compression "
-                                 << "stream: sub-stream is already shutdown";
+    throw exceptions::shutdown(
+        "cannot write to compression "
+        "stream: sub-stream is "
+        "already shutdown");
 
   // Process raw data only.
   if (d->type() == io::raw::static_type()) {
@@ -215,10 +220,11 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
     // Check length.
     if (r.size() > max_data_size)
-      throw exceptions::msg()
-          << "cannot compress buffers longer than " << max_data_size
-          << " bytes: you should report this error "
-          << "to Centreon Broker developers";
+      throw msg_fmt(
+          "cannot compress buffers longer than  {}"
+          " bytes: you should report this error "
+          "to Centreon Broker developers",
+          max_data_size);
     else if (r.size() > 0) {
       // Append data to write buffer.
       std::copy(r.get_buffer().begin(), r.get_buffer().end(),
@@ -244,8 +250,10 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 void stream::_flush() {
   // Check for shutdown stream.
   if (_shutdown)
-    throw exceptions::shutdown() << "cannot flush compression "
-                                 << "stream: sub-stream is already shutdown";
+    throw exceptions::shutdown(
+        "cannot flush compression "
+        "stream: sub-stream is already "
+        "shutdown");
 
   if (_wbuffer.size() > 0) {
     // Compress data.

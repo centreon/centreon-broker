@@ -32,7 +32,6 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
 #include "test/generate.hh"

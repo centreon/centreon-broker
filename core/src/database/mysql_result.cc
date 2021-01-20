@@ -18,9 +18,9 @@
 #include "com/centreon/broker/database/mysql_result.hh"
 
 #include <cstdlib>
+#include "com/centreon/exceptions/msg_fmt.hh"
 
-#include "com/centreon/broker/exceptions/msg.hh"
-
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
@@ -111,7 +111,7 @@ bool mysql_result::value_as_bool(int idx) {
   else if (_row)
     retval = _row[idx] ? strtol(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
@@ -129,7 +129,7 @@ std::string mysql_result::value_as_str(int idx) {
   else if (_row)
     retval = (_row[idx]) ? _row[idx] : "";
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
@@ -147,7 +147,7 @@ float mysql_result::value_as_f32(int idx) {
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
@@ -165,7 +165,7 @@ double mysql_result::value_as_f64(int idx) {
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
@@ -183,7 +183,7 @@ int mysql_result::value_as_i32(int idx) {
   else if (_row)
     retval = _row[idx] ? strtol(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
@@ -201,7 +201,7 @@ uint32_t mysql_result::value_as_u32(int idx) {
   else if (_row)
     retval = _row[idx] ? strtoul(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
@@ -219,7 +219,7 @@ unsigned long long mysql_result::value_as_u64(int idx) {
   else if (_row)
     retval = _row[idx] ? strtoull(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
@@ -237,7 +237,7 @@ bool mysql_result::value_is_null(int idx) {
   else if (_row)
     retval = (_row[idx] == nullptr);
   else
-    throw exceptions::msg() << "mysql: No row fetched in result";
+    throw msg_fmt("mysql: No row fetched in result");
   return retval;
 }
 
