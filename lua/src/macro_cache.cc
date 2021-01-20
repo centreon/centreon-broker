@@ -21,8 +21,8 @@
 #include <unordered_set>
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::logging;
@@ -71,8 +71,7 @@ storage::index_mapping const& macro_cache::get_index_mapping(
     uint32_t index_id) const {
   auto found = _index_mappings.find(index_id);
   if (found == _index_mappings.end())
-    throw msg_fmt(
-        "lua: could not find host/service of index ", index_id);
+    throw msg_fmt("lua: could not find host/service of index {}", index_id);
   return *found->second;
 }
 
@@ -87,8 +86,7 @@ const std::shared_ptr<storage::metric_mapping>& macro_cache::get_metric_mapping(
     uint32_t metric_id) const {
   auto found = _metric_mappings.find(metric_id);
   if (found == _metric_mappings.end())
-    throw msg_fmt(
-        "lua: could not find index of metric ", metric_id);
+    throw msg_fmt("lua: could not find index of metric {}", metric_id);
   return found->second;
 }
 
@@ -106,8 +104,8 @@ const std::shared_ptr<neb::service>& macro_cache::get_service(
   auto found = _services.find({host_id, service_id});
 
   if (found == _services.end())
-    throw msg_fmt("lua: could not find information on service (",
-                  host_id, ",", service_id, ")");
+    throw msg_fmt("lua: could not find information on service ({}, {})",
+                  host_id, service_id);
   return found->second;
 }
 
@@ -123,8 +121,7 @@ const std::shared_ptr<neb::host>& macro_cache::get_host(
   auto found = _hosts.find(host_id);
 
   if (found == _hosts.end())
-    throw msg_fmt(
-        "lua: could not find information on host ", host_id);
+    throw msg_fmt("lua: could not find information on host {}", host_id);
   return found->second;
 }
 
@@ -139,8 +136,7 @@ std::string const& macro_cache::get_host_name(uint64_t host_id) const {
   auto found = _hosts.find(host_id);
 
   if (found == _hosts.end())
-    throw msg_fmt(
-        "lua: could not find information on host ", host_id);
+    throw msg_fmt("lua: could not find information on host {}", host_id);
   return found->second->host_name;
 }
 
@@ -156,8 +152,9 @@ int32_t macro_cache::get_severity(uint64_t host_id, uint64_t service_id) const {
   auto found = _custom_vars.find({host_id, service_id});
   if (found == _custom_vars.end())
     throw msg_fmt(
-        "lua: could not find the severity of the object (host_id: ",
-        host_id, ", ", service_id, ")");
+        "lua: could not find the severity of the object (host_id: {}, "
+        "service_id: {})",
+        host_id, service_id);
   return atoi(found->second->value.c_str());
 }
 
@@ -175,15 +172,14 @@ std::string const& macro_cache::get_notes_url(uint64_t host_id,
     auto found = _services.find({host_id, service_id});
 
     if (found == _services.end())
-      throw msg_fmt("lua: could not find information on service (",
-                    host_id, ", ", service_id, ")");
+      throw msg_fmt("lua: could not find information on service ({}, {})",
+                    host_id, service_id);
     return found->second->notes_url;
   } else {
     auto found = _hosts.find(host_id);
 
     if (found == _hosts.end())
-      throw msg_fmt(
-          "lua: could not find information on host ", host_id);
+      throw msg_fmt("lua: could not find information on host {}", host_id);
     return found->second->notes_url;
   }
 }
@@ -202,15 +198,14 @@ std::string const& macro_cache::get_action_url(uint64_t host_id,
     auto found = _services.find({host_id, service_id});
 
     if (found == _services.end())
-      throw msg_fmt( "lua: could not find information on service (",
-                     host_id, ", ", service_id, ")");
+      throw msg_fmt("lua: could not find information on service ({}, {})",
+                    host_id, service_id);
     return found->second->action_url;
   } else {
     auto found = _hosts.find(host_id);
 
     if (found == _hosts.end())
-      throw msg_fmt(
-          "lua: could not find information on host ", host_id);
+      throw msg_fmt("lua: could not find information on host {}", host_id);
     return found->second->action_url;
   }
 }
@@ -229,16 +224,15 @@ std::string const& macro_cache::get_notes(uint64_t host_id,
     auto found = _services.find({host_id, service_id});
 
     if (found == _services.end())
-      throw msg_fmt("lua: cound not find information on service (",
-                    host_id, ", ", service_id, ")");
+      throw msg_fmt("lua: cound not find information on service ({}, {})",
+                    host_id, service_id);
 
     return found->second->notes;
   } else {
     auto found = _hosts.find(host_id);
 
     if (found == _hosts.end())
-      throw msg_fmt(
-          "lua: could not find information on host ", host_id);
+      throw msg_fmt("lua: could not find information on host {}", host_id);
     return found->second->notes;
   }
 }
@@ -265,8 +259,7 @@ std::string const& macro_cache::get_host_group_name(uint64_t id) const {
   auto const found = _host_groups.find(id);
 
   if (found == _host_groups.end())
-    throw msg_fmt(
-        "lua: could not find information on host group {}", id);
+    throw msg_fmt("lua: could not find information on host group {}", id);
   return found->second->name;
 }
 
@@ -283,7 +276,7 @@ std::string const& macro_cache::get_service_description(
     uint64_t service_id) const {
   auto const found = _services.find({host_id, service_id});
   if (found == _services.end())
-    throw msg_fmt("lua: could not find information on service ({}, {})", 
+    throw msg_fmt("lua: could not find information on service ({}, {})",
                   host_id, service_id);
   return found->second->service_description;
 }
@@ -313,8 +306,7 @@ std::string const& macro_cache::get_service_group_name(uint64_t id) const {
   auto found = _service_groups.find(id);
 
   if (found == _service_groups.end())
-    throw msg_fmt(
-        "lua: could not find information on service group {}", id);
+    throw msg_fmt("lua: could not find information on service group {}", id);
   return found->second->name;
 }
 
@@ -328,8 +320,8 @@ std::string const& macro_cache::get_service_group_name(uint64_t id) const {
 std::string const& macro_cache::get_instance(uint64_t instance_id) const {
   auto const found = _instances.find(instance_id);
   if (found == _instances.end())
-    throw msg_fmt(
-        "lua: could not find information on instance {}", instance_id);
+    throw msg_fmt("lua: could not find information on instance {}",
+                  instance_id);
   return found->second->name;
 }
 
@@ -357,8 +349,8 @@ const std::shared_ptr<bam::dimension_ba_event>&
 macro_cache::get_dimension_ba_event(uint64_t ba_id) const {
   auto const found = _dimension_ba_events.find(ba_id);
   if (found == _dimension_ba_events.end())
-    throw msg_fmt(
-        "lua: could not find information on dimension ba event {}", ba_id);
+    throw msg_fmt("lua: could not find information on dimension ba event {}",
+                  ba_id);
   return found->second;
 }
 
@@ -373,8 +365,8 @@ const std::shared_ptr<bam::dimension_bv_event>&
 macro_cache::get_dimension_bv_event(uint64_t bv_id) const {
   auto const found = _dimension_bv_events.find(bv_id);
   if (found == _dimension_bv_events.end())
-    throw msg_fmt(
-        "lua: could not find information on dimension bv event {}", bv_id);
+    throw msg_fmt("lua: could not find information on dimension bv event {}",
+                  bv_id);
   return found->second;
 }
 
