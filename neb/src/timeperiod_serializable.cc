@@ -18,8 +18,8 @@
 
 #include "com/centreon/broker/neb/timeperiod_serializable.hh"
 #include <sstream>
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::exceptions;
@@ -220,7 +220,7 @@ void timeperiod_serializable::set_alias(std::string const& val) {
  */
 void timeperiod_serializable::set_sunday(std::string const& val) {
   if (!_tp->set_timerange(val, 0))
-    throw(msg_fmt("couldn't set sunday for {} ", _tp->get_name()));
+    throw msg_fmt("couldn't set sunday for {} ", _tp->get_name());
 }
 
 /**
@@ -230,7 +230,7 @@ void timeperiod_serializable::set_sunday(std::string const& val) {
  */
 void timeperiod_serializable::set_monday(std::string const& val) {
   if (!_tp->set_timerange(val, 1))
-    throw(msg_fmt("couldn't set monday for {} ", _tp->get_name()));
+    throw msg_fmt("couldn't set monday for {} ", _tp->get_name());
 }
 
 /**
@@ -240,7 +240,7 @@ void timeperiod_serializable::set_monday(std::string const& val) {
  */
 void timeperiod_serializable::set_tuesday(std::string const& val) {
   if (!_tp->set_timerange(val, 2))
-    throw(msg_fmt("couldn't set tuesday for {} ", _tp->get_name()));
+    throw msg_fmt("couldn't set tuesday for {} ", _tp->get_name());
 }
 
 /**
@@ -250,8 +250,7 @@ void timeperiod_serializable::set_tuesday(std::string const& val) {
  */
 void timeperiod_serializable::set_wednesday(std::string const& val) {
   if (!_tp->set_timerange(val, 3))
-    throw(msg_fmt(
-          "couldn't set wednesday for {} ",_tp->get_name()));
+    throw msg_fmt("couldn't set wednesday for {} ", _tp->get_name());
 }
 
 /**
@@ -261,7 +260,7 @@ void timeperiod_serializable::set_wednesday(std::string const& val) {
  */
 void timeperiod_serializable::set_thursday(std::string const& val) {
   if (!_tp->set_timerange(val, 4))
-    throw(msg_fmt("couldn't set thursday for {} ", _tp->get_name()));
+    throw msg_fmt("couldn't set thursday for {} ", _tp->get_name());
 }
 
 /**
@@ -271,7 +270,7 @@ void timeperiod_serializable::set_thursday(std::string const& val) {
  */
 void timeperiod_serializable::set_friday(std::string const& val) {
   if (!_tp->set_timerange(val, 5))
-    throw(msg_fmt("couldn't set friday for {} ", _tp->get_name()));
+    throw msg_fmt("couldn't set friday for {} ", _tp->get_name());
 }
 
 /**
@@ -281,7 +280,7 @@ void timeperiod_serializable::set_friday(std::string const& val) {
  */
 void timeperiod_serializable::set_saturday(std::string const& val) {
   if (!_tp->set_timerange(val, 6))
-    throw(msg_fmt("couldn't set saturday for {} ", _tp->get_name()));
+    throw msg_fmt("couldn't set saturday for {} ", _tp->get_name());
 }
 
 /**
@@ -292,8 +291,7 @@ void timeperiod_serializable::set_saturday(std::string const& val) {
 void timeperiod_serializable::set_exceptions(std::string const& val) {
   std::vector<std::list<time::daterange> > dateranges;
   if (time::daterange::build_dateranges_from_string(val, dateranges))
-    throw(msg_fmt(
-          "couldn't parse exceptions timeranges '{}'", val));
+    throw msg_fmt("couldn't parse exceptions timeranges '{}'", val);
   for (std::vector<std::list<time::daterange> >::const_iterator
            it = dateranges.begin(),
            end = dateranges.end();
@@ -314,8 +312,7 @@ void timeperiod_serializable::set_excluded(std::string const& val) {
        it != end; ++it) {
     time::timeperiod::ptr tp = _tps->at(*it);
     if (!tp)
-      throw(msg_fmt(
-            "couldn't find the excluded timeperiod '{}'", *it));
+      throw msg_fmt("couldn't find the excluded timeperiod '{}'", *it);
     _tp->add_excluded(tp);
   }
 }
@@ -333,8 +330,7 @@ void timeperiod_serializable::set_included(std::string const& val) {
        it != end; ++it) {
     time::timeperiod::ptr tp = _tps->at(*it);
     if (!tp)
-      throw(msg_fmt(
-            "couldn't find the included timeperiod '{}'", *it));
+      throw msg_fmt("couldn't find the included timeperiod '{}'", *it);
     _tp->add_included(tp);
   }
 }
