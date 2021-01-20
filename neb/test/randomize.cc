@@ -48,7 +48,7 @@ void randomize(io::data& t, std::vector<randval>* values) {
   using namespace com::centreon::broker;
   io::event_info const* info(io::events::instance().get_event_info(t.type()));
   if (!info)
-    throw(msg_fmt("cannot find mapping for type {}", t.type()));
+    throw msg_fmt("cannot find mapping for type {}", t.type());
   for (mapping::entry const* current_entry(info->get_mapping());
        !current_entry->is_null(); ++current_entry) {
     randval r;
