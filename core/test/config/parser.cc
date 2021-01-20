@@ -42,8 +42,7 @@ TEST(parser, endpoint) {
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-    throw(msg_fmt(
-          "could not open '{}'", config_file.c_str())); 
+    throw msg_fmt("could not open '{}'", config_file);
 
   // Data.
   std::string data{
@@ -99,8 +98,7 @@ TEST(parser, endpoint) {
 
   // Write data.
   if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw(msg_fmt(
-          "could not write content of '{}'", config_file.c_str())); 
+    throw msg_fmt("could not write content of '{}'", config_file);
 
   // Close file.
   fclose(file_stream);
@@ -176,8 +174,7 @@ TEST(parser, logger) {
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-    throw(msg_fmt(
-          "could not open '{}'", config_file.c_str())); 
+    throw msg_fmt("could not open '{}'", config_file);
   // Data.
   std::string data;
   data =
@@ -208,8 +205,7 @@ TEST(parser, logger) {
 
   // Write data.
   if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw(msg_fmt(
-          "could not write content of '{}'", config_file.c_str()));
+    throw msg_fmt("could not write content of '{}'", config_file);
 
   // Close file.
   fclose(file_stream);
@@ -259,8 +255,7 @@ TEST(parser, global) {
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-    throw(msg_fmt(
-          "could not open '{}'", config_file.c_str())); 
+    throw msg_fmt("could not open '{}'", config_file);
   // Data.
   std::string data;
   data =
@@ -282,8 +277,7 @@ TEST(parser, global) {
 
   // Write data.
   if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw(msg_fmt(
-          "could not write content of '{}'", config_file.c_str())); 
+    throw msg_fmt("could not write content of '{}'", config_file);
 
   // Close file.
   fclose(file_stream);

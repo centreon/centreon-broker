@@ -150,7 +150,7 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
   if (!info)
     throw msg_fmt(
         "could not prepare insertion query for event of type {} : "
-        "eventis not registered ",
+        "event is not registered ",
         _event_id);
 
   // Build query string.
