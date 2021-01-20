@@ -38,9 +38,10 @@ class update : public msg_fmt {
  public:
   template <typename... Args>
   explicit update(std::string const& str, const Args&... args)
-    : msg_fmt(str, args...) {}
+      : msg_fmt(str, args...) {}
   update() = delete;
   ~update() noexcept {};
+  update& operator=(const update&) = delete;
 };
 }  // namespace exceptions
 }  // namespace rrd

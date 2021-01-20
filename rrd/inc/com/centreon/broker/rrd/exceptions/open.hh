@@ -34,14 +34,15 @@ namespace exceptions {
  *
  *  Exception thrown when unable to open an RRD file.
  */
-class open : public msg_fmt{
+class open : public msg_fmt {
  public:
   template <typename... Args>
   explicit open(std::string const& str, const Args&... args)
-    : msg_fmt(str, args...) {}
+      : msg_fmt(str, args...) {}
 
   open() = delete;
   ~open() noexcept = default;
+  open& operator=(const open&) = delete;
 };
 }  // namespace exceptions
 }  // namespace rrd
