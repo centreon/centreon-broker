@@ -34,7 +34,7 @@ TEST(RrdExceptions, OpenThrow) {
   // Second throw.
   try {
     try {
-      throw(rrd::exceptions::open("{}{}{}{}", "baz", 42, "qux", -789410l));
+      throw rrd::exceptions::open("{}{}{}{}", "baz", 42, "qux", -789410l);
       retval |= 1;
     } catch (msg_fmt const& e) {
       retval |= strcmp(e.what(), "baz42qux-789410");
@@ -46,8 +46,8 @@ TEST(RrdExceptions, OpenThrow) {
   // Third throw.
   try {
     try {
-      throw(rrd::exceptions::open(
-            "{}{}{}", "foobarbazqux",  -74125896321445ll, 36));
+      throw rrd::exceptions::open("{}{}{}", "foobarbazqux", -74125896321445ll,
+                                  36);
       retval |= 1;
     } catch (std::exception const& e) {
       retval |= strcmp(e.what(), "foobarbazqux-7412589632144536");
@@ -60,7 +60,6 @@ TEST(RrdExceptions, OpenThrow) {
   ASSERT_TRUE(0 == retval);
 }
 
-
 TEST(RrdExceptions, UpdateThrow) {
   // Return value.
   int retval(0);
@@ -68,7 +67,7 @@ TEST(RrdExceptions, UpdateThrow) {
   // First throw.
   try {
     try {
-      throw(rrd::exceptions::update("{}{}{}", "foobar", 42, -789654ll));
+      throw rrd::exceptions::update("{}{}{}", "foobar", 42, -789654ll);
       retval |= 1;
     } catch (rrd::exceptions::update const& e) {
       retval |= strcmp(e.what(), "foobar42-789654");
@@ -80,7 +79,7 @@ TEST(RrdExceptions, UpdateThrow) {
   // Second throw.
   try {
     try {
-      throw(rrd::exceptions::update("{}{}{}{}", "baz", 42, "qux", -789410l));
+      throw rrd::exceptions::update("{}{}{}{}", "baz", 42, "qux", -789410l);
       retval |= 1;
     } catch (msg_fmt const& e) {
       retval |= strcmp(e.what(), "baz42qux-789410");
@@ -92,7 +91,8 @@ TEST(RrdExceptions, UpdateThrow) {
   // Third throw.
   try {
     try {
-      throw(rrd::exceptions::update("{}{}{}", "foobarbazqux", -74125896321445ll, 36));
+      throw rrd::exceptions::update("{}{}{}", "foobarbazqux", -74125896321445ll,
+                                    36);
       retval |= 1;
     } catch (std::exception const& e) {
       retval |= strcmp(e.what(), "foobarbazqux-7412589632144536");
@@ -100,7 +100,7 @@ TEST(RrdExceptions, UpdateThrow) {
   } catch (...) {
     retval |= 1;
   }
-  
+
   // Return test result.
   ASSERT_TRUE(0 == retval);
 }

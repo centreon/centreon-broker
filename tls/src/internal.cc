@@ -105,9 +105,8 @@ void tls::initialize() {
           "version ({}): please update your GNU TLS library",
           GNUTLS_VERSION);
       throw msg_fmt(
-          "TLS: GNU TLS run-time version is "
-          "incompatible with the compile-time version ( {} "
-          "): please update your GNU TLS library",
+          "TLS: GNU TLS run-time version is incompatible with the compile-time "
+          "version ({}): please update your GNU TLS library",
           GNUTLS_VERSION);
     }
     log_v2::tls()->info("TLS: loading GNU TLS version {}", v);
@@ -121,16 +120,15 @@ void tls::initialize() {
     log_v2::tls()->error(
         "TLS: could not load TLS Diffie-Hellman parameters: {}",
         gnutls_strerror(ret));
-    throw msg_fmt(
-        "TLS: could not load TLS Diffie-Hellman parameters: {} "
-        , gnutls_strerror(ret));
+    throw msg_fmt("TLS: could not load TLS Diffie-Hellman parameters: {}",
+                  gnutls_strerror(ret));
   }
   ret = gnutls_dh_params_import_pkcs3(dh_params, &dhp, GNUTLS_X509_FMT_PEM);
   if (ret != GNUTLS_E_SUCCESS) {
     log_v2::tls()->error("TLS: could not import PKCS #3 parameters: ",
                          gnutls_strerror(ret));
-    throw msg_fmt(
-        "TLS: could not import PKCS #3 parameters: {} ", gnutls_strerror(ret));
+    throw msg_fmt("TLS: could not import PKCS #3 parameters: {}",
+                  gnutls_strerror(ret));
   }
 }
 

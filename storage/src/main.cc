@@ -76,9 +76,11 @@ void broker_module_init(void const* arg) {
     if (storage_category != io::events::storage) {
       e.unregister_category(storage_category);
       --instances;
-      throw(msg_fmt("storage: category {}"
-                    " is already registered whereas it should be "
-                    "reserved for the storage module", io::events::storage));
+      throw msg_fmt(
+          "storage: category {}"
+          " is already registered whereas it should be "
+          "reserved for the storage module",
+          io::events::storage);
     }
 
     // Register events.

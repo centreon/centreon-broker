@@ -33,7 +33,7 @@ parser::parser() {}
 /**
  *  Destructor.
  */
-parser::~parser() throw() {}
+parser::~parser() noexcept {}
 
 /**
  *  Parse a XML buffer.
@@ -50,7 +50,7 @@ void parser::parse(std::vector<std::string>& cfg, std::string const& content) {
 
   Json const& js{Json::parse(content, err)};
   if (!err.empty())
-    throw(msg_fmt("stats: invalid json file"));
+    throw msg_fmt("stats: invalid json file");
 
   if (js.is_object()) {
     Json const& field{js["json_fifo"]};
@@ -62,6 +62,4 @@ void parser::parse(std::vector<std::string>& cfg, std::string const& content) {
       json_fifo(field);
     }
   }
-
-  return;
 }

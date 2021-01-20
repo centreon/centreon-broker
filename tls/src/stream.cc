@@ -23,11 +23,11 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
@@ -180,7 +180,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
       if (ret < 0) {
         log_v2::tls()->error("TLS: could not send data: {}",
                              gnutls_strerror(ret));
-        throw msg_fmt("TLS: could not send data: {} ", gnutls_strerror(ret));
+        throw msg_fmt("TLS: could not send data: {}", gnutls_strerror(ret));
       }
       ptr += ret;
       size -= ret;

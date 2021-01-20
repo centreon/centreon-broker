@@ -19,8 +19,8 @@
 #ifndef CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
 #define CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 
@@ -39,10 +39,10 @@ class perfdata : public msg_fmt {
  public:
   template <typename... Args>
   explicit perfdata(std::string const& str, const Args&... args)
-    : msg_fmt(str, args...) {}
-  perfdata() = delete; 
+      : msg_fmt(str, args...) {}
+  perfdata() = delete;
   ~perfdata() noexcept {}
-  virtual void rethrow() const;
+  perfdata& operator=(const perfdata&) = delete;
 };
 }  // namespace exceptions
 }  // namespace storage

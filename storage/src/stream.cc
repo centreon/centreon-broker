@@ -78,8 +78,7 @@ stream::stream(database_config const& dbcfg,
   if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length,
                                       dbcfg.get_queries_per_transaction())) {
     throw msg_fmt(
-        "storage: Unable to initialize the "
-        "storage connection to the database");
+        "storage: Unable to initialize the storage connection to the database");
   }
 }
 
@@ -119,8 +118,7 @@ int32_t stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw com::centreon::broker::exceptions::shutdown(
-      "cannot read from a storage stream");
+  throw broker::exceptions::shutdown("cannot read from a storage stream");
   return true;
 }
 

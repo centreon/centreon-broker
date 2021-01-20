@@ -76,7 +76,8 @@ io::endpoint* factory::new_endpoint(
           cfg.name, host);
       throw msg_fmt(
           "TCP: invalid host value '{}' defined for endpoint '{}"
-          "', it must not begin or end with spaces.", host, cfg.name);
+          "', it must not begin or end with spaces.",
+          host, cfg.name);
     }
   }
 
@@ -88,8 +89,7 @@ io::endpoint* factory::new_endpoint(
     if (it == cfg.params.end()) {
       log_v2::tcp()->error("TCP: no 'port' defined for endpoint '{}'",
                            cfg.name);
-      throw msg_fmt("TCP: no 'port' defined for "
-                    "endpoint '{}'", cfg.name);
+      throw msg_fmt("TCP: no 'port' defined for endpoint '{}'", cfg.name);
     }
     try {
       port = static_cast<uint16_t>(std::stol(it->second));
@@ -97,9 +97,8 @@ io::endpoint* factory::new_endpoint(
       log_v2::tcp()->error(
           "TCP: 'port' must be an integer and not '{}' for endpoint '{}'",
           it->second, cfg.name);
-      throw msg_fmt("TCP: invalid port value '{}"
-                              "' defined for endpoint '{}'", 
-                              it->second, cfg.name);
+      throw msg_fmt("TCP: invalid port value '{}' defined for endpoint '{}'",
+                    it->second, cfg.name);
     }
   }
 

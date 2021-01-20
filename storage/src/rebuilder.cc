@@ -153,7 +153,8 @@ void rebuilder::_run(asio::error_code ec) {
             } catch (std::exception const& e) {
               throw msg_fmt(
                   "storage: rebuilder: could not fetch metrics of index {}"
-                  ": {}", index_id, e.what());
+                  ": {}",
+                  index_id, e.what());
             }
           }
 
@@ -226,8 +227,8 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
     } else
       memset(&info, 0, sizeof(info));
   } catch (std::exception const& e) {
-    throw msg_fmt(
-        "storage: rebuilder: could not fetch index to rebuild: {} ", e.what());
+    throw msg_fmt("storage: rebuilder: could not fetch index to rebuild: {} ",
+                  e.what());
   }
 }
 
@@ -295,9 +296,8 @@ void rebuilder::_rebuild_metric(mysql& ms,
         multiplexing::publisher().write(entry);
       }
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "storage: rebuilder: ",
-          "cannot fetch data of metric {} : {}", metric_id, e.what());
+      throw msg_fmt("storage: rebuilder: cannot fetch data of metric {} : {}",
+                    metric_id, e.what());
     }
   } catch (...) {
     // Send rebuild end event.
@@ -351,9 +351,8 @@ void rebuilder::_rebuild_status(mysql& ms,
         multiplexing::publisher().write(entry);
       }
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "storage: rebuilder: ",
-          "cannot fetch data of index {} : {}", index_id, e.what());
+      throw msg_fmt("storage: rebuilder: cannot fetch data of index {} : {}",
+                    index_id, e.what());
     }
   } catch (...) {
     // Send rebuild end event.
