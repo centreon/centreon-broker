@@ -112,7 +112,7 @@ int main() {
             << "  FROM rt_services";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw msg_fmt(<< "cannot read service count from DB: {}",
+        throw msg_fmt("cannot read service count from DB: {}",
                       q.lastError().text().toStdString().c_str());
       if (!q.next() || (q.value(0).toUInt() != 50) || q.next())
         throw msg_fmt("invalid service count");
