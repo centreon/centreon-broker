@@ -69,7 +69,12 @@ rebuilder::rebuilder(database_config const& db_cfg,
  */
 rebuilder::~rebuilder() {
   _should_exit = true;
-  asio::post(_timer.get_executor(), [this] { _timer.cancel(); });
+  std::promise<bool> p;
+  std::future<bool> f(p.get_future());
+  asio::post(_timer.get_executor(), [this, &p] {
+    _timer.cancel();
+    p.set_value(true);
+  });
 }
 
 /**
