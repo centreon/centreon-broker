@@ -97,7 +97,8 @@ ba::ba(bool generate_virtual_status)
       _level_warning(0.0),
       _recompute_count(0),
       _service_id(0),
-      _valid(true) {}
+      _valid(true),
+      _dt_behaviour{ configuration::ba::dt_ignore } {}
 
 /**
  *  Add impact.
