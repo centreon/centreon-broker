@@ -71,8 +71,9 @@ class stream : public io::stream {
     }
     ~buffer() noexcept = default;
 
-    bool matches(uint32_t event_id, uint32_t source_id, uint32_t dest_id) const
-        noexcept {
+    bool matches(uint32_t event_id,
+                 uint32_t source_id,
+                 uint32_t dest_id) const noexcept {
       return event_id == _event_id && source_id == _source_id &&
              dest_id == _dest_id;
     }
