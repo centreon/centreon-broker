@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/io/protocols.hh"
+#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/logging/logging.hh"
@@ -66,6 +67,7 @@ std::map<std::string, protocols::protocol>::const_iterator protocols::end()
  *  @return Class instance.
  */
 protocols& protocols::instance() {
+  assert(gl_protocols);
   return *gl_protocols;
 }
 
