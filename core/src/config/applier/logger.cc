@@ -48,8 +48,8 @@ logger::~logger() {
  */
 void logger::apply(std::list<config::logger> const& loggers) {
   // Log message.
-  logging::config(logging::high)
-      << "log applier: applying " << loggers.size() << " logging objects";
+  logging::config(logging::high) << "log applier: applying " << loggers.size()
+                                 << " logging objects";
 
   // Find which loggers are already created,
   // which should be created
@@ -60,7 +60,8 @@ void logger::apply(std::list<config::logger> const& loggers) {
   std::map<config::logger, std::shared_ptr<logging::backend> > to_keep;
   for (std::list<config::logger>::const_iterator it = loggers.begin(),
                                                  end = loggers.end();
-       it != end; ++it) {
+       it != end;
+       ++it) {
     std::map<config::logger, std::shared_ptr<logging::backend> >::iterator
         backend(to_delete.find(*it));
     if (backend != to_delete.end()) {
@@ -78,7 +79,8 @@ void logger::apply(std::list<config::logger> const& loggers) {
                 std::shared_ptr<logging::backend> >::const_iterator
            it(to_delete.begin()),
        end(to_delete.end());
-       it != end; ++it)
+       it != end;
+       ++it)
     logging::manager::instance().log_on(it->second, 0, logging::none);
 
   // Free some memory.
@@ -88,7 +90,8 @@ void logger::apply(std::list<config::logger> const& loggers) {
   // Create new backends.
   for (std::list<config::logger>::const_iterator it(to_create.begin()),
        end(to_create.end());
-       it != end; ++it) {
+       it != end;
+       ++it) {
     logging::config(logging::medium) << "log applier: creating new logger";
     std::shared_ptr<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
