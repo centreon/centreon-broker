@@ -217,7 +217,7 @@ TEST(truncate, utf8_1) {
   for (size_t i = 0; i <= str.size(); i++) {
     fmt::string_view tmp(str);
     fmt::string_view res(string::truncate(tmp, i));
-    fmt::string_view tmp1(
+    std::string tmp1(
         string::check_string_utf8(std::string(res.data(), res.size())));
     ASSERT_EQ(res, tmp1);
   }

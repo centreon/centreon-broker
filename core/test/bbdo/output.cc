@@ -33,6 +33,7 @@
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/persistent_file.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -82,6 +83,8 @@ class OutputTest : public ::testing::Test {
   void TearDown() override {
     // The cache must be destroyed before the applier deinit() call.
     config::applier::deinit();
+    ::remove("/tmp/broker_test_cache");
+    ::remove(log_v2::instance().log_name().c_str());
   }
 };
 
