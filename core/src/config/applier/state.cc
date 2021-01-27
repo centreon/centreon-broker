@@ -195,6 +195,7 @@ std::string const& state::cache_dir() const throw() {
  *  @return Class instance.
  */
 state& state::instance() {
+  assert(gl_state);
   return *gl_state;
 }
 
