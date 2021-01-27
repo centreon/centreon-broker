@@ -75,6 +75,7 @@ rebuilder::~rebuilder() {
     _timer.cancel();
     p.set_value(true);
   });
+  f.get();
 }
 
 /**
