@@ -40,18 +40,15 @@ namespace applier {
 class logger {
   std::map<config::logger, std::shared_ptr<logging::backend> > _backends;
 
-  logger();
-  logger(logger const& l);
-  logger& operator=(logger const& l);
+  logger() = default;
   std::shared_ptr<logging::backend> _new_backend(config::logger const& cfg);
 
  public:
   ~logger();
+  logger(const logger&) = delete;
+  logger& operator=(const logger&) = delete;
   void apply(std::list<config::logger> const& loggers);
   static logger& instance();
-  static void load();
-  static void unload();
-
 };
 }  // namespace applier
 }  // namespace config

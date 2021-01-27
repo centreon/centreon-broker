@@ -22,10 +22,8 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-//#include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/file/internal.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -44,7 +42,6 @@ std::atomic<config::applier::applier_state> config::applier::state{not_started};
 void config::applier::deinit() {
   state = finished;
   config::applier::endpoint::unload();
-  config::applier::logger::unload();
   config::applier::state::unload();
   bbdo::unload();
   compression::unload();
@@ -69,7 +66,6 @@ void config::applier::init() {
   instance_broadcast::load();
   compression::load();
   bbdo::load();
-  config::applier::logger::load();
   config::applier::endpoint::load();
   config::applier::state::load();
   state = initialized;
