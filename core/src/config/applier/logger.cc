@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cassert>
 #include "com/centreon/broker/config/applier/logger.hh"
+#include <cassert>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -34,15 +34,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
-// Class instance.
-static config::applier::logger* gl_logger = nullptr;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Destructor.
  */
@@ -57,8 +48,8 @@ logger::~logger() {
  */
 void logger::apply(std::list<config::logger> const& loggers) {
   // Log message.
-  logging::config(logging::high) << "log applier: applying " << loggers.size()
-                                 << " logging objects";
+  logging::config(logging::high)
+      << "log applier: applying " << loggers.size() << " logging objects";
 
   // Find which loggers are already created,
   // which should be created
@@ -69,8 +60,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
   std::map<config::logger, std::shared_ptr<logging::backend> > to_keep;
   for (std::list<config::logger>::const_iterator it = loggers.begin(),
                                                  end = loggers.end();
-       it != end;
-       ++it) {
+       it != end; ++it) {
     std::map<config::logger, std::shared_ptr<logging::backend> >::iterator
         backend(to_delete.find(*it));
     if (backend != to_delete.end()) {
@@ -88,8 +78,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
                 std::shared_ptr<logging::backend> >::const_iterator
            it(to_delete.begin()),
        end(to_delete.end());
-       it != end;
-       ++it)
+       it != end; ++it)
     logging::manager::instance().log_on(it->second, 0, logging::none);
 
   // Free some memory.
@@ -99,8 +88,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
   // Create new backends.
   for (std::list<config::logger>::const_iterator it(to_create.begin()),
        end(to_create.end());
-       it != end;
-       ++it) {
+       it != end; ++it) {
     logging::config(logging::medium) << "log applier: creating new logger";
     std::shared_ptr<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
@@ -114,37 +102,9 @@ void logger::apply(std::list<config::logger> const& loggers) {
  *  @return logger instance.
  */
 logger& logger::instance() {
-  assert(gl_logger);
-  return (*gl_logger);
+  static logger instance;
+  return instance;
 }
-
-/**
- *  Load the singleton.
- */
-void logger::load() {
-  if (!gl_logger)
-    gl_logger = new logger;
-  return;
-}
-
-/**
- *  Unload the singleton.
- */
-void logger::unload() {
-  delete gl_logger;
-  gl_logger = nullptr;
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-logger::logger() {}
 
 /**
  *  Create a backend object from its configuration.
