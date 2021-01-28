@@ -106,8 +106,8 @@ void pool::_stop() {
   if (_stats_running) {
     std::promise<bool> p;
     std::future<bool> f(p.get_future());
+    _stats_running = false;
     asio::post(_timer.get_executor(), [this, &p] {
-        _stats_running = false;
         _timer.cancel();
         p.set_value(true);
         });
