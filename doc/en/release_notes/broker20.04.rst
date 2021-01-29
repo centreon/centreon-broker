@@ -16,6 +16,33 @@ broker termination
 When broker is badly configured and the user wants to stop it, it may hang and
 never stop. This new version fixes this issue.
 
+Storage rebuilder
+=================
+The rebuilder loop has been rewritten. When it is stopped, it is interrupted
+correctly.
+
+Logs
+====
+The new logs (log_v2) are correctly flushed when cbd is stopped.
+
+Thread pool
+===========
+The thread pool is better stopped now.
+
+Cache/Retention files
+=====================
+They are written well written as expected. Before, we could see some of them
+not written at all.
+
+Sigterm handler
+===============
+It is better managed, so event if several SIGTERM are received by cbd, it stops
+correctly.
+
+Diagnostic/Check modes
+======================
+The diagnostic and the check modes are back and functional.
+
 ========================
 Centreon Broker 20.04.12
 ========================
