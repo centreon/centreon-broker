@@ -61,7 +61,7 @@ class mfifo {
   int32_t _pending_elements;
 
  public:
-  mfifo() : _pending_elements(0) {}
+  mfifo() : _ack{0}, _pending_elements(0) {}
 
   std::deque<std::tuple<T, uint32_t, bool*>> const& get_events() const {
     return _events;

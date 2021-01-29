@@ -20,7 +20,6 @@
 
 #include <ctime>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;

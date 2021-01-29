@@ -41,6 +41,7 @@ static events* _instance(nullptr);
  *  @return Class instance.
  */
 events& events::instance() {
+  assert(_instance);
   return *_instance;
 }
 

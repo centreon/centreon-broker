@@ -29,6 +29,7 @@
 CCB_BEGIN()
 
 class log_v2 {
+  std::string _log_name;
   std::shared_ptr<spdlog::logger> _core_log;
   std::shared_ptr<spdlog::logger> _config_log;
   std::shared_ptr<spdlog::logger> _tcp_log;
@@ -47,6 +48,7 @@ class log_v2 {
  public:
   static log_v2& instance();
   bool load(const char* file, std::string const& broker_name, std::string& err);
+  const std::string& log_name() const;
 
   static std::shared_ptr<spdlog::logger> core();
   static std::shared_ptr<spdlog::logger> config();
