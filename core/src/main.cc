@@ -149,9 +149,9 @@ int main(int argc, char* argv[]) {
     bool help(false);
     bool version(false);
 
-    opt = getopt_long(argc, argv, "p:cdDvh", long_options, &option_index);
+    opt = getopt_long(argc, argv, "t:cdDvh", long_options, &option_index);
     switch (opt) {
-      case 'p':
+      case 't':
         n_thread = atoi(optarg);
         break;
       case 'c':
@@ -263,10 +263,8 @@ int main(int argc, char* argv[]) {
         // Verification modifications.
         if (check) {
           // Loggers.
-          for (std::list<config::logger>::iterator it(conf.loggers().begin()),
-               end(conf.loggers().end());
-               it != end; ++it)
-            it->types(0);
+          for (auto& l : conf.loggers())
+            l.types(0);
           conf.loggers().push_back(default_state.loggers().front());
         }
 
@@ -323,10 +321,9 @@ int main(int argc, char* argv[]) {
         }
         log_v2::core()->info("main: termination request received by process");
       }
+      // Unload endpoints.
+      config::applier::deinit();
     }
-
-    // Unload endpoints.
-    config::applier::deinit();
   }
   // Standard exception.
   catch (std::exception const& e) {

@@ -22,8 +22,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include <sstream>
-#include <thread>
+#include <fmt/format.h>
+#include <sys/stat.h>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
@@ -82,12 +82,10 @@ diagnostic& diagnostic::operator=(diagnostic const& right) {
 void diagnostic::generate(std::vector<std::string> const& cfg_files,
                           std::string const& out_file) {
   // Destination directory.
-  std::string tmp_dir;
-  {
-    tmp_dir = temp_path();
-    std::ifstream dir(tmp_dir);
-    if (!dir.good())
-      throw msg_fmt("diagnostic: cannot create temporary file");
+  std::string tmp_dir{temp_path()};
+  struct stat st;
+  if (stat(tmp_dir.c_str(), &st) == -1) {
+    mkdir(tmp_dir.c_str(), 0700);
   }
 
   // Files to remove.
@@ -96,9 +94,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   // Add diagnostic log file.
   config::state diagnostic_state;
   {
-    std::string diagnostic_log_path;
-    diagnostic_log_path = tmp_dir;
-    diagnostic_log_path.append("/diagnostic.log");
+    std::string diagnostic_log_path{fmt::format("{}/diagnostic.log", tmp_dir)};
     to_remove.push_back(diagnostic_log_path);
     {
       config::logger diagnostic_log;
@@ -259,9 +255,9 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
       else
         cfg_path.append(*it);
       to_remove.push_back(cfg_path);
-      std::ostringstream oss;
-      oss << "cp " << *it << " " << cfg_path;
-      misc::exec(oss.str());
+      std::ifstream src(*it, std::ios::binary);
+      std::ofstream dst(cfg_path, std::ios::binary);
+      dst << src.rdbuf();
     }
 
     // Parse configuration file.
@@ -288,14 +284,11 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
         ls_log_path.append(*it);
       ls_log_path.append(".log");
       to_remove.push_back(ls_log_path);
-      std::ostringstream oss;
-      oss << "ls -la " << conf.module_directory();
-      for (std::list<std::string>::const_iterator
-               it(conf.module_list().begin()),
-           end(conf.module_list().end());
-           it != end; ++it)
-        oss << " " << *it;
-      std::string output{misc::exec(oss.str())};
+
+      std::string cmd{fmt::format("ls -la {} {}",
+          conf.module_directory(),
+          fmt::join(conf.module_list(), " "))};
+      std::string output{misc::exec(cmd)};
 
       std::ofstream out(ls_log_path);
       out << output;
@@ -335,20 +328,13 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   logging::info(logging::high)
       << "diagnostic: creating tarball '" << my_out_file << "'";
   {
-    std::ostringstream oss;
-    oss << "tar "
-        << "czf " << my_out_file << " " << tmp_dir;
-    std::string output{misc::exec(oss.str())};
+    std::string cmd{fmt::format("tar czf {} {}",
+        my_out_file, tmp_dir)};
+    std::string output{misc::exec(cmd)};
   }
 
   // Clean temporary directory.
-  {
-    for (std::list<std::string>::const_iterator it(to_remove.begin()),
-         end(to_remove.end());
-         it != end; ++it)
-      ::remove(it->c_str());
-    ::rmdir(tmp_dir.c_str());
-  }
-
-  return;
+  for (const auto& f : to_remove)
+    ::remove(f.c_str());
+  ::rmdir(tmp_dir.c_str());
 }
