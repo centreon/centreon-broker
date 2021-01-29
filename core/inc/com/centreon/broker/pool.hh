@@ -64,12 +64,13 @@ CCB_BEGIN()
 class pool {
   static size_t _pool_size;
   asio::io_context _io_context;
-  asio::io_service::work _worker;
+  std::unique_ptr<asio::io_service::work> _worker;
   std::vector<std::thread> _pool;
   bool _closed;
   mutable std::mutex _closed_m;
 
   asio::steady_timer _timer;
+  std::atomic_bool _stats_running;
 
   /* Latency in milliseconds between the call of check_latency and its real
    * execution. */
@@ -77,8 +78,9 @@ class pool {
 
   pool();
   void _start();
+  void _start_stats();
   void _stop();
-  void _check_latency();
+  void _check_latency(asio::error_code ec);
 
  public:
   ~pool() noexcept;

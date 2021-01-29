@@ -93,7 +93,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         }
 
         // Check if size is within bounds.
-        if ((size <= 0) || (size > max_data_size)) {
+        if (size <= 0 || size > max_data_size) {
           // Skip corrupted data, one byte at a time.
           logging::error(logging::low)
               << "compression: " << this << " got corrupted packet size of "

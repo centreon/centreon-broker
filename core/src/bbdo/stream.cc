@@ -73,12 +73,12 @@ static uint32_t set_double(io::data& t,
   uint32_t len(strlen(str));
   if (len >= size) {
     log_v2::bbdo()->error(
-        "cannot extract double value: not terminating '\0' in remaining "
+        "cannot extract double value: not terminating '\\0' in remaining "
         "{} bytes of packet",
         size);
     throw exceptions::msg()
         << "cannot extract double value: "
-        << "not terminating '\0' in remaining " << size << " bytes of packet";
+        << "not terminating '\\0' in remaining " << size << " bytes of packet";
   }
   member.set_double(t, strtod(str, nullptr));
   return len + 1;
@@ -546,8 +546,8 @@ stream::~stream() noexcept {}
  */
 int stream::flush() {
   _substream->flush();
-  int retval(_acknowledged_events);
-  _acknowledged_events = 0;
+  int retval = _acknowledged_events;
+  _acknowledged_events -= retval;
   return retval;
 }
 

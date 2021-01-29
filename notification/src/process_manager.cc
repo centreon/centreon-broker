@@ -36,7 +36,7 @@ process_manager& process_manager::instance() {
     _instance_ptr = new process_manager;
     _instance_ptr->_thread->start();
   }
-  return (*_instance_ptr);
+  return *_instance_ptr;
 }
 
 /**
