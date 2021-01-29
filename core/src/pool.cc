@@ -48,11 +48,26 @@ asio::io_context& pool::io_context() {
  */
 pool::pool()
     : _io_context(_pool_size),
-      _worker(_io_context),
+      _worker(new asio::io_service::work(_io_context)),
       _closed(true),
-      _timer(_io_context) {
+      _timer(_io_context),
+      _stats_running{false} {
   _start();
-  _check_latency();
+  _start_stats();
+}
+
+/**
+ * @brief Start the stats of the pool. This method is called by the stats engine
+ * when it is ready.
+ *
+ * @param stats The pointer used by the pool to set its data in the stats
+ * engine.
+ */
+void pool::_start_stats() {
+  _stats_running = true;
+  _timer.expires_after(std::chrono::seconds(10));
+  _timer.async_wait(
+      std::bind(&pool::_check_latency, this, std::placeholders::_1));
 }
 
 /**
@@ -88,13 +103,25 @@ pool::~pool() noexcept {
  * @brief Stop the thread pool.
  */
 void pool::_stop() {
+  if (_stats_running) {
+    std::promise<bool> p;
+    std::future<bool> f(p.get_future());
+    _stats_running = false;
+    asio::post(_timer.get_executor(), [this, &p] {
+        _timer.cancel();
+        p.set_value(true);
+        });
+    f.get();
+  }
+
   log_v2::core()->trace("Stopping the TCP thread pool");
   std::lock_guard<std::mutex> lock(_closed_m);
   if (!_closed) {
     _closed = true;
-    _io_context.stop();
+    _worker.reset();
     for (auto& t : _pool)
-      t.join();
+      if (t.joinable())
+        t.join();
   }
   log_v2::core()->trace("No remaining thread in the pool");
 }
@@ -125,16 +152,24 @@ size_t pool::get_current_size() const {
  * computation every 10s.
  *
  */
-void pool::_check_latency() {
-  auto start = std::chrono::system_clock::now();
-  asio::post(_io_context, [start, this] {
-    auto end = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration<double, std::milli>(end - start);
-    _latency = duration.count();
-    log_v2::core()->trace("Thread pool latency at {}ms", _latency);
-  });
-  _timer.expires_after(std::chrono::seconds(10));
-  _timer.async_wait(std::bind(&pool::_check_latency, this));
+void pool::_check_latency(asio::error_code ec) {
+  if (ec)
+    log_v2::core()->info("pool: the latency check encountered an error: {}",
+                         ec.message());
+  else {
+    auto start = std::chrono::system_clock::now();
+    asio::post(_io_context, [start, this] {
+      auto end = std::chrono::system_clock::now();
+      auto duration = std::chrono::duration<double, std::milli>(end - start);
+      _latency = duration.count();
+      log_v2::core()->trace("Thread pool latency {:.3f}ms", _latency);
+    });
+    if (_stats_running) {
+      _timer.expires_after(std::chrono::seconds(10));
+      _timer.async_wait(
+          std::bind(&pool::_check_latency, this, std::placeholders::_1));
+    }
+  }
 }
 
 /**

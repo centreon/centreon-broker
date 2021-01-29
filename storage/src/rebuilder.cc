@@ -69,7 +69,13 @@ rebuilder::rebuilder(database_config const& db_cfg,
  */
 rebuilder::~rebuilder() {
   _should_exit = true;
-  asio::post(_timer.get_executor(), [this] { _timer.cancel(); });
+  std::promise<bool> p;
+  std::future<bool> f(p.get_future());
+  asio::post(_timer.get_executor(), [this, &p] {
+    _timer.cancel();
+    p.set_value(true);
+  });
+  f.get();
 }
 
 /**
@@ -88,6 +94,7 @@ void rebuilder::_run(asio::error_code ec) {
     try {
       // Open DB.
       mysql ms(_db_cfg);
+
       // Fetch index to rebuild.
       index_info info;
       _next_index_to_rebuild(info, ms);

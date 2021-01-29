@@ -1,6 +1,6 @@
 [requires]
 gtest/1.8.1@bincrafters/stable
-asio/1.18.0
+asio/1.18.1
 fmt/7.1.2
 spdlog/1.8.1
 json11/e2e3a11@centreon/stable

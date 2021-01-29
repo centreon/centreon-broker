@@ -513,8 +513,8 @@ stream::~stream() noexcept {}
  */
 int stream::flush() {
   _substream->flush();
-  int retval(_acknowledged_events);
-  _acknowledged_events = 0;
+  int retval = _acknowledged_events;
+  _acknowledged_events -= retval;
   return retval;
 }
 

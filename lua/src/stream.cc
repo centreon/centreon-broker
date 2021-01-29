@@ -102,6 +102,7 @@ stream::stream(std::string const& lua_script,
 
     /* The count of events handled each second. */
     int count = 0;
+    log_v2::lua()->debug("lua: starting internal thread.");
     for (;;) {
       /* Is the flush activated and have we received a flush ? */
       if (has_flush && _flush) {
@@ -154,9 +155,9 @@ stream::stream(std::string const& lua_script,
         log_v2::lua()->debug("stream: exit");
         break;
       } else
-        /* We did nothing, let's wait for 500ms. We don't cook an egg with our
+        /* We did nothing, let's wait for 50ms. We don't cook an egg with our
          * cpus. */
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     // No more need of the Lua interpreter
@@ -174,6 +175,7 @@ stream::stream(std::string const& lua_script,
  *  Destructor.
  */
 stream::~stream() {
+  log_v2::lua()->debug("Destruction of Lua stream");
   _exit = true;
   if (_thread.joinable())
     _thread.join();

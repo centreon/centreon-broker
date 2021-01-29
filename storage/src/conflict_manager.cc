@@ -414,7 +414,7 @@ void conflict_manager::_callback() {
       break;
     }
     size_t pos = 0;
-    std::deque<std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>> events;
+    std::deque<std::tuple<std::shared_ptr<io::data>, uint32_t, bool*> > events;
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread

@@ -62,6 +62,7 @@ class LuaTest : public ::testing::Test {
     // The cache must be destroyed before the applier deinit() call.
     _cache.reset();
     config::applier::deinit();
+    ::remove("/tmp/broker_test_cache");
   }
 
   void CreateScript(std::string const& filename, std::string const& content) {
