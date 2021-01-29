@@ -59,6 +59,16 @@ log_v2::log_v2() {
 
 log_v2::~log_v2() {
   _core_log->info("log finished");
+  _tls_log->flush();
+  _bbdo_log->flush();
+  _tcp_log->flush();
+  _core_log->flush();
+  _config_log->flush();
+  _sql_log->flush();
+  _perfdata_log->flush();
+  _lua_log->flush();
+  _processing_log->flush();
+  _bam_log->flush();
 }
 
 static auto json_validate = [](Json const& js) -> bool {
@@ -101,13 +111,13 @@ bool log_v2::load(const char* file,
         sinks.push_back(std::make_shared<sinks::stdout_color_sink_mt>());
 
       if (js["log_path"].is_string()) {
-        std::string log_name =
-            js["log_path"].string_value() + "/" + broker_name + ".log";
+        _log_name = fmt::format("{}/{}.log", js["log_path"].string_value(),
+                                broker_name);
         try {
           sinks.push_back(
-              std::make_shared<sinks::basic_file_sink_mt>(log_name));
+              std::make_shared<sinks::basic_file_sink_mt>(_log_name));
         } catch (...) {
-          err = fmt::format("log_v2 cannot log on '{}'", log_name);
+          err = fmt::format("log_v2 cannot log on '{}'", _log_name);
           return false;
         }
       }
@@ -197,4 +207,8 @@ std::shared_ptr<spdlog::logger> log_v2::processing() {
 
 std::shared_ptr<spdlog::logger> log_v2::bam() {
   return instance()._bam_log;
+}
+
+const std::string& log_v2::log_name() const {
+  return _log_name;
 }

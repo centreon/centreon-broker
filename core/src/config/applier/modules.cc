@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/config/applier/modules.hh"
+#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/logging/logging.hh"
@@ -102,6 +103,7 @@ modules::iterator modules::end() {
  *  @return Class instance.
  */
 modules& modules::instance() {
+  assert(gl_modules);
   return *gl_modules;
 }
 

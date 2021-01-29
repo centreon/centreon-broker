@@ -426,7 +426,6 @@ void kpi_service::_fill_impact(impact_values& impact,
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);
   impact.set_downtime(_downtimed ? nominal : 0.0);
   impact.set_state(state);
-  return;
 }
 /**
  *  Open a new event for this KPI.

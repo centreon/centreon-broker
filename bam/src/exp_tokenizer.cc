@@ -126,18 +126,17 @@ std::string exp_tokenizer::_extract_token() {
   */
 
   // Brace-delimited token, this is special.
-  if ((_current < _size) && (_text[_current] == '{')) {
+  if (_current < _size && _text[_current] == '{') {
     // Extract token.
     ++_current;
     retval = _extract_until(&exp_tokenizer::_is_space_or_right_brace);
 
     // If it's an operator or a constant, leave it as it is.
     // Otherwise this express the STATUS of a host/service.
-    if ((retval != "IS") && (retval != "NOT") && (retval != "AND") &&
-        (retval != "XOR") && (retval != "OR") && (retval != "OK") &&
-        (retval != "WARNING") && (retval != "CRITICAL") &&
-        (retval != "UNKNOWN") && (retval != "UP") && (retval != "DOWN") &&
-        (retval != "UNREACHABLE")) {
+    if (retval != "IS" && retval != "NOT" && retval != "AND" &&
+        retval != "XOR" && retval != "OR" && retval != "OK" &&
+        retval != "WARNING" && retval != "CRITICAL" && retval != "UNKNOWN" &&
+        retval != "UP" && retval != "DOWN" && retval != "UNREACHABLE") {
       // Host name is retrieved first.
       _queue.push("(");
       _queue.push(retval);

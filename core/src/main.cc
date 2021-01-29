@@ -17,6 +17,7 @@
 */
 
 #include <getopt.h>
+
 #include <cerrno>
 #include <chrono>
 #include <clocale>
@@ -40,15 +41,10 @@
 
 using namespace com::centreon::broker;
 
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
-
 // Main config file.
 static std::vector<std::string> gl_mainconfigfiles;
 static config::state gl_state;
+static std::atomic_bool gl_term{false};
 
 static struct option long_options[] = {{"pool_size", required_argument, 0, 's'},
                                        {"check", no_argument, 0, 'c'},
@@ -120,26 +116,10 @@ static void hup_handler(int signum) {
  *  @param[in] info   Signal informations.
  *  @param[in] data   Unused.
  */
-static void term_handler(int signum, siginfo_t* info, void* data) {
+static void term_handler(int signum) {
   (void)signum;
-  (void)data;
-
-  // Log message.
-  logging::info(logging::high)
-      << "main: termination request received by process id " << info->si_pid
-      << " with real user id " << info->si_uid;
-
-  // Unload endpoints.
-  config::applier::deinit();
-
-  exit(0);
+  gl_term = true;
 }
-
-/**************************************
- *                                     *
- *          Public Functions           *
- *                                     *
- **************************************/
 
 /**
  *  @brief Program entry point.
@@ -155,8 +135,7 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
 int main(int argc, char* argv[]) {
   // Initialization.
   int opt, option_index = 0, n_thread = 0;
-  config::applier::init();
-  std::string broker_name = "unknown";
+  std::string broker_name{"unknown"};
   uint16_t default_port{51000};
 
   // Return value.
@@ -170,9 +149,9 @@ int main(int argc, char* argv[]) {
     bool help(false);
     bool version(false);
 
-    opt = getopt_long(argc, argv, "p:cdDvh", long_options, &option_index);
+    opt = getopt_long(argc, argv, "t:cdDvh", long_options, &option_index);
     switch (opt) {
-      case 'p':
+      case 't':
         n_thread = atoi(optarg);
         break;
       case 'c':
@@ -280,13 +259,12 @@ int main(int argc, char* argv[]) {
                                      conf.broker_name(), err))
           logging::error(logging::low) << err;
 
+        config::applier::init();
         // Verification modifications.
         if (check) {
           // Loggers.
-          for (std::list<config::logger>::iterator it(conf.loggers().begin()),
-               end(conf.loggers().end());
-               it != end; ++it)
-            it->types(0);
+          for (auto& l : conf.loggers())
+            l.types(0);
           conf.loggers().push_back(default_state.loggers().front());
         }
 
@@ -317,8 +295,7 @@ int main(int argc, char* argv[]) {
       // Init signal handler.
       struct sigaction sigterm_act;
       memset(&sigterm_act, 0, sizeof(sigterm_act));
-      sigterm_act.sa_sigaction = &term_handler;
-      sigterm_act.sa_flags = SA_SIGINFO | SA_RESETHAND;
+      sigterm_act.sa_handler = &term_handler;
 
       // Set termination handler.
       if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
@@ -329,7 +306,7 @@ int main(int argc, char* argv[]) {
         default_port += gl_state.broker_id();
       else
         default_port = gl_state.rpc_port();
-      std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)>> rpc(
+      std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)> > rpc(
           new brokerrpc("0.0.0.0", default_port, broker_name),
           [](brokerrpc* rpc) {
             rpc->shutdown();
@@ -337,27 +314,29 @@ int main(int argc, char* argv[]) {
           });
 
       // Launch event loop.
-      if (!check)
-        for (;;) {
+      retval = EXIT_SUCCESS;
+      if (!check) {
+        while (!gl_term) {
           std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-      else
-        retval = EXIT_SUCCESS;
+        log_v2::core()->info("main: termination request received by process");
+      }
+      // Unload endpoints.
+      config::applier::deinit();
     }
   }
   // Standard exception.
   catch (std::exception const& e) {
+    log_v2::core()->error("Error during cbd exit: {}", e.what());
     logging::error(logging::high) << e.what();
     retval = EXIT_FAILURE;
   }
   // Unknown exception.
   catch (...) {
+    log_v2::core()->error("Error general during cbd exit");
     logging::error(logging::high) << "main: unknown error, aborting execution";
     retval = EXIT_FAILURE;
   }
-
-  // Unload endpoints.
-  config::applier::deinit();
 
   return retval;
 }

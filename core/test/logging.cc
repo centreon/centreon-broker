@@ -539,6 +539,7 @@ TEST_F(LoggingManager, Timestamp) {
   std::getline(infile, line);
   ASSERT_TRUE(
       check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG4 "$"}));
+  std::remove(file_path.c_str());
 }
 
 TEST_F(LoggingManager, Copied) {
