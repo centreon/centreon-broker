@@ -37,9 +37,7 @@ using namespace com::centreon::broker::config::applier;
 /**
  *  Destructor.
  */
-logger::~logger() {
-  logging::debug(logging::high) << "log applier: destruction";
-}
+logger::~logger() {}
 
 /**
  *  Apply the configuration of a set of loggers.
