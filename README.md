@@ -102,10 +102,11 @@ If it does not work, conan can be installed with pip3:
 pip3 install conan
 ```
 
-All the dependencies pulled by conan are located in conanfile.txt. If
-you want to use a dependency from your package manager instead of conan,
-you need to remove it from conanfile.txt. Then you have to add a remote
-conan repository, for that enter the command:
+> All the dependencies pulled by conan are located in conanfile.txt. If
+> you want to use a dependency from your package manager instead of conan,
+> you need to remove it from conanfile.txt.
+
+Then you have to add a remote conan repository, for that enter the command:
 
 ```shell
 conan remote add centreon https://api.bintray.com/conan/centreon/centreon
