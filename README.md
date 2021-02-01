@@ -83,7 +83,7 @@ If you are on another distribution, then follow the steps below.
 Check if you have these packages installed (Note that packages names
 come from CentOS distributions, so if some packages names don't match
 on your distribution try to find their equivalent names): git, make,
-cmake, gcc-c++, python3.
+cmake, gcc-c++, python3, libgnutls-devel, liblua-devel, librrd-devel.
 
 For the projet compilation you need to have conan installed. Try to use
 the package manager given by your OS to install conan. ('apt' for
@@ -93,7 +93,7 @@ to install gcc before conan.
 Example :
 
 ```shell
-_apt_ install conan
+apt install conan
 ```
 
 If it does not work, conan can be installed with pip3:
@@ -133,7 +133,7 @@ Once the sources of Centreon Broker extracted go to the *./build/*
 directory and launch the CMake command:
 
 ```shell
-cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On ..
+cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios ..
 ```
 
 This will look for required dependencies and print a summary of the
