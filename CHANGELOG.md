@@ -1,6 +1,6 @@
 # Changelog
 
-## Centreon Broker 20.10.4
+## 20.10.4
 
 `Release date to be defined`
 
