@@ -1,8 +1,0 @@
-#########
-Developer
-#########
-
-.. toctree::
-
-   bbdo
-   mapping
