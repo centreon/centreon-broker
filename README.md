@@ -126,7 +126,7 @@ You can now compile Centreon Broker:
 git clone https://github.com/centreon/centreon-broker
 mkdir -p centreon-broker/build
 cd centreon-broker/build
-conan install --remote centreon --build missing
+conan install --remote centreon --build missing ..
 ```
 
 Once the sources of Centreon Broker extracted go to the *./build/*
