@@ -54,17 +54,7 @@ class stream : public io::stream {
   bool _with_state_events;
   mutable std::mutex _stat_mutex;
 
-  void _process_engine(std::shared_ptr<io::data> const& e);
-  void _process_host_state(std::shared_ptr<io::data> const& e);
-  void _process_issue(std::shared_ptr<io::data> const& e);
-  void _process_issue_parent(std::shared_ptr<io::data> const& e);
-  void _process_notification(std::shared_ptr<io::data> const& e);
-  void _process_service_state(std::shared_ptr<io::data> const& e);
-  void _process_state(std::shared_ptr<io::data> const& e);
   void _process_log_issue(std::shared_ptr<io::data> const& e);
-
-  static void (stream::*const _correlation_processing_table[])(
-      std::shared_ptr<io::data> const&);
 
  public:
   stream(database_config const& dbcfg,

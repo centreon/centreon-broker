@@ -218,9 +218,6 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::service_status::static_type())
     _process_service_status_event(
         *std::static_pointer_cast<neb::service_status>(data));
-  else if (data->type() == correlation::issue_parent::static_type())
-    _process_issue_parent_event(
-        *std::static_pointer_cast<correlation::issue_parent>(data));
   else if (data->type() == neb::acknowledgement::static_type())
     _process_ack(*std::static_pointer_cast<neb::acknowledgement>(data));
   else if (data->type() == neb::downtime::static_type())
@@ -487,45 +484,6 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   }
 }
 
-/**
- *  Process an issue parent event.
- *
- *  @param event  The event to process.
- */
-void stream::_process_issue_parent_event(
-    correlation::issue_parent const& event) {
-  // Node IDs.
-  node_id child_id(event.child_host_id, event.child_service_id);
-  node_id parent_id(event.parent_host_id, event.parent_service_id);
-
-  // Get the state lock.
-  // TODO: The write lock here kills the perf. Use a read lock instead.
-  //       and lock on an individual node level.
-  std::unique_ptr<QWriteLocker> lock(_state.write_lock());
-  node::ptr n = _state.get_node_by_id(child_id);
-  if (!n)
-    throw msg_fmt(
-        "notification: got an unknown issue parent on node ({}, {}) by node "
-        "({}, {})",
-        child_id.get_host_id(), child_id.get_service_id(),
-        parent_id.get_host_id(), parent_id.get_service_id());
-
-  // Log message.
-  bool terminated_event((event.end_time != (time_t)-1) &&
-                        (event.end_time != (time_t)0));
-  logging::debug(logging::medium)
-      << "notification: node (" << child_id.get_host_id() << ", "
-      << child_id.get_service_id() << ") " << (terminated_event ? "had" : "has")
-      << " parent issue from node (" << parent_id.get_host_id() << ", "
-      << parent_id.get_service_id() << ")";
-
-  // Add a parent relationship between correlated node.
-  if (!terminated_event)
-    n->add_parent(parent_id);
-  // Remove a parent relationship between correlated node.
-  else
-    n->remove_parent(parent_id);
-}
 
 /**
  *  Process an ack event.

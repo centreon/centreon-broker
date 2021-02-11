@@ -20,7 +20,6 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/notification/inc/com/centreon/broker/notification")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/notification/src")
 include_directories("${PROJECT_SOURCE_DIR}/notification/inc")
-include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/file/inc")

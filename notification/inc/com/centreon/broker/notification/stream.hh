@@ -29,7 +29,6 @@
 #include <QString>
 #include <QVector>
 #include <set>
-#include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
@@ -81,7 +80,6 @@ class stream : public io::stream {
   void _update_objects_from_db();
   void _process_service_status_event(neb::service_status const& event);
   void _process_host_status_event(neb::host_status const& event);
-  void _process_issue_parent_event(correlation::issue_parent const& event);
   void _process_ack(neb::acknowledgement const& event);
   void _process_downtime(neb::downtime const& event);
 

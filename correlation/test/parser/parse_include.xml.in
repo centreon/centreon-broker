@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<centreonbroker>
-  <host id="13" state="1" />
-  <service id="21" host="13" />
-  <include>@PROJECT_SOURCE_DIR@/correlation/test/parser/parse_included.xml</include>
-  <host id="42"/>
-  <service id="66" host="42" state="3" />
-</centreonbroker>
