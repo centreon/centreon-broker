@@ -22,7 +22,6 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/sql/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/sql/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/sql/test")
 include_directories("${INC_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<centreonbroker>
-  <service id="12" host="13" state="2" />
-  <dependency dependent_host="13" dependent_service="21" host="13" service="12" />
-</centreonbroker>

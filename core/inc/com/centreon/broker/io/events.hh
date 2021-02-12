@@ -45,7 +45,6 @@ class events {
     neb = 1,
     bbdo,
     storage,
-    correlation,
     dumper,
     bam,
     extcmd,
