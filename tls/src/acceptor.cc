@@ -44,8 +44,9 @@ using namespace com::centreon::broker::tls;
  */
 acceptor::acceptor(std::string const& cert,
                    std::string const& key,
-                   std::string const& ca)
-    : io::endpoint(true), _ca(ca), _cert(cert), _key(key) {}
+                   std::string const& ca,
+                   std::string const& tls_hostname)
+    : io::endpoint(true), _ca(ca), _cert(cert), _key(key), _tls_hostname(tls_hostname) {}
 
 /**
  *  @brief Try to accept a new connection.
@@ -89,6 +90,7 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     params p(params::SERVER);
     p.set_cert(_cert, _key);
     p.set_trusted_ca(_ca);
+    p.set_tls_hostname(_tls_hostname);
     p.load();
 
     gnutls_session_t* session(new gnutls_session_t);

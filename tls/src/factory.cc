@@ -65,6 +65,11 @@ bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
       it = cfg.params.find("public_cert");
       if (it != cfg.params.end())
         _public_cert = it->second;
+      
+      // tls hostname.
+      it = cfg.params.find("tls_hostname");
+      if (it != cfg.params.end())
+        _tls_hostname = it->second;
     }
   }
   return false;
@@ -91,6 +96,7 @@ io::endpoint* factory::new_endpoint(
   std::string ca_cert;
   std::string private_key;
   std::string public_cert;
+  std::string tls_hostname;
   {
     // Is TLS enabled ?
     std::map<std::string, std::string>::const_iterator it{
@@ -112,6 +118,11 @@ io::endpoint* factory::new_endpoint(
         it = cfg.params.find("public_cert");
         if (it != cfg.params.end())
           public_cert = it->second;
+
+        // tls hostname.
+        it = cfg.params.find("tls_hostname");
+        if (it != cfg.params.end())
+          tls_hostname = it->second;
       }
     }
   }
@@ -119,10 +130,10 @@ io::endpoint* factory::new_endpoint(
   // Acceptor.
   std::unique_ptr<io::endpoint> endp;
   if (is_acceptor)
-    endp.reset(new acceptor(public_cert, private_key, ca_cert));
+    endp.reset(new acceptor(public_cert, private_key, ca_cert, tls_hostname));
   // Connector.
   else
-    endp.reset(new connector(public_cert, private_key, ca_cert));
+    endp.reset(new connector(public_cert, private_key, ca_cert, tls_hostname));
   return endp.release();
 }
 
@@ -139,6 +150,6 @@ std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
                                                 bool is_acceptor,
                                                 std::string const& proto_name) {
   (void)proto_name;
-  return is_acceptor ? acceptor(_public_cert, _private_key, _ca_cert).open(to)
-                     : connector(_public_cert, _private_key, _ca_cert).open(to);
+  return is_acceptor ? acceptor(_public_cert, _private_key, _ca_cert, _tls_hostname).open(to)
+                     : connector(_public_cert, _private_key, _ca_cert, _tls_hostname).open(to);
 }
