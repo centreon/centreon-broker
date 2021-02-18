@@ -190,6 +190,18 @@ void params::set_compression(bool compress) {
 }
 
 /**
+ *  @brief Set the hostname.
+ *
+ *  If this parameter is set, certificate verify peers use this hostname rather
+ *  than the common name of the certificate.
+ *
+ *  @param[in] tls_hostname the name of common name on the certificate.
+ */
+void params::set_tls_hostname(std::string const& tls_hostname) {
+  _tls_hostname = tls_hostname;
+}
+
+/**
  *  @brief Set the trusted CA certificate.
  *
  *  If this parameter is set, certificate checking will be performed on
@@ -216,7 +228,8 @@ void params::validate_cert(gnutls_session_t session) {
   if (!_ca.empty()) {
     int ret;
     uint32_t status;
-    ret = gnutls_certificate_verify_peers2(session, &status);
+    ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
+                                           &status);
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error(
           "TLS: certificate verification failed , assuming invalid "

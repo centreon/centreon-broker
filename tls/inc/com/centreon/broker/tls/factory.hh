@@ -35,6 +35,7 @@ class factory : public io::factory {
   std::string _ca_cert;
   std::string _private_key;
   std::string _public_cert;
+  std::string _tls_hostname;
 
  public:
   factory() = default;
