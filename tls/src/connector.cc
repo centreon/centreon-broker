@@ -43,8 +43,9 @@ using namespace com::centreon::exceptions;
  */
 connector::connector(std::string const& cert,
                      std::string const& key,
-                     std::string const& ca)
-    : io::endpoint(false), _ca(ca), _cert(cert), _key(key) {}
+                     std::string const& ca,
+                     std::string const& tls_hostname)
+    : io::endpoint(false), _ca(ca), _cert(cert), _key(key), _tls_hostname(tls_hostname) {}
 
 /**
  *  Connect to the remote TLS peer.
@@ -75,6 +76,7 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     params p(params::CLIENT);
     p.set_cert(_cert, _key);
     p.set_trusted_ca(_ca);
+    p.set_tls_hostname(_tls_hostname);
     p.load();
 
     gnutls_session_t* session(new gnutls_session_t);
