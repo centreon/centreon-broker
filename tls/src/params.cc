@@ -228,8 +228,12 @@ void params::validate_cert(gnutls_session_t session) {
   if (!_ca.empty()) {
     int ret;
     uint32_t status;
-    ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
-                                           &status);
+    if (!_tls_hostname.empty())
+      ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
+                                             &status);
+    else
+      ret = gnutls_certificate_verify_peers2(session, &status);
+
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error(
           "TLS: certificate verification failed , assuming invalid "
