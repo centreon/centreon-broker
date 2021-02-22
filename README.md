@@ -63,14 +63,18 @@ Centreon Broker.
 Compilation of these distributions is pretty straightforward.
 
 You'll need to download the project and launch the *cmake.sh* script
-to prepare the compilation environment.
-
-Here are the command lines to execute:
+to prepare the compilation environment:
 
 ```shell
 git clone https://github.com/centreon/centreon-broker
 cd centreon-broker
 ./cmake.sh
+```
+
+Now launch the compilation using the *make* command and then install the
+software by running *make install* as priviledged user:
+
+```shell
 cd build
 make
 make install
@@ -120,19 +124,13 @@ conan-center: https://conan.bintray.com [Verify SSL: True]
 centreon: https://api.bintray.com/conan/centreon/centreon [Verify SSL: True]
 ```
 
-You can now compile Centreon Broker:
+You can now prepare the compilation environment:
 
 ```shell
 git clone https://github.com/centreon/centreon-broker
 mkdir -p centreon-broker/build
 cd centreon-broker/build
 conan install --remote centreon --build missing ..
-```
-
-Once the sources of Centreon Broker extracted go to the *./build/*
-directory and launch the CMake command:
-
-```shell
 cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios ..
 ```
 
