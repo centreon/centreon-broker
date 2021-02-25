@@ -43,6 +43,11 @@ correctly.
 
 The diagnostic and the check modes are back and functional.
 
+*TLS*
+
+TLS common name check impossible if it is too long
+add params tls_hostname
+
 ## 20.04.12
 
 `January 20, 2021`
