@@ -59,6 +59,7 @@ target_link_libraries(rpc_client berpc ${gRPC_LIBS} ${absl_LIBS} ${OpenSSL_LIBS}
 
 add_executable(ut
   # Core sources.
+  ${TESTS_DIR}/bbdo/category.cc
   ${TESTS_DIR}/bbdo/output.cc
   ${TESTS_DIR}/bbdo/read.cc
   ${TESTS_DIR}/ceof/ceof_parser/parse.cc
