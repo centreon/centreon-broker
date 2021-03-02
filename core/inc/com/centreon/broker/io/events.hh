@@ -41,14 +41,16 @@ class events {
   };
   typedef std::unordered_map<uint16_t, category_info> categories_container;
   // Reserved categories, for reference.
+  // Their values are very important to maintain the bbdo protocol retro
+  // compatible.
   enum data_category {
     neb = 1,
-    bbdo,
-    storage,
-    dumper,
-    bam,
-    extcmd,
-    generator,
+    bbdo = 2,
+    storage = 3,
+    dumper = 5,
+    bam = 6,
+    extcmd = 7,
+    generator = 8,
     internal = 65535
   };
   // Internal events used by the core.
@@ -70,7 +72,7 @@ class events {
   static void unload();
 
   // Category.
-  uint16_t register_category(std::string const& name, uint16_t hint = 0);
+  uint16_t register_category(std::string const& name, uint16_t hint);
   void unregister_category(uint16_t category_id);
 
   // Events.
