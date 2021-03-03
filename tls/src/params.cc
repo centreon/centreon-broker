@@ -228,11 +228,18 @@ void params::validate_cert(gnutls_session_t session) {
   if (!_ca.empty()) {
     int ret;
     uint32_t status;
-    if (!_tls_hostname.empty())
+    if (!_tls_hostname.empty()) {
+      log_v2::tls()->debug(
+          "TLS: common name '{}' used for certificate verification",
+          _tls_hostname);
       ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
                                              &status);
-    else
+    }
+    else {
+      log_v2::tls()->debug(
+          "TLS: Server hostname used for certificate verification");
       ret = gnutls_certificate_verify_peers2(session, &status);
+    }
 
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error(
