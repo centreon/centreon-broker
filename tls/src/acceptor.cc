@@ -46,7 +46,11 @@ acceptor::acceptor(std::string const& cert,
                    std::string const& key,
                    std::string const& ca,
                    std::string const& tls_hostname)
-    : io::endpoint(true), _ca(ca), _cert(cert), _key(key), _tls_hostname(tls_hostname) {}
+    : io::endpoint(true),
+      _ca(ca),
+      _cert(cert),
+      _key(key),
+      _tls_hostname(tls_hostname) {}
 
 /**
  *  @brief Try to accept a new connection.
@@ -117,7 +121,7 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
       s = std::shared_ptr<io::stream>(new stream(session));
     } catch (...) {
       gnutls_deinit(*session);
-      delete (session);
+      delete session;
       throw;
     }
     s->set_substream(lower);
@@ -141,6 +145,9 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
           << "TLS: handshake failed: " << gnutls_strerror(ret);
     }
     log_v2::tls()->debug("TLS: successful handshake");
+    gnutls_protocol_t prot = gnutls_protocol_get_version(*session);
+    log_v2::tls()->debug("TLS: protocol {} used",
+                         gnutls_protocol_get_name(prot));
 
     // Check certificate.
     p.validate_cert(*session);
