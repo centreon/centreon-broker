@@ -44,7 +44,11 @@ connector::connector(std::string const& cert,
                      std::string const& key,
                      std::string const& ca,
                      std::string const& tls_hostname)
-    : io::endpoint(false), _ca(ca), _cert(cert), _key(key), _tls_hostname(tls_hostname) {}
+    : io::endpoint(false),
+      _ca(ca),
+      _cert(cert),
+      _key(key),
+      _tls_hostname(tls_hostname) {}
 
 /**
  *  Connect to the remote TLS peer.
@@ -126,6 +130,9 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     }
 
     log_v2::tls()->debug("TLS: successful handshake");
+    gnutls_protocol_t prot = gnutls_protocol_get_version(*session);
+    log_v2::tls()->debug("TLS: protocol {} used",
+                         gnutls_protocol_get_name(prot));
 
     // Check certificate if necessary.
     p.validate_cert(*session);
