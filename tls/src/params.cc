@@ -29,12 +29,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Params constructor.
  *
@@ -63,8 +57,10 @@ void params::apply(gnutls_session_t session) {
   int ret;
   ret = gnutls_priority_set_direct(
       session,
-      (_compress ? "NORMAL:+ANON-DH:%COMPAT"
-                 : "NORMAL:+ANON-DH:+COMP-DEFLATE:%COMPAT"),
+      (_compress
+           ? "NORMAL:-VERS-DTLS1.0:-VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
+           : "NORMAL:-VERS-DTLS1.0:-VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:+COMP-"
+             "DEFLATE:%COMPAT"),
       nullptr);
   if (ret != GNUTLS_E_SUCCESS) {
     log_v2::tls()->error("TLS: encryption parameter application failed: {}",
@@ -234,8 +230,7 @@ void params::validate_cert(gnutls_session_t session) {
           _tls_hostname);
       ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
                                              &status);
-    }
-    else {
+    } else {
       log_v2::tls()->debug(
           "TLS: Server hostname used for certificate verification");
       ret = gnutls_certificate_verify_peers2(session, &status);
@@ -269,12 +264,6 @@ void params::validate_cert(gnutls_session_t session) {
     }
   }
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  @brief Clean the params instance.
