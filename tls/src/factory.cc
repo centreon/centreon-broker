@@ -65,7 +65,7 @@ bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
       it = cfg.params.find("public_cert");
       if (it != cfg.params.end())
         _public_cert = it->second;
-      
+
       // tls hostname.
       it = cfg.params.find("tls_hostname");
       if (it != cfg.params.end())
