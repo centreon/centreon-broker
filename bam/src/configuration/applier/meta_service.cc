@@ -58,7 +58,7 @@ applier::meta_service& applier::meta_service::operator=(
     applier::meta_service const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -159,8 +159,6 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
           << " software bug that you should report to Centreon Broker "
           << "developers";
   }
-
-  return;
 }
 
 /**
@@ -173,8 +171,8 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
 std::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
     uint32_t id) {
   std::map<uint32_t, applied>::iterator it(_applied.find(id));
-  return ((it != _applied.end()) ? it->second.obj
-                                 : std::shared_ptr<bam::meta_service>());
+  return (it != _applied.end()) ? it->second.obj
+                                 : std::shared_ptr<bam::meta_service>();
 }
 
 /**
@@ -184,7 +182,6 @@ std::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
  */
 void applier::meta_service::_internal_copy(applier::meta_service const& other) {
   _applied = other._applied;
-  return;
 }
 
 /**
@@ -202,7 +199,7 @@ std::shared_ptr<neb::host> applier::meta_service::_meta_host(
   h->last_update = time(nullptr);
   h->poller_id =
       com::centreon::broker::config::applier::state::instance().poller_id();
-  return (h);
+  return h;
 }
 
 /**
@@ -227,7 +224,7 @@ std::shared_ptr<neb::service> applier::meta_service::_meta_service(
     s->service_description = oss.str();
   }
   s->last_update = time(nullptr);
-  return (s);
+  return s;
 }
 
 /**
@@ -283,8 +280,6 @@ void applier::meta_service::_modify_meta(
   obj.set_service_id(new_cfg.get_service_id());
   obj.set_level_warning(new_cfg.get_level_warning());
   obj.set_level_critical(new_cfg.get_level_critical());
-
-  return;
 }
 
 /**
@@ -298,5 +293,5 @@ std::shared_ptr<bam::meta_service> applier::meta_service::_new_meta(
     metric_book& book) {
   std::shared_ptr<bam::meta_service> meta(new bam::meta_service);
   _modify_meta(*meta, book, configuration::meta_service(), cfg);
-  return (meta);
+  return meta;
 }
