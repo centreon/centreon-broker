@@ -2063,3 +2063,46 @@ TEST_F(LuaTest, BrokerEventCache) {
   RemoveFile("/tmp/event_log");
 }
 
+// When the user needs the md5 sum of a string, he can use the md5 function
+// that returns it as a string with hexadecimal number.
+TEST_F(LuaTest, md5) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/md5.lua");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local info = broker.md5('Hello World!')\n"
+               "  broker_log:info(1, info)\n"
+               "end\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string result(ReadFile("/tmp/log"));
+  ASSERT_NE(result.find("ed076287532e86365e841e92bfc50d8c"), std::string::npos);
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When the user needs the md5 sum of a string, he can use the md5 function
+// that returns it as a string with hexadecimal number.
+TEST_F(LuaTest, emptyMd5) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/md5.lua");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local info = broker.md5('')\n"
+               "  broker_log:info(1, info)\n"
+               "end\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string result(ReadFile("/tmp/log"));
+  ASSERT_NE(result.find("d41d8cd98f00b204e9800998ecf8427e"), std::string::npos);
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
