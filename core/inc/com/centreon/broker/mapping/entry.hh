@@ -36,9 +36,8 @@ namespace mapping {
 class entry {
   const uint32_t _attribute;
   char const* _name_v2;
-  source* _ptr;
   const bool _serialize;
-  std::shared_ptr<source> _source;
+  source* _source;
   const source::source_type _type;
 
  public:
@@ -67,10 +66,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::STRING) {
-    _source = std::make_shared<sproperty<T>>(prop, max_len);
-    _ptr = _source.get();
-  }
+        _source(new sproperty<T>(prop, max_len)),
+        _type(source::STRING) {}
 
   /**
    *  @brief Boolean constructor.
@@ -88,10 +85,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::BOOL) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
+        _source(new property<T>(prop)),
+        _type(source::BOOL) {}
 
   /**
    *  @brief Double constructor.
@@ -109,10 +104,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::DOUBLE) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
+        _source(new property<T>(prop)),
+        _type(source::DOUBLE) {}
 
   /**
    *  @brief Unsigned integer constructor.
@@ -130,10 +123,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::UINT) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
+        _source(new property<T>(prop)),
+        _type(source::UINT) {}
 
   /**
    *  @brief Integer constructor.
@@ -151,10 +142,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::INT) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
+        _source(new property<T>(prop)),
+        _type(source::INT) {}
 
   /**
    *  @brief Unsigned short constructor.
@@ -172,10 +161,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::USHORT) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
+        _source(new property<T>(prop)),
+        _type(source::USHORT) {}
 
   /**
    *  @brief Short constructor.
@@ -193,10 +180,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::SHORT) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
+        _source(new property<T>(prop)),
+        _type(source::SHORT) {}
 
   /**
    *  @brief Time constructor.
@@ -213,10 +198,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::TIME) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
+        _source(new property<T>(prop)),
+        _type(source::TIME) {}
 
   /**
    *  Default constructor.
@@ -224,28 +207,31 @@ class entry {
   entry()
       : _attribute(always_valid),
         _name_v2(nullptr),
-        _ptr(nullptr),
         _serialize(false),
+        _source(nullptr),
         _type(source::UNKNOWN) {}
 
-  /**
-   *  Copy constructor.
-   *
-   *  @param[in] other  Object to copy.
-   */
-  entry(entry const& other)
+  entry(const entry&) = delete;
+  entry(entry&& other)
       : _attribute(other._attribute),
         _name_v2(other._name_v2),
-        _ptr(other._ptr),
         _serialize(other._serialize),
         _source(other._source),
-        _type(other._type) {}
-  ~entry() noexcept = default;
+        _type(other._type) {
+    other._source = nullptr;
+  }
+
+  ~entry() noexcept {
+    if (_source) {
+      delete _source;
+      _source = nullptr;
+    }
+  }
   entry& operator=(entry const&) = delete;
   uint32_t get_attribute() const { return _attribute; }
-  bool get_bool(io::data const& d) const;
-  double get_double(io::data const& d) const;
-  int get_int(io::data const& d) const;
+  bool get_bool(const io::data& d) const;
+  double get_double(const io::data& d) const;
+  int get_int(const io::data& d) const;
 
   /**
    *  Get the name of this entry in version 2.x.
@@ -259,18 +245,18 @@ class entry {
    *  @return True if entry is to be serialized.
    */
   bool get_serialize() const { return _serialize; }
-  short get_short(io::data const& d) const;
-  std::string const& get_string(io::data const& d,
+  short get_short(const io::data& d) const;
+  std::string const& get_string(const io::data& d,
                                 size_t* max_len = nullptr) const;
-  timestamp const& get_time(io::data const& d) const;
+  timestamp const& get_time(const io::data& d) const;
   /**
    *  Get entry type.
    *
    *  @return Entry type.
    */
   uint32_t get_type() const { return _type; }
-  uint32_t get_uint(io::data const& d) const;
-  unsigned short get_ushort(io::data const& d) const;
+  uint32_t get_uint(const io::data& d) const;
+  unsigned short get_ushort(const io::data& d) const;
   /**
    *  Get if this entry is a null entry.
    *
