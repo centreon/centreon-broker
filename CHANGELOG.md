@@ -6,6 +6,12 @@
 
 ### Bugfixes
 
+*Mapping entry in BBDO objects*
+
+There was a bad memory management during their initialization essentially due
+to a mix between copy constructor and class templates. This version fixes it
+and also simplified the code.
+
 *Log file configuration*
 
 log file configuration is applied even if the configuration contains errors.
@@ -23,7 +29,7 @@ correctly.
 
 *Logs*
 
-The new logs (log_v2) are correctly flushed when cbd is stopped.
+The new logs (log\_v2) are correctly flushed when cbd is stopped.
 
 *Thread pool*
 
