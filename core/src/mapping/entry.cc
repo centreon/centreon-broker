@@ -22,13 +22,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::mapping;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
-
 /**
  *  Get the boolean value.
  *
@@ -37,7 +30,7 @@ using namespace com::centreon::broker::mapping;
  *  @return The boolean value.
  */
 bool entry::get_bool(io::data const& d) const {
-  return _ptr->get_bool(d);
+  return _source->get_bool(d);
 }
 
 /**
@@ -48,7 +41,7 @@ bool entry::get_bool(io::data const& d) const {
  *  @return The double value.
  */
 double entry::get_double(io::data const& d) const {
-  return _ptr->get_double(d);
+  return _source->get_double(d);
 }
 
 /**
@@ -59,7 +52,7 @@ double entry::get_double(io::data const& d) const {
  *  @return The integer value.
  */
 int entry::get_int(io::data const& d) const {
-  return _ptr->get_int(d);
+  return _source->get_int(d);
 }
 
 /**
@@ -70,7 +63,7 @@ int entry::get_int(io::data const& d) const {
  *  @return The short value.
  */
 short entry::get_short(io::data const& d) const {
-  return _ptr->get_short(d);
+  return _source->get_short(d);
 }
 
 /**
@@ -81,7 +74,7 @@ short entry::get_short(io::data const& d) const {
  *  @return The string value.
  */
 std::string const& entry::get_string(io::data const& d, size_t* max_len) const {
-  return _ptr->get_string(d, max_len);
+  return _source->get_string(d, max_len);
 }
 
 /**
@@ -92,7 +85,7 @@ std::string const& entry::get_string(io::data const& d, size_t* max_len) const {
  *  @return The time value.
  */
 timestamp const& entry::get_time(io::data const& d) const {
-  return _ptr->get_time(d);
+  return _source->get_time(d);
 }
 
 /**
@@ -103,7 +96,7 @@ timestamp const& entry::get_time(io::data const& d) const {
  *  @return The uint32_teger value.
  */
 uint32_t entry::get_uint(io::data const& d) const {
-  return _ptr->get_uint(d);
+  return _source->get_uint(d);
 }
 
 /**
@@ -114,7 +107,7 @@ uint32_t entry::get_uint(io::data const& d) const {
  *  @return The unsigned short value.
  */
 unsigned short entry::get_ushort(io::data const& d) const {
-  return _ptr->get_ushort(d);
+  return _source->get_ushort(d);
 }
 
 /**
@@ -124,7 +117,7 @@ unsigned short entry::get_ushort(io::data const& d) const {
  *  @param[in]  value New value.
  */
 void entry::set_bool(io::data& d, bool value) const {
-  _ptr->set_bool(d, value);
+  _source->set_bool(d, value);
 }
 
 /**
@@ -134,7 +127,7 @@ void entry::set_bool(io::data& d, bool value) const {
  *  @param[in]  value New value.
  */
 void entry::set_double(io::data& d, double value) const {
-  _ptr->set_double(d, value);
+  _source->set_double(d, value);
 }
 
 /**
@@ -144,7 +137,7 @@ void entry::set_double(io::data& d, double value) const {
  *  @param[in]  value New value.
  */
 void entry::set_int(io::data& d, int value) const {
-  _ptr->set_int(d, value);
+  _source->set_int(d, value);
 }
 
 /**
@@ -154,7 +147,7 @@ void entry::set_int(io::data& d, int value) const {
  *  @param[in]  value New value.
  */
 void entry::set_short(io::data& d, short value) const {
-  _ptr->set_short(d, value);
+  _source->set_short(d, value);
 }
 
 /**
@@ -164,7 +157,7 @@ void entry::set_short(io::data& d, short value) const {
  *  @param[in]  value New value.
  */
 void entry::set_string(io::data& d, std::string const& value) const {
-  _ptr->set_string(d, value);
+  _source->set_string(d, value);
 }
 
 /**
@@ -174,7 +167,7 @@ void entry::set_string(io::data& d, std::string const& value) const {
  *  @param[in]  value New value.
  */
 void entry::set_time(io::data& d, timestamp const& value) const {
-  _ptr->set_time(d, value);
+  _source->set_time(d, value);
 }
 
 /**
@@ -184,7 +177,7 @@ void entry::set_time(io::data& d, timestamp const& value) const {
  *  @param[in]  value New value.
  */
 void entry::set_uint(io::data& d, uint32_t value) const {
-  _ptr->set_uint(d, value);
+  _source->set_uint(d, value);
 }
 
 /**
@@ -194,5 +187,5 @@ void entry::set_uint(io::data& d, uint32_t value) const {
  *  @param[in]  value New value.
  */
 void entry::set_ushort(io::data& d, unsigned short value) const {
-  _ptr->set_ushort(d, value);
+  _source->set_ushort(d, value);
 }
