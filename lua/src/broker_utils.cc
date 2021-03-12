@@ -21,12 +21,12 @@
 #include <fmt/format.h>
 #include <sys/stat.h>
 
+#include <openssl/md5.h>
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <json11.hpp>
 #include <sstream>
-#include <openssl/md5.h>
 
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -541,14 +541,15 @@ static int l_broker_stat(lua_State* L) {
 }
 
 static int l_broker_md5(lua_State* L) {
-  auto digit = [] (unsigned char d) -> char {
+  auto digit = [](unsigned char d) -> char {
     if (d < 10)
       return '0' + d;
     else
       return 'a' + (d - 10);
   };
   size_t len;
-  const unsigned char* str = reinterpret_cast<const unsigned char*>(lua_tolstring(L, -1, &len));
+  const unsigned char* str =
+      reinterpret_cast<const unsigned char*>(lua_tolstring(L, -1, &len));
   unsigned char md5[MD5_DIGEST_LENGTH];
   MD5(str, len, md5);
   char result[2 * MD5_DIGEST_LENGTH + 1];
