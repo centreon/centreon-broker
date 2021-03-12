@@ -49,6 +49,12 @@ correctly.
 
 The diagnostic and the check modes are back and functional.
 
+### Enhancements
+
+*Lua*
+
+New function broker.md5(str) that outputs the md5 of a given string.
+
 ## 20.04.12
 
 `January 20, 2021`
