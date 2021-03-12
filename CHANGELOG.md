@@ -29,7 +29,7 @@ correctly.
 
 *Logs*
 
-The new logs (log_v2) are correctly flushed when cbd is stopped.
+The new logs (log\_v2) are correctly flushed when cbd is stopped.
 
 *Thread pool*
 
@@ -48,6 +48,12 @@ correctly.
 *Diagnostic/Check modes*
 
 The diagnostic and the check modes are back and functional.
+
+### Enhancements
+
+*Lua*
+
+New function broker.md5(str) that outputs the md5 of a given string.
 
 ## 20.10.3
 
