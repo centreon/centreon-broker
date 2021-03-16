@@ -148,7 +148,6 @@ elif [ -r /etc/issue ] ; then
         fi
       fi
     done
-  fi
   elif [ $maj = "Raspbian" ] ; then
     pkgs=(
       gcc
@@ -193,7 +192,7 @@ elif [ -r /etc/issue ] ; then
   else
     echo "pip3 already installed"
   fi
-
+fi
 
 pip3 install conan --upgrade
 
