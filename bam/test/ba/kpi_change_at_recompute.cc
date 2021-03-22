@@ -56,7 +56,7 @@ class BamBA : public ::testing::Test {
  */
 TEST_F(BamBA, Recompute) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 1, 1)};
 
   std::shared_ptr<bam::kpi_service> kpi(new bam::kpi_service);
 
@@ -101,7 +101,7 @@ TEST_F(BamBA, Recompute) {
  */
 TEST_F(BamBA, ImpactState) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 2, 1)};
 
   std::vector<std::shared_ptr<bam::kpi_service> > kpis;
   std::stack<short> results;
@@ -174,7 +174,7 @@ TEST_F(BamBA, ImpactState) {
  */
 TEST_F(BamBA, BestState) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 3, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_best);
 
   std::vector<std::shared_ptr<bam::kpi_service> > kpis;
@@ -243,7 +243,7 @@ TEST_F(BamBA, BestState) {
  */
 TEST_F(BamBA, WorstState) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_worst);
 
   std::vector<std::shared_ptr<bam::kpi_service> > kpis;
@@ -312,7 +312,7 @@ TEST_F(BamBA, WorstState) {
  */
 TEST_F(BamBA, RatioNum) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_number);
   test_ba->set_level_critical(4);
   test_ba->set_level_warning(2);
@@ -381,7 +381,7 @@ TEST_F(BamBA, RatioNum) {
  */
 TEST_F(BamBA, RatioPercent) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -435,7 +435,7 @@ TEST_F(BamBA, RatioPercent) {
 }
 
 TEST_F(BamBA, DtInheritAllCritical) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -495,7 +495,7 @@ TEST_F(BamBA, DtInheritAllCritical) {
 }
 
 TEST_F(BamBA, DtInheritOneOK) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(90);
@@ -562,7 +562,7 @@ TEST_F(BamBA, DtInheritOneOK) {
 }
 
 TEST_F(BamBA, IgnoreDt) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -622,7 +622,7 @@ TEST_F(BamBA, IgnoreDt) {
 }
 
 TEST_F(BamBA, DtIgnoreKpi) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -682,7 +682,7 @@ TEST_F(BamBA, DtIgnoreKpi) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiImpact) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_impact);
   test_ba->set_level_critical(50);
   test_ba->set_level_warning(75);
@@ -749,7 +749,7 @@ TEST_F(BamBA, DtIgnoreKpiImpact) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiBest) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_best);
   test_ba->set_downtime_behaviour(bam::configuration::ba::dt_ignore_kpi);
 
@@ -819,7 +819,7 @@ TEST_F(BamBA, DtIgnoreKpiBest) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiWorst) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_worst);
   test_ba->set_downtime_behaviour(bam::configuration::ba::dt_ignore_kpi);
 
@@ -889,7 +889,7 @@ TEST_F(BamBA, DtIgnoreKpiWorst) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiRatio) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_number);
   test_ba->set_downtime_behaviour(bam::configuration::ba::dt_ignore_kpi);
   test_ba->set_level_warning(1);
