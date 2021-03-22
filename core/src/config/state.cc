@@ -310,8 +310,8 @@ void state::log_timestamp(
  *
  *  @return Any acceptable value.
  */
-com::centreon::broker::logging::timestamp_type state::log_timestamp() const
-    noexcept {
+com::centreon::broker::logging::timestamp_type state::log_timestamp()
+    const noexcept {
   return _log_timestamp;
 }
 
@@ -458,4 +458,12 @@ void state::rpc_port(uint16_t port) noexcept {
 }
 uint16_t state::rpc_port(void) const noexcept {
   return _rpc_port;
+}
+
+state::log& state::log_conf() {
+  return _log_conf;
+}
+
+const state::log& state::log_conf() const {
+  return _log_conf;
 }

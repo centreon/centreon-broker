@@ -21,7 +21,7 @@
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
-#include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/stats/helper.hh"
 #include "com/centreon/broker/version.hh"
 
@@ -43,20 +43,6 @@ grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
   response->set_major(major);
   response->set_minor(minor);
   response->set_patch(patch);
-  return grpc::Status::OK;
-}
-grpc::Status broker_impl::DebugConfReload(grpc::ServerContext* context,
-                                          const GenericString* request,
-                                          GenericResponse* response) {
-  std::string err;
-  if (log_v2::instance().load(request->str_arg().c_str(), _broker_name, err)) {
-    response->set_ok(true);
-    response->set_err_msg("");
-  } else {
-    response->set_ok(false);
-    response->set_err_msg(std::move(err));
-  }
-
   return grpc::Status::OK;
 }
 

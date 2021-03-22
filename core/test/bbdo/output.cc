@@ -27,13 +27,13 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/misc/variant.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/persistent_file.hh"
-#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -101,7 +101,6 @@ TEST_F(OutputTest, WriteService) {
   svc->output = "Bonjour";
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
-  std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
   stm.set_substream(memory_stream);
@@ -213,7 +212,6 @@ TEST_F(OutputTest, WriteReadService) {
   }
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
-  std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(new into_memory());
   bbdo::stream stm;
   stm.set_substream(memory_stream);
@@ -334,7 +332,6 @@ TEST_F(OutputTest, WriteReadBadChksum) {
   svc->perf_data = "value=18.0";
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
-  std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
   stm.set_substream(memory_stream);
