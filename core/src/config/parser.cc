@@ -228,8 +228,13 @@ state parser::parse(std::string const& file) {
                 "'max_size' key in the log configuration must contain a size "
                 "in bytes");
           }
-        } else if (conf_js["max_size"].is_number())
-          conf.max_size = conf_js["max_size"].number_value();
+        } else if (conf_js["max_size"].is_number()) {
+          int64_t tmp = conf_js["max_size"].number_value();
+          if (tmp < 0)
+            throw msg_fmt(
+                "'max_size' key in the log configuration must contain a positive number.");
+          conf.max_size = tmp;
+        }
         else if (!conf_js["max_size"].is_null())
           throw msg_fmt(
               "'max_size' key in the log configuration must contain a size in "

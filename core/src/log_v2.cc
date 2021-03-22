@@ -79,16 +79,16 @@ void log_v2::apply(const config::state& conf) {
 
   const auto& log = conf.log_conf();
 
+  _log_name = log.log_path();
   // reset loggers to null sink
   auto null_sink = std::make_shared<sinks::null_sink_mt>();
   std::shared_ptr<sinks::base_sink<std::mutex>> file_sink;
+
   if (log.max_size)
     file_sink = std::make_shared<sinks::rotating_file_sink_mt>(
         _log_name, log.max_size, 99);
   else
     file_sink = std::make_shared<sinks::basic_file_sink_mt>(_log_name);
-
-  _log_name = log.log_path();
 
   _core_log = std::make_shared<logger>("core", file_sink);
   _core_log->set_level(level::info);
