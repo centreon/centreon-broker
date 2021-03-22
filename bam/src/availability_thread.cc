@@ -278,6 +278,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       _should_rebuild_all ? fmt::format("AND b.ba_id IN({})", _bas_to_rebuild)
                           : ""));
 
+  log_v2::bam()->debug("Query: {}", query);
   std::promise<database::mysql_result> promise;
   _mysql->run_query_and_get_result(query, &promise, thread_id);
 
@@ -333,6 +334,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       day_end,
       _should_rebuild_all ? fmt::format("AND ba_id IN ({})", _bas_to_rebuild)
                           : "");
+  log_v2::bam()->debug("Query: {}", query);
 
   promise = std::promise<database::mysql_result>();
   _mysql->run_query_and_get_result(query, &promise, thread_id);
@@ -371,7 +373,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
                            ba_id);
     }
   } catch (const std::exception& e) {
-    throw msg_fmt("BAM-BI: availability thread could not build the data: {}", 
+    throw msg_fmt("BAM-BI: availability thread could not build the data: {}",
                   e.what());
   }
 
