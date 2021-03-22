@@ -275,6 +275,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       day_end, day_start,
       _should_rebuild_all ? fmt::format("AND b.ba_id IN({})", _bas_to_rebuild)
                           : ""));
+  log_v2::bam()->debug("Query: {}", query);
 
   log_v2::bam()->debug("Query: {}", query);
   std::promise<database::mysql_result> promise;

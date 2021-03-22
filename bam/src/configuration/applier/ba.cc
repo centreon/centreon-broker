@@ -247,10 +247,8 @@ void applier::ba::_internal_copy(applier::ba const& other) {
  */
 std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
                                               service_book& book) {
-  std::shared_ptr<bam::ba> obj(new bam::ba(false));
-  obj->set_id(cfg.get_id());
-  obj->set_host_id(cfg.get_host_id());
-  obj->set_service_id(cfg.get_service_id());
+  std::shared_ptr<bam::ba> obj{std::make_shared<bam::ba>(
+      cfg.get_host_id(), cfg.get_service_id(), cfg.get_id(), false)};
   obj->set_name(cfg.get_name());
   obj->set_state_source(cfg.get_state_source());
   obj->set_level_warning(cfg.get_warning_level());

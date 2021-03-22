@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 
+#include <cassert>
 #include <sstream>
 
 #include "com/centreon/broker/bam/ba_status.hh"
@@ -72,12 +73,22 @@ auto _every_kpi_in_dt = [](std::unordered_map<kpi*, bam::ba::impact_info>& imp,
 /**
  *  Constructor.
  *
+ *  @param[in] host_id the id of the associated host.
+ *  @param[in] service_id the id of the associated service.
+ *  @param[in] id the id of this ba.
  *  @param[in] generate_virtual_status  Whether or not the BA object
  *                                      should generate statuses of
  *                                      virtual hosts and services.
  */
-ba::ba(bool generate_virtual_status)
-    : _state_source(configuration::ba::state_source_impact),
+ba::ba(uint32_t host_id,
+       uint32_t service_id,
+       uint32_t id,
+       bool generate_virtual_status)
+    : _host_id(host_id),
+      _service_id(service_id),
+      _id(id),
+      _generate_virtual_status(generate_virtual_status),
+      _state_source(configuration::ba::state_source_impact),
       _computed_soft_state(ba::state::state_ok),
       _computed_hard_state(ba::state::state_ok),
       _num_soft_critical_childs{0.f},
@@ -86,9 +97,6 @@ ba::ba(bool generate_virtual_status)
       _acknowledgement_soft(0.0),
       _downtime_hard(0.0),
       _downtime_soft(0.0),
-      _generate_virtual_status(generate_virtual_status),
-      _host_id(0),
-      _id(0),
       _in_downtime(false),
       _last_kpi_update(0),
       _level_critical(0.0),
@@ -96,9 +104,10 @@ ba::ba(bool generate_virtual_status)
       _level_soft(100.0),
       _level_warning(0.0),
       _recompute_count(0),
-      _service_id(0),
       _valid(true),
-      _dt_behaviour{configuration::ba::dt_ignore} {}
+      _dt_behaviour{configuration::ba::dt_ignore} {
+  assert(_host_id);
+}
 
 /**
  *  Add impact.
@@ -411,33 +420,6 @@ void ba::remove_impact(std::shared_ptr<kpi> const& impact) {
     _unapply_impact(it->first, it->second);
     _impacts.erase(it);
   }
-}
-
-/**
- *  Set BA ID.
- *
- *  @param[in] id BA ID.
- */
-void ba::set_id(uint32_t id) {
-  _id = id;
-}
-
-/**
- *  Set the service id associated to this ba.
- *
- *  @param[in] service_id  Set the service id.
- */
-void ba::set_service_id(uint32_t service_id) {
-  _service_id = service_id;
-}
-
-/**
- *  Set the host id associated to this ba.
- *
- *  @param[in] host_id  Set the service id.
- */
-void ba::set_host_id(uint32_t host_id) {
-  _host_id = host_id;
 }
 
 /**

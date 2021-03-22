@@ -49,6 +49,11 @@ class kpi;
  *  of value.
  */
 class ba : public computable, public service_listener {
+  const uint32_t _host_id;
+  const uint32_t _service_id;
+  const uint32_t _id;
+  const bool _generate_virtual_status;
+
  public:
   typedef impact_values::state state;
 
@@ -78,9 +83,6 @@ class ba : public computable, public service_listener {
   double _downtime_hard;
   double _downtime_soft;
   std::shared_ptr<ba_event> _event;
-  bool _generate_virtual_status;
-  uint32_t _host_id;
-  uint32_t _id;
   std::unordered_map<kpi*, impact_info> _impacts;
   bool _in_downtime;
   timestamp _last_kpi_update;
@@ -90,7 +92,6 @@ class ba : public computable, public service_listener {
   double _level_warning;
   std::string _name;
   int _recompute_count;
-  uint32_t _service_id;
   bool _valid;
   configuration::ba::downtime_behaviour _dt_behaviour;
   std::unique_ptr<inherited_downtime> _inherited_downtime;
@@ -100,9 +101,12 @@ class ba : public computable, public service_listener {
   std::vector<std::shared_ptr<ba_event> > _initial_events;
 
  public:
-  ba(bool generate_virtual_status = true);
-  ba(ba const& other) = delete;
-  ~ba() = default;
+  ba(uint32_t host_id,
+     uint32_t service_id,
+     uint32_t id,
+     bool generate_virtual_status = true);
+  ba(const ba&) = delete;
+  ~ba() noexcept = default;
   ba& operator=(ba const& other) = delete;
   void add_impact(std::shared_ptr<kpi> const& impact);
   bool child_has_update(computable* child, io::stream* visitor = NULL);
@@ -123,9 +127,6 @@ class ba : public computable, public service_listener {
   ba::state get_state_soft();
   configuration::ba::state_source get_state_source() const;
   void remove_impact(std::shared_ptr<kpi> const& impact);
-  void set_id(uint32_t id);
-  void set_host_id(uint32_t host_id);
-  void set_service_id(uint32_t service_id);
   void set_level_critical(double level);
   void set_level_warning(double level);
   void set_initial_event(ba_event const& event);
