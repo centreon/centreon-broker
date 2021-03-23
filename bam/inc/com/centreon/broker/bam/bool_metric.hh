@@ -41,15 +41,17 @@ namespace bam {
  *  value.
  */
 class bool_metric : public bool_value, public metric_listener {
+  const uint32_t _host_id;
+  const uint32_t _service_id;
  public:
   typedef std::shared_ptr<bool_metric> ptr;
 
   bool_metric(std::string const& metric_name,
               uint32_t host_id,
               uint32_t service_id);
-  bool_metric(bool_metric const& right);
   ~bool_metric();
-  bool_metric& operator=(bool_metric const& right);
+  bool_metric(const bool_metric&) = delete;
+  bool_metric& operator=(const bool_metric&) = delete;
   bool child_has_update(computable* child, io::stream* visitor = NULL);
   void metric_update(std::shared_ptr<storage::metric> const& m,
                      io::stream* visitor = NULL);
@@ -66,8 +68,6 @@ class bool_metric : public bool_value, public metric_listener {
  private:
   std::string _metric_name;
   double _value;
-  uint32_t _host_id;
-  uint32_t _service_id;
 
   std::set<uint32_t> _resolved_metric_ids;
   std::set<uint32_t> _unknown_state_metrics;
