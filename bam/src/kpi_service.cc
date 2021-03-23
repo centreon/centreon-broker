@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/bam/kpi_service.hh"
 
+#include <cassert>
 #include <cstring>
 
 #include "com/centreon/broker/bam/impact_values.hh"
@@ -36,16 +37,18 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-kpi_service::kpi_service()
-    : _acknowledged(false),
+kpi_service::kpi_service(uint32_t host_id, uint32_t service_id)
+    : _host_id(host_id),
+      _service_id(service_id),
+      _acknowledged(false),
       _downtimed(false),
-      _host_id(0),
-      _impacts(),
+      _impacts{0.0},
       _last_check(0),
-      _service_id(0),
       _state_hard(kpi_service::state::state_ok),
       _state_soft(kpi_service::state::state_ok),
-      _state_type(0) {}
+      _state_type(0) {
+  assert(_host_id);
+}
 
 /**
  *  Unused callback.
@@ -276,15 +279,6 @@ void kpi_service::set_downtimed(bool downtimed) {
 }
 
 /**
- *  Set host ID.
- *
- *  @param[in] host_id Host ID.
- */
-void kpi_service::set_host_id(uint32_t host_id) {
-  _host_id = host_id;
-}
-
-/**
  *  Set impact implied when service is CRITICAL.
  *
  *  @param[in] impact Impact if service is CRITICAL.
@@ -309,15 +303,6 @@ void kpi_service::set_impact_unknown(double impact) {
  */
 void kpi_service::set_impact_warning(double impact) {
   _impacts[1] = impact;
-}
-
-/**
- *  Set service ID.
- *
- *  @param[in] service_id Service ID.
- */
-void kpi_service::set_service_id(uint32_t service_id) {
-  _service_id = service_id;
 }
 
 /**
@@ -413,12 +398,13 @@ void kpi_service::_fill_impact(impact_values& impact,
                                kpi_service::state state) {
   if (state < 0 || static_cast<size_t>(state) >= _impacts.size())
     throw msg_fmt("BAM: could not get impact introduced by state {}", state);
-  double nominal(_impacts[state]);
+  double nominal{_impacts[state]};
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);
   impact.set_downtime(_downtimed ? nominal : 0.0);
   impact.set_state(state);
 }
+
 /**
  *  Open a new event for this KPI.
  *
