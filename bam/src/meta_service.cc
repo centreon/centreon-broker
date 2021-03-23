@@ -18,10 +18,11 @@
 
 #include "com/centreon/broker/bam/meta_service.hh"
 
+#include <cassert>
 #include <cmath>
 #include <com/centreon/broker/bam/kpi_meta.hh>
 #include <ctime>
-#include <sstream>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -47,7 +48,9 @@ meta_service::meta_service(uint32_t host_id, uint32_t service_id, uint32_t id)
       _level_critical(0.0),
       _level_warning(0.0),
       _recompute_count(0),
-      _value(NAN) {}
+      _value(NAN) {
+  assert(_host_id);
+}
 
 /**
  *  Destructor.
@@ -111,9 +114,7 @@ uint32_t meta_service::get_service_id() const {
  *  @return Meta-service output.
  */
 std::string meta_service::get_output() const {
-  std::ostringstream oss;
-  oss << "Meta-Service " << _id;
-  return (oss.str());
+  return fmt::format("Meta-Service {}", _id);
 }
 
 /**
@@ -122,9 +123,7 @@ std::string meta_service::get_output() const {
  *  @return Meta-servier performance data.
  */
 std::string meta_service::get_perfdata() const {
-  std::ostringstream oss;
-  oss << "g[rta]=" << _value << ";" << _level_warning << ";" << _level_critical;
-  return (oss.str());
+  return fmt::format("g[rta]={};{};{}", _value, _level_warning, _level_critical);
 }
 
 /**
