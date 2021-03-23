@@ -50,7 +50,7 @@ ba::ba(uint32_t id,
  *
  *  @param[in] other The original object.
  */
-ba::ba(ba const& other)
+ba::ba(const ba& other)
     : _id(other._id),
       _host_id(other._host_id),
       _service_id(other._service_id),
@@ -73,7 +73,7 @@ ba::~ba() {}
  *
  *  @return this
  */
-ba& ba::operator=(ba const& other) {
+ba& ba::operator=(const ba& other) {
   if (this != &other) {
     _id = other._id;
     _host_id = other._host_id;
@@ -85,7 +85,7 @@ ba& ba::operator=(ba const& other) {
     _event = other._event;
     _dt_behaviour = other._dt_behaviour;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -95,13 +95,13 @@ ba& ba::operator=(ba const& other) {
  *
  *  @return True if this object and right are totally equal.
  */
-bool ba::operator==(ba const& right) const {
-  return ((_id == right._id) && (_host_id == right._host_id) &&
-          (_service_id == right._service_id) && (_name == right._name) &&
-          (_state_source == right._state_source) &&
-          (_warning_level == right._warning_level) &&
-          (_critical_level == right._critical_level) &&
-          (_event == right._event) && (_dt_behaviour == right._dt_behaviour));
+bool ba::operator==(const ba& right) const {
+  return _id == right._id && _host_id == right._host_id &&
+         _service_id == right._service_id && _name == right._name &&
+         _state_source == right._state_source &&
+         _warning_level == right._warning_level &&
+         _critical_level == right._critical_level && _event == right._event &&
+         _dt_behaviour == right._dt_behaviour;
 }
 
 /**
@@ -111,8 +111,8 @@ bool ba::operator==(ba const& right) const {
  *
  *  @return True if this object and right are inequal.
  */
-bool ba::operator!=(ba const& right) const {
-  return (!operator==(right));
+bool ba::operator!=(const ba& right) const {
+  return !operator==(right);
 }
 
 /**
@@ -121,7 +121,7 @@ bool ba::operator!=(ba const& right) const {
  *  @return An integer representing the value of a business activity.
  */
 uint32_t ba::get_id() const {
-  return (_id);
+  return _id;
 }
 
 /**
@@ -130,7 +130,7 @@ uint32_t ba::get_id() const {
  *  @return BA host ID.
  */
 uint32_t ba::get_host_id() const {
-  return (_host_id);
+  return _host_id;
 }
 
 /**
@@ -139,7 +139,7 @@ uint32_t ba::get_host_id() const {
  *  @return  An integer representing the value of this id.
  */
 uint32_t ba::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**
@@ -148,7 +148,7 @@ uint32_t ba::get_service_id() const {
  *  @return The name.
  */
 std::string const& ba::get_name() const {
-  return (_name);
+  return _name;
 }
 
 /**
@@ -157,7 +157,7 @@ std::string const& ba::get_name() const {
  *  @return The state source.
  */
 ba::state_source ba::get_state_source() const {
-  return (_state_source);
+  return _state_source;
 }
 
 /**
@@ -166,7 +166,7 @@ ba::state_source ba::get_state_source() const {
  *  @return The percentage for the warning level.
  */
 double ba::get_warning_level() const {
-  return (_warning_level);
+  return _warning_level;
 }
 
 /**
@@ -175,7 +175,7 @@ double ba::get_warning_level() const {
  *  @return The percentage for the critical level.
  */
 double ba::get_critical_level() const {
-  return (_critical_level);
+  return _critical_level;
 }
 
 /**
@@ -184,7 +184,7 @@ double ba::get_critical_level() const {
  *  @return  The opened event of this ba.
  */
 com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
-  return (_event);
+  return _event;
 }
 
 /**
@@ -193,16 +193,7 @@ com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
  *  @return  True if the BA should inherit the downtime of its kpis.
  */
 ba::downtime_behaviour ba::get_downtime_behaviour() const {
-  return (_dt_behaviour);
-}
-
-/**
- *  Set id.
- *
- *  @param[in] id Set business activity id key.
- */
-void ba::set_id(uint32_t id) {
-  _id = id;
+  return _dt_behaviour;
 }
 
 /**
