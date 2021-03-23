@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -159,8 +159,6 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
           << " software bug that you should report to Centreon Broker "
           << "developers";
   }
-
-  return;
 }
 
 /**
@@ -184,7 +182,6 @@ std::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
  */
 void applier::meta_service::_internal_copy(applier::meta_service const& other) {
   _applied = other._applied;
-  return;
 }
 
 /**
@@ -277,13 +274,8 @@ void applier::meta_service::_modify_meta(
   else
     computation = bam::meta_service::average;
   obj.set_computation(computation);
-  obj.set_id(new_cfg.get_id());
-  obj.set_host_id(new_cfg.get_host_id());
-  obj.set_service_id(new_cfg.get_service_id());
   obj.set_level_warning(new_cfg.get_level_warning());
   obj.set_level_critical(new_cfg.get_level_critical());
-
-  return;
 }
 
 /**
@@ -295,7 +287,8 @@ void applier::meta_service::_modify_meta(
 std::shared_ptr<bam::meta_service> applier::meta_service::_new_meta(
     configuration::meta_service const& cfg,
     metric_book& book) {
-  std::shared_ptr<bam::meta_service> meta(new bam::meta_service);
+  std::shared_ptr<bam::meta_service> meta{std::make_shared<bam::meta_service>(
+      cfg.get_host_id(), cfg.get_service_id(), cfg.get_id())};
   _modify_meta(*meta, book, configuration::meta_service(), cfg);
-  return (meta);
+  return meta;
 }
