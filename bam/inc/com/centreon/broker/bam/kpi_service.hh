@@ -36,6 +36,9 @@ namespace bam {
  *  Allows use of a service as a KPI that can impact a BA.
  */
 class kpi_service : public service_listener, public kpi {
+  const uint32_t _host_id;
+  const uint32_t _service_id;
+
  public:
   typedef impact_values::state state;
 
@@ -46,18 +49,16 @@ class kpi_service : public service_listener, public kpi {
 
   bool _acknowledged;
   bool _downtimed;
-  uint32_t _host_id;
-  double _impacts[5];
+  std::array<double, 5> _impacts;
   timestamp _last_check;
   std::string _output;
   std::string _perfdata;
-  uint32_t _service_id;
   kpi_service::state _state_hard;
   kpi_service::state _state_soft;
   short _state_type;
 
  public:
-  kpi_service();
+  kpi_service(uint32_t host_id, uint32_t service_id);
   ~kpi_service();
   kpi_service(kpi_service const& right) = delete;
   kpi_service& operator=(kpi_service const& right) = delete;
@@ -82,11 +83,9 @@ class kpi_service : public service_listener, public kpi {
                       io::stream* visitor = NULL);
   void set_acknowledged(bool acknowledged);
   void set_downtimed(bool downtimed);
-  void set_host_id(uint32_t host_id);
   void set_impact_critical(double impact);
   void set_impact_unknown(double impact);
   void set_impact_warning(double impact);
-  void set_service_id(uint32_t service_id);
   void set_state_hard(kpi_service::state state);
   void set_state_soft(kpi_service::state state);
   void set_state_type(short type);

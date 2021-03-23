@@ -286,14 +286,12 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
         << "BAM: creating new KPI " << cfg.get_id() << " of service ("
         << cfg.get_host_id() << ", " << cfg.get_service_id()
         << ") impacting BA " << cfg.get_ba_id();
-    std::shared_ptr<bam::kpi_service> obj(new bam::kpi_service);
+    std::shared_ptr<bam::kpi_service> obj{std::make_shared<bam::kpi_service>(cfg.get_host_id(), cfg.get_service_id())};
     obj->set_acknowledged(cfg.is_acknowledged());
     obj->set_downtimed(cfg.is_downtimed());
-    obj->set_host_id(cfg.get_host_id());
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_unknown(cfg.get_impact_unknown());
     obj->set_impact_warning(cfg.get_impact_warning());
-    obj->set_service_id(cfg.get_service_id());
     obj->set_state_hard(static_cast<bam::kpi_service::state>(cfg.get_status()));
     obj->set_state_type(cfg.get_state_type());
     _book->listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
