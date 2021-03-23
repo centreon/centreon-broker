@@ -171,10 +171,11 @@ int nebmodule_init(int flags, char const* args, void* handle) {
       com::centreon::broker::config::applier::logger::instance().apply(
           s.loggers());
 
-      std::string err;
-      if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-                                   s.broker_name(), err))
-        logging::error(logging::low) << err;
+      try {
+        log_v2::instance().apply(s);
+      } catch (const std::exception& e) {
+        log_v2::core()->error(e.what());
+      }
 
       // Remove monitoring log.
       logging::manager::instance().log_on(monlog, 0);

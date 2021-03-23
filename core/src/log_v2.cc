@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,25 +18,28 @@
 
 #include "com/centreon/broker/log_v2.hh"
 
+#include <fmt/format.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
-#include <fmt/format.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 #include <fstream>
-#include <json11.hpp>
 
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::exceptions;
 using namespace spdlog;
-using namespace json11;
 
-static std::map<std::string, level::level_enum> dbg_lvls{
+const std::array<std::string, 10> log_v2::loggers{
+    "bam",      "bbdo",       "config", "core", "lua",
+    "perfdata", "processing", "sql",    "tcp",  "tls"};
+
+std::map<std::string, level::level_enum> log_v2::_levels_map{
     {"trace", level::trace}, {"debug", level::debug},
-    {"info", level::info},   {"warn", level::warn},
-    {"err", level::err},     {"critical", level::critical},
-    {"off", level::off}};
+    {"info", level::info},   {"warning", level::warn},
+    {"error", level::err},   {"critical", level::critical},
+    {"disabled", level::off}};
 
 log_v2& log_v2::instance() {
   static log_v2 instance;
@@ -71,102 +74,66 @@ log_v2::~log_v2() {
   _bam_log->flush();
 }
 
-static auto json_validate = [](Json const& js) -> bool {
-  if (!js.is_object() || !js["console"].is_bool() || !js["loggers"].is_array())
-    return false;
-
-  for (auto& log : js["loggers"].array_items()) {
-    if (!log.is_object() || !log["name"].is_string() ||
-        !log["level"].is_string())
-      return false;
-
-    std::string lvl{log["level"].string_value()};
-
-    if (dbg_lvls.find(lvl) == dbg_lvls.end())
-      return false;
-  }
-
-  return true;
-};
-
-bool log_v2::load(const char* file,
-                  std::string const& broker_name,
-                  std::string& err) {
+void log_v2::apply(const config::state& conf) {
   std::lock_guard<std::mutex> lock(_load_m);
 
-  std::ifstream my_file(file);
-  if (my_file.good()) {
-    std::string const& json_to_parse{std::istreambuf_iterator<char>(my_file),
-                                     std::istreambuf_iterator<char>()};
+  const auto& log = conf.log_conf();
 
-    Json const& js{Json::parse(json_to_parse, err)};
-    if (!err.empty())
-      return false;
+  _log_name = log.log_path();
+  // reset loggers to null sink
+  auto null_sink = std::make_shared<sinks::null_sink_mt>();
+  std::shared_ptr<sinks::base_sink<std::mutex>> file_sink;
 
-    if (json_validate(js)) {
-      // reset loggers to null sink
-      std::vector<sink_ptr> sinks{std::make_shared<sinks::null_sink_mt>()};
+  if (log.max_size)
+    file_sink = std::make_shared<sinks::rotating_file_sink_mt>(
+        _log_name, log.max_size, 99);
+  else
+    file_sink = std::make_shared<sinks::basic_file_sink_mt>(_log_name);
 
-      if (js["console"].bool_value())
-        sinks.push_back(std::make_shared<sinks::stdout_color_sink_mt>());
+  _core_log = std::make_shared<logger>("core", file_sink);
+  _core_log->set_level(level::info);
+  _core_log->flush_on(level::info);
+  _core_log->info("{} : log started", _log_name);
+  _config_log = std::make_shared<logger>("config", null_sink);
+  _tls_log = std::make_shared<logger>("config", null_sink);
+  _tcp_log = std::make_shared<logger>("config", null_sink);
+  _bbdo_log = std::make_shared<logger>("config", null_sink);
+  _sql_log = std::make_shared<logger>("config", null_sink);
+  _perfdata_log = std::make_shared<logger>("config", null_sink);
+  _lua_log = std::make_shared<logger>("config", null_sink);
+  _processing_log = std::make_shared<logger>("config", null_sink);
+  _bam_log = std::make_shared<logger>("config", null_sink);
 
-      if (js["log_path"].is_string()) {
-        _log_name = fmt::format("{}/{}.log", js["log_path"].string_value(),
-                                broker_name);
-        try {
-          sinks.push_back(
-              std::make_shared<sinks::basic_file_sink_mt>(_log_name));
-        } catch (...) {
-          err = fmt::format("log_v2 cannot log on '{}'", _log_name);
-          return false;
-        }
-      }
+  for (auto it = log.loggers.begin(), end = log.loggers.end(); it != end;
+       ++it) {
+    std::shared_ptr<logger>* l;
+    if (it->first == "core")
+      l = &_core_log;
+    else if (it->first == "config")
+      l = &_config_log;
+    else if (it->first == "tls")
+      l = &_tls_log;
+    else if (it->first == "tcp")
+      l = &_tcp_log;
+    else if (it->first == "bbdo")
+      l = &_bbdo_log;
+    else if (it->first == "sql")
+      l = &_sql_log;
+    else if (it->first == "perfdata")
+      l = &_perfdata_log;
+    else if (it->first == "lua")
+      l = &_lua_log;
+    else if (it->first == "processing")
+      l = &_processing_log;
+    else if (it->first == "bam")
+      l = &_bam_log;
+    else
+      continue;
 
-      _core_log = std::make_shared<logger>("core", sinks.begin(), sinks.end());
-      _core_log->set_level(level::info);
-      _core_log->flush_on(level::info);
-      _core_log->info("{} : log started", broker_name);
-
-      for (auto& entry : js["loggers"].array_items()) {
-        std::shared_ptr<logger>* l;
-        if (entry["name"].string_value() == "core")
-          l = &_core_log;
-        else if (entry["name"].string_value() == "config")
-          l = &_config_log;
-        else if (entry["name"].string_value() == "tls")
-          l = &_tls_log;
-        else if (entry["name"].string_value() == "tcp")
-          l = &_tcp_log;
-        else if (entry["name"].string_value() == "bbdo")
-          l = &_bbdo_log;
-        else if (entry["name"].string_value() == "sql")
-          l = &_sql_log;
-        else if (entry["name"].string_value() == "perfdata")
-          l = &_perfdata_log;
-        else if (entry["name"].string_value() == "lua")
-          l = &_lua_log;
-        else if (entry["name"].string_value() == "processing")
-          l = &_processing_log;
-        else if (entry["name"].string_value() == "bam")
-          l = &_bam_log;
-        else
-          continue;
-
-        *l = std::make_shared<logger>(entry["name"].string_value(),
-                                      sinks.begin(), sinks.end());
-        (*l)->set_level(dbg_lvls[entry["level"].string_value()]);
-        (*l)->flush_on(dbg_lvls[entry["level"].string_value()]);
-      }
-
-      return true;
-    }
-
-    err = fmt::format("bad format for config file '{}'", file);
-    return false;
+    *l = std::make_shared<logger>(it->first, file_sink);
+    (*l)->set_level(_levels_map[it->second]);
+    (*l)->flush_on(_levels_map[it->second]);
   }
-
-  err = fmt::format("file '{}' does not exist", file);
-  return false;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::core() {
@@ -211,4 +178,11 @@ std::shared_ptr<spdlog::logger> log_v2::bam() {
 
 const std::string& log_v2::log_name() const {
   return _log_name;
+}
+
+std::list<std::string> log_v2::levels() {
+  std::list<std::string> retval;
+  for (auto it = _levels_map.begin(); it != _levels_map.end(); ++it)
+    retval.push_back(it->first);
+  return retval;
 }

@@ -19,9 +19,11 @@
 #ifndef CCB_CONFIG_STATE_HH
 #define CCB_CONFIG_STATE_HH
 
+#include <fmt/format.h>
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
 
 #include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/config/logger.hh"
@@ -58,6 +60,17 @@ class state {
   int _poller_id;
   std::string _poller_name;
   size_t _pool_size;
+
+  struct log {
+    std::string directory;
+    std::string filename;
+    std::size_t max_size;
+    std::unordered_map<std::string, std::string> loggers;
+
+    std::string log_path() const {
+      return fmt::format("{}/{}", directory, filename);
+    }
+  } _log_conf;
 
  public:
   state();
@@ -103,6 +116,8 @@ class state {
   int pool_size() const noexcept;
   void poller_name(std::string const& name);
   std::string const& poller_name() const noexcept;
+  log& log_conf();
+  const log& log_conf() const;
 };
 }  // namespace config
 

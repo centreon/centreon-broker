@@ -74,17 +74,18 @@ static void hup_handler(int signum) {
     // Parse configuration file.
     config::parser parsr;
     config::state conf{parsr.parse(gl_mainconfigfiles.front())};
-    std::string err;
-    if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-                                 conf.broker_name(), err))
-      logging::error(logging::low) << err;
+    try {
+      log_v2::instance().apply(conf);
+    } catch (const std::exception& e) {
+      log_v2::core()->error(e.what());
+    }
 
     try {
       // Apply resulting configuration.
       config::applier::state::instance().apply(conf);
 
       gl_state = conf;
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
       logging::error(logging::high)
           << "main: configuration update "
           << "could not succeed, reloading previous configuration: "
@@ -96,7 +97,7 @@ static void hup_handler(int signum) {
           << "could not succeed, reloading previous configuration";
       config::applier::state::instance().apply(gl_state);
     }
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     logging::config(logging::high)
         << "main: configuration update failed: " << e.what();
   } catch (...) {
@@ -255,9 +256,11 @@ int main(int argc, char* argv[]) {
         config::parser parsr;
         config::state conf{parsr.parse(gl_mainconfigfiles.front())};
         std::string err;
-        if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-                                     conf.broker_name(), err))
-          logging::error(logging::low) << err;
+        try {
+          log_v2::instance().apply(conf);
+        } catch (const std::exception& e) {
+          log_v2::core()->error(e.what());
+        }
 
         config::applier::init();
         // Verification modifications.
@@ -287,7 +290,7 @@ int main(int argc, char* argv[]) {
 
       // Set configuration update handler.
       if (signal(SIGHUP, hup_handler) == SIG_ERR) {
-        char const* err(strerror(errno));
+        char const* err{strerror(errno)};
         logging::info(logging::high)
             << "main: could not register configuration update handler: " << err;
       }
@@ -326,7 +329,7 @@ int main(int argc, char* argv[]) {
     }
   }
   // Standard exception.
-  catch (std::exception const& e) {
+  catch (const std::exception& e) {
     log_v2::core()->error("Error during cbd exit: {}", e.what());
     logging::error(logging::high) << e.what();
     retval = EXIT_FAILURE;

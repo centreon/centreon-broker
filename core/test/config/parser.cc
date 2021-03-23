@@ -23,8 +23,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/misc/misc.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -271,7 +271,50 @@ TEST(parser, global) {
       "     \"event_queue_max_size\": 100000,\n"
       "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
       "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
-      "     \"log_thread_id\": false\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": []\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  ASSERT_THROW(p.parse(config_file), std::exception);
+}
+
+TEST(parser, log) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": {\n"
+      "       \"directory\": \"/tmp\"\n"
+      "     }\n"
       "  }\n"
       "}\n";
 
@@ -300,4 +343,245 @@ TEST(parser, global) {
   ASSERT_EQ(s.event_queue_max_size(), 100000);
   ASSERT_EQ(s.command_file(), "/var/lib/centreon-broker/command.sock");
   ASSERT_EQ(s.cache_directory(), "/var/lib/centreon-broker/");
+  ASSERT_EQ(s.log_conf().directory, "/tmp");
+  ASSERT_EQ(s.log_conf().max_size, 0u);
+}
+
+TEST(parser, logBadFilename) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": {\n"
+      "       \"filename\": \"toto/titi\"\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  ASSERT_THROW(p.parse(config_file), msg_fmt);
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+}
+
+TEST(parser, logDefaultDir) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": {\n"
+      "       \"filename\": \"toto\",\n"
+      "       \"max_size\": \"12345\",\n"
+      "       \"loggers\": {\n"
+      "         \"tcp\": \"warning\",\n"
+      "         \"bam\": \"critical\"\n"
+      "       }\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  config::state s{p.parse(config_file)};
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+  ASSERT_EQ(s.log_conf().directory, "/var/log/centreon-broker");
+  ASSERT_EQ(s.log_conf().filename, "toto");
+  ASSERT_EQ(s.log_conf().max_size, 12345u);
+  ASSERT_EQ(s.log_conf().loggers.size(), 2u);
+}
+
+TEST(parser, logBadMaxSize) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": {\n"
+      "       \"filename\": \"toto\"\n"
+      "       \"max_size\": \"12a345\"\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  ASSERT_THROW(p.parse(config_file), msg_fmt);
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+}
+
+TEST(parser, logBadLoggers) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": {\n"
+      "       \"filename\": \"toto\"\n"
+      "       \"max_size\": \"12345\"\n"
+      "       \"loggers\": []\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  ASSERT_THROW(p.parse(config_file), msg_fmt);
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+}
+
+TEST(parser, logBadLogger) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": {\n"
+      "       \"filename\": \"toto\"\n"
+      "       \"max_size\": \"12345\"\n"
+      "       \"loggers\": { \"minou\": \"trace\" }\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  ASSERT_THROW(p.parse(config_file), msg_fmt);
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015,2017 Centreon
+** Copyright 2011-2013,2015,2017-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@
 #include <json11.hpp>
 #include <streambuf>
 
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/defines.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -187,6 +188,80 @@ state parser::parse(std::string const& file) {
               "'input':  value type must be an object");
       }
 
+      else if (object.first == "log") {
+        if (!object.second.is_object())
+          throw msg_fmt(
+              "config parser: cannot parse key "
+              "'log': value type must be an object");
+
+        const Json& conf_js = object.second;
+        if (!conf_js.is_object())
+          throw msg_fmt("the log configuration should be a json object");
+
+        auto& conf = retval.log_conf();
+        if (conf_js["directory"].is_string())
+          conf.directory = conf_js["directory"].string_value();
+        else if (!conf_js["directory"].is_null())
+          throw msg_fmt(
+              "'directory' key in the log configuration must contain a "
+              "directory name");
+        if (conf.directory.empty())
+          conf.directory = "/var/log/centreon-broker";
+
+        conf.filename = "";
+        if (conf_js["filename"].is_string()) {
+          conf.filename = conf_js["filename"].string_value();
+          if (conf.filename.find("/") != std::string::npos)
+            throw msg_fmt(
+                "'filename' must only contain a filename without directory");
+        } else if (!conf_js["filename"].is_null())
+          throw msg_fmt(
+              "'filename' key in the log configuration must contain the log "
+              "file name");
+
+        conf.max_size = 0u;
+        if (conf_js["max_size"].is_string()) {
+          try {
+            conf.max_size = std::stoul(conf_js["max_size"].string_value());
+          } catch (const std::exception& e) {
+            throw msg_fmt(
+                "'max_size' key in the log configuration must contain a size "
+                "in bytes");
+          }
+        } else if (conf_js["max_size"].is_number()) {
+          int64_t tmp = conf_js["max_size"].number_value();
+          if (tmp < 0)
+            throw msg_fmt(
+                "'max_size' key in the log configuration must contain a positive number.");
+          conf.max_size = tmp;
+        }
+        else if (!conf_js["max_size"].is_null())
+          throw msg_fmt(
+              "'max_size' key in the log configuration must contain a size in "
+              "bytes (as number or string)");
+
+        if (conf_js["loggers"].is_object()) {
+          conf.loggers.clear();
+          for (const std::pair<const std::string, Json>& object :
+               conf_js["loggers"].object_items()) {
+            const auto& loggers = log_v2::loggers;
+            const auto levels = log_v2::levels();
+            if (std::find(loggers.begin(), loggers.end(), object.first) ==
+                loggers.end())
+              throw msg_fmt("'{}' is not available as logger", object.first);
+            if (!object.second.is_string() ||
+                std::find(levels.begin(), levels.end(),
+                          object.second.string_value()) == levels.end())
+              throw msg_fmt(
+                  "The logger '{}' must contain a string among 'trace', "
+                  "'debug', 'info', 'warning', 'error', 'critical', 'disabled'",
+                  object.first);
+
+            conf.loggers.emplace(object.first, object.second.string_value());
+          }
+        }
+      }
+
       else if (object.first == "logger") {
         if (object.second.is_array()) {
           for (Json const& node : object.second.array_items()) {
@@ -207,6 +282,11 @@ state parser::parse(std::string const& file) {
         retval.params()[object.first] = object.second.dump();
     }
   }
+
+  /* Post configuration */
+  auto& conf = retval.log_conf();
+  if (conf.filename.empty())
+    conf.filename = fmt::format("{}.log", retval.broker_name());
   return retval;
 }
 
@@ -285,7 +365,7 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
 /**
  *  Parse the configuration of a logging object.
  *
- *  @param[in]  elem XML element that have the logger configuration.
+ *  @param[in]  elem json element that have the logger configuration.
  *  @param[out] l    Logger object.
  */
 void parser::_parse_logger(Json const& elem, logger& l) {

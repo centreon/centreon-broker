@@ -17,12 +17,12 @@
  *
  */
 
-#include <iostream>
-#include <memory>
 #include <grpc/grpc.h>
 #include <grpcpp/channel.h>
 #include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
+#include <iostream>
+#include <memory>
 #include "../src/broker.grpc.pb.h"
 
 using namespace com::centreon::broker;
@@ -44,23 +44,6 @@ class BrokerRPCClient {
     }
     return true;
   }
-
-  bool DebugConfReload(GenericResponse* response, std::string const& file) {
-    GenericString request;
-    request.set_allocated_str_arg(new std::string(file));
-
-    grpc::ClientContext context;
-    grpc::Status status = _stub->DebugConfReload(&context, request, response);
-    if (!status.ok()) {
-      std::cout << "ConfReload rpc failed." << std::endl;
-      return false;
-    }
-
-    if (response->ok())
-      return true;
-
-    return false;
-  }
 };
 
 int main(int argc, char** argv) {
@@ -78,14 +61,6 @@ int main(int argc, char** argv) {
     Version version;
     status = client.GetVersion(&version) ? 0 : 1;
     std::cout << "GetVersion: " << version.DebugString();
-  }
-  else if (strcmp(argv[1], "DebugConfReload") == 0) {
-    GenericResponse response;
-    status = client.DebugConfReload(&response, argv[2]) ? 0 : 1;
-    if (!response.ok())
-      std::cout << "DebugConfReload failed for file " << argv[2] << " : " << response.err_msg() << std::endl;
-    else
-      std::cout << "DebugConfReload OK" << std::endl;
   }
 
   exit(status);
