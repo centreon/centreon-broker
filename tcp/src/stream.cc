@@ -71,10 +71,13 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
  * @param conn The connection to use by this stream.
  * @param read_timeout A duration in seconds or -1 if no timeout.
  */
-stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
+stream::stream(tcp_connection::pointer conn,
+               const std::string& host,
+               uint16_t port,
+               int32_t read_timeout)
     : io::stream("TCP"),
-      _host(conn->socket().remote_endpoint().address().to_string()),
-      _port(conn->socket().remote_endpoint().port()),
+      _host(host),
+      _port(port),
       _read_timeout(read_timeout),
       _connection(conn),
       _parent(nullptr) {

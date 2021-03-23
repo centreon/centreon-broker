@@ -19,13 +19,16 @@
 
 #include "com/centreon/broker/tcp/acceptor.hh"
 
+#include <system_error>
 #include <fmt/format.h>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/stream.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
+using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
@@ -46,7 +49,6 @@ acceptor::acceptor(uint16_t port, int32_t read_timeout)
  */
 acceptor::~acceptor() noexcept {
   log_v2::tcp()->trace("acceptor destroyed");
-  std::error_code ec;
   if (_acceptor) {
     tcp_async::instance().stop_acceptor(_acceptor);
   }
@@ -77,10 +79,15 @@ std::shared_ptr<io::stream> acceptor::open() {
   const uint32_t timeout_s = 3;
   auto conn = tcp_async::instance().get_connection(_acceptor, timeout_s);
   if (conn) {
-    log_v2::tcp()->debug("acceptor gets a new connection from {}:{}",
-                         conn->socket().remote_endpoint().address().to_string(),
-                         conn->socket().remote_endpoint().port());
-    return std::make_shared<stream>(conn, -1);
+    std::error_code ec;
+    const asio::ip::tcp::endpoint& ep{conn->socket().remote_endpoint(ec)};
+    if (ec)
+      throw msg_fmt("remote endpoint disconnected: {}", ec.message());
+
+    const std::string host{ep.address().to_string()};
+    uint16_t port{ep.port()};
+    log_v2::tcp()->debug("acceptor gets a new connection from {}:{}", host, port);
+    return std::make_shared<stream>(conn, host, port, -1);
   }
   return std::shared_ptr<stream>();
 }
