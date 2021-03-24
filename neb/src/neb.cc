@@ -109,7 +109,7 @@ int nebmodule_init(int flags, char const* args, void* handle) {
     neb_set_module_info(neb::gl_mod_handle, NEBMODULE_MODINFO_AUTHOR,
                         "Centreon");
     neb_set_module_info(neb::gl_mod_handle, NEBMODULE_MODINFO_COPYRIGHT,
-                        "Copyright 2009-2018 Centreon");
+                        "Copyright 2009-2021 Centreon");
     neb_set_module_info(neb::gl_mod_handle, NEBMODULE_MODINFO_VERSION,
                         CENTREON_BROKER_VERSION);
     neb_set_module_info(neb::gl_mod_handle, NEBMODULE_MODINFO_LICENSE,

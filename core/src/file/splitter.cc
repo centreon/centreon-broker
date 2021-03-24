@@ -171,7 +171,7 @@ long splitter::read(void* buffer, long max_size) {
     if (feof(_rfile.get())) {
       if (_auto_delete) {
         logging::info(logging::high)
-            << "file: end of file '" << file_path << "' reached, eraseing it";
+            << "file: end of file '" << file_path << "' reached, erasing it";
         std::remove(file_path.c_str());
       }
       if (_rid < _wid) {

@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
       logging::info(logging::high) << "  -v  Print Centreon Broker version.";
       logging::info(logging::high)
           << "Centreon Broker " << CENTREON_BROKER_VERSION;
-      logging::info(logging::high) << "Copyright 2009-2018 Centreon";
+      logging::info(logging::high) << "Copyright 2009-2021 Centreon";
       logging::info(logging::high)
           << "License ASL 2.0 "
              "<http://www.apache.org/licenses/LICENSE-2.0>";
@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
     } else {
       logging::info(logging::medium)
           << "Centreon Broker " << CENTREON_BROKER_VERSION;
-      logging::info(logging::medium) << "Copyright 2009-2018 Centreon";
+      logging::info(logging::medium) << "Copyright 2009-2021 Centreon";
       logging::info(logging::medium)
           << "License ASL 2.0 "
              "<http://www.apache.org/licenses/LICENSE-2.0>";
