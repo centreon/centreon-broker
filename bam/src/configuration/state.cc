@@ -170,7 +170,7 @@ state::bool_exps& state::get_bool_exps() {
  *
  *  @return  A list of meta-services.
  */
-state::meta_services& state::get_meta_services() {
+state::meta_services& state::mutable_meta_services() {
   return _meta_services;
 }
 

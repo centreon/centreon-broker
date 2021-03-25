@@ -32,16 +32,18 @@ using namespace com::centreon::broker::bam::configuration;
  *  @param[in] metric          Metric name.
  */
 meta_service::meta_service(uint32_t id,
+                           uint32_t host_id,
+                           uint32_t service_id,
                            std::string const& name,
                            std::string const& computation,
                            double warning_level,
                            double critical_level,
                            std::string const& filter,
                            std::string const& metric)
-    : _computation(computation),
-      _id(id),
-      _host_id(0),
-      _service_id(0),
+    : _id(id),
+      _host_id(host_id),
+      _service_id(service_id),
+      _computation(computation),
       _level_critical(critical_level),
       _level_warning(warning_level),
       _metric_name(metric),
@@ -53,9 +55,17 @@ meta_service::meta_service(uint32_t id,
  *
  *  @param[in] other  Object to copy.
  */
-meta_service::meta_service(meta_service const& other) {
-  _internal_copy(other);
-}
+meta_service::meta_service(const meta_service& other)
+  : _id{other._id},
+    _host_id{other._id},
+    _service_id{other._service_id},
+    _computation{other._computation},
+    _level_critical{other._level_critical},
+    _level_warning{other._level_warning},
+    _metric_name{other._metric_name},
+    _metrics{other._metrics},
+    _name{other._name},
+    _service_filter{other._service_filter} {}
 
 /**
  *  Destructor.
@@ -69,10 +79,20 @@ meta_service::~meta_service() {}
  *
  *  @return This object.
  */
-meta_service& meta_service::operator=(meta_service const& other) {
-  if (this != &other)
-    _internal_copy(other);
-  return (*this);
+meta_service& meta_service::operator=(meta_service&& other) {
+  if (this != &other) {
+    _id = other._id;
+    _host_id = other._host_id;
+    _service_id = other._service_id;
+    _computation = std::move(other._computation);
+    _level_critical = other._level_critical;
+    _level_warning = other._level_warning;
+    _metric_name = std::move(other._metric_name);
+    _metrics = std::move(other._metrics);
+    _name = std::move(other._name);
+    _service_filter = std::move(other._service_filter);
+  }
+  return *this;
 }
 
 /**
@@ -82,7 +102,7 @@ meta_service& meta_service::operator=(meta_service const& other) {
  *
  *  @return True if both objects are equal.
  */
-bool meta_service::operator==(meta_service const& other) const {
+bool meta_service::operator==(const meta_service& other) const {
   return ((_id == other._id) && (_host_id == other._host_id) &&
           (_service_id == other._service_id) &&
           (_level_critical == other._level_critical) &&
@@ -100,7 +120,7 @@ bool meta_service::operator==(meta_service const& other) const {
  *
  *  @return True if both objects differ.
  */
-bool meta_service::operator!=(meta_service const& other) const {
+bool meta_service::operator!=(const meta_service& other) const {
   return (!operator==(other));
 }
 
@@ -218,7 +238,6 @@ meta_service::service_container const& meta_service::get_services() const {
  */
 void meta_service::add_metric(uint32_t metric_id) {
   _metrics.push_back(metric_id);
-  return;
 }
 
 /**
@@ -229,7 +248,6 @@ void meta_service::add_metric(uint32_t metric_id) {
  */
 void meta_service::add_service(uint32_t host_id, uint32_t service_id) {
   _services.insert(std::make_pair(host_id, service_id));
-  return;
 }
 
 /**
@@ -240,7 +258,6 @@ void meta_service::add_service(uint32_t host_id, uint32_t service_id) {
  */
 void meta_service::set_computation(std::string const& function) {
   _computation = function;
-  return;
 }
 
 /**
@@ -248,30 +265,30 @@ void meta_service::set_computation(std::string const& function) {
  *
  *  @param[in] id  Meta-service ID.
  */
-void meta_service::set_id(uint32_t id) {
-  _id = id;
-  return;
-}
+//void meta_service::set_id(uint32_t id) {
+//  _id = id;
+//  return;
+//}
 
 /**
  *  Set the meta-service's virtual host ID.
  *
  *  @param[in] host_id  Virtual host ID.
  */
-void meta_service::set_host_id(uint32_t host_id) {
-  _host_id = host_id;
-  return;
-}
+//void meta_service::set_host_id(uint32_t host_id) {
+//  _host_id = host_id;
+//  return;
+//}
 
 /**
  *  Set the meta-service's virtual service ID.
  *
  *  @param[in] service_id  Virtual service ID.
  */
-void meta_service::set_service_id(uint32_t service_id) {
-  _service_id = service_id;
-  return;
-}
+//void meta_service::set_service_id(uint32_t service_id) {
+//  _service_id = service_id;
+//  return;
+//}
 
 /**
  *  Set the critical level.
@@ -280,7 +297,6 @@ void meta_service::set_service_id(uint32_t service_id) {
  */
 void meta_service::set_level_critical(double level) {
   _level_critical = level;
-  return;
 }
 
 /**
@@ -290,7 +306,6 @@ void meta_service::set_level_critical(double level) {
  */
 void meta_service::set_level_warning(double level) {
   _level_warning = level;
-  return;
 }
 
 /**
@@ -300,7 +315,6 @@ void meta_service::set_level_warning(double level) {
  */
 void meta_service::set_metric_name(std::string const& metric) {
   _metric_name = metric;
-  return;
 }
 
 /**
@@ -310,7 +324,6 @@ void meta_service::set_metric_name(std::string const& metric) {
  */
 void meta_service::set_name(std::string const& name) {
   _name = name;
-  return;
 }
 
 /**
@@ -320,24 +333,4 @@ void meta_service::set_name(std::string const& name) {
  */
 void meta_service::set_service_filter(std::string const& filter) {
   _service_filter = filter;
-  return;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void meta_service::_internal_copy(meta_service const& other) {
-  _computation = other._computation;
-  _id = other._id;
-  _host_id = other._host_id;
-  _service_id = other._service_id;
-  _level_critical = other._level_critical;
-  _level_warning = other._level_warning;
-  _metric_name = other._metric_name;
-  _metrics = other._metrics;
-  _name = other._name;
-  _service_filter = other._service_filter;
-  return;
 }

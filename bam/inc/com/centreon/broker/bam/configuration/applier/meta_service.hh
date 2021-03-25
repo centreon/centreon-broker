@@ -52,6 +52,8 @@ class meta_service {
   meta_service(meta_service const& other);
   ~meta_service();
   meta_service& operator=(meta_service const& other);
+  void apply_new(configuration::state::meta_services const& my_meta,
+             metric_book& book);
   void apply(configuration::state::meta_services const& my_meta,
              metric_book& book);
   std::shared_ptr<bam::meta_service> find_meta(uint32_t id);
@@ -69,8 +71,8 @@ class meta_service {
                                               uint32_t service_id);
   void _modify_meta(bam::meta_service& obj,
                     metric_book& book,
-                    configuration::meta_service const& old_cfg,
-                    configuration::meta_service const& new_cfg);
+                    configuration::meta_service const* old_cfg,
+                    configuration::meta_service const* new_cfg);
   std::shared_ptr<bam::meta_service> _new_meta(
       configuration::meta_service const& cfg,
       metric_book& book);

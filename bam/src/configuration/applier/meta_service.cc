@@ -61,6 +61,29 @@ applier::meta_service& applier::meta_service::operator=(
   return (*this);
 }
 
+void applier::meta_service::apply_new(const state::meta_services& my_meta,
+                                  metric_book& book) {
+  std::list<uint32_t> to_delete;
+  state::meta_services to_create;
+  std::list<configuration::meta_service> to_modify;
+
+  for (auto it = _applied.begin(), end = _applied.end(); it != end; ++it) {
+    auto found = my_meta.find(it->first);
+    if (found == my_meta.end())
+      // We should delete this meta.
+      to_delete.push_back(it->first);
+    else if (it->second.cfg != found->second) {
+      // We should keep it but configurations mismatch, modify object.
+      to_modify.push_back(it->second);
+    }
+  }
+
+  for (auto it = my_meta.begin(), end = my_meta.end(); it != end; ++it) {
+    if (_applied.find(it->first) == _applied.end())
+      to_create[it->first] = it->second;
+  }
+}
+
 /**
  *  Apply configuration.
  *
@@ -126,8 +149,7 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
   to_delete.clear();
 
   // Create new objects.
-  for (state::meta_services::iterator it(to_create.begin()),
-       end(to_create.end());
+  for (state::meta_services::iterator it = to_create.begin(), end = to_create.end();
        it != end; ++it) {
     logging::config(logging::medium)
         << "BAM: creating meta-service " << it->first;
@@ -150,7 +172,7 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
     if (pos != _applied.end()) {
       logging::config(logging::medium)
           << "BAM: modifying meta-service " << it->get_id();
-      _modify_meta(*pos->second.obj, book, pos->second.cfg, *it);
+      _modify_meta(*pos->second.obj, book, &pos->second.cfg, &*it);
       pos->second.cfg = *it;
     } else
       logging::error(logging::high)
@@ -231,30 +253,32 @@ std::shared_ptr<neb::service> applier::meta_service::_meta_service(
  *
  *  @param[in,out] obj      Meta-service object.
  *  @param[in,out] book     Metric book.
- *  @param[in]     old_cfg  Old configuration.
+ *  @param[in]     old_cfg  Old configuration. If nullptr, no old config.
  *  @param[in]     new_cfg  New configuration.
  */
 void applier::meta_service::_modify_meta(
     bam::meta_service& obj,
     metric_book& book,
-    configuration::meta_service const& old_cfg,
-    configuration::meta_service const& new_cfg) {
+    configuration::meta_service const* old_cfg,
+    configuration::meta_service const* new_cfg) {
   // Remove old metrics from 1) the book and from 2) the meta-service.
-  for (configuration::meta_service::metric_container::const_iterator
-           it(old_cfg.get_metrics().begin()),
-       end(old_cfg.get_metrics().end());
-       it != end; ++it) {
-    logging::config(logging::low)
-        << "BAM: meta-service " << obj.get_id() << " does not depend of metric "
-        << *it << " anymore";
-    book.unlisten(*it, &obj);
-    obj.remove_metric(*it);
+  if (old_cfg) {
+    for (configuration::meta_service::metric_container::const_iterator
+             it(old_cfg->get_metrics().begin()),
+         end(old_cfg->get_metrics().end());
+         it != end; ++it) {
+      logging::config(logging::low)
+          << "BAM: meta-service " << obj.get_id() << " does not depend of metric "
+          << *it << " anymore";
+      book.unlisten(*it, &obj);
+      obj.remove_metric(*it);
+    }
   }
 
   // Add new metrics to 1) the book and to 2) the meta-service.
   for (configuration::meta_service::metric_container::const_iterator
-           it(new_cfg.get_metrics().begin()),
-       end(new_cfg.get_metrics().end());
+           it(new_cfg->get_metrics().begin()),
+       end(new_cfg->get_metrics().end());
        it != end; ++it) {
     logging::config(logging::low)
         << "BAM: meta-service " << obj.get_id() << " uses metric " << *it;
@@ -263,7 +287,7 @@ void applier::meta_service::_modify_meta(
   }
 
   // Modify meta-service properties.
-  std::string const& computation_str(new_cfg.get_computation());
+  std::string const& computation_str(new_cfg->get_computation());
   bam::meta_service::computation_type computation;
   if ("MIN" == computation_str)
     computation = bam::meta_service::min;
@@ -274,8 +298,8 @@ void applier::meta_service::_modify_meta(
   else
     computation = bam::meta_service::average;
   obj.set_computation(computation);
-  obj.set_level_warning(new_cfg.get_level_warning());
-  obj.set_level_critical(new_cfg.get_level_critical());
+  obj.set_level_warning(new_cfg->get_level_warning());
+  obj.set_level_critical(new_cfg->get_level_critical());
 }
 
 /**
@@ -289,6 +313,6 @@ std::shared_ptr<bam::meta_service> applier::meta_service::_new_meta(
     metric_book& book) {
   std::shared_ptr<bam::meta_service> meta{std::make_shared<bam::meta_service>(
       cfg.get_host_id(), cfg.get_service_id(), cfg.get_id())};
-  _modify_meta(*meta, book, configuration::meta_service(), cfg);
+  _modify_meta(*meta, book, nullptr, &cfg);
   return meta;
 }
