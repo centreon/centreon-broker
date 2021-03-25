@@ -26,12 +26,6 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
-/**************************************
- *                                     *
- *            Static Objects           *
- *                                     *
- **************************************/
-
 /**
  *  Get BA identifier for circular path search.
  *
@@ -77,43 +71,15 @@ static std::string service_node_id(uint32_t host_id, uint32_t service_id) {
   return fmt::format("service ({}, {})", host_id, service_id);
 }
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
 applier::state::state() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-applier::state::state(applier::state const& other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 applier::state::~state() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-applier::state& applier::state::operator=(applier::state const& other) {
-  if (this != &other)
-    _internal_copy(other);
-  return *this;
-}
 
 /**
  *  Apply configuration.
@@ -164,12 +130,6 @@ void applier::state::visit(io::stream* visitor) {
   _ba_applier.visit(visitor);
   _kpi_applier.visit(visitor);
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Circular check node constructor.
@@ -292,20 +252,6 @@ void applier::state::_circular_check(applier::state::circular_check_node& n) {
     n.visited = true;
     n.in_visit = false;
   }
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void applier::state::_internal_copy(applier::state const& other) {
-  _ba_applier = other._ba_applier;
-  _book_metric = other._book_metric;
-  _book_service = other._book_service;
-  _kpi_applier = other._kpi_applier;
-  _bool_exp_applier = other._bool_exp_applier;
-  _meta_service_applier = other._meta_service_applier;
 }
 
 /**

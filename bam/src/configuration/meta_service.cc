@@ -56,16 +56,16 @@ meta_service::meta_service(uint32_t id,
  *  @param[in] other  Object to copy.
  */
 meta_service::meta_service(const meta_service& other)
-  : _id{other._id},
-    _host_id{other._id},
-    _service_id{other._service_id},
-    _computation{other._computation},
-    _level_critical{other._level_critical},
-    _level_warning{other._level_warning},
-    _metric_name{other._metric_name},
-    _metrics{other._metrics},
-    _name{other._name},
-    _service_filter{other._service_filter} {}
+    : _id{other._id},
+      _host_id{other._id},
+      _service_id{other._service_id},
+      _computation{other._computation},
+      _level_critical{other._level_critical},
+      _level_warning{other._level_warning},
+      _metric_name{other._metric_name},
+      _metrics{other._metrics},
+      _name{other._name},
+      _service_filter{other._service_filter} {}
 
 /**
  *  Destructor.
@@ -95,6 +95,28 @@ meta_service& meta_service::operator=(meta_service&& other) {
   return *this;
 }
 
+/**
+ *  Assignment operator.
+ *
+ *  @param[in] other  Object to copy.
+ *
+ *  @return This object.
+ */
+meta_service& meta_service::operator=(const meta_service& other) {
+  if (this != &other) {
+    _id = other._id;
+    _host_id = other._host_id;
+    _service_id = other._service_id;
+    _computation = other._computation;
+    _level_critical = other._level_critical;
+    _level_warning = other._level_warning;
+    _metric_name = other._metric_name;
+    _metrics = other._metrics;
+    _name = other._name;
+    _service_filter = other._service_filter;
+  }
+  return *this;
+}
 /**
  *  Equality operator.
  *
@@ -259,36 +281,6 @@ void meta_service::add_service(uint32_t host_id, uint32_t service_id) {
 void meta_service::set_computation(std::string const& function) {
   _computation = function;
 }
-
-/**
- *  Set the meta-service ID.
- *
- *  @param[in] id  Meta-service ID.
- */
-//void meta_service::set_id(uint32_t id) {
-//  _id = id;
-//  return;
-//}
-
-/**
- *  Set the meta-service's virtual host ID.
- *
- *  @param[in] host_id  Virtual host ID.
- */
-//void meta_service::set_host_id(uint32_t host_id) {
-//  _host_id = host_id;
-//  return;
-//}
-
-/**
- *  Set the meta-service's virtual service ID.
- *
- *  @param[in] service_id  Virtual service ID.
- */
-//void meta_service::set_service_id(uint32_t service_id) {
-//  _service_id = service_id;
-//  return;
-//}
 
 /**
  *  Set the critical level.
