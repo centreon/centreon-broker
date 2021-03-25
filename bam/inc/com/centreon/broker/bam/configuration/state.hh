@@ -64,7 +64,7 @@ class state {
   bas& get_bas();
   kpis& get_kpis();
   bool_exps& get_bool_exps();
-  meta_services& get_meta_services();
+  meta_services& mutable_meta_services();
   hst_svc_mapping& get_hst_svc_mapping();
   ba_svc_mapping& get_ba_svc_mapping();
   ba_svc_mapping& get_meta_svc_mapping();
