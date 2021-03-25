@@ -1,5 +1,5 @@
 ##
-## Copyright 2018 Centreon
+## Copyright 2018-2021 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
+include_directories(${OpenSSL_INCLUDE_DIRS})
 set(INC_DIR "${INC_DIR}/com/centreon/broker/lua")
 
 # Storage module.
