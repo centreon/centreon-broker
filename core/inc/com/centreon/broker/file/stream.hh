@@ -40,14 +40,13 @@ class stream : public io::stream {
   ~stream();
   stream(stream const&) = delete;
   stream& operator=(stream const&) = delete;
-  std::string peer() const;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  std::string peer() const override;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void remove_all_files();
   void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
+  int write(std::shared_ptr<io::data> const& d) override;
 
  private:
-
   std::unique_ptr<splitter> _file;
   mutable long long _last_read_offset;
   mutable time_t _last_time;

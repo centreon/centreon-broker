@@ -41,10 +41,11 @@ class stream : public io::stream {
   ~stream() noexcept;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
-  int flush();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  int flush() override;
+  bool read(std::shared_ptr<io::data>& d,
+            time_t deadline = (time_t)-1) override;
   void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
+  int write(std::shared_ptr<io::data> const& d) override;
 
  private:
   void _flush();

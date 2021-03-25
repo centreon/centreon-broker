@@ -61,12 +61,12 @@ class monitoring_stream : public io::stream {
                     database_config const& storage_db_cfg,
                     std::shared_ptr<persistent_cache> cache);
   ~monitoring_stream();
-  int flush();
+  int flush() override;
   void initialize();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void statistics(json11::Json::object& tree) const override;
-  void update();
-  int write(std::shared_ptr<io::data> const& d);
+  void update() override;
+  int write(std::shared_ptr<io::data> const& d) override;
 
  private:
   monitoring_stream(monitoring_stream const& other);
