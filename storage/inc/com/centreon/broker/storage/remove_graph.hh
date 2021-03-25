@@ -39,7 +39,7 @@ namespace storage {
 class remove_graph : public io::data {
  public:
   remove_graph();
-  remove_graph(uint32_t index_id, bool is_index);
+  remove_graph(uint64_t index_id, bool is_index);
   remove_graph(remove_graph const& right) = delete;
   ~remove_graph() = default;
   remove_graph& operator=(remove_graph const& right) = delete;

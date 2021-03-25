@@ -107,7 +107,7 @@ class conflict_manager {
 
   struct index_info {
     std::string host_name;
-    uint32_t index_id;
+    uint64_t index_id;
     bool locked;
     uint32_t rrd_retention;
     std::string service_description;

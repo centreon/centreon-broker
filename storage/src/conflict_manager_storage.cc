@@ -82,14 +82,15 @@ void conflict_manager::_storage_process_service_status(
       "service_id:{}",
       host_id, service_id);
   auto it_index_cache = _index_cache.find({host_id, service_id});
-  uint32_t index_id, rrd_len;
+  uint64_t index_id ;
+  uint32_t rrd_len;
   int32_t conn =
       _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]);
   bool index_locked{false};
   bool special{!strncmp(ss.host_name.c_str(), BAM_NAME, sizeof(BAM_NAME) - 1)};
 
   auto add_metric_in_cache =
-      [this](uint32_t index_id, uint64_t host_id, uint64_t service_id,
+      [this](uint64_t index_id, uint64_t host_id, uint64_t service_id,
              neb::service_status const& ss, bool index_locked, bool special,
              uint32_t& rrd_len) -> void {
     if (index_id == 0) {
@@ -114,6 +115,7 @@ void conflict_manager::_storage_process_service_status(
     _index_cache[{host_id, service_id}] = std::move(info);
     rrd_len = _rrd_len;
     log_v2::perfdata()->debug(
+
         "conflict_manager:: add_metric_in_cache: returned rrd_len {}", rrd_len);
 
     /* Create the metric mapping. */
@@ -149,8 +151,8 @@ void conflict_manager::_storage_process_service_status(
     _index_data_insert.bind_value_as_str(3, sv);
     _index_data_insert.bind_value_as_str(4, "0");
     _index_data_insert.bind_value_as_str(5, special ? "1" : "0");
-    std::promise<int> promise;
-    _mysql.run_statement_and_get_int<int>(_index_data_insert, &promise,
+    std::promise<uint64_t> promise;
+    _mysql.run_statement_and_get_int<uint64_t>(_index_data_insert, &promise,
                                           database::mysql_task::LAST_INSERT_ID,
                                           conn);
     try {
@@ -175,7 +177,7 @@ void conflict_manager::_storage_process_service_status(
 
           database::mysql_result res(promise.get_future().get());
           if (_mysql.fetch_row(res))
-            index_id = res.value_as_u32(0);
+            index_id = res.value_as_u64(0);
           else
             index_id = 0;
         }
