@@ -37,11 +37,13 @@ class connector : public io::endpoint {
   std::string _ca;
   std::string _cert;
   std::string _key;
+  std::string _tls_hostname;
 
  public:
   connector(std::string const& cert = std::string(),
             std::string const& key = std::string(),
-            std::string const& ca = std::string());
+            std::string const& ca = std::string(),
+            std::string const& tls_hostname = std::string());
   ~connector() = default;
   connector(connector const& right) = delete;
   connector& operator=(connector const& right) = delete;
