@@ -43,6 +43,7 @@ class params {
  private:
   std::string _ca;
   std::string _cert;
+  std::string _tls_hostname;
   bool _compress;
   union {
     gnutls_certificate_credentials_t cert;
@@ -67,6 +68,7 @@ class params {
   void set_cert(std::string const& cert, std::string const& key);
   void set_compression(bool compress = false);
   void set_trusted_ca(std::string const& ca_cert);
+  void set_tls_hostname(std::string const& tls_hostname);
   void validate_cert(gnutls_session_t session);
 };
 }  // namespace tls

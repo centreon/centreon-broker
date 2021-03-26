@@ -32,10 +32,10 @@ CC_BEGIN()
  */
 class process_listener {
  public:
-  virtual ~process_listener() throw() {}
-  virtual void data_is_available(process& p) throw() = 0;
-  virtual void data_is_available_err(process& p) throw() = 0;
-  virtual void finished(process& p) throw() = 0;
+  virtual ~process_listener() noexcept {}
+  virtual void data_is_available(process& p) noexcept = 0;
+  virtual void data_is_available_err(process& p) noexcept = 0;
+  virtual void finished(process& p) noexcept = 0;
 };
 
 CC_END()

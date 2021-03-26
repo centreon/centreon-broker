@@ -43,8 +43,13 @@ using namespace com::centreon::exceptions;
  */
 connector::connector(std::string const& cert,
                      std::string const& key,
-                     std::string const& ca)
-    : io::endpoint(false), _ca(ca), _cert(cert), _key(key) {}
+                     std::string const& ca,
+                     std::string const& tls_hostname)
+    : io::endpoint(false),
+      _ca(ca),
+      _cert(cert),
+      _key(key),
+      _tls_hostname(tls_hostname) {}
 
 /**
  *  Connect to the remote TLS peer.
@@ -75,6 +80,7 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     params p(params::CLIENT);
     p.set_cert(_cert, _key);
     p.set_trusted_ca(_ca);
+    p.set_tls_hostname(_tls_hostname);
     p.load();
 
     gnutls_session_t* session(new gnutls_session_t);
@@ -89,8 +95,8 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
       if (ret != GNUTLS_E_SUCCESS) {
         log_v2::tls()->error("TLS: cannot initialize session: {}",
                              gnutls_strerror(ret));
-        throw msg_fmt(
-            "TLS: cannot initialize session: {} ", gnutls_strerror(ret));
+        throw msg_fmt("TLS: cannot initialize session: {} ",
+                      gnutls_strerror(ret));
       }
 
       // Apply TLS parameters to the current session.
@@ -120,11 +126,15 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error("TLS: handshake failed: {}", gnutls_strerror(ret));
-      throw msg_fmt(
-          "TLS: handshake failed: {}", gnutls_strerror(ret));
+      throw msg_fmt("TLS: handshake failed: {}", gnutls_strerror(ret));
     }
 
     log_v2::tls()->debug("TLS: successful handshake");
+    gnutls_protocol_t prot = gnutls_protocol_get_version(*session);
+    gnutls_cipher_algorithm_t ciph = gnutls_cipher_get(*session);
+    log_v2::tls()->debug("TLS: protocol and cipher  {} {} used",
+                         gnutls_protocol_get_name(prot),
+                         gnutls_cipher_get_name(ciph));
 
     // Check certificate if necessary.
     p.validate_cert(*session);
