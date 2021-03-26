@@ -1,5 +1,17 @@
 # Changelog
 
+## 20.04.14
+
+`Release date to be defined`
+
+### Enhancements
+
+*TLS configuration*
+
+Sometimes, we want to provide a custom common name instead of the hostname.
+This is now possible thanks to the tls\_hostname. Supports for TLS1.0 and TLS1.1
+have been removed.
+
 ## 20.04.13
 
 `Release date to be defined`
@@ -23,7 +35,7 @@ correctly.
 
 *Logs*
 
-The new logs (log_v2) are correctly flushed when cbd is stopped.
+The new logs (log\_v2) are correctly flushed when cbd is stopped.
 
 *Thread pool*
 

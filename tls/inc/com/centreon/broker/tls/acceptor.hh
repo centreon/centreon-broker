@@ -42,11 +42,13 @@ class acceptor : public io::endpoint {
   std::string _ca;
   std::string _cert;
   std::string _key;
+  std::string _tls_hostname;
 
  public:
   acceptor(std::string const& cert = std::string(),
            std::string const& key = std::string(),
-           std::string const& ca = std::string());
+           std::string const& ca = std::string(),
+           std::string const& tls_hostname = std::string());
   ~acceptor() = default;
   acceptor(acceptor const& right) = delete;
   acceptor& operator=(acceptor const&) = delete;
