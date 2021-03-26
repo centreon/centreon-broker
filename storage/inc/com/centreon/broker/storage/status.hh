@@ -41,7 +41,7 @@ class status : public io::data {
 
  public:
   timestamp ctime;
-  uint32_t index_id;
+  uint64_t index_id;
   uint32_t interval;
   bool is_for_rebuild;
   timestamp rrd_len;
@@ -52,7 +52,7 @@ class status : public io::data {
 
   status();
   status(timestamp const& ctime,
-         uint32_t index_id,
+         uint64_t index_id,
          uint32_t interval,
          bool is_for_rebuild,
          timestamp const& rrd_len,
