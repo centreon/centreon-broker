@@ -72,16 +72,16 @@ void params::apply(gnutls_session_t session) {
   // Set anonymous credentials...
   if (_cert.empty() || _key.empty()) {
     if (CLIENT == _type) {
-      log_v2::tls()->debug("TLS: using anonymous client credentials");
+      log_v2::tls()->info("TLS: using anonymous client credentials");
       ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.client);
     } else {
-      log_v2::tls()->debug("TLS: using anonymous server credentials");
+      log_v2::tls()->info("TLS: using anonymous server credentials");
       ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.server);
     }
   }
   // ... or certificate credentials.
   else {
-    log_v2::tls()->debug("TLS: using certificates as credentials");
+    log_v2::tls()->info("TLS: using certificates as credentials");
     ret = gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, _cred.cert);
     if (SERVER == _type)
       gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
@@ -225,13 +225,13 @@ void params::validate_cert(gnutls_session_t session) {
     int ret;
     uint32_t status;
     if (!_tls_hostname.empty()) {
-      log_v2::tls()->debug(
+      log_v2::tls()->info(
           "TLS: common name '{}' used for certificate verification",
           _tls_hostname);
       ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
                                              &status);
     } else {
-      log_v2::tls()->debug(
+      log_v2::tls()->info(
           "TLS: Server hostname used for certificate verification");
       ret = gnutls_certificate_verify_peers2(session, &status);
     }
