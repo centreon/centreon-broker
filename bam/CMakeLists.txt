@@ -194,6 +194,7 @@ if (WITH_TESTING )
       ${TESTS_SOURCES}
       ${TEST_DIR}/ba/kpi_change_at_recompute.cc
       ${TEST_DIR}/configuration/applier-boolexp.cc
+      ${TEST_DIR}/configuration/applier-meta-service.cc
       ${TEST_DIR}/exp_builder/exp_builder.cc
       ${TEST_DIR}/exp_parser/get_postfix.cc
       ${TEST_DIR}/exp_tokenizer/next.cc

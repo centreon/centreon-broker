@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/bam/configuration/meta_service.hh"
 
 using namespace com::centreon::broker::bam::configuration;
@@ -48,7 +49,11 @@ meta_service::meta_service(uint32_t id,
       _level_warning(warning_level),
       _metric_name(metric),
       _name(name),
-      _service_filter(filter) {}
+      _service_filter(filter) {
+  assert(_id);
+  assert(_host_id);
+  assert(_service_id);
+}
 
 /**
  *  Copy constructor.
