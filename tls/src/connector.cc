@@ -94,8 +94,8 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
       if (ret != GNUTLS_E_SUCCESS) {
         log_v2::tls()->error("TLS: cannot initialize session: {}",
                              gnutls_strerror(ret));
-        throw msg_fmt("TLS: cannot initialize session: {} ",
-                      gnutls_strerror(ret));
+        throw exceptions::msg()
+            << "TLS: cannot initialize session: " << gnutls_strerror(ret);
       }
 
       // Apply TLS parameters to the current session.
@@ -125,7 +125,8 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
     if (ret != GNUTLS_E_SUCCESS) {
       log_v2::tls()->error("TLS: handshake failed: {}", gnutls_strerror(ret));
-      throw msg_fmt("TLS: handshake failed: {}", gnutls_strerror(ret));
+      throw exceptions::msg()
+          << "TLS: handshake failed: " << gnutls_strerror(ret);
     }
 
     log_v2::tls()->debug("TLS: successful handshake");
