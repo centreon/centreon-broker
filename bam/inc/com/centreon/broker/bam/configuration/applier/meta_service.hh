@@ -62,10 +62,10 @@ class meta_service {
                                               uint32_t service_id);
   void _modify_meta(bam::meta_service& obj,
                     metric_book& book,
-                    configuration::const meta_service* old_cfg,
-                    configuration::const meta_service* new_cfg);
+                    const configuration::meta_service* old_cfg,
+                    const configuration::meta_service* new_cfg);
   std::shared_ptr<bam::meta_service> _new_meta(
-      configuration::const meta_service& cfg,
+      const configuration::meta_service& cfg,
       metric_book& book);
 
  public:
