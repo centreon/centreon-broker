@@ -146,8 +146,8 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     }
     log_v2::tls()->debug("TLS: successful handshake");
     gnutls_protocol_t prot = gnutls_protocol_get_version(*session);
-    log_v2::tls()->debug("TLS: protocol {} used",
-                         gnutls_protocol_get_name(prot));
+    log_v2::tls()->info("TLS: protocol {} used",
+                        gnutls_protocol_get_name(prot));
 
     // Check certificate.
     p.validate_cert(*session);
