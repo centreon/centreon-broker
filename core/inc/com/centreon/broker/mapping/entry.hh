@@ -291,6 +291,7 @@ class entry {
    */
   uint32_t get_type() const { return _type; }
   uint32_t get_uint(io::data const& d) const;
+  uint64_t get_ulong(io::data const& d) const;
   unsigned short get_ushort(io::data const& d) const;
   /**
    *  Get if this entry is a null entry.

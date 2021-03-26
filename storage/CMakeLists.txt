@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2013 Centreon
+## Copyright 2011-2021 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -97,6 +97,7 @@ if (WITH_TESTING)
     ${TEST_DIR}/rebuild.cc
     ${TEST_DIR}/remove_graph.cc
     ${TEST_DIR}/status.cc
+    ${TEST_DIR}/status-entry.cc
     PARENT_SCOPE
   )
   set(

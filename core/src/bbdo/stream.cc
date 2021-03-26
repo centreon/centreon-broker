@@ -372,6 +372,21 @@ static void get_uint(io::data const& t,
 }
 
 /**
+ *  Get an uint64_teger from an object.
+ */
+static void get_ulong(io::data const& t,
+                      mapping::entry const& member,
+                      std::vector<char>& buffer) {
+  uint64_t value{member.get_ulong(t)};
+  uint32_t high{htonl(value >> 32)};
+  uint32_t low{htonl(value & 0xffffffff)};
+  char* vh{reinterpret_cast<char*>(&high)};
+  char* vl{reinterpret_cast<char*>(&low)};
+  std::copy(vh, vh + sizeof(high), std::back_inserter(buffer));
+  std::copy(vl, vl + sizeof(low), std::back_inserter(buffer));
+}
+
+/**
  *  Serialize an event in the BBDO protocol.
  *
  *  @param[in] e  Event to serialize.
@@ -417,6 +432,9 @@ static io::raw* serialize(const io::data& e) {
             break;
           case mapping::source::UINT:
             get_uint(e, *current_entry, *content);
+            break;
+          case mapping::source::ULONG:
+            get_ulong(e, *current_entry, *content);
             break;
           default:
             log_v2::bbdo()->error(

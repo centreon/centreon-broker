@@ -197,6 +197,17 @@ class property : public source {
   }
 
   /**
+   *  Get an uint64_teger property.
+   *
+   *  @param[in] d Object to get from.
+   *
+   *  @return Unsigned integer property.
+   */
+  uint64_t get_ulong(io::data const& d) {
+    return static_cast<T const*>(&d)->*(_prop.l);
+  }
+
+  /**
    *  Get an unsigned short property.
    *
    *  @param[in] d Object to get from.

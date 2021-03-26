@@ -135,4 +135,5 @@ mapping::entry const status::entries[] = {
 static io::data* new_status() {
   return new status;
 }
+
 io::event_info::event_operations const status::operations = {&new_status};

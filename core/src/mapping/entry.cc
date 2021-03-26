@@ -28,7 +28,6 @@ using namespace com::centreon::broker::mapping;
  *                                     *
  **************************************/
 
-
 /**
  *  Get the boolean value.
  *
@@ -104,6 +103,17 @@ timestamp const& entry::get_time(io::data const& d) const {
  */
 uint32_t entry::get_uint(io::data const& d) const {
   return _ptr->get_uint(d);
+}
+
+/**
+ *  Get the uint64_teger value.
+ *
+ *  @param[in] d Object to work on.
+ *
+ *  @return The uint64_teger value.
+ */
+uint64_t entry::get_ulong(io::data const& d) const {
+  return _ptr->get_ulong(d);
 }
 
 /**
