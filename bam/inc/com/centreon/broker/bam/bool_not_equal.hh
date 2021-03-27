@@ -35,10 +35,10 @@ namespace bam {
  */
 class bool_not_equal : public bool_binary_operator {
  public:
-  bool_not_equal();
-  bool_not_equal(bool_not_equal const& other);
-  ~bool_not_equal();
-  bool_not_equal& operator=(bool_not_equal const& other);
+  bool_not_equal() = default;
+  bool_not_equal(bool_not_equal const&) = delete;
+  ~bool_not_equal() noexcept = default;
+  bool_not_equal& operator=(bool_not_equal const&) = delete;
   double value_hard();
   double value_soft();
 };

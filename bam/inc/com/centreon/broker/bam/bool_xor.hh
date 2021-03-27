@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,12 +34,12 @@ namespace bam {
  */
 class bool_xor : public bool_binary_operator {
  public:
-  bool_xor();
-  bool_xor(bool_xor const& right);
-  ~bool_xor();
-  bool_xor& operator=(bool_xor const& right);
-  double value_hard();
-  double value_soft();
+  bool_xor() = default;
+  ~bool_xor() noexcept = default;
+  bool_xor(const bool_xor&) = delete;
+  bool_xor& operator=(const bool_xor&) = delete;
+  double value_hard() override;
+  double value_soft() override;
 };
 }  // namespace bam
 

@@ -33,16 +33,15 @@ namespace bam {
  *  OR between two bool_value.
  */
 class bool_more_than : public bool_binary_operator {
+  const bool _strict;
+
  public:
   bool_more_than(bool strict = false);
-  bool_more_than(bool_more_than const& right);
-  ~bool_more_than();
-  bool_more_than& operator=(bool_more_than const& right);
+  bool_more_than(bool_more_than const& right) = delete;
+  ~bool_more_than() noexcept = default;
+  bool_more_than& operator=(bool_more_than const&) = delete;
   double value_hard();
   double value_soft();
-
- private:
-  bool _strict;
 };
 }  // namespace bam
 
