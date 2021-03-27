@@ -140,9 +140,7 @@ exp_builder::exp_builder(exp_parser::notation const& postfix,
               svc, hst);
 
         // Build object.
-        bool_service::ptr obj(new bool_service);
-        obj->set_host_id(ids.first);
-        obj->set_service_id(ids.second);
+        bool_service::ptr obj{std::make_shared<bool_service>(ids.first, ids.second)};
 
         // Store it in the operand stack and within the service list.
         _operands.push(any_operand(obj, ""));
