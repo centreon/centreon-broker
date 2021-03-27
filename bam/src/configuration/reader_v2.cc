@@ -796,8 +796,7 @@ void reader_v2::_load_dimensions() {
         database::mysql_result res(promise.get_future().get());
 
         while (_mysql.fetch_row(res)) {
-          auto k(std::make_shared<dimension_kpi_event>());
-          k->kpi_id = res.value_as_u32(0);
+          auto k(std::make_shared<dimension_kpi_event>(res.value_as_u32(0)));
           k->host_id = res.value_as_u32(2);
           k->service_id = res.value_as_u32(3);
           k->ba_id = res.value_as_u32(4);

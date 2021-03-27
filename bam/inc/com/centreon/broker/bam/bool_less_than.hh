@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,16 +34,15 @@ namespace bam {
  *  less than between two bool_value.
  */
 class bool_less_than : public bool_binary_operator {
+  const bool _strict;
+
  public:
   bool_less_than(bool strict = false);
-  bool_less_than(bool_less_than const& right);
-  ~bool_less_than();
-  bool_less_than& operator=(bool_less_than const& right);
+  ~bool_less_than() noexcept = default;
+  bool_less_than(bool_less_than const&) = delete;
+  bool_less_than& operator=(bool_less_than const&) = delete;
   double value_hard();
   double value_soft();
-
- private:
-  bool _strict;
 };
 }  // namespace bam
 

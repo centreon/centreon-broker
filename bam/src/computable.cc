@@ -51,7 +51,7 @@ computable::~computable() {}
 computable& computable::operator=(computable const& right) {
   if (this != &right)
     _internal_copy(right);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -61,7 +61,6 @@ computable& computable::operator=(computable const& right) {
  */
 void computable::add_parent(std::shared_ptr<computable> const& parent) {
   _parents.push_back(std::weak_ptr<computable>(parent));
-  return;
 }
 
 /**
@@ -94,7 +93,6 @@ void computable::propagate_update(io::stream* visitor) {
       if (ptr)
         ptr->propagate_update(visitor);
     }
-  return;
 }
 
 /**
