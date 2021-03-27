@@ -137,7 +137,6 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/configuration/bool_expression.hh"
   "${INC_DIR}/configuration/kpi.hh"
   "${INC_DIR}/configuration/meta_service.hh"
-  "${INC_DIR}/configuration/reader.hh"
   "${INC_DIR}/configuration/reader_exception.hh"
   "${INC_DIR}/configuration/reader_v2.hh"
   "${INC_DIR}/configuration/state.hh"

@@ -25,7 +25,6 @@
 #include <sstream>
 
 #include "com/centreon/broker/bam/ba_status.hh"
-#include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/event_cache_visitor.hh"
