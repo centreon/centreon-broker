@@ -34,12 +34,12 @@ namespace bam {
  */
 class bool_equal : public bool_binary_operator {
  public:
-  bool_equal();
-  bool_equal(bool_equal const& right);
-  ~bool_equal();
-  bool_equal& operator=(bool_equal const& right);
-  double value_hard();
-  double value_soft();
+  bool_equal() = default;
+  ~bool_equal() noexcept = default;
+  bool_equal(bool_equal const&) = delete;
+  bool_equal& operator=(bool_equal const&) = delete;
+  double value_hard() override;
+  double value_soft() override;
 };
 }  // namespace bam
 

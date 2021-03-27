@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2016 Centreon
+** Copyright 2014-2016, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -53,14 +53,14 @@ bool_binary_operator::~bool_binary_operator() {}
  *
  *  @return This object.
  */
-bool_binary_operator& bool_binary_operator::operator=(
-    bool_binary_operator const& right) {
-  if (this != &right) {
-    bool_value::operator=(right);
-    _internal_copy(right);
-  }
-  return (*this);
-}
+// bool_binary_operator& bool_binary_operator::operator=(
+//    bool_binary_operator const& right) {
+//  if (this != &right) {
+//    bool_value::operator=(right);
+//    _internal_copy(right);
+//  }
+//  return (*this);
+//}
 
 /**
  *  Notification of child update.

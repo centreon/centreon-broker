@@ -84,3 +84,39 @@ TEST(BamExpBuilder, Valid5) {
   ASSERT_EQ(b->value_soft(), 1);
   ASSERT_EQ(b->value_hard(), 1);
 }
+
+TEST(BamExpBuilder, Valid6) {
+  bam::exp_parser p("2 + 3 * 2 == 8");
+  bam::hst_svc_mapping mapping;
+  bam::exp_builder builder(p.get_postfix(), mapping);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
+  bam::bool_value::ptr b(builder.get_tree());
+  ASSERT_EQ(b->value_soft(), 1);
+  ASSERT_EQ(b->value_hard(), 1);
+}
+
+TEST(BamExpBuilder, Valid7) {
+  bam::exp_parser p("2 - 3 * (2 - 6 / 3) == 2");
+  bam::hst_svc_mapping mapping;
+  bam::exp_builder builder(p.get_postfix(), mapping);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
+  bam::bool_value::ptr b(builder.get_tree());
+  ASSERT_EQ(b->value_soft(), 1);
+  ASSERT_EQ(b->value_hard(), 1);
+}
+
+TEST(BamExpBuilder, Valid8) {
+  bam::exp_parser p("2 % 3 == 20 % 6");
+  bam::hst_svc_mapping mapping;
+  bam::exp_builder builder(p.get_postfix(), mapping);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
+  bam::bool_value::ptr b(builder.get_tree());
+  ASSERT_EQ(b->value_soft(), 1);
+  ASSERT_EQ(b->value_hard(), 1);
+}

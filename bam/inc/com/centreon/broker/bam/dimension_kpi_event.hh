@@ -1,5 +1,5 @@
 /*
-** Copyright 2014,2019-2020 Centreon
+** Copyright 2014,2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,17 +40,7 @@ namespace bam {
  */
 class dimension_kpi_event : public io::data {
  public:
-  dimension_kpi_event();
-  dimension_kpi_event(dimension_kpi_event const& other);
-  ~dimension_kpi_event();
-  dimension_kpi_event& operator=(dimension_kpi_event const& other);
-  bool operator==(dimension_kpi_event const& other) const;
-  constexpr static uint32_t static_type() {
-    return io::events::data_type<io::events::bam,
-                                 bam::de_dimension_kpi_event>::value;
-  }
-
-  unsigned kpi_id;
+  uint32_t kpi_id;
   uint32_t ba_id;
   std::string ba_name;
   uint32_t host_id;
@@ -67,11 +57,18 @@ class dimension_kpi_event : public io::data {
   double impact_critical;
   double impact_unknown;
 
+  dimension_kpi_event(uint32_t kpi_id);
+  dimension_kpi_event(dimension_kpi_event const& other);
+  ~dimension_kpi_event() noexcept = default;
+  dimension_kpi_event& operator=(dimension_kpi_event const&) = delete;
+  bool operator==(dimension_kpi_event const& other) const;
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_dimension_kpi_event>::value;
+  }
+
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(dimension_kpi_event const& other);
 };
 }  // namespace bam
 

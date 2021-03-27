@@ -38,19 +38,6 @@ namespace bam {
  *  Provides common methods to binary operators.
  */
 class bool_binary_operator : public bool_value {
- public:
-  typedef std::shared_ptr<bool_binary_operator> ptr;
-
-  bool_binary_operator();
-  bool_binary_operator(bool_binary_operator const& right);
-  virtual ~bool_binary_operator();
-  bool_binary_operator& operator=(bool_binary_operator const& right);
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
-  void set_left(std::shared_ptr<bool_value> const& left);
-  void set_right(std::shared_ptr<bool_value> const& right);
-  bool state_known() const;
-  bool in_downtime() const;
-
  protected:
   std::shared_ptr<bool_value> _left;
   double _left_hard;
@@ -60,6 +47,19 @@ class bool_binary_operator : public bool_value {
   double _right_soft;
   bool _state_known;
   bool _in_downtime;
+
+ public:
+  typedef std::shared_ptr<bool_binary_operator> ptr;
+
+  bool_binary_operator();
+  bool_binary_operator(bool_binary_operator const& right);
+  virtual ~bool_binary_operator();
+  bool_binary_operator& operator=(bool_binary_operator const& right) = delete;
+  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  void set_left(std::shared_ptr<bool_value> const& left);
+  void set_right(std::shared_ptr<bool_value> const& right);
+  bool state_known() const;
+  bool in_downtime() const;
 
  private:
   void _internal_copy(bool_binary_operator const& right);
