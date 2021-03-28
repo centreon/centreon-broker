@@ -37,11 +37,11 @@ timeperiod::timeperiod(uint32_t id) : _id(id) {
  */
 timeperiod::timeperiod(timeperiod const& obj)
     : _id{obj._id},
+      _timeperiod_name{obj._timeperiod_name},
       _alias{obj._alias},
       _exceptions{obj._exceptions},
       _include{obj._include},
       _exclude{obj._exclude},
-      _timeperiod_name{obj._timeperiod_name},
       _timeranges{obj._timeranges},
       _timezone{obj._timezone} {}
 
@@ -68,7 +68,7 @@ timeperiod::timeperiod(uint32_t id,
                        const std::string& thursday,
                        const std::string& friday,
                        const std::string& saturday)
-    : _id(id), _alias(alias), _timeperiod_name(name) {
+    : _id(id), _timeperiod_name(name), _alias(alias) {
   _exceptions.resize(daterange::daterange_types);
   std::vector<bool> success;
   if (!set_timerange(sunday, 0))
@@ -106,15 +106,6 @@ const std::string& timeperiod::get_alias() const noexcept {
 }
 
 /**
- *  Set the alias of the timeperiod.
- *
- *  @param value The new alias' value.
- */
-void timeperiod::set_alias(const std::string& value) {
-  _alias = value;
-}
-
-/**
  *  Get the timeperiod exceptions.
  *
  *  @return The timeperiod exceptions.
@@ -131,7 +122,7 @@ std::vector<std::list<daterange> > const& timeperiod::get_exceptions()
  *
  *  @return          A lit of exceptions.
  */
-std::list<daterange> const& timeperiod::get_exceptions_from_type(
+const std::list<daterange>& timeperiod::get_exceptions_from_type(
     int type) const {
   if (type < 0 || type > daterange::daterange_types)
     throw std::out_of_range("get_exceptions_from_type(): out of range");
@@ -144,7 +135,7 @@ std::list<daterange> const& timeperiod::get_exceptions_from_type(
  *
  *  @param val The exception to add.
  */
-void timeperiod::add_exceptions(std::list<daterange> const& val) {
+void timeperiod::add_exceptions(const std::list<daterange>& val) {
   _exceptions.push_back(val);
 }
 
@@ -170,7 +161,7 @@ bool timeperiod::add_exception(const std::string& days,
  *
  *  @return The included timeperiods.
  */
-std::vector<timeperiod::ptr> const& timeperiod::get_included() const noexcept {
+const std::vector<timeperiod::ptr>& timeperiod::get_included() const noexcept {
   return _include;
 }
 
@@ -188,7 +179,7 @@ void timeperiod::add_included(timeperiod::ptr val) {
  *
  *  @return The excluded timeperiods.
  */
-std::vector<timeperiod::ptr> const& timeperiod::get_excluded() const noexcept {
+const std::vector<timeperiod::ptr>& timeperiod::get_excluded() const noexcept {
   return _exclude;
 }
 
@@ -224,7 +215,7 @@ void timeperiod::set_name(const std::string& value) {
  *
  *  @return The timeperiod timeranges.
  */
-std::array<std::list<timerange>, 7> const& timeperiod::get_timeranges()
+const std::array<std::list<timerange>, 7>& timeperiod::get_timeranges()
     const noexcept {
   return _timeranges;
 }
@@ -235,7 +226,7 @@ std::array<std::list<timerange>, 7> const& timeperiod::get_timeranges()
  *  @param day The day (from 0 to 6).
  *  @return The timerange on this day.
  */
-std::list<timerange> const& timeperiod::get_timeranges_by_day(
+const std::list<timerange>& timeperiod::get_timeranges_by_day(
     int day) const noexcept {
   return _timeranges[day];
 }
@@ -297,35 +288,32 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
     // Compute first weekday.
     time_t midnight;
     int weekday;
-    {
-      struct tm preftime;
-      localtime_r(&preferred_time, &preftime);
-      weekday = preftime.tm_wday;
-      preftime.tm_sec = 0;
-      preftime.tm_min = 0;
-      preftime.tm_hour = 0;
-      midnight = mktime(&preftime);
-    }
+
+    struct tm preftime_midnight;
+    localtime_r(&preferred_time, &preftime_midnight);
+    weekday = preftime_midnight.tm_wday;
+    preftime_midnight.tm_sec = 0;
+    preftime_midnight.tm_min = 0;
+    preftime_midnight.tm_hour = 0;
+    midnight = mktime(&preftime_midnight);
 
     // Loop through the next 8 days (today which is
     // already started plus 7 days ahead).
-    for (int i = 0; i < 8; ++i) {
+    struct tm day_midnight;
+    memcpy(&day_midnight, &preftime_midnight, sizeof(struct tm));
+
+    for (int i = 0; i < 8;
+         ++i, day_midnight.tm_wday++, day_midnight.tm_mday++) {
       // Compute current day's midnight.
-      time_t day_start{
-          timeperiod::add_round_days_to_midnight(midnight, i * 24 * 60 * 60)};
-      struct tm day_midnight;
-      localtime_r(&day_start, &day_midnight);
+      time_t day_start{mktime(&day_midnight)};
 
       // Check all time ranges for this day of the week.
       time_t earliest_time((time_t)-1);
-      for (std::list<timerange>::const_iterator
-               trange(get_timeranges_by_day((weekday + i) % 7).begin()),
-           trange_end(get_timeranges_by_day((weekday + i) % 7).end());
-           trange != trange_end; ++trange) {
+      for (const timerange& trange : _timeranges[(weekday + i) % 7]) {
         // Get range limits.
         time_t range_start((time_t)-1);
         time_t range_end((time_t)-1);
-        if (trange->to_time_t(day_midnight, range_start, range_end)) {
+        if (trange.to_time_t(day_midnight, range_start, range_end)) {
           // Range is out of bound.
           if (preferred_time < range_end) {
             time_t potential_time((time_t)-1);
