@@ -39,7 +39,8 @@ namespace time {
  */
 class timeperiod {
   const uint32_t _id;
-  std::string _alias;
+  std::string _timeperiod_name;
+  const std::string _alias;
 
  public:
   DECLARE_SHARED_PTR(timeperiod);
@@ -80,12 +81,11 @@ class timeperiod {
              const std::string& friday,
              const std::string& saturday);
   timeperiod(timeperiod const& obj);
-  timeperiod operator=(timeperiod const& obj);
+  timeperiod operator=(timeperiod const& obj) = delete;
 
   uint32_t get_id() const noexcept;
 
   const std::string& get_alias() const noexcept;
-  void set_alias(const std::string& value);
 
   std::vector<std::list<daterange> > const& get_exceptions() const noexcept;
   std::list<daterange> const& get_exceptions_from_type(int type) const;
@@ -119,7 +119,6 @@ class timeperiod {
   std::vector<std::list<daterange> > _exceptions;
   std::vector<ptr> _exclude;
   std::vector<ptr> _include;
-  std::string _timeperiod_name;
   std::array<std::list<timerange>, 7> _timeranges;
   std::string _timezone;
 };
