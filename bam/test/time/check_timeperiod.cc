@@ -130,10 +130,13 @@ static void parse_file(char const* filename, options& opt) {
     else if (key == "timeperiod") {
       current_tp->set_name(value);
       opt.period.push_back(current_tp);
-      current_tp = std::shared_ptr<time::timeperiod>(std::make_shared<time::timeperiod>(0));
+      current_tp = std::shared_ptr<time::timeperiod>(
+          std::make_shared<time::timeperiod>(0));
     } else
-      throw msg_fmt("parsing of file '{}'"
-                    " failed because of line: {}", filename, line);
+      throw msg_fmt(
+          "parsing of file '{}'"
+          " failed because of line: {}",
+          filename, line);
   }
   if (!opt.preferred_time || !opt.current_time || !opt.ref_time ||
       !opt.period.size())
@@ -145,11 +148,10 @@ static void parse_file(char const* filename, options& opt) {
 class BamTime : public ::testing::Test {
  public:
   void SetUp() override { config::applier::init(0, "test_broker"); }
-
   void TearDown() override { config::applier::deinit(); }
 };
 
-bool checkPeriod(char const* file) {
+bool checkPeriod(char const* file, bool val = true) {
   try {
     // Parse configuration file.
     options opt;
@@ -157,8 +159,12 @@ bool checkPeriod(char const* file) {
 
     // Get next valid time.
     time_t valid;
-    valid = opt.period.back()->get_next_valid(
-        std::max(opt.preferred_time, opt.current_time));
+    if (val)
+      valid = opt.period.back()->get_next_valid(
+          std::max(opt.preferred_time, opt.current_time));
+    else
+      valid = opt.period.back()->get_next_invalid(
+          std::max(opt.preferred_time, opt.current_time));
 
     // Check against reference time.
     if (valid != opt.ref_time) {
@@ -181,6 +187,7 @@ bool checkPeriod(char const* file) {
   }
   return false;
 }
+
 /**
  *  Check that the timeperiods work properly.
  *
@@ -411,4 +418,6 @@ TEST_F(BamTime, WeekDay) {
   ASSERT_FALSE(
       checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
                   "/time/cfg/week_day/into_period_with_exclude_into.conf"));
+  ASSERT_TRUE(checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
+                          "/time/cfg/week_day/into_long_period.conf", false));
 }
