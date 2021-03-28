@@ -41,7 +41,7 @@ class daterange {
  public:
   DECLARE_SHARED_PTR(daterange);
 
-  static const int daterange_types = 5;
+  static constexpr int daterange_types = 5;
 
   enum type_range {
     none = -1,

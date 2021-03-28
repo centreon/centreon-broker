@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ void availability_builder::add_event(short status,
   if (end < _start)
     return;
   // Check if event was opened "today".
-  bool opened_today((start >= _start) && (start < _end));
+  bool opened_today(start >= _start && start < _end);
   // Check that the event times are within the computed day.
   if (start < _start)
     start = _start;

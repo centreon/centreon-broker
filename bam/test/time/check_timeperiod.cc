@@ -79,7 +79,7 @@ static void parse_file(char const* filename, options& opt) {
     throw msg_fmt("could not open file '{}'", filename);
   std::vector<std::string> range;
   std::vector<std::string> exclude;
-  std::shared_ptr<time::timeperiod> current_tp(new time::timeperiod);
+  std::shared_ptr<time::timeperiod> current_tp(new time::timeperiod(0));
   while (stream.good()) {
     std::string line;
     std::getline(stream, line, '\n');
@@ -88,10 +88,8 @@ static void parse_file(char const* filename, options& opt) {
       continue;
     size_t pos(line.find_first_of('='));
     if (pos == std::string::npos)
-      throw msg_fmt(
-          "parsing of file '{}'"
-          " failed because of line: {}",
-          filename, line);
+      throw msg_fmt("parsing of file '{}' failed because of line: {}", filename,
+                    line);
     std::string key(line.substr(0, pos));
     std::string value(line.substr(pos + 1));
     if (key == "preferred_time")
@@ -132,12 +130,10 @@ static void parse_file(char const* filename, options& opt) {
     else if (key == "timeperiod") {
       current_tp->set_name(value);
       opt.period.push_back(current_tp);
-      current_tp = std::shared_ptr<time::timeperiod>(new time::timeperiod);
+      current_tp = std::shared_ptr<time::timeperiod>(std::make_shared<time::timeperiod>(0));
     } else
-      throw msg_fmt(
-          "parsing of file '{}'"
-          " failed because of line: {}",
-          filename, line);
+      throw msg_fmt("parsing of file '{}'"
+                    " failed because of line: {}", filename, line);
   }
   if (!opt.preferred_time || !opt.current_time || !opt.ref_time ||
       !opt.period.size())
