@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,89 +41,21 @@ class daterange {
  public:
   DECLARE_SHARED_PTR(daterange);
 
-  static const int daterange_types = 5;
+ private:
+  std::list<timerange> _timeranges;
 
-  enum type_range {
-    none = -1,
-    calendar_date = 0,
-    month_date = 1,
-    month_day = 2,
-    month_week_day = 3,
-    week_day = 4
-  };
-
-  daterange(type_range type);
-  daterange(daterange const& right);
-  ~daterange();
-  daterange& operator=(daterange const& right);
-  bool operator==(daterange const& right) const throw();
-  bool operator!=(daterange const& right) const throw();
-  bool operator<(daterange const& right) const throw();
-  void month_end(uint32_t value);
-  uint32_t month_end() const throw();
-  void month_start(uint32_t value);
-  uint32_t month_start() const throw();
-  void month_day_end(int value);
-  int month_day_end() const throw();
-  void month_day_start(int value);
-  int month_day_start() const throw();
-  void skip_interval(uint32_t value);
-  uint32_t skip_interval() const throw();
-  void timeranges(std::list<timerange> const& value);
-  std::list<timerange> const& timeranges() const throw();
-  void type(type_range value);
-  type_range type() const throw();
-  void week_day_end(uint32_t value);
-  uint32_t week_day_end() const throw();
-  void week_day_start(uint32_t value);
-  uint32_t week_day_start() const throw();
-  void week_day_end_offset(int value);
-  int week_day_end_offset() const throw();
-  void week_day_start_offset(int value);
-  int week_day_start_offset() const throw();
-  void year_end(uint32_t value);
-  uint32_t year_end() const throw();
-  void year_start(uint32_t value);
-  uint32_t year_start() const throw();
-
-  bool to_time_t(time_t const preferred_time, time_t& start, time_t& end) const;
+ public:
+  daterange();
+  ~daterange() noexcept = default;
+  daterange(const daterange&) = delete;
+  daterange& operator=(const daterange&) = delete;
+  void timeranges(std::list<timerange>&& value);
+  std::list<timerange> const& timeranges() const noexcept;
 
   static bool build_calendar_date(std::string const& line,
-                                  std::vector<std::list<daterange> >& list);
-  static bool build_other_date(std::string const& line,
-                               std::vector<std::list<daterange> >& list);
-  static bool build_dateranges_from_string(
-      std::string const& value,
-      std::vector<std::list<daterange> >& list);
-
- private:
-  bool _calendar_date_to_time_t(time_t& start, time_t& end) const;
-  bool _month_date_to_time_t(time_info const& ti,
-                             time_t& start,
-                             time_t& end) const;
-  bool _month_day_to_time_t(time_info const& ti,
-                            time_t& start,
-                            time_t& end) const;
-  bool _month_week_day_to_time_t(time_info const& ti,
-                                 time_t& start,
-                                 time_t& end) const;
-  bool _week_day_to_time_t(time_info const& ti,
-                           time_t& start,
-                           time_t& end) const;
-
-  uint32_t _month_end;
-  uint32_t _month_start;
-  int _month_day_end;
-  int _month_day_start;
-  uint32_t _skip_interval;
-  std::list<timerange> _timeranges;
-  type_range _type;
-  uint32_t _week_day_end;
-  uint32_t _week_day_start;
-  int _week_day_end_offset;
-  int _week_day_start_offset;
-  uint32_t _year_end;
-  uint32_t _year_start;
+                                  std::list<daterange>& list);
+  static bool build_dateranges_from_string(std::string const& value,
+                                           std::list<daterange>& list);
 };
 }  // namespace time
 

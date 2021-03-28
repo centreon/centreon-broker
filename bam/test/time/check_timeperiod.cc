@@ -79,66 +79,105 @@ static void parse_file(char const* filename, options& opt) {
     throw msg_fmt("could not open file '{}'", filename);
   std::vector<std::string> range;
   std::vector<std::string> exclude;
-  std::shared_ptr<time::timeperiod> current_tp(new time::timeperiod);
+  std::shared_ptr<time::timeperiod> current_tp;
+  std::string preferred_time;
+  std::string current_time;
+  std::string ref_time;
+  std::vector<std::string> weekday;
+  std::string speday;
+  std::string exclusion;
+  std::string timeperiod;
+  std::string timezone;
+
+  auto add_timeperiod = [&]() {
+    current_tp = std::make_shared<time::timeperiod>(0, timeperiod);
+    current_tp->set_timezone(timezone);
+
+    if (!weekday.empty()) {
+      static std::array<std::string, 7> days{"sunday",    "monday",   "tuesday",
+                                             "wednesday", "thursday", "friday",
+                                             "saturday"};
+      for (auto& day : weekday) {
+        for (size_t i = 0; i < days.size(); ++i) {
+          if (!strncmp(days[i].c_str(), day.c_str(), days[i].size())) {
+            std::string v{day.substr(days[i].size())};
+            misc::string::trim(v);
+            current_tp->set_timerange(v, i);
+            break;
+          }
+        }
+      }
+    }
+    weekday.clear();
+
+    if (!speday.empty()) {
+      size_t pos{speday.find_first_of(" \t\n")};
+      if (pos == std::string::npos)
+        throw msg_fmt("invalid timeperiod exception format: {}", speday);
+      std::string v{speday.substr(pos)};
+      misc::string::trim(v);
+      current_tp->add_exception(speday.substr(0, pos), v);
+    }
+    speday.clear();
+
+    if (!exclusion.empty()) {
+      for (auto it = opt.period.begin(), end = opt.period.end(); it != end;
+           ++it)
+        if ((*it)->get_name() == exclusion) {
+          current_tp->add_excluded(*it);
+          break;
+        }
+    }
+    exclusion.clear();
+
+    opt.period.push_back(current_tp);
+  };
+
   while (stream.good()) {
     std::string line;
     std::getline(stream, line, '\n');
     misc::string::trim(line);
     if (line.empty() || line[0] == '#')
       continue;
-    size_t pos(line.find_first_of('='));
+    size_t pos{line.find_first_of('=')};
     if (pos == std::string::npos)
-      throw msg_fmt(
-          "parsing of file '{}'"
-          " failed because of line: {}",
-          filename, line);
-    std::string key(line.substr(0, pos));
-    std::string value(line.substr(pos + 1));
-    if (key == "preferred_time")
-      opt.preferred_time = string_to_time_t(value);
-    else if (key == "current_time")
-      opt.current_time = string_to_time_t(value);
-    else if (key == "ref_time")
-      opt.ref_time = string_to_time_t(value);
-    else if (key == "weekday") {
-      static char const* const days[] = {"sunday",    "monday",   "tuesday",
-                                         "wednesday", "thursday", "friday",
-                                         "saturday"};
-      for (size_t i(0); i < sizeof(days) / sizeof(*days); ++i) {
-        if (!strncmp(days[i], value.c_str(), strlen(days[i]))) {
-          std::string v{value.substr(strlen(days[i]))};
-          misc::string::trim(v);
-          current_tp->set_timerange(v, i);
-        }
-      }
-    } else if (key == "speday") {
-      size_t pos(value.find_first_of(" \t\n"));
-      if (pos == std::string::npos)
-        throw msg_fmt("invalid timeperiod exception format: {}", value);
-      std::string v{value.substr(pos)};
-      misc::string::trim(v);
-      current_tp->add_exception(value.substr(0, pos), v);
-    } else if (key == "exclusion") {
-      for (std::vector<std::shared_ptr<time::timeperiod> >::iterator
-               it(opt.period.begin()),
-           end(opt.period.end());
-           it != end; ++it)
-        if ((*it)->get_name() == value) {
-          current_tp->add_excluded(*it);
-          break;
-        }
-    } else if (key == "timezone")
-      current_tp->set_timezone(value);
+      throw msg_fmt("parsing of file '{}' failed because of line: {}", filename, line);
+    fmt::string_view key(line.c_str(), pos);
+    fmt::string_view value(line.c_str() + pos + 1, line.size() - pos - 1);
+    std::cout << "key = " << key.data() << std::endl;
+    std::cout << "value = " << value.data() << std::endl;
+
+    if (key == "preferred_time") {
+      preferred_time = std::string(value.data(), value.size());
+      opt.preferred_time = string_to_time_t(preferred_time);
+    }
+    else if (key == "current_time") {
+      current_time = std::string(value.data(), value.size());
+      opt.current_time = string_to_time_t(current_time);
+    }
+    else if (key == "ref_time") {
+      ref_time = std::string(value.data(), value.size());
+      opt.ref_time = string_to_time_t(ref_time);
+    }
+    else if (key == "weekday")
+      weekday.emplace_back(value.data(), value.size());
+    else if (key == "speday")
+      speday = std::string(value.data(), value.size());
+    else if (key == "exclusion")
+      exclusion = std::string(value.data(), value.size());
     else if (key == "timeperiod") {
-      current_tp->set_name(value);
-      opt.period.push_back(current_tp);
-      current_tp = std::shared_ptr<time::timeperiod>(new time::timeperiod);
-    } else
+      timeperiod = std::string(value.data(), value.size());
+      add_timeperiod();
+    }
+    else if (key == "timezone")
+      timezone = std::string(value.data(), value.size());
+    else
       throw msg_fmt(
           "parsing of file '{}'"
           " failed because of line: {}",
           filename, line);
   }
+
   if (!opt.preferred_time || !opt.current_time || !opt.ref_time ||
       !opt.period.size())
     throw msg_fmt(
@@ -149,11 +188,10 @@ static void parse_file(char const* filename, options& opt) {
 class BamTime : public ::testing::Test {
  public:
   void SetUp() override { config::applier::init(0, "test_broker"); }
-
   void TearDown() override { config::applier::deinit(); }
 };
 
-bool checkPeriod(char const* file) {
+bool checkPeriod(char const* file, bool val = true) {
   try {
     // Parse configuration file.
     options opt;
@@ -161,8 +199,12 @@ bool checkPeriod(char const* file) {
 
     // Get next valid time.
     time_t valid;
-    valid = opt.period.back()->get_next_valid(
-        std::max(opt.preferred_time, opt.current_time));
+    if (val)
+      valid = opt.period.back()->get_next_valid(
+          std::max(opt.preferred_time, opt.current_time));
+    else
+      valid = opt.period.back()->get_next_invalid(
+          std::max(opt.preferred_time, opt.current_time));
 
     // Check against reference time.
     if (valid != opt.ref_time) {
@@ -185,6 +227,7 @@ bool checkPeriod(char const* file) {
   }
   return false;
 }
+
 /**
  *  Check that the timeperiods work properly.
  *
@@ -415,4 +458,6 @@ TEST_F(BamTime, WeekDay) {
   ASSERT_FALSE(
       checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
                   "/time/cfg/week_day/into_period_with_exclude_into.conf"));
+  ASSERT_TRUE(checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
+                          "/time/cfg/week_day/into_long_period.conf", false));
 }
