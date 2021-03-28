@@ -358,26 +358,32 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
     // Compute first weekday.
     time_t midnight;
     int weekday;
-    {
-      struct tm preftime;
-      localtime_r(&preferred_time, &preftime);
-      weekday = preftime.tm_wday;
-      preftime.tm_sec = 0;
-      preftime.tm_min = 0;
-      preftime.tm_hour = 0;
-      midnight = mktime(&preftime);
-    }
+
+    struct tm preftime_midnight;
+    localtime_r(&preferred_time, &preftime_midnight);
+    weekday = preftime_midnight.tm_wday;
+    preftime_midnight.tm_sec = 0;
+    preftime_midnight.tm_min = 0;
+    preftime_midnight.tm_hour = 0;
+    midnight = mktime(&preftime_midnight);
 
     // Loop through the next 8 days (today which is
     // already started plus 7 days ahead).
-    for (int i(0); i < 8; ++i) {
+    struct tm day_midnight;
+    struct tm end_midnight;
+    memcpy(&day_midnight, &preftime_midnight, sizeof(struct tm));
+    time_t day_end{mktime(&day_midnight)};
+
+    memcpy(&end_midnight, &preftime_midnight, sizeof(struct tm));
+    end_midnight.tm_wday++;
+    end_midnight.tm_mday++;
+
+    for (int i = 0; i < 8;
+         ++i, end_midnight.tm_wday++, end_midnight.tm_mday++) {
       // Compute current day's midnight.
-      time_t day_start(
-          timeperiod::add_round_days_to_midnight(midnight, i * 24 * 60 * 60));
-      time_t day_end(
-          timeperiod::add_round_days_to_midnight(day_start, 24 * 60 * 60));
-      struct tm day_midnight;
-      localtime_r(&day_start, &day_midnight);
+
+      time_t day_start{day_end};
+      time_t day_end{mktime(&end_midnight)};
 
       // Try to find an invalid time in all ranges.
       time_t earliest_time(preferred_time > day_start ? preferred_time
@@ -400,6 +406,7 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
         if (invalid_in_all_periods)
           return earliest_time;
       }
+      memcpy(&day_midnight, &end_midnight, sizeof(struct tm));
     }
   }
   return (time_t)-1;
