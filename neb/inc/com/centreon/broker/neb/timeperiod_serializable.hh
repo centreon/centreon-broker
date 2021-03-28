@@ -72,7 +72,7 @@ class timeperiod_serializable : public ceof::ceof_serializable {
   virtual void visit(ceof::ceof_visitor& visitor);
 
  private:
-  std::unordered_map<std::string, time::timeperiod::ptr> const* _tps;
+  const std::unordered_map<std::string, time::timeperiod::ptr>* _tps;
   time::timeperiod::ptr _tp;
 };
 }  // namespace neb

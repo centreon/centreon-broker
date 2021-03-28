@@ -29,7 +29,7 @@ using namespace com::centreon::exceptions;
  */
 timeperiod_serializable::timeperiod_serializable(
     std::unordered_map<std::string, time::timeperiod::ptr> const& tps)
-    : _tps{&tps}, _tp{new time::timeperiod()} {}
+    : _tps{&tps}, _tp{new time::timeperiod(0)} {}
 
 /**
  *  Copy constructor.

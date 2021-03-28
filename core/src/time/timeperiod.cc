@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014,2017 Centreon
+** Copyright 2011-2014,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,11 +26,7 @@
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::time;
 
-/**
- *  Default constructor.
- */
-timeperiod::timeperiod() : _id(0) {
-  _timeranges.resize(7);
+timeperiod::timeperiod(uint32_t id) : _id(id) {
   _exceptions.resize(daterange::daterange_types);
 }
 
@@ -39,9 +35,15 @@ timeperiod::timeperiod() : _id(0) {
  *
  *  @param[in] obj  The object to copy.
  */
-timeperiod::timeperiod(timeperiod const& obj) {
-  timeperiod::operator=(obj);
-}
+timeperiod::timeperiod(timeperiod const& obj)
+    : _id{obj._id},
+      _alias{obj._alias},
+      _exceptions{obj._exceptions},
+      _include{obj._include},
+      _exclude{obj._exclude},
+      _timeperiod_name{obj._timeperiod_name},
+      _timeranges{obj._timeranges},
+      _timezone{obj._timezone} {}
 
 /**
  *  Construct the timeperiod from data.
@@ -57,17 +59,16 @@ timeperiod::timeperiod(timeperiod const& obj) {
  *  @param[in] saturday    A string describing the saturday timerange.
  */
 timeperiod::timeperiod(uint32_t id,
-                       std::string const& name,
-                       std::string const& alias,
-                       std::string const& sunday,
-                       std::string const& monday,
-                       std::string const& tuesday,
-                       std::string const& wednesday,
-                       std::string const& thursday,
-                       std::string const& friday,
-                       std::string const& saturday)
+                       const std::string& name,
+                       const std::string& alias,
+                       const std::string& sunday,
+                       const std::string& monday,
+                       const std::string& tuesday,
+                       const std::string& wednesday,
+                       const std::string& thursday,
+                       const std::string& friday,
+                       const std::string& saturday)
     : _id(id), _alias(alias), _timeperiod_name(name) {
-  _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
   std::vector<bool> success;
   if (!set_timerange(sunday, 0))
@@ -86,20 +87,6 @@ timeperiod::timeperiod(uint32_t id,
     throw msg_fmt("BAM: could not parse saturday for time period: {} ", id);
 }
 
-timeperiod timeperiod::operator=(timeperiod const& obj) {
-  if (this != &obj) {
-    _id = obj._id;
-    _alias = obj._alias;
-    _exceptions = obj._exceptions;
-    _include = obj._include;
-    _exclude = obj._exclude;
-    _timeperiod_name = obj._timeperiod_name;
-    _timeranges = obj._timeranges;
-    _timezone = obj._timezone;
-  }
-  return *this;
-}
-
 /**
  *  Get the id of the timeperiod.
  *
@@ -110,20 +97,11 @@ uint32_t timeperiod::get_id() const noexcept {
 }
 
 /**
- *  Set the id of the timeperiod.
- *
- *  @param[in] id  The id of the timeperiod.
- */
-void timeperiod::set_id(uint32_t id) noexcept {
-  _id = id;
-}
-
-/**
  *  Get the alias of the timeperiod.
  *
  *  @return The alias of the timeperiod.
  */
-std::string const& timeperiod::get_alias() const noexcept {
+const std::string& timeperiod::get_alias() const noexcept {
   return _alias;
 }
 
@@ -132,7 +110,7 @@ std::string const& timeperiod::get_alias() const noexcept {
  *
  *  @param value The new alias' value.
  */
-void timeperiod::set_alias(std::string const& value) {
+void timeperiod::set_alias(const std::string& value) {
   _alias = value;
 }
 
@@ -178,8 +156,8 @@ void timeperiod::add_exceptions(std::list<daterange> const& val) {
  *
  *  @return            True if the exception was correctly parsed.
  */
-bool timeperiod::add_exception(std::string const& days,
-                               std::string const& range) {
+bool timeperiod::add_exception(const std::string& days,
+                               const std::string& range) {
   // Concatenate days and range.
   std::string d{fmt::format("{} {}", days, range)};
 
@@ -228,7 +206,7 @@ void timeperiod::add_excluded(timeperiod::ptr val) {
  *
  *  @return The timeperiod name.
  */
-std::string const& timeperiod::get_name() const noexcept {
+const std::string& timeperiod::get_name() const noexcept {
   return _timeperiod_name;
 }
 
@@ -237,7 +215,7 @@ std::string const& timeperiod::get_name() const noexcept {
  *
  * @param value The new name.
  */
-void timeperiod::set_name(std::string const& value) {
+void timeperiod::set_name(const std::string& value) {
   _timeperiod_name = value;
 }
 
@@ -246,7 +224,7 @@ void timeperiod::set_name(std::string const& value) {
  *
  *  @return The timeperiod timeranges.
  */
-std::vector<std::list<timerange> > const& timeperiod::get_timeranges()
+std::array<std::list<timerange>, 7> const& timeperiod::get_timeranges()
     const noexcept {
   return _timeranges;
 }
@@ -270,7 +248,7 @@ std::list<timerange> const& timeperiod::get_timeranges_by_day(
  *
  *  @return  True if the string is valid.
  */
-bool timeperiod::set_timerange(std::string const& timerange_text, int day) {
+bool timeperiod::set_timerange(const std::string& timerange_text, int day) {
   return timerange::build_timeranges_from_string(timerange_text,
                                                  _timeranges[day]);
 }
@@ -280,7 +258,7 @@ bool timeperiod::set_timerange(std::string const& timerange_text, int day) {
  *
  *  @return The timezone.
  */
-std::string const& timeperiod::get_timezone() const noexcept {
+const std::string& timeperiod::get_timezone() const noexcept {
   return _timezone;
 }
 
@@ -289,7 +267,7 @@ std::string const& timeperiod::get_timezone() const noexcept {
  *
  *  @param tz The timezone to set.
  */
-void timeperiod::set_timezone(std::string const& tz) {
+void timeperiod::set_timezone(const std::string& tz) {
   _timezone = tz;
 }
 
@@ -331,10 +309,10 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
 
     // Loop through the next 8 days (today which is
     // already started plus 7 days ahead).
-    for (int i(0); i < 8; ++i) {
+    for (int i = 0; i < 8; ++i) {
       // Compute current day's midnight.
-      time_t day_start(
-          timeperiod::add_round_days_to_midnight(midnight, i * 24 * 60 * 60));
+      time_t day_start{
+          timeperiod::add_round_days_to_midnight(midnight, i * 24 * 60 * 60)};
       struct tm day_midnight;
       localtime_r(&day_start, &day_midnight);
 
@@ -450,20 +428,20 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
  */
 uint32_t timeperiod::duration_intersect(time_t start_time,
                                         time_t end_time) const {
-  uint32_t duration(0);
-  time_t current_start_time(start_time);
-  time_t current_end_time(current_start_time);
+  uint32_t duration{0u};
+  time_t current_start_time{start_time};
+  time_t current_end_time{current_start_time};
 
   if (end_time < start_time)
     return 0;
 
   // We iterate on the range, going from next valid times to next invalid times.
-  while (true) {
+  for (;;) {
     current_start_time = get_next_valid(current_end_time);
     current_end_time = get_next_invalid(current_start_time);
-    if ((current_start_time == (time_t)-1) || (current_start_time > end_time))
+    if (current_start_time == (time_t)-1 || current_start_time > end_time)
       break;
-    if ((current_end_time == (time_t)-1) || (current_end_time > end_time)) {
+    if (current_end_time == (time_t)-1 || current_end_time > end_time) {
       duration += std::difftime(end_time, current_start_time);
       break;
     } else
