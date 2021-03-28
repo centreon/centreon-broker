@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Centreon
+** Copyright 2011-2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,22 +34,19 @@ namespace time {
  *  The object containing a timerange.
  */
 class timerange {
+  time_t _start;
+  time_t _end;
+
  public:
-  timerange(uint64_t start = 0, uint64_t end = 0);
+  timerange(time_t start, time_t end);
   timerange(timerange const& right);
-  ~timerange() throw();
+  ~timerange() noexcept = default;
   timerange& operator=(timerange const& right);
-  bool operator==(timerange const& right) const throw();
-  bool operator!=(timerange const& right) const throw();
-  bool operator<(timerange const& right) const throw();
-  uint64_t end() const throw();
-  void end(uint64_t value);
-  uint64_t start() const throw();
-  void start(uint64_t value);
-  uint64_t start_hour() const throw();
-  uint64_t start_minute() const throw();
-  uint64_t end_hour() const throw();
-  uint64_t end_minute() const throw();
+  bool operator==(timerange const& right) const noexcept;
+  bool operator!=(timerange const& right) const noexcept;
+  bool operator<(timerange const& right) const noexcept;
+  time_t end() const noexcept;
+  uint64_t start() const noexcept;
 
   bool to_time_t(struct tm const& midnight,
                  time_t& range_start,
@@ -61,10 +58,6 @@ class timerange {
   std::string to_string() const;
   static std::string build_string_from_timeranges(
       std::list<timerange> const& timeranges);
-
- private:
-  uint64_t _end;
-  uint64_t _start;
 };
 }  // namespace time
 
