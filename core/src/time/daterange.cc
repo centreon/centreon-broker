@@ -387,33 +387,17 @@ uint32_t daterange::year_start() const throw() {
  *  Add a round number of days (expressed in seconds) to a date.
  *
  *  @param[in] middnight  Midnight of base day.
- *  @param[in] skip       Number of days to skip (in seconds).
+ *  @param[in] skip       Number of days to skip.
  *
  *  @return Midnight of the day in skip seconds.
  */
-static time_t _add_round_days_to_midnight(time_t midnight, time_t skip) {
-  // Compute expected time with no DST.
-  time_t next_day_time(midnight + skip);
+static time_t _add_round_days_to_midnight(time_t midnight, int32_t skip) {
   struct tm next_day;
-  localtime_r(&next_day_time, &next_day);
-
-  // There was a DST shift in between.
-  if (next_day.tm_hour || next_day.tm_min || next_day.tm_sec) {
-    /*
-    ** The trick here is to move from midnight to noon, add the skip
-    ** seconds and break time down in a tm structure. We're now sure to
-    ** be in the proper day (DST shift is +-1h) we only have to reset
-    ** time to midnight, convert back and we're done.
-    */
-    next_day_time += 12 * 60 * 60 + skip;
-    localtime_r(&next_day_time, &next_day);
-    next_day.tm_hour = 0;
-    next_day.tm_min = 0;
-    next_day.tm_sec = 0;
-    next_day_time = mktime(&next_day);
-  }
-
-  return next_day_time;
+  localtime_r(&midnight, &next_day);
+  next_day.tm_hour = next_day.tm_min = next_day.tm_sec = 0;
+  next_day.tm_mday += skip;
+  time_t retval = mktime(&next_day);
+  return retval;
 }
 
 /**
@@ -706,7 +690,7 @@ bool daterange::_month_day_to_time_t(time_info const& ti,
     }
     end = calculate_time_from_day_of_month(year, month, 0);
   } else
-    end = _add_round_days_to_midnight(end, 24 * 60 * 60);
+    end = _add_round_days_to_midnight(end, 1);
   return true;
 }
 
@@ -762,7 +746,7 @@ bool daterange::_month_week_day_to_time_t(time_info const& ti,
       if ((time_t)-1 == end)
         return false;
     } else
-      end = _add_round_days_to_midnight(end, 24 * 60 * 60);
+      end = _add_round_days_to_midnight(end, 1);
 
     // We should have an interval that includes or is above
     // preferred time.
@@ -821,7 +805,7 @@ bool daterange::_week_day_to_time_t(time_info const& ti,
       }
       end = calculate_time_from_day_of_month(end_year, end_month, 0);
     } else
-      end = _add_round_days_to_midnight(end, 24 * 60 * 60);
+      end = _add_round_days_to_midnight(end, 1);
 
     // Error checking.
     if (((time_t)-1 == start) || ((time_t)-1 == end) || (start > end))
@@ -902,11 +886,11 @@ bool daterange::to_time_t(time_t const preferred_time,
 
       // Advance start date to next skip day
       if (!(days % _skip_interval))
-        start = _add_round_days_to_midnight(start, days * 24 * 60 * 60);
+        start = _add_round_days_to_midnight(start, days);
       else
         start = _add_round_days_to_midnight(
             start,
-            ((days - (days % _skip_interval) + _skip_interval) * 24 * 60 * 60));
+            days - (days % _skip_interval) + _skip_interval);
     }
   }
 
