@@ -372,7 +372,7 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
     struct tm day_midnight;
     struct tm end_midnight;
     memcpy(&day_midnight, &preftime_midnight, sizeof(struct tm));
-    time_t day_end{mktime(&day_midnight)};
+    time_t day_end{midnight};
 
     memcpy(&end_midnight, &preftime_midnight, sizeof(struct tm));
     end_midnight.tm_wday++;
@@ -383,22 +383,19 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
       // Compute current day's midnight.
 
       time_t day_start{day_end};
-      time_t day_end{mktime(&end_midnight)};
+      day_end = mktime(&end_midnight);
 
       // Try to find an invalid time in all ranges.
       time_t earliest_time(preferred_time > day_start ? preferred_time
                                                       : day_start);
       while (earliest_time < day_end) {
-        bool invalid_in_all_periods(true);
-        for (std::list<timerange>::const_iterator
-                 trange(get_timeranges_by_day((weekday + i) % 7).begin()),
-             trange_end(get_timeranges_by_day((weekday + i) % 7).end());
-             trange != trange_end; ++trange) {
+        bool invalid_in_all_periods{true};
+        for (const timerange& trange : _timeranges[(weekday + i) % 7]) {
           // Get range limits.
-          time_t range_start((time_t)-1);
-          time_t range_end((time_t)-1);
-          if (trange->to_time_t(day_midnight, range_start, range_end) &&
-              (earliest_time >= range_start) && (earliest_time < range_end)) {
+          time_t range_start{(time_t)-1};
+          time_t range_end{(time_t)-1};
+          if (trange.to_time_t(day_midnight, range_start, range_end) &&
+              earliest_time >= range_start && earliest_time < range_end) {
             invalid_in_all_periods = false;
             earliest_time = range_end;
           }
