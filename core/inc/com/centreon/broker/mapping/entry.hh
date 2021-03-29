@@ -127,6 +127,28 @@ class entry {
         _type(source::UINT) {}
 
   /**
+   *  @brief Unsigned integer constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   *  @param[in] prop Property.
+   */
+  template <typename T>
+  entry(uint64_t(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::ULONG) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+
+  /**
    *  @brief Integer constructor.
    *
    *  Build an entry from a property.

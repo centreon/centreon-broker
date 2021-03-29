@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Centreon
+** Copyright 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -95,6 +95,15 @@ class property : public source {
    *  @param[in]  I Unsigned integer property.
    */
   property(uint32_t(T::*I)) { _prop.I = I; }
+
+  /**
+   *  Unsigned integer 64 bits constructor.
+   *
+   *  @param[in]  uint64 property.
+   */
+  property(uint64_t(T::*l)) { _prop.l = l; }
+
+
 
   /**
    *  Unsigned short constructor.
