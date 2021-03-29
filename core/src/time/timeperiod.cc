@@ -35,15 +35,15 @@ timeperiod::timeperiod(uint32_t id) : _id(id) {
  *
  *  @param[in] obj  The object to copy.
  */
-timeperiod::timeperiod(timeperiod const& obj)
+timeperiod::timeperiod(const timeperiod& obj)
     : _id{obj._id},
       _timeperiod_name{obj._timeperiod_name},
       _alias{obj._alias},
       _exceptions{obj._exceptions},
-      _include{obj._include},
       _exclude{obj._exclude},
-      _timeranges{obj._timeranges},
-      _timezone{obj._timezone} {}
+      _include{obj._include},
+      _timeranges(obj._timeranges),
+      _timezone(obj._timezone) {}
 
 /**
  *  Construct the timeperiod from data.
@@ -286,7 +286,6 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
   // Check preferred_time.
   if (preferred_time != (time_t)-1) {
     // Compute first weekday.
-    time_t midnight;
     int weekday;
 
     struct tm preftime_midnight;
@@ -295,7 +294,7 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
     preftime_midnight.tm_sec = 0;
     preftime_midnight.tm_min = 0;
     preftime_midnight.tm_hour = 0;
-    midnight = mktime(&preftime_midnight);
+    mktime(&preftime_midnight);
 
     // Loop through the next 8 days (today which is
     // already started plus 7 days ahead).
@@ -305,7 +304,7 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
     for (int i = 0; i < 8;
          ++i, day_midnight.tm_wday++, day_midnight.tm_mday++) {
       // Compute current day's midnight.
-      time_t day_start{mktime(&day_midnight)};
+      mktime(&day_midnight);
 
       // Check all time ranges for this day of the week.
       time_t earliest_time((time_t)-1);
