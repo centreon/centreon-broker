@@ -80,7 +80,7 @@ class timeperiod {
              const std::string& thursday,
              const std::string& friday,
              const std::string& saturday);
-  timeperiod(timeperiod const& obj);
+  timeperiod(const timeperiod& obj);
   timeperiod operator=(timeperiod const& obj) = delete;
 
   uint32_t get_id() const noexcept;
