@@ -202,7 +202,7 @@ void conflict_manager::_storage_process_service_status(
         _index_data_update.bind_value_as_str(1, sv);
         _index_data_update.bind_value_as_str(2, "0");
         _index_data_update.bind_value_as_str(3, special ? "1" : "0");
-        _index_data_update.bind_value_as_i32(4, index_id);
+        _index_data_update.bind_value_as_u64(4, index_id);
         {
           std::promise<database::mysql_result> promise;
           _mysql.run_statement_and_get_result(_index_data_update, &promise,
