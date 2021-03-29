@@ -223,8 +223,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
         throw msg_fmt("no availability in table");
       }
       first_day = res.value_as_i32(0);
-      first_day =
-          time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
+      first_day = time::timeperiod::add_round_days_to_midnight(first_day, 1);
     } catch (const std::exception& e) {
       std::string msg(fmt::format(
           "BAM-BI: availability thread could not select the BA availabilities "
@@ -242,7 +241,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   // Write the availabilities day after day.
   while (first_day < last_day) {
     time_t next_day =
-        time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
+        time::timeperiod::add_round_days_to_midnight(first_day, 1);
     _build_daily_availabilities(thread_id, first_day, next_day);
     first_day = next_day;
   }
@@ -430,8 +429,13 @@ void availability_thread::_write_availability(
  *  @return  The next midnight.
  */
 time_t availability_thread::_compute_next_midnight() {
-  return time::timeperiod::add_round_days_to_midnight(
-      _compute_start_of_day(::time(nullptr)), 3600 * 24);
+  struct tm tmv;
+  time_t now{::time(nullptr)};
+  if (!localtime_r(&now, &tmv))
+    throw msg_fmt("BAM-BI: availability thread could not compute start of day");
+  tmv.tm_sec = tmv.tm_min = tmv.tm_hour = 0;
+  tmv.tm_mday++;
+  return mktime(&tmv);
 }
 
 /**

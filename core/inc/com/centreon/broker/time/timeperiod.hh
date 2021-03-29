@@ -113,7 +113,7 @@ class timeperiod {
 
   uint32_t duration_intersect(time_t start_time, time_t end_time) const;
 
-  static time_t add_round_days_to_midnight(time_t midnight, long long skip);
+  static time_t add_round_days_to_midnight(time_t midnight, int32_t skip);
 
  private:
   std::vector<std::list<daterange> > _exceptions;
