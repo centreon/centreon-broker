@@ -377,7 +377,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
      * _Module_Meta), the service_id and the meta id (given by the service
      * description). */
     _mysql.run_query_and_get_result(
-        "SELECT s.host_id,s.service_id,s.service_description FROM service AS s "
+        "SELECT h.host_id,s.service_id,s.service_description FROM service AS s "
         "INNER JOIN host_service_relation AS hsr ON "
         "s.service_id=hsr.service_service_id INNER JOIN host AS h ON "
         "hsr.host_host_id=h.host_id WHERE s.service_register='2' AND "
