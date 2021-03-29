@@ -252,7 +252,6 @@ void availability_thread::_build_availabilities(time_t midnight) {
   while (first_day < last_day) {
     time_t next_day =
         time::timeperiod::add_round_days_to_midnight(first_day, 1);
-
     _build_daily_availabilities(thread_id, first_day, next_day);
     first_day = time::timeperiod::add_round_days_to_midnight(next_day, 0);
   }
