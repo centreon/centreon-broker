@@ -69,7 +69,7 @@ class meta_service {
       metric_book& book);
 
  public:
-  meta_service();
+  meta_service() = default;
   ~meta_service() noexcept = default;
   meta_service(const meta_service&) = delete;
   meta_service& operator=(const meta_service&) = delete;
