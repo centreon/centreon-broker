@@ -47,6 +47,8 @@ namespace bam {
  *  ...).
  */
 class meta_service : public computable, public metric_listener {
+  static int const _recompute_limit = 100;
+
   const uint32_t _host_id;
   const uint32_t _service_id;
   const uint32_t _id;
@@ -56,12 +58,11 @@ class meta_service : public computable, public metric_listener {
   enum computation_type { average = 1, min, max, sum };
 
  private:
-  static int const _recompute_limit = 100;
+  computation_type _computation;
 
   void _recompute_partial(double new_value, double old_value);
   void _send_service_status(io::stream* visitor, bool state_has_changed);
 
-  computation_type _computation;
   meta_service::state _last_state;
   double _level_critical;
   double _level_warning;
@@ -72,7 +73,7 @@ class meta_service : public computable, public metric_listener {
 
  public:
   meta_service(uint32_t host_id, uint32_t service_id, uint32_t id);
-  ~meta_service();
+  ~meta_service() noexcept = default;
   meta_service(meta_service const&) = delete;
   meta_service& operator=(meta_service const& other) = delete;
   void add_metric(uint32_t metric_id);
