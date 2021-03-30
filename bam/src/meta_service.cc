@@ -18,11 +18,11 @@
 
 #include "com/centreon/broker/bam/meta_service.hh"
 
+#include <fmt/format.h>
 #include <cassert>
 #include <cmath>
 #include <com/centreon/broker/bam/kpi_meta.hh>
 #include <ctime>
-#include <fmt/format.h>
 
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -51,11 +51,6 @@ meta_service::meta_service(uint32_t host_id, uint32_t service_id, uint32_t id)
       _value(NAN) {
   assert(_host_id);
 }
-
-/**
- *  Destructor.
- */
-meta_service::~meta_service() {}
 
 /**
  *  Add some metric that will impact this meta-service.
@@ -123,7 +118,8 @@ std::string meta_service::get_output() const {
  *  @return Meta-servier performance data.
  */
 std::string meta_service::get_perfdata() const {
-  return fmt::format("g[rta]={};{};{}", _value, _level_warning, _level_critical);
+  return fmt::format("g[rta]={};{};{}", _value, _level_warning,
+                     _level_critical);
 }
 
 /**
@@ -184,42 +180,47 @@ void meta_service::metric_update(std::shared_ptr<storage::metric> const& m,
  *  Perform a full recomputation of the value.
  */
 void meta_service::recompute() {
-  // MIN.
-  if (min == _computation) {
-    if (_metrics.empty())
-      _value = NAN;
-    else {
-      std::unordered_map<uint32_t, double>::const_iterator it(_metrics.begin()),
-          end(_metrics.end());
-      _value = it->second;
-      while (++it != end)
-        if (it->second < _value)
-          _value = it->second;
-    }
-  }
-  // MAX.
-  else if (max == _computation) {
-    if (_metrics.empty())
-      _value = NAN;
-    else {
-      std::unordered_map<uint32_t, double>::const_iterator it(_metrics.begin()),
-          end(_metrics.end());
-      _value = it->second;
-      while (++it != end)
-        if (it->second > _value)
-          _value = it->second;
-    }
-  }
-  // SUM/AVERAGE.
-  else {
-    _value = 0.0;
-    for (std::unordered_map<uint32_t, double>::const_iterator
-             it(_metrics.begin()),
-         end(_metrics.end());
-         it != end; ++it)
-      _value += it->second;
-    if (_computation != sum)
-      _value /= _metrics.size();
+  switch (_computation) {
+      // MIN.
+    case min:
+      if (_metrics.empty())
+        _value = NAN;
+      else {
+        std::unordered_map<uint32_t, double>::const_iterator it(
+            _metrics.begin()),
+            end(_metrics.end());
+        _value = it->second;
+        while (++it != end)
+          if (it->second < _value)
+            _value = it->second;
+      }
+      break;
+      // MAX.
+    case max:
+      if (_metrics.empty())
+        _value = NAN;
+      else {
+        std::unordered_map<uint32_t, double>::const_iterator it(
+            _metrics.begin()),
+            end(_metrics.end());
+        _value = it->second;
+        while (++it != end)
+          if (it->second > _value)
+            _value = it->second;
+      }
+      break;
+      // SUM/AVERAGE.
+    case sum:
+    case average:
+      _value = 0.0;
+      for (std::unordered_map<uint32_t, double>::const_iterator
+               it(_metrics.begin()),
+           end(_metrics.end());
+           it != end; ++it)
+        _value += it->second;
+      if (_computation != sum)
+        _value /= _metrics.size();
+      break;
   }
   _recompute_count = 0;
 }
@@ -294,33 +295,37 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
 }
 
 /**
- *  Perform a partial recomputation of the vlaue.
+ *  Perform a partial recomputation of the value.
  *
  *  @param[in] new_value  New value.
  *  @param[in] old_value  Old value.
  */
 void meta_service::_recompute_partial(double new_value, double old_value) {
-  // MIN.
-  if (min == _computation) {
-    if (new_value <= _value)
-      _value = new_value;
-    else if (_value == old_value)
-      recompute();
-  }
-  // MAX.
-  else if (max == _computation) {
-    if (new_value >= _value)
-      _value = new_value;
-    else if (_value == old_value)
-      recompute();
-  }
-  // SUM.
-  else if (sum == _computation) {
-    _value = _value - old_value + new_value;
-  }
-  // AVERAGE.
-  else {
-    _value = _value + (new_value - old_value) / _metrics.size();
+  switch (_computation) {
+      // MIN.
+    case min:
+      if (new_value < _value)
+        _value = new_value;
+      else if (_value == old_value)
+        recompute();
+      break;
+      // MAX.
+    case max:
+      if (new_value > _value)
+        _value = new_value;
+      else if (_value == old_value)
+        recompute();
+      break;
+      // SUM.
+    case sum:
+      _value = _value - old_value + new_value;
+      break;
+      // AVERAGE.
+    default:
+      // This is good in theory. In practice we have a derivation not so small
+      // of the calculation.
+      _value = _value + (new_value - old_value) / _metrics.size();
+      break;
   }
 }
 
