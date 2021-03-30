@@ -50,6 +50,20 @@ class ba;
  *  Create boolean expression objects.
  */
 class bool_expression {
+  struct applied {
+    configuration::bool_expression cfg;
+    std::shared_ptr<bam::bool_expression> obj;
+    std::list<std::shared_ptr<bam::bool_service>> svc;
+    std::list<std::shared_ptr<bam::bool_call>> call;
+    std::list<std::shared_ptr<bam::bool_metric>> mtrc;
+  };
+
+  std::map<uint32_t, applied> _applied;
+
+  std::shared_ptr<bam::bool_expression> _new_bool_exp(
+      configuration::bool_expression const& cfg);
+  void _resolve_expression_calls();
+
  public:
   bool_expression() = default;
   bool_expression(const bool_expression&) = delete;
@@ -60,22 +74,6 @@ class bool_expression {
              service_book& book,
              metric_book& metric_book);
   std::shared_ptr<bam::bool_expression> find_boolexp(uint32_t id);
-
- private:
-  struct applied {
-    configuration::bool_expression cfg;
-    std::shared_ptr<bam::bool_expression> obj;
-    std::list<std::shared_ptr<bam::bool_service>> svc;
-    std::list<std::shared_ptr<bam::bool_call>> call;
-    std::list<std::shared_ptr<bam::bool_metric>> mtrc;
-  };
-
-  void _internal_copy(bool_expression const& other);
-  std::shared_ptr<bam::bool_expression> _new_bool_exp(
-      configuration::bool_expression const& cfg);
-  void _resolve_expression_calls();
-
-  std::map<uint32_t, applied> _applied;
 };
 }  // namespace applier
 }  // namespace configuration
