@@ -37,11 +37,12 @@ namespace storage {
  */
 class parser {
  public:
-  parser();
+  parser() = default;
+  ~parser() noexcept = default;
   parser(parser const& p) = delete;
-  ~parser();
   parser& operator=(parser const& p) = delete;
-  void parse_perfdata(const char* str, std::list<perfdata>& pd);
+  void parse_perfdata(uint32_t host_id, uint32_t service_id,
+                      const char* str, std::list<perfdata>& pd);
 };
 }  // namespace storage
 

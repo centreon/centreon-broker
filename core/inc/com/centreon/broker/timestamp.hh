@@ -53,12 +53,12 @@ struct timestamp {
    *
    *  @param[in] right Object to copy.
    */
-  timestamp(timestamp const& right) : _sec(right._sec) {}
+  timestamp(const timestamp& right) : _sec(right._sec) {}
 
   /**
    *  Destructor.
    */
-  ~timestamp() {}
+  ~timestamp() noexcept = default;
 
   /**
    *  Assignment operator.
@@ -67,10 +67,10 @@ struct timestamp {
    *
    *  @return This object.
    */
-  timestamp& operator=(timestamp const& right) {
+  timestamp& operator=(const timestamp& right) {
     if (this != &right)
       _sec = right._sec;
-    return (*this);
+    return *this;
   }
 
   /**
@@ -78,21 +78,21 @@ struct timestamp {
    *
    *  @return Timestamp as time_t.
    */
-  operator std::time_t() const { return (_sec); }
+  operator std::time_t() const { return _sec; }
 
   /**
    *  Get timestamp as time_t.
    *
    *  @return Timestamp as time_t.
    */
-  std::time_t get_time_t() const { return (_sec); }
+  std::time_t get_time_t() const { return _sec; }
 
   /**
    *  Is this a null timestamp ?
    *
    *  @return  True if this is a null timestamp.
    */
-  bool is_null() const { return ((_sec == (time_t)-1) || (_sec == (time_t)0)); }
+  bool is_null() const { return _sec == (time_t)-1 || _sec == (time_t)0; }
 
   /**
    *  Clear the timestamp.
@@ -107,13 +107,13 @@ struct timestamp {
    *
    *  @return           True if this object is less than the other.
    */
-  static bool less(timestamp const& left, timestamp const& right) {
+  static bool less(const timestamp& left, const timestamp& right) {
     if (left.is_null() && !right.is_null())
-      return (false);
+      return false;
     else if (!left.is_null() && right.is_null())
-      return (true);
+      return true;
     else
-      return (left._sec < right._sec);
+      return left._sec < right._sec;
   }
 
   /**
@@ -121,7 +121,7 @@ struct timestamp {
    *
    *  @return  A timestamp set to present time, present day.
    */
-  static timestamp now() { return (::time(NULL)); }
+  static timestamp now() { return ::time(NULL); }
 
   /**
    *  Return the upper time limit.

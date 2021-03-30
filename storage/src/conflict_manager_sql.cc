@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include <fmt/format.h>
+#include <cassert>
 
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/database/table_max_size.hh"
@@ -1566,7 +1567,8 @@ void conflict_manager::_process_service(
                          actions::service_dependencies);
 
   // Processed object.
-  neb::service const& s(*static_cast<neb::service const*>(d.get()));
+  const neb::service& s(*static_cast<neb::service const*>(d.get()));
+  assert(s.last_time_ok <= 0xffffffff);
   if (_cache_host_instance[s.host_id]) {
     int32_t conn =
         _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
