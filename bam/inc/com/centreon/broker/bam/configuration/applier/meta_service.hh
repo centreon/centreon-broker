@@ -55,7 +55,6 @@ class meta_service {
   std::map<uint32_t, applied> _applied;
 
  private:
-  // void _internal_copy(const meta_service& other);
   std::shared_ptr<neb::host> _meta_host(uint32_t host_id);
   std::shared_ptr<neb::service> _meta_service(uint32_t meta_id,
                                               uint32_t host_id,
