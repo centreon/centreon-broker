@@ -28,11 +28,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
-/**
- *  Default constructor.
- */
-applier::meta_service::meta_service() {}
-
 void applier::meta_service::apply(const state::meta_services& my_meta,
                                   metric_book& book) {
   /* We make the diff between the running configuration and the new one */
