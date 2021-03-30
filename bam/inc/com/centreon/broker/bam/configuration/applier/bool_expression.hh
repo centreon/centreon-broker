@@ -51,10 +51,10 @@ class ba;
  */
 class bool_expression {
  public:
-  bool_expression();
-  bool_expression(bool_expression const& other);
-  ~bool_expression();
-  bool_expression& operator=(bool_expression const& other);
+  bool_expression() = default;
+  bool_expression(const bool_expression&) = delete;
+  ~bool_expression() noexcept = default;
+  bool_expression& operator=(const bool_expression&) = delete;
   void apply(configuration::state::bool_exps const& my_bools,
              hst_svc_mapping const& mapping,
              service_book& book,

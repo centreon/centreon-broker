@@ -31,40 +31,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
 /**
- *  Default constructor.
- */
-applier::bool_expression::bool_expression() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-applier::bool_expression::bool_expression(
-    applier::bool_expression const& other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-applier::bool_expression::~bool_expression() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Object to copy.
- *
- *  @return This object.
- */
-applier::bool_expression& applier::bool_expression::operator=(
-    applier::bool_expression const& other) {
-  if (this != &other)
-    _internal_copy(other);
-  return (*this);
-}
-
-/**
  *  Apply boolean expressions.
  *
  *  @param[in]     my_bools Boolean expressions.
