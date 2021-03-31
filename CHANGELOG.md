@@ -18,6 +18,19 @@ have been removed.
 
 ### Bugfixes
 
+*streamconnector*
+
+There is a new function broker.md5(str) provided by the streamconnector that
+computes the md5 checksum of the given string str.
+
+*perfdata*
+
+If a perfdata contains infinity or nan values, its insertion in database could
+fail. This fixed now by inserting a NULL value instead. When the perfdata parser
+encounters an error during its work, now it returns logs with the host id and
+the service id of the associated service, so it is easier for the user to debug
+his check.
+
 *Log file configuration*
 
 log file configuration is applied even if the configuration contains errors.
