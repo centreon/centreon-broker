@@ -44,7 +44,10 @@ class timezone_manager {
    *
    *  @return Class instance.
    */
-  static timezone_manager& instance() { static timezone_manager instance; return instance; }
+  static timezone_manager& instance() {
+    static timezone_manager instance;
+    return instance;
+  }
 
  private:
   struct tz_info {

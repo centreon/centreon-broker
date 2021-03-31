@@ -49,7 +49,7 @@ class opt {
   bool operator<(opt const& right) const throw() {
     return (_data < right._data);
   }
-  operator T const&() const throw() { return (_data); }
+  operator T const &() const throw() { return (_data); }
   T& operator*() throw() { return (_data); }
   T const& operator*() const throw() { return (_data); }
   T* operator->() throw() { return (&_data); }
