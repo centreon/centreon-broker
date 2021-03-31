@@ -473,16 +473,16 @@ void reader_v2::_load(state::meta_services& meta_services) {
                            e.what());
   }
 
-  // Check for meta-services without service ID.
-  for (state::meta_services::const_iterator it(meta_services.begin()),
-       end(meta_services.end());
-       it != end; ++it) {
-    // std::pair<std::string, std::string>
-    //   svc(mapping.get_service(it->first));
-    // if (svc.first.empty() || svc.second.empty())
-    //   throw (reader_exception() << "BAM: meta-service "
-    //          << it->first << " has no associated service");
-  }
+//  // Check for meta-services without service ID.
+//  for (state::meta_services::const_iterator it(meta_services.begin()),
+//       end(meta_services.end());
+//       it != end; ++it) {
+//    // std::pair<std::string, std::string>
+//    //   svc(mapping.get_service(it->first));
+//    // if (svc.first.empty() || svc.second.empty())
+//    //   throw (reader_exception() << "BAM: meta-service "
+//    //          << it->first << " has no associated service");
+//  }
 
   // Load metrics of meta-services.
   std::unique_ptr<mysql> storage_mysql;
@@ -520,8 +520,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
           it->second.add_metric(res.value_as_u32(0));
       } catch (std::exception const& e) {
         throw reader_exception(
-            "BAM: could not retrieve members of meta-service '{}"
-            "': {}",
+            "BAM: could not retrieve members of meta-service '{}': {}",
             it->second.get_name(), e.what());
       }
     }
@@ -535,15 +534,18 @@ void reader_v2::_load(state::meta_services& meta_services) {
         std::promise<database::mysql_result> promise;
         _mysql.run_query_and_get_result(query, &promise);
         database::mysql_result res(promise.get_future().get());
-        while (_mysql.fetch_row(res))
-          it->second.add_metric(res.value_as_u32(0));
+        while (_mysql.fetch_row(res)) {
+          uint32_t metric_id{res.value_as_u32(0)};
+          log_v2::bam()->debug("BAM: adding metric {} to meta-service '{}'",
+                               metric_id, it->second.get_name());
+          it->second.add_metric(metric_id);
+        }
       } catch (reader_exception const& e) {
         (void)e;
         throw;
       } catch (std::exception const& e) {
         throw reader_exception(
-            "BAM: could not retrieve members of meta-service '{}"
-            "': {}",
+            "BAM: could not retrieve members of meta-service '{}': {}",
             it->second.get_name(), e.what());
       }
     }

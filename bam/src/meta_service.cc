@@ -28,6 +28,7 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -153,8 +154,7 @@ void meta_service::metric_update(std::shared_ptr<storage::metric> const& m,
                                  io::stream* visitor) {
   if (m) {
     bool state_has_changed = false;
-    std::unordered_map<uint32_t, double>::iterator it(
-        _metrics.find(m->metric_id));
+    auto it = _metrics.find(m->metric_id);
     if (it != _metrics.end()) {
       if (it->second != m->value) {
         // Backup old value.
@@ -301,6 +301,7 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
  *  @param[in] old_value  Old value.
  */
 void meta_service::_recompute_partial(double new_value, double old_value) {
+  double old_value = _value;
   switch (_computation) {
       // MIN.
     case min:
@@ -327,6 +328,7 @@ void meta_service::_recompute_partial(double new_value, double old_value) {
       _value = _value + (new_value - old_value) / _metrics.size();
       break;
   }
+  log_v2::bam()->debug("BAM: partial recomputing of meta-service {} --- old value = {}, new value = {}", old_value, _value);
 }
 
 /**
