@@ -1566,7 +1566,7 @@ void conflict_manager::_process_service(
                          actions::service_dependencies);
 
   // Processed object.
-  neb::service const& s(*static_cast<neb::service const*>(d.get()));
+  const neb::service& s(*static_cast<neb::service const*>(d.get()));
   if (_cache_host_instance[s.host_id]) {
     int32_t conn =
         _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);

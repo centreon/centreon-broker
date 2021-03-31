@@ -209,7 +209,8 @@ TEST_F(StorageParserParsePerfdata, Simple1) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
-  p.parse_perfdata("time=2.45698s;2.000000;5.000000;0.000000;10.000000", lst);
+  p.parse_perfdata(0, 0, "time=2.45698s;2.000000;5.000000;0.000000;10.000000",
+                   lst);
 
   // Assertions.
   ASSERT_EQ(lst.size(), 1u);
@@ -232,7 +233,7 @@ TEST_F(StorageParserParsePerfdata, Simple2) {
   // Parse perfdata.
   std::list<storage::perfdata> list;
   storage::parser p;
-  p.parse_perfdata("'ABCD12E'=18.00%;15:;10:;0;100", list);
+  p.parse_perfdata(0, 0, "'ABCD12E'=18.00%;15:;10:;0;100", list);
 
   // Assertions.
   ASSERT_EQ(list.size(), 1u);
@@ -256,6 +257,7 @@ TEST_F(StorageParserParsePerfdata, Complex1) {
   std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata(
+      0, 0,
       "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
       "infotraffic=18x;;;; a[foo]=1234;10;11: c[bar]=1234;~:10;20:30 "
       "baz=1234;@10:20; 'q u x'=9queries_per_second;@10:;@5:;0;100",
@@ -360,8 +362,8 @@ TEST_F(StorageParserParsePerfdata, Loop) {
   for (uint32_t i(0); i < 10000; ++i) {
     // Parse perfdata string.
     list.clear();
-    p.parse_perfdata("c[time]=2.45698s;2.000000;5.000000;0.000000;10.000000",
-                     list);
+    p.parse_perfdata(
+        0, 0, "c[time]=2.45698s;2.000000;5.000000;0.000000;10.000000", list);
 
     // Assertions.
     ASSERT_EQ(list.size(), 1u);
@@ -391,7 +393,7 @@ TEST_F(StorageParserParsePerfdata, Incorrect1) {
   storage::parser p;
 
   // Attempt to parse perfdata.
-  p.parse_perfdata("metric1= 10 metric2=42", list);
+  p.parse_perfdata(0, 0, "metric1= 10 metric2=42", list);
   ASSERT_EQ(list.size(), 1);
   ASSERT_EQ(list.back().name(), "metric2");
   ASSERT_EQ(list.back().value(), 42);
@@ -406,7 +408,7 @@ TEST_F(StorageParserParsePerfdata, Incorrect2) {
   storage::parser p;
 
   // Then
-  p.parse_perfdata("metric=kb/s", list);
+  p.parse_perfdata(0, 0, "metric=kb/s", list);
   ASSERT_TRUE(list.empty());
 }
 
@@ -414,7 +416,7 @@ TEST_F(StorageParserParsePerfdata, LabelWithSpaces) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
-  p.parse_perfdata("  'foo  bar   '=2s;2;5;;", lst);
+  p.parse_perfdata(0, 0, "  'foo  bar   '=2s;2;5;;", lst);
 
   // Assertions.
   ASSERT_EQ(lst.size(), 1u);
@@ -435,7 +437,7 @@ TEST_F(StorageParserParsePerfdata, LabelWithSpacesMultiline) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
-  p.parse_perfdata("  'foo  bar   '=2s;2;5;;", lst);
+  p.parse_perfdata(0, 0, "  'foo  bar   '=2s;2;5;;", lst);
 
   // Assertions.
   ASSERT_EQ(lst.size(), 1u);
@@ -457,6 +459,7 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata(
+      0, 0,
       "'  \n time'=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
       "g[test]=8x;;;;"
       " infotraffic=18,6x;;;; a[foo]=1234,17;10;11: c[bar]=1234,147;~:10;20:30",
@@ -545,7 +548,7 @@ TEST_F(StorageParserParsePerfdata, SimpleWithR) {
   std::list<storage::perfdata> lst;
   storage::parser p;
   // ASSERT_NO_THROW(p.parse_perfdata("'total'=5;;;0;\r", lst));
-  ASSERT_NO_THROW(p.parse_perfdata("'total'=5;;;0;\r", lst));
+  ASSERT_NO_THROW(p.parse_perfdata(0, 0, "'total'=5;;;0;\r", lst));
 
   // Assertions.
   ASSERT_EQ(lst.size(), 1u);
@@ -571,7 +574,7 @@ TEST_F(StorageParserParsePerfdata, BadMetric) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
-  ASSERT_NO_THROW(p.parse_perfdata("user1=1 user2=2 =1 user3=3", lst));
+  ASSERT_NO_THROW(p.parse_perfdata(0, 0, "user1=1 user2=2 =1 user3=3", lst));
 
   // Assertions.
   ASSERT_EQ(lst.size(), 3u);
@@ -587,7 +590,8 @@ TEST_F(StorageParserParsePerfdata, BadMetric1) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
-  ASSERT_NO_THROW(p.parse_perfdata("user1=1 user2=2 user4= user3=3", lst));
+  ASSERT_NO_THROW(
+      p.parse_perfdata(0, 0, "user1=1 user2=2 user4= user3=3", lst));
 
   // Assertions.
   ASSERT_EQ(lst.size(), 3u);
