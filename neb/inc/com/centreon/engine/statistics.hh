@@ -20,9 +20,9 @@
 #ifndef CCE_STATISTICS_HH
 #define CCE_STATISTICS_HH
 
-#include <atomic>
 #include <sys/types.h>
 #include <unistd.h>
+#include <atomic>
 #include "com/centreon/engine/namespace.hh"
 
 struct buffer_stats {
@@ -34,6 +34,7 @@ struct buffer_stats {
 CCE_BEGIN()
 class statistics {
   statistics();
+
  public:
   static statistics& instance();
   pid_t get_pid() const noexcept;
