@@ -1,0 +1,145 @@
+policy_module(centreon-broker, 0.0.5)
+
+########################################
+#
+# Declarations
+#
+require {
+	type centreon_var_lib_t;
+	type unconfined_t;
+	type unconfined_service_t;
+	type useradd_t;
+	type fs_t;
+	type sysfs_t;
+	type kernel_t;
+	type setroubleshootd_t;
+	type rpm_script_t;
+	type ld_so_cache_t;
+	type httpd_t;
+	type init_t;
+	type system_cronjob_t;
+	type sysctl_net_t;
+	type cert_t;
+	type net_conf_t;
+	type proc_net_t;
+	type node_t;
+	type var_log_t;
+	type unreserved_port_t;
+}
+
+type centreon_broker_t;
+type centreon_broker_exec_t;
+init_daemon_domain(centreon_broker_t, centreon_broker_exec_t)
+
+########################################
+#
+# Centreon local policy
+#
+
+allow centreon_broker_t self:process { setpgid signal_perms execmem };
+allow centreon_broker_t self:fifo_file { open write rw_fifo_file_perms };
+allow centreon_broker_t self:tcp_socket { create accept listen setopt bind name_bind node_bind name_connect connect getopt getattr shutdown };
+allow centreon_broker_t self:udp_socket { connect ioctl create accept listen bind setopt getopt getattr };
+allow centreon_broker_t self:netlink_route_socket { create bind getattr nlmsg_read };
+allow centreon_broker_t self:dir { create write add_name relabelto remove_name };
+allow centreon_broker_t self:file { create open write read setattr unlink rename };
+allow centreon_broker_t fs_t:filesystem associate;
+allow centreon_broker_t centreon_broker_exec_t:file execute_no_trans;
+allow centreon_broker_t cert_t:dir search;
+allow centreon_broker_t cert_t:file { open read getattr };
+allow centreon_broker_t net_conf_t:file { getattr read open };
+allow centreon_broker_t node_t:tcp_socket node_bind;
+allow centreon_broker_t proc_net_t:file { getattr read open };
+allow centreon_broker_t var_log_t:dir { write add_name };
+allow centreon_broker_t var_log_t:file { create open write read setattr };
+allow centreon_broker_t ld_so_cache_t:file execute;
+allow centreon_broker_t sysctl_net_t:dir search;
+allow centreon_broker_t sysctl_net_t:file { open read getattr };
+allow centreon_broker_t sysfs_t:dir read;
+allow centreon_broker_t unreserved_port_t:tcp_socket { create accept listen setopt bind node_bind connect getopt getattr shutdown name_bind };
+allow rpm_script_t centreon_broker_t:dir { getattr setattr search open read };
+allow rpm_script_t centreon_broker_t:file { getattr setattr };
+allow centreon_broker_t centreon_var_lib_t:dir { search getattr write add_name remove_name };
+allow centreon_broker_t centreon_var_lib_t:file { create execute getattr lock open read rename setattr write unlink };
+
+#============= setroubleshootd_t ==============
+allow setroubleshootd_t centreon_broker_t:dir { getattr search };
+allow setroubleshootd_t centreon_broker_t:file getattr;
+allow setroubleshootd_t centreon_broker_t:fifo_file getattr;
+
+#============= unconfined_t ==============
+allow unconfined_t centreon_broker_t:dir { setattr getattr relabelto relabelfrom search };
+allow unconfined_t centreon_broker_t:file { getattr setattr relabelto rename };
+
+#============= unconfined_service_t ==============
+allow unconfined_service_t centreon_broker_t:dir search;
+allow unconfined_service_t centreon_broker_t:fifo_file { open read write getattr };
+
+#============= useradd_t ==============
+allow useradd_t centreon_broker_t:dir { getattr search setattr create write add_name };
+allow useradd_t centreon_broker_t:file { open write create setattr };
+
+#============= httpd_t ==============
+allow httpd_t centreon_broker_t:dir { getattr search };
+allow httpd_t centreon_broker_t:fifo_file { open read write getattr };
+
+#============= init_t ==============
+allow init_t centreon_broker_t:dir { add_name open read remove_name write search };
+allow init_t centreon_broker_t:fifo_file { create open write getattr unlink };
+allow init_t centreon_broker_t:file { create execute execute_no_trans getattr map open read unlink write rename };
+
+#============= system_cronjob_t ==============
+allow system_cronjob_t centreon_broker_t:file getattr;
+
+#============= kernel_t ==============
+allow kernel_t centreon_broker_t:dir { getattr search setattr create write add_name };
+allow kernel_t centreon_broker_t:file { create execute execute_no_trans getattr map open read unlink write rename };
+
+mysql_stream_connect(centreon_broker_t)
+mysql_tcp_connect(centreon_broker_t)
+
+kernel_read_kernel_sysctls(centreon_broker_t)
+kernel_read_net_sysctls(centreon_broker_t)
+kernel_read_network_state(centreon_broker_t)
+kernel_read_system_state(centreon_broker_t)
+kernel_request_load_module(centreon_broker_t)
+
+corecmd_exec_bin(centreon_broker_exec_t)
+corecmd_exec_shell(centreon_broker_exec_t)
+
+corenet_all_recvfrom_unlabeled(centreon_broker_t)
+corenet_all_recvfrom_netlabel(centreon_broker_t)
+corenet_tcp_sendrecv_generic_if(centreon_broker_t)
+corenet_udp_sendrecv_generic_if(centreon_broker_t)
+corenet_tcp_sendrecv_generic_node(centreon_broker_t)
+corenet_udp_sendrecv_generic_node(centreon_broker_t)
+corenet_tcp_bind_generic_node(centreon_broker_t)
+corenet_udp_bind_generic_node(centreon_broker_t)
+corenet_sendrecv_all_client_packets(centreon_broker_t)
+corenet_tcp_connect_all_ports(centreon_broker_t)
+corenet_tcp_sendrecv_all_ports(centreon_broker_t)
+
+corenet_sendrecv_inetd_child_server_packets(centreon_broker_t)
+corenet_tcp_bind_inetd_child_port(centreon_broker_t)
+corenet_tcp_sendrecv_inetd_child_port(centreon_broker_t)
+
+dev_read_sysfs(centreon_broker_t)
+dev_read_urand(centreon_broker_t)
+
+domain_use_interactive_fds(centreon_broker_t)
+domain_read_all_domains_state(centreon_broker_t)
+
+files_read_etc_runtime_files(centreon_broker_t)
+files_read_usr_files(centreon_broker_t)
+
+fs_getattr_all_fs(centreon_broker_t)
+fs_search_auto_mountpoints(centreon_broker_t)
+
+auth_use_nsswitch(centreon_broker_t)
+
+logging_send_syslog_msg(centreon_broker_t)
+
+miscfiles_read_localization(centreon_broker_t)
+
+userdom_dontaudit_use_unpriv_user_fds(centreon_broker_t)
+
