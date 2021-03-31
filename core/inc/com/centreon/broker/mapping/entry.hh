@@ -278,6 +278,7 @@ class entry {
    */
   uint32_t get_type() const { return _type; }
   uint32_t get_uint(const io::data& d) const;
+  uint64_t get_ulong(const io::data& d) const;
   unsigned short get_ushort(const io::data& d) const;
   /**
    *  Get if this entry is a null entry.
@@ -292,6 +293,7 @@ class entry {
   void set_string(io::data& d, std::string const& value) const;
   void set_time(io::data& d, timestamp const& value) const;
   void set_uint(io::data& d, uint32_t value) const;
+  void set_ulong(io::data& d, uint64_t value) const;
   void set_ushort(io::data& d, unsigned short value) const;
 };
 }  // namespace mapping
