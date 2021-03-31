@@ -82,7 +82,7 @@ void conflict_manager::_storage_process_service_status(
       "service_id:{}",
       host_id, service_id);
   auto it_index_cache = _index_cache.find({host_id, service_id});
-  uint64_t index_id ;
+  uint64_t index_id;
   uint32_t rrd_len;
   int32_t conn =
       _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]);
@@ -264,6 +264,7 @@ void conflict_manager::_storage_process_service_status(
 
         std::list<std::shared_ptr<io::data>> to_publish;
         for (auto& pd : pds) {
+          // A CHANGER ICI EN DESSOUS CA COMPILE PAS
           auto it_index_cache = _metric_cache.find({index_id, pd.name()});
 
           /* The cache does not contain this metric */
@@ -274,7 +275,7 @@ void conflict_manager::_storage_process_service_status(
                 "perfdata '{}' found in cache",
                 index_id, pd.name());
             /* Let's insert it */
-            _metrics_insert.bind_value_as_i32(0, index_id);
+            _metrics_insert.bind_value_as_u64(0, index_id);
             _metrics_insert.bind_value_as_str(1, pd.name());
             _metrics_insert.bind_value_as_str(2, pd.unit());
             _metrics_insert.bind_value_as_f32(3, pd.warning());

@@ -41,7 +41,7 @@ namespace storage {
 class metric_mapping : public io::data {
  public:
   metric_mapping();
-  metric_mapping(uint32_t index_id, uint32_t metric_id);
+  metric_mapping(uint64_t index_id, uint32_t metric_id);
   metric_mapping(metric_mapping const& s);
   ~metric_mapping();
   metric_mapping& operator=(metric_mapping const& s);
@@ -50,7 +50,7 @@ class metric_mapping : public io::data {
                                  storage::de_metric_mapping>::value;
   }
 
-  uint32_t index_id;
+  uint64_t index_id;
   uint32_t metric_id;
 
   static mapping::entry const entries[];
