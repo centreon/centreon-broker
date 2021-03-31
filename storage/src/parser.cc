@@ -125,35 +125,29 @@ static inline void extract_range(double* low,
   *high = high_value;
 }
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-parser::parser() {}
-
-/**
- *  Destructor.
- */
-parser::~parser() {}
-
 /**
  *  Parse perfdata string as given by plugin.
  *
  *  @param[in]  str Raw perfdata string.
  *  @param[out] pd  List of parsed metrics.
  */
-void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
+void parser::parse_perfdata(uint32_t host_id,
+                            uint32_t service_id,
+                            const char* str,
+                            std::list<perfdata>& pd) {
+  auto id = [host_id, service_id] {
+    if (host_id || service_id)
+      return fmt::format("({}:{})", host_id, service_id);
+    else
+      return std::string();
+  };
+
   size_t start = strspn(str, " \n\r\t");
   const char* buf = str + start;
 
   // Debug message.
-  logging::debug(logging::medium)
-      << "storage: parsing perfdata string '" << buf << "'";
+  log_v2::perfdata()->debug("storage: parsing service {} perfdata string '{}'",
+                            id(), buf);
 
   char const* tmp = buf;
 
@@ -222,8 +216,9 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
           name, get_metrics_col_size(metrics_metric_name)));
       p.name(std::move(name));
     } else {
-      log_v2::perfdata()->error("metric name empty before '{}...'",
-                                std::string(s, 10));
+      log_v2::perfdata()->error(
+          "In service {}, metric name empty before '{}...'", id(),
+          fmt::string_view(s, 10));
       error = true;
     }
 
@@ -233,8 +228,9 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
       for (i = 0; i < 10 && tmp[i]; i++)
         ;
       log_v2::perfdata()->error(
-          "invalid perfdata format: equal sign not present or misplaced '{}'",
-          std::string(s, tmp + i));
+          "invalid perfdata format in service {}: equal sign not present or "
+          "misplaced '{}'",
+          id(), fmt::string_view(s, (tmp - s) + i));
       error = true;
     } else
       ++tmp;
@@ -252,9 +248,10 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
         ;
 
       log_v2::perfdata()->error(
-          "storage: invalid perfdata format: no numeric value after equal sign "
+          "storage: invalid perfdata format in service {}: no numeric value "
+          "after equal sign "
           "'{}'",
-          std::string(s, tmp + i));
+          id(), fmt::string_view(s, (tmp - s) + i));
       error = true;
       tmp = skip(tmp);
       continue;
@@ -303,11 +300,11 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
     p.max(extract_double(const_cast<const char**>(&tmp)));
 
     // Log new perfdata.
-    logging::debug(logging::low)
-        << "storage: got new perfdata (name=" << p.name()
-        << ", value=" << p.value() << ", unit=" << p.unit()
-        << ", warning=" << p.warning() << ", critical=" << p.critical()
-        << ", min=" << p.min() << ", max=" << p.max() << ")";
+    log_v2::perfdata()->debug(
+        "storage: got new perfdata (name={}, value={}, unit={}, warning={}, "
+        "critical={}, min={}, max={})",
+        p.name(), p.value(), p.unit(), p.warning(), p.critical(), p.min(),
+        p.max());
 
     // Append to list.
     pd.emplace_back(std::move(p));
