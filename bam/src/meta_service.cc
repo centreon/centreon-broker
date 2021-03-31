@@ -25,7 +25,7 @@
 #include <ctime>
 
 #include "com/centreon/broker/bam/meta_service_status.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/metric.hh"
 
@@ -286,9 +286,9 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
       status->value = _value;
       status->state_changed = changed_state;
       _last_state = new_state;
-      logging::debug(logging::low)
-          << "BAM: generating status of meta-service "
-          << status->meta_service_id << " (value " << status->value << ")";
+      log_v2::bam()->debug(
+          "BAM: generating status of meta-service {} (value {})",
+          status->meta_service_id, status->value);
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }

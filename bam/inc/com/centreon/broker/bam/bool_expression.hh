@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -43,14 +43,14 @@ class bool_expression : public computable {
   typedef impact_values::state state;
 
  private:
-  std::shared_ptr<bool_value> _expression;
   uint32_t _id;
+  std::shared_ptr<bool_value> _expression;
   bool _impact_if;
 
  public:
   bool_expression();
   bool_expression(bool_expression const& other) = delete;
-  ~bool_expression();
+  ~bool_expression() noexcept = default;
   bool_expression& operator=(bool_expression const& other) = delete;
   bool child_has_update(computable* child, io::stream* visitor = NULL);
   impact_values::state get_state() const;
