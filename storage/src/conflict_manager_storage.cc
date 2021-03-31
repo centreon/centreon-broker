@@ -437,7 +437,7 @@ void conflict_manager::_update_metrics() {
         metric->crit_mode ? "1" : "0",
         std::isnan(metric->min) || std::isinf(metric->min) ? "NULL" : fmt::format("{}", metric->min),
         std::isnan(metric->max) || std::isinf(metric->max) ? "NULL" : fmt::format("{}", metric->max),
-        metric->value));
+        std::isnan(metric->value) ? "NULL" : fmt::format("{}", metric->value)));
   }
   std::string query(fmt::format(
       "INSERT INTO metrics (metric_id, unit_name, warn, warn_low, "
