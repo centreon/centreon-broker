@@ -45,7 +45,7 @@ tcp_async::~tcp_async() noexcept {
   if (_clear_available_con_running) {
     std::promise<bool> p;
     std::future<bool> f(p.get_future());
-    _stats_running = false;
+    _clear_available_con_running = false;
     asio::post(_timer.get_executor(), [this, &p] {
         _timer.cancel();
         p.set_value(true);
