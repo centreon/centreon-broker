@@ -40,9 +40,9 @@ namespace multiplexing {
 class publisher : public io::stream {
  public:
   publisher();
-  publisher(publisher const& other) = delete;
-  ~publisher() noexcept;
-  publisher& operator=(publisher const& other) = delete;
+  ~publisher() noexcept = default;
+  publisher(const publisher&) = delete;
+  publisher& operator=(const publisher&) = delete;
   bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   int write(std::shared_ptr<io::data> const& d);
   int write(std::list<std::shared_ptr<io::data>> const& to_publish);

@@ -34,19 +34,18 @@ CCB_BEGIN()
  *  It uses BBDO, compression and file streams.
  */
 class persistent_file : public io::stream {
+  std::shared_ptr<file::stream> _splitter;
+
  public:
-  persistent_file(std::string const& path);
-  ~persistent_file() noexcept;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  persistent_file(const std::string& path);
+  ~persistent_file() noexcept = default;
+  persistent_file(const persistent_file&) = delete;
+  persistent_file& operator=(const persistent_file&) = delete;
+  bool read(std::shared_ptr<io::data>& d,
+            time_t deadline = (time_t)-1) override;
   void remove_all_files();
   void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
-  persistent_file(persistent_file const& other);
-  persistent_file& operator=(persistent_file const& other);
-
-  std::shared_ptr<file::stream> _splitter;
+  int write(std::shared_ptr<io::data> const& d) override;
 };
 
 CCB_END()

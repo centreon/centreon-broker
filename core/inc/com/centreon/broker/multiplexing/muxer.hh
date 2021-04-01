@@ -48,9 +48,25 @@ class muxer : public io::stream {
  public:
   typedef std::unordered_set<uint32_t> filters;
 
+ private:
+  std::condition_variable _cv;
+  std::list<std::shared_ptr<io::data>> _events;
+  uint32_t _events_size;
+  static uint32_t _event_queue_max_size;
+  std::unique_ptr<persistent_file> _file;
+  mutable std::mutex _mutex;
+  std::string _name;
+  bool _persistent;
+  std::list<std::shared_ptr<io::data>>::iterator _pos;
+  filters _read_filters;
+  filters _write_filters;
+  std::string _read_filters_str;
+  std::string _write_filters_str;
+
+ public:
   muxer(std::string const& name, bool persistent = false);
-  muxer(muxer const& other) = delete;
-  muxer& operator=(muxer const& other) = delete;
+  muxer(const muxer&) = delete;
+  muxer& operator=(const muxer&) = delete;
   ~muxer() noexcept;
   void ack_events(int count);
   static void event_queue_max_size(uint32_t max) noexcept;
@@ -79,20 +95,6 @@ class muxer : public io::stream {
   std::string _memory_file() const;
   void _push_to_queue(std::shared_ptr<io::data> const& event);
   std::string _queue_file() const;
-
-  std::condition_variable _cv;
-  std::list<std::shared_ptr<io::data>> _events;
-  uint32_t _events_size;
-  static uint32_t _event_queue_max_size;
-  std::unique_ptr<persistent_file> _file;
-  mutable std::mutex _mutex;
-  std::string _name;
-  bool _persistent;
-  std::list<std::shared_ptr<io::data>>::iterator _pos;
-  filters _read_filters;
-  filters _write_filters;
-  std::string _read_filters_str;
-  std::string _write_filters_str;
 };
 }  // namespace multiplexing
 

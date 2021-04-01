@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015-2016 Centreon
+** Copyright 2011-2013,2015-2016, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -68,32 +68,35 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_.");
   if (!s.poller_id() || s.poller_name().empty())
     throw msg_fmt(
-          "state applier: poller information are "
-          "not set: please fill poller_id and poller_name");
+        "state applier: poller information are "
+        "not set: please fill poller_id and poller_name");
   if (!s.broker_id() || s.broker_name().empty())
     throw msg_fmt(
-          "state applier: instance information "
-          "are not set: please fill broker_id and broker_name");
+        "state applier: instance information "
+        "are not set: please fill broker_id and broker_name");
   for (std::string::const_iterator it(s.broker_name().begin()),
        end(s.broker_name().end());
        it != end; ++it)
     if (!strchr(allowed_chars, *it))
       throw msg_fmt(
-            "state applier: broker_name is not "
-            " valid: allowed characters are {}", allowed_chars);
+          "state applier: broker_name is not "
+          " valid: allowed characters are {}",
+          allowed_chars);
   for (std::list<config::endpoint>::const_iterator it(s.endpoints().begin()),
        end(s.endpoints().end());
        it != end; ++it) {
     if (it->name.empty())
-      throw msg_fmt("state applier: endpoint name is not set: "
-                              "please fill name of all endpoints");
+      throw msg_fmt(
+          "state applier: endpoint name is not set: "
+          "please fill name of all endpoints");
     for (std::string::const_iterator it_name(it->name.begin()),
          end_name(it->name.end());
          it_name != end_name; ++it_name)
       if (!strchr(allowed_chars, *it_name))
         throw msg_fmt(
-             "state applier: endpoint name '{}'"
-              "' is not valid: allowed characters are '{}'", *it_name, allowed_chars);
+            "state applier: endpoint name '{}'"
+            "' is not valid: allowed characters are '{}'",
+            *it_name, allowed_chars);
   }
 
   // Set Broker instance ID.
@@ -152,17 +155,6 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
       s.event_queue_max_size());
 
   com::centreon::broker::config::state st = s;
-
-  //  // Create command file input.
-  //  if (!s.command_file().empty()) {
-  //    config::endpoint ept;
-  //    ept.name = "(external commands)";
-  //    ept.type = "extcmd";
-  //    ept.params.insert({"extcmd", s.command_file()});
-  //    ept.params.insert({"command_protocol", s.command_protocol()});
-  //    ept.read_filters.insert("all");
-  //    st.endpoints().push_back(ept);
-  //  }
 
   // Apply input and output configuration.
   endpoint::instance().apply(st.endpoints());

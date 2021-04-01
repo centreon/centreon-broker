@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015,2017 Centreon
+** Copyright 2013,2015,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,12 +38,6 @@
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
-
-/**************************************
- *                                     *
- *      Input static functions         *
- *                                     *
- **************************************/
 
 /**
  *  Set a boolean within an object.
@@ -314,12 +308,6 @@ static io::data* unserialize(uint32_t event_type,
   return nullptr;
 }
 
-/**************************************
- *                                     *
- *      Output static functions        *
- *                                     *
- **************************************/
-
 /**
  *  Get a boolean from an object.
  */
@@ -550,9 +538,18 @@ stream::stream()
       _events_received_since_last_ack(0) {}
 
 /**
- *  Destructor.
+ * @brief All the mecanism behind this stream is stopped once this method is
+ * called. The last thing done is to return how many events are acknowledged.
+ *
+ * @return The number of events to acknowledge.
  */
-stream::~stream() noexcept {}
+int32_t stream::stop() {
+  _substream->stop();
+  int32_t retval = _acknowledged_events;
+  _acknowledged_events = 0;
+  io::stream::stop();
+  return retval;
+}
 
 /**
  *  Flush stream data.

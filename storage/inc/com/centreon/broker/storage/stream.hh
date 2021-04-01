@@ -74,6 +74,7 @@ class stream : public io::stream {
   rebuilder _rebuilder;
   std::string _status;
   mutable std::mutex _statusm;
+  bool _stopped;
 
   void _update_status(std::string const& status);
 
@@ -83,9 +84,10 @@ class stream : public io::stream {
          uint32_t interval_length,
          uint32_t rebuild_check_interval,
          bool store_in_db = true);
-  stream(stream const&) = delete;
-  stream& operator=(stream const&) = delete;
   ~stream();
+  stream(const stream&) = delete;
+  stream& operator=(const stream&) = delete;
+  int32_t stop() override;
   int32_t flush() override;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void statistics(json11::Json::object& tree) const override;

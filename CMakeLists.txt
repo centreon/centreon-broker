@@ -371,9 +371,7 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/bbdo/ack.cc
   ${SRC_DIR}/bbdo/connector.cc
   ${SRC_DIR}/bbdo/factory.cc
-#  ${SRC_DIR}/bbdo/input.cc
   ${SRC_DIR}/bbdo/internal.cc
-#  ${SRC_DIR}/bbdo/output.cc
   ${SRC_DIR}/bbdo/stream.cc
   ${SRC_DIR}/bbdo/version_response.cc
   ${SRC_DIR}/broker_impl.cc
@@ -465,9 +463,7 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/bbdo/ack.hh
   ${INC_DIR}/bbdo/connector.hh
   ${INC_DIR}/bbdo/factory.hh
-#  ${INC_DIR}/bbdo/input.hh
   ${INC_DIR}/bbdo/internal.hh
-#  ${INC_DIR}/bbdo/output.hh
   ${INC_DIR}/bbdo/stream.hh
   ${INC_DIR}/bbdo/version_response.hh
   ${INC_DIR}/broker_impl.hh
@@ -618,6 +614,7 @@ add_broker_module(GRAPHITE ON)
 add_broker_module(BAM ON)
 add_broker_module(TCP ON)
 add_broker_module(TLS ON)
+add_broker_module(DUMP OFF)
 
 # Lua module.
 option(WITH_MODULE_LUA "Build lua module." ON)

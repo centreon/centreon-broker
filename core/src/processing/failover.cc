@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2017 Centreon
+** Copyright 2011-2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -31,12 +31,6 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -46,7 +40,7 @@ using namespace com::centreon::broker::processing;
  */
 failover::failover(std::shared_ptr<io::endpoint> endp,
                    std::shared_ptr<multiplexing::subscriber> sbscrbr,
-                   std::string const& name)
+                   const std::string& name)
     : endpoint(name),
       _should_exit(false),
       _started(false),
@@ -360,8 +354,12 @@ void failover::_run() {
       log_v2::core()->error("failover: global error: {}", e.what());
       logging::error(logging::high) << e.what();
       {
-        std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
-        _stream.reset();
+        if (_stream) {
+          int32_t ack_events = _stream->stop();
+          _subscriber->get_muxer().ack_events(ack_events);
+          std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
+          _stream.reset();
+        }
         set_state("connecting");
       }
       if (!should_exit()) {
@@ -375,6 +373,8 @@ void failover::_run() {
           << "software bug that should be reported to Centreon Broker "
              "developers";
       {
+        int32_t ack_events = _stream->stop();
+        _subscriber->get_muxer().ack_events(ack_events);
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
         set_state("connecting");
@@ -388,7 +388,13 @@ void failover::_run() {
     // Clear stream.
     {
       std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
-      _stream.reset();
+      if (_stream) {
+        // If ack_events is not zero, then we will store data twice
+        int32_t ack_events = _stream->flush();
+        assert(ack_events == 0);
+        _subscriber->get_muxer().ack_events(ack_events);
+        _stream.reset();
+      }
       set_state("connecting");
     }
 
@@ -491,7 +497,7 @@ void failover::update() {
  *
  *  @return  The read filters used by the failover.
  */
-std::string const& failover::_get_read_filters() const {
+const std::string& failover::_get_read_filters() const {
   return _subscriber->get_muxer().get_read_filters_str();
 }
 
@@ -500,7 +506,7 @@ std::string const& failover::_get_read_filters() const {
  *
  *  @return  The write filters used by the failover.
  */
-std::string const& failover::_get_write_filters() const {
+const std::string& failover::_get_write_filters() const {
   return _subscriber->get_muxer().get_write_filters_str();
 }
 
@@ -548,7 +554,7 @@ void failover::_launch_failover() {
  *
  *  @param[in] status New status.
  */
-void failover::_update_status(std::string const& status) {
+void failover::_update_status(const std::string& status) {
   std::lock_guard<std::mutex> lock(_status_m);
   _status = status;
 }

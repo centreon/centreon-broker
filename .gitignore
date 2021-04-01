@@ -24,6 +24,8 @@ libgtest*.a
 libnebbase.a
 libroker.a
 librokerbase.a
+script/misc/grpc/broker_pb2.py
+script/misc/grpc/broker_pb2_grpc.py
 tags
 test-coverage
 test/python/*.crt

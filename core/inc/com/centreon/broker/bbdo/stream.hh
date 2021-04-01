@@ -129,9 +129,10 @@ class stream : public io::stream {
   enum negotiation_type { negotiate_first = 1, negotiate_second, negotiated };
 
   stream();
-  stream(stream const&) = delete;
-  ~stream() noexcept;
-  stream& operator=(stream const&) = delete;
+  ~stream() noexcept = default;
+  stream(const stream&) = delete;
+  stream& operator=(const stream&) = delete;
+  int32_t stop() override;
   int flush() override;
   void negotiate(negotiation_type neg);
   bool read(std::shared_ptr<io::data>& d,
