@@ -76,7 +76,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
     // Process buffer as long as data is corrupted
     // or until an exception occurs.
     bool corrupted(true);
-    int size(0);
+    size_t size(0);
     int skipped(0);
     while (corrupted) {
       // Get compressed data length.
