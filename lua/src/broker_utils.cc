@@ -21,6 +21,7 @@
 #include <fmt/format.h>
 #include <sys/stat.h>
 
+#include <openssl/md5.h>
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
@@ -431,7 +432,7 @@ static int l_broker_parse_perfdata(lua_State* L) {
   storage::parser p;
   std::list<storage::perfdata> pds;
   try {
-    p.parse_perfdata(perf_data, pds);
+    p.parse_perfdata(0, 0, perf_data, pds);
   } catch (storage::exceptions::perfdata const& e) {
     lua_pushnil(L);
     lua_pushstring(L, e.what());
@@ -539,6 +540,31 @@ static int l_broker_stat(lua_State* L) {
   }
 }
 
+static int l_broker_md5(lua_State* L) {
+  auto digit = [](unsigned char d) -> char {
+    if (d < 10)
+      return '0' + d;
+    else
+      return 'a' + (d - 10);
+  };
+  size_t len;
+  const unsigned char* str =
+      reinterpret_cast<const unsigned char*>(lua_tolstring(L, -1, &len));
+  unsigned char md5[MD5_DIGEST_LENGTH];
+  MD5(str, len, md5);
+  char result[2 * MD5_DIGEST_LENGTH + 1];
+  char* tmp = result;
+  for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
+    *tmp = digit(md5[i] >> 4);
+    ++tmp;
+    *tmp = digit(md5[i] & 0xf);
+    ++tmp;
+  }
+  *tmp = 0;
+  lua_pushstring(L, result);
+  return 1;
+}
+
 /**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
@@ -551,6 +577,7 @@ void broker_utils::broker_utils_reg(lua_State* L) {
                               {"parse_perfdata", l_broker_parse_perfdata},
                               {"url_encode", l_broker_url_encode},
                               {"stat", l_broker_stat},
+                              {"md5", l_broker_md5},
                               {nullptr, nullptr}};
 
 #ifdef LUA51
