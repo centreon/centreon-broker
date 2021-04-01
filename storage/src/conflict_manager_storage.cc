@@ -254,7 +254,7 @@ void conflict_manager::_storage_process_service_status(
       storage::parser p;
       try {
         _finish_action(-1, actions::metrics);
-        p.parse_perfdata(ss.perf_data.c_str(), pds);
+        p.parse_perfdata(ss.host_id, ss.service_id, ss.perf_data.c_str(), pds);
 
         std::list<std::shared_ptr<io::data>> to_publish;
         for (auto& pd : pds) {
@@ -426,17 +426,29 @@ void conflict_manager::_update_metrics() {
         "({},'{}',{},{},'{}',{},{},'{}',{},{},{})", metric->metric_id,
         misc::string::escape(metric->unit_name,
                              get_metrics_col_size(metrics_unit_name)),
-        std::isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
-        std::isnan(metric->warn_low) ? "NULL"
-                                     : fmt::format("{}", metric->warn_low),
+        std::isnan(metric->warn) || std::isinf(metric->warn)
+            ? "NULL"
+            : fmt::format("{}", metric->warn),
+        std::isnan(metric->warn_low) || std::isinf(metric->warn_low)
+            ? "NULL"
+            : fmt::format("{}", metric->warn_low),
         metric->warn_mode ? "1" : "0",
-        std::isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
-        std::isnan(metric->crit_low) ? "NULL"
-                                     : fmt::format("{}", metric->crit_low),
+        std::isnan(metric->crit) || std::isinf(metric->crit)
+            ? "NULL"
+            : fmt::format("{}", metric->crit),
+        std::isnan(metric->crit_low) || std::isinf(metric->crit_low)
+            ? "NULL"
+            : fmt::format("{}", metric->crit_low),
         metric->crit_mode ? "1" : "0",
-        std::isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
-        std::isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
-        metric->value));
+        std::isnan(metric->min) || std::isinf(metric->min)
+            ? "NULL"
+            : fmt::format("{}", metric->min),
+        std::isnan(metric->max) || std::isinf(metric->max)
+            ? "NULL"
+            : fmt::format("{}", metric->max),
+        std::isnan(metric->value) || std::isinf(metric->value)
+            ? "NULL"
+            : fmt::format("{}", metric->value)));
   }
   std::string query(fmt::format(
       "INSERT INTO metrics (metric_id, unit_name, warn, warn_low, "
