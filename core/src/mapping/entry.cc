@@ -28,7 +28,6 @@ using namespace com::centreon::broker::mapping;
  *                                     *
  **************************************/
 
-
 /**
  *  Get the boolean value.
  *
