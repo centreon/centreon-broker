@@ -18,6 +18,13 @@
 
 #include "com/centreon/broker/tls/connector.hh"
 
+#include <openssl/bio.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/opensslconf.h>
+#include <openssl/ssl.h>
+
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/params.hh"
@@ -43,13 +50,8 @@ using namespace com::centreon::exceptions;
  */
 connector::connector(std::string const& cert,
                      std::string const& key,
-                     std::string const& ca,
-                     std::string const& tls_hostname)
-    : io::endpoint(false),
-      _ca(ca),
-      _cert(cert),
-      _key(key),
-      _tls_hostname(tls_hostname) {}
+                     std::string const& ca)
+    : io::endpoint(false), _ca(ca), _cert(cert), _key(key) {}
 
 /**
  *  Connect to the remote TLS peer.
@@ -57,6 +59,7 @@ connector::connector(std::string const& cert,
  *  @return New connected stream.
  */
 std::shared_ptr<io::stream> connector::open() {
+  log_v2::tls()->info("TLS: on connector open()");
   // First connect the lower layer.
   std::shared_ptr<io::stream> lower(_from->open());
   std::shared_ptr<io::stream> new_stream;
@@ -74,71 +77,49 @@ std::shared_ptr<io::stream> connector::open() {
  */
 std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
   std::shared_ptr<io::stream> s;
-  if (lower) {
-    int ret;
-    // Load parameters.
-    params p(params::CLIENT);
-    p.set_cert(_cert, _key);
-    p.set_trusted_ca(_ca);
-    p.set_tls_hostname(_tls_hostname);
-    p.load();
+  // if (lower) {
+  int ret;
+  OPENSSL_init_ssl(OPENSSL_INIT_LOAD_CONFIG, NULL);
+  // SSL_library_init();
+  int server;
+  SSL* ssl;
+  log_v2::tls()->info("TLS: on connector open(param)");
 
-    gnutls_session_t* session(new gnutls_session_t);
-    try {
-      // Initialize the TLS session
-      log_v2::tls()->debug("TLS: initializing session");
-#ifdef GNUTLS_NONBLOCK
-      ret = gnutls_init(session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
-#else
-      ret = gnutls_init(session, GNUTLS_CLIENT);
-#endif  // GNUTLS_NONBLOCK
-      if (ret != GNUTLS_E_SUCCESS) {
-        log_v2::tls()->error("TLS: cannot initialize session: {}",
-                             gnutls_strerror(ret));
-        throw msg_fmt("TLS: cannot initialize session: {} ",
-                      gnutls_strerror(ret));
-      }
+  params p(params::CLIENT);
+  const SSL_METHOD* method;
+  SSL_CTX* ctx;
+  OpenSSL_add_all_algorithms(); /* Load cryptos, et.al. */
+  SSL_load_error_strings();     /* Bring in and register error messages */
+  ctx = SSL_CTX_new(TLS_client_method()); /* Create new context */
 
-      // Apply TLS parameters to the current session.
-      p.apply(*session);
-
-      // Create stream object.
-      s = std::shared_ptr<io::stream>(new stream(session));
-    } catch (...) {
-      gnutls_deinit(*session);
-      delete (session);
-      throw;
-    }
-    s->set_substream(lower);
-
-    // Bind the TLS session with the stream from the lower layer.
-#if GNUTLS_VERSION_NUMBER < 0x020C00
-    gnutls_transport_set_lowat(*session, 0);
-#endif  // GNU TLS < 2.12.0
-    gnutls_transport_set_pull_function(*session, pull_helper);
-    gnutls_transport_set_push_function(*session, push_helper);
-    gnutls_transport_set_ptr(*session, s.get());
-
-    // Perform the TLS handshake.
-    log_v2::tls()->debug("TLS: performing handshake");
-    do {
-      ret = gnutls_handshake(*session);
-    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-    if (ret != GNUTLS_E_SUCCESS) {
-      log_v2::tls()->error("TLS: handshake failed: {}", gnutls_strerror(ret));
-      throw msg_fmt("TLS: handshake failed: {}", gnutls_strerror(ret));
-    }
-
-    log_v2::tls()->debug("TLS: successful handshake");
-    gnutls_protocol_t prot = gnutls_protocol_get_version(*session);
-    gnutls_cipher_algorithm_t ciph = gnutls_cipher_get(*session);
-    log_v2::tls()->debug("TLS: protocol and cipher  {} {} used",
-                         gnutls_protocol_get_name(prot),
-                         gnutls_cipher_get_name(ciph));
-
-    // Check certificate if necessary.
-    p.validate_cert(*session);
+  if (ctx == NULL) {
+    // ERR_print_errors_fp(stderr);
+    log_v2::tls()->info("TLS: on params init ctx rateeeeeeee");
+    abort();
   }
+  SSL_CTX_set_max_cert_list(ctx, TLS1_2_VERSION);
+  SSL_CTX_set_cipher_list(ctx, "AES128-SHA");
+  ERR_clear_error();
+
+  p.set_cert(_cert, _key);
+  p.set_trusted_ca(_ca);
+  p.load(ctx);
+  SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
+
+  log_v2::tls()->info("TLS: on acceptor open avant openlistener ");
+  ssl = SSL_new(ctx); /* create new SSL connection state */
+  log_v2::tls()->info("TLS: on acceptor open apres new ssl ");
+
+  BIO* rbio;
+  BIO* wbio;
+
+  SSL_set_bio(ssl, rbio, wbio);
+
+  log_v2::tls()->debug("TLS: initializing session 1");
+  s = std::shared_ptr<io::stream>(new stream(ssl, rbio, wbio));
+
+  s->set_substream(lower);
 
   return s;
+  //}
 }

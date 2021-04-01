@@ -20,7 +20,7 @@
 #define CCB_TLS_PARAMS_HH
 
 #include <gnutls/gnutls.h>
-
+#include <openssl/ssl.h>
 #include <string>
 
 #include "com/centreon/broker/namespace.hh"
@@ -43,7 +43,6 @@ class params {
  private:
   std::string _ca;
   std::string _cert;
-  std::string _tls_hostname;
   bool _compress;
   union {
     gnutls_certificate_credentials_t cert;
@@ -63,12 +62,11 @@ class params {
   params& operator=(params const& p) = delete;
   virtual ~params();
   void apply(gnutls_session_t session);
-  void load();
+  void load(SSL_CTX* ctx);
   void reset();
   void set_cert(std::string const& cert, std::string const& key);
   void set_compression(bool compress = false);
   void set_trusted_ca(std::string const& ca_cert);
-  void set_tls_hostname(std::string const& tls_hostname);
   void validate_cert(gnutls_session_t session);
 };
 }  // namespace tls

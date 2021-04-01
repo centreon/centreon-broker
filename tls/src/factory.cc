@@ -20,8 +20,8 @@
 
 #include <cstring>
 #include <memory>
-
 #include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
 
@@ -41,6 +41,7 @@ using namespace com::centreon::broker::tls;
  *  value.
  */
 bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
+  log_v2::tls()->info("TLS: debut factory has_endpoint");
   if (flag) {
     auto it = cfg.params.find("tls");
     if (it == cfg.params.end() || strncasecmp(it->second.c_str(), "no", 3) == 0)
@@ -65,11 +66,6 @@ bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
       it = cfg.params.find("public_cert");
       if (it != cfg.params.end())
         _public_cert = it->second;
-
-      // tls hostname.
-      it = cfg.params.find("tls_hostname");
-      if (it != cfg.params.end())
-        _tls_hostname = it->second;
     }
   }
   return false;
@@ -90,13 +86,12 @@ io::endpoint* factory::new_endpoint(
     bool& is_acceptor,
     std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
-
+  log_v2::tls()->info("TLS: debut factory new_endpoint");
   // Find TLS parameters (optional).
   bool tls(false);
   std::string ca_cert;
   std::string private_key;
   std::string public_cert;
-  std::string tls_hostname;
   {
     // Is TLS enabled ?
     std::map<std::string, std::string>::const_iterator it{
@@ -118,11 +113,6 @@ io::endpoint* factory::new_endpoint(
         it = cfg.params.find("public_cert");
         if (it != cfg.params.end())
           public_cert = it->second;
-
-        // tls hostname.
-        it = cfg.params.find("tls_hostname");
-        if (it != cfg.params.end())
-          tls_hostname = it->second;
       }
     }
   }
@@ -130,10 +120,10 @@ io::endpoint* factory::new_endpoint(
   // Acceptor.
   std::unique_ptr<io::endpoint> endp;
   if (is_acceptor)
-    endp.reset(new acceptor(public_cert, private_key, ca_cert, tls_hostname));
+    endp.reset(new acceptor(public_cert, private_key, ca_cert));
   // Connector.
   else
-    endp.reset(new connector(public_cert, private_key, ca_cert, tls_hostname));
+    endp.reset(new connector(public_cert, private_key, ca_cert));
   return endp.release();
 }
 
@@ -150,6 +140,7 @@ std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
                                                 bool is_acceptor,
                                                 std::string const& proto_name) {
   (void)proto_name;
-  return is_acceptor ? acceptor(_public_cert, _private_key, _ca_cert, _tls_hostname).open(to)
-                     : connector(_public_cert, _private_key, _ca_cert, _tls_hostname).open(to);
+  log_v2::tls()->info("TLS: debut factory new stream");
+  return is_acceptor ? acceptor(_public_cert, _private_key, _ca_cert).open(to)
+                     : connector(_public_cert, _private_key, _ca_cert).open(to);
 }

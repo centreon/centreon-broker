@@ -17,20 +17,26 @@
 */
 
 #include "com/centreon/broker/tls/stream.hh"
-
+#include <openssl/bio.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/opensslconf.h>
+#include <openssl/ssl.h>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
+#include <iostream>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
+
+#include "com/centreon/broker/neb/service.hh"
+#include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::tls;
 using namespace com::centreon::exceptions;
 
 /**************************************
@@ -48,8 +54,12 @@ using namespace com::centreon::exceptions;
  *  @param[in] sess  TLS session, providing informations on the
  *                   encryption that should be used.
  */
-stream::stream(gnutls_session_t* sess)
-    : io::stream("TLS"), _deadline((time_t)-1), _session(sess) {}
+stream::stream(SSL* sess, BIO* rbio, BIO* wbio)
+    : io::stream("TLS"),
+      _deadline((time_t)-1),
+      _session(sess),
+      _rbio(rbio),
+      _wbio(wbio) {}
 
 /**
  *  @brief Destructor.
@@ -61,8 +71,8 @@ stream::~stream() {
   if (_session) {
     try {
       _deadline = time(nullptr) + 30;  // XXX : use connection timeout
-      gnutls_bye(*_session, GNUTLS_SHUT_RDWR);
-      gnutls_deinit(*_session);
+
+      SSL_free(_session);
       delete (_session);
       _session = nullptr;
     }
@@ -87,74 +97,44 @@ stream::~stream() {
  */
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   // Clear existing content.
+  std::cout << "TLS: on read stream : 0" << std::endl;
   d.reset();
+  std::shared_ptr<io::data> s;
+  std::cout << "TLS: on read stream : 1" << std::endl;
+  _substream->read(s, deadline);
+  std::cout << "TLS: on read stream : 2" << std::endl;
+  io::raw* packet(static_cast<io::raw*>(s.get()));
+  char* ptr(packet->data());
+  int size(packet->size());
+  std::cout << "TLS: on read stream : 3" << std::endl;
+  int rets(BIO_write(_rbio, ptr, size));
+  std::cout << "TLS: on read stream : 4" << std::endl;
+  if (rets > 0) {
+    int ret(SSL_read(_session, ptr, size));
+    std::cout << "TLS: on read stream : 5" << std::endl;
+    if (ret < 0) {
+      if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN)) {
+        std::cout << "TLS: could not receive data: " << std::endl;
 
-  // Read data.
-  _deadline = deadline;
-  std::shared_ptr<io::raw> buffer(new io::raw);
-  buffer->resize(BUFSIZ);
-  int ret(gnutls_record_recv(*_session, buffer->data(), buffer->size()));
-  if (ret < 0) {
-    if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN)) {
-      log_v2::tls()->error("TLS: could not receive data: {}",
-                           gnutls_strerror(ret));
-      throw msg_fmt("TLS: could not receive data: {} ", gnutls_strerror(ret));
-    } else
-      return false;
-  } else if (ret) {
-    buffer->resize(ret);
-    d = buffer;
-    return true;
+      } else
+        return false;
+    } else if (ret) {
+      std::shared_ptr<io::raw> r(new io::raw);
+      std::cout << "tls read enc: " << size << std::endl;
+      std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(ptr)),
+                            const_cast<char*>(static_cast<char const*>(ptr)) +
+                                static_cast<std::size_t>(size));
+      std::cout << "tls read enc: " << size << std::endl;
+      r->get_buffer() = tmp;
+      d = r;
+      return true;
+    } else {
+      std::cout << "TLS session is terminated " << std::endl;
+    }
   } else {
-    log_v2::tls()->error("TLS session is terminated");
-    throw msg_fmt("TLS session is terminated");
+    std::cout << "TLS: on read stream rateeeee " << std::endl;
   }
   return false;
-}
-
-/**
- *  Read encrypted data from base stream.
- *
- *  @param[out] buffer Output buffer.
- *  @param[in]  size   Maximum size.
- *
- *  @return Number of bytes actually read.
- */
-long long stream::read_encrypted(void* buffer, long long size) {
-  // Read some data.
-  bool timed_out(false);
-  while (_buffer.empty()) {
-    std::shared_ptr<io::data> d;
-    timed_out = !_substream->read(d, _deadline);
-    if (!timed_out && d && d->type() == io::raw::static_type()) {
-      io::raw* r(static_cast<io::raw*>(d.get()));
-      _buffer.reserve(_buffer.size() + r->get_buffer().size());
-      _buffer.insert(_buffer.end(), r->get_buffer().begin(),
-                     r->get_buffer().end());
-      //_buffer.append(r->data(), r->size());
-    } else if (timed_out)
-      break;
-  }
-
-  // Transfer data.
-  uint32_t rb(_buffer.size());
-  if (!rb) {
-    if (timed_out) {
-      gnutls_transport_set_errno(*_session, EAGAIN);
-      return -1;
-    } else {
-      return 0;
-    }
-  } else if (size >= rb) {
-    memcpy(buffer, _buffer.data(), rb);
-    _buffer.clear();
-    return rb;
-  } else {
-    memcpy(buffer, _buffer.data(), size);
-    _buffer.erase(_buffer.begin(), _buffer.begin() + size);
-    //_buffer.remove(0, size);
-    return size;
-  }
 }
 
 /**
@@ -169,43 +149,51 @@ long long stream::read_encrypted(void* buffer, long long size) {
 int stream::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, get_name()))
     return 1;
-
+  std::cout << "tls write 0" << std::endl;
   // Send data.
   if (d->type() == io::raw::static_type()) {
     io::raw const* packet(static_cast<io::raw const*>(d.get()));
     char const* ptr(packet->const_data());
     int size(packet->size());
-    while (size > 0) {
-      int ret(gnutls_record_send(*_session, ptr, size));
-      if (ret < 0) {
-        log_v2::tls()->error("TLS: could not send data: {}",
-                             gnutls_strerror(ret));
-        throw msg_fmt("TLS: could not send data: {}", gnutls_strerror(ret));
+    int ret;
+    std::cout << "tls write 1 " << size << std::endl;
+
+    ret = SSL_write(_session, ptr, size);
+    std::cout << "tls write 2 ret " << ret << std::endl;
+    std::cout << "tls write 2 error " << SSL_get_error(_session, ret)
+              << std::endl;
+    BIO_printf(_wbio, "ERROR\n");
+    (void)BIO_flush(_wbio);
+    ERR_print_errors(_wbio);
+    if (ret > 0) {
+      std::cout << "tls write 3" << std::endl;
+      /* take the output of the SSL object and queue it for socket write */
+      io::raw* packets(static_cast<io::raw*>(d.get()));
+      char* ptrs(packets->data());
+      int sizes(packets->size());
+      ret = BIO_read(_wbio, ptrs, sizes);
+      std::cout << "tls write 4" << std::endl;
+      if (ret > 0) {
+        std::cout << "tls bio write enc: " << std::endl;
+        std::shared_ptr<io::raw> r(new io::raw);
+        std::vector<char> tmp(const_cast<char*>(static_cast<char*>(ptrs)),
+                              const_cast<char*>(static_cast<char*>(ptrs)) +
+                                  static_cast<std::size_t>(sizes));
+        std::cout << "tls write enc: " << sizes << std::endl;
+        r->get_buffer() = tmp;
+        std::cout << "tls write enc: " << _substream->get_name() << std::endl;
+        _substream->write(r);
+        std::cout << "tls write enc: 4" << std::endl;
+        _substream->flush();
+
+      } else if (!BIO_should_retry(_wbio)) {
+        std::cout << "tls bio write ratééé " << std::endl;
+        return 0;
       }
-      ptr += ret;
-      size -= ret;
+    } else {
+      std::cout << "tls write ratééé " << std::endl;
     }
   }
 
   return 1;
-}
-
-/**
- *  Write encrypted data to base stream.
- *
- *  @param[in] buffer Data to write.
- *  @param[in] size   Size of buffer.
- *
- *  @return Number of bytes written.
- */
-long long stream::write_encrypted(void const* buffer, long long size) {
-  std::shared_ptr<io::raw> r(new io::raw);
-  std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(buffer)),
-                        const_cast<char*>(static_cast<char const*>(buffer)) +
-                            static_cast<std::size_t>(size));
-  logging::error(logging::low) << "tls write enc: " << size;
-  r->get_buffer() = std::move(tmp);
-  _substream->write(r);
-  _substream->flush();
-  return size;
 }

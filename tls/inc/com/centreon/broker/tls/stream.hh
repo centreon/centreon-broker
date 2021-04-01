@@ -20,7 +20,7 @@
 #define CCB_TLS_STREAM_HH
 
 #include <gnutls/gnutls.h>
-
+#include <openssl/ssl.h>
 #include <vector>
 
 #include "com/centreon/broker/io/stream.hh"
@@ -40,12 +40,10 @@ namespace tls {
  */
 class stream : public io::stream {
  public:
-  stream(gnutls_session_t* session);
+  stream(SSL* session, BIO* rbio, BIO* wbio);
   ~stream();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  long long read_encrypted(void* buffer, long long size);
   int write(std::shared_ptr<io::data> const& d);
-  long long write_encrypted(void const* buffer, long long size);
 
  private:
   stream(stream const& other);
@@ -53,7 +51,9 @@ class stream : public io::stream {
 
   std::vector<char> _buffer;
   time_t _deadline;
-  gnutls_session_t* _session;
+  SSL* _session;
+  BIO* _rbio;
+  BIO* _wbio;
 };
 }  // namespace tls
 

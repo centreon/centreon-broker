@@ -16,8 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
 #include <memory>
-
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -43,9 +44,6 @@ void broker_module_deinit() {
   if (!--instances) {
     // Unregister TLS layer.
     io::protocols::instance().unreg("TLS");
-
-    // Cleanup.
-    tls::destroy();
   }
 }
 
@@ -64,9 +62,6 @@ void broker_module_init(void const* arg) {
         << "TLS: module for Centreon Broker " << CENTREON_BROKER_VERSION;
     log_v2::tls()->info("TLS: module for Centreon Broker {}",
                         CENTREON_BROKER_VERSION);
-
-    // Initialization.
-    tls::initialize();
 
     // Register TLS layer.
     io::protocols::instance().reg("TLS", std::make_shared<tls::factory>(), 5,
