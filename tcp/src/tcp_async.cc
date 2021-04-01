@@ -90,6 +90,7 @@ std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
 }
 
 void tcp_async::_clear_available_con(asio::error_code ec) {
+  log_v2::core()->info("Clearing old connections");
   if (ec)
     log_v2::core()->info("The clear mechanism for available connections encountered an error: {}",
                          ec.message());
@@ -117,9 +118,9 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
  */
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-  _timer.expires_after(std::chrono::seconds(10));
   if (!_clear_available_con_running) {
     _clear_available_con_running = true;
+    _timer.expires_after(std::chrono::seconds(10));
     _timer.async_wait(
         std::bind(&tcp_async::_clear_available_con, this, std::placeholders::_1));
   }
