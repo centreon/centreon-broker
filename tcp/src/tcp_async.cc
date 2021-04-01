@@ -90,6 +90,26 @@ std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
   return retval;
 }
 
+void tcp_async::_clear_available_con(asio::error_code ec) {
+  if (ec)
+    log_v2::core()->info("The clear mechanism for available connections encountered an error: {}",
+                         ec.message());
+  else {
+    std::unique_lock<std::mutex> lck(_acceptor_con_m);
+    std::time_t now = std::time(nullptr);
+    for (auto it = _acceptor_available_con.begin();
+         it != _acceptor_available_con.end(); ) {
+      if (now >= it->second.second + 4) {
+        log_v2::tcp()->info("Destroying too old/not used connection '{}'",
+                            it->second.first->peer());
+        it = _acceptor_available_con.erase(it);
+      } else
+        ++it;
+    }
+  }
+  _clear_available_con_running = false;
+}
+
 /**
  * @brief Starts the acceptor given in parameter. To accept the acceptor needs
  * the IO Context to be running.
@@ -98,16 +118,13 @@ std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
  */
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-  std::time_t now = std::time(nullptr);
-  for (auto it = _acceptor_available_con.begin();
-       it != _acceptor_available_con.end(); ) {
-    if (now >= it->second.second + 4) {
-      log_v2::tcp()->info("Destroying too old/not used connection '{}'",
-                          it->second.first->peer());
-      it = _acceptor_available_con.erase(it);
-    } else
-      ++it;
+  _timer.expires_after(std::chrono::seconds(10));
+  if (!_clear_available_con_running) {
+    _clear_available_con_running = true;
+    _timer.async_wait(
+        std::bind(&tcp_async::_clear_available_con, this, std::placeholders::_1));
   }
+
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
 
