@@ -37,7 +37,7 @@ state::state()
           com::centreon::broker::logging::file::with_human_redable_timestamp()},
       _poller_id{0},
       _pool_size{0},
-      _log_conf{"/var/log/centreon-broker/", "", 0, {}} {}
+      _log_conf{"/var/log/centreon-broker", "", 0, {}} {}
 
 /**
  *  Copy constructor.
