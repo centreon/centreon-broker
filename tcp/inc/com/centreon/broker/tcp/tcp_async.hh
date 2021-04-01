@@ -36,7 +36,8 @@ class tcp_async {
   /* Connections opened by acceptors not already got by streams */
   mutable std::mutex _acceptor_con_m;
   std::condition_variable _acceptor_con_cv;
-  std::unordered_multimap<asio::ip::tcp::acceptor*, tcp_connection::pointer>
+  std::unordered_multimap<asio::ip::tcp::acceptor*,
+                          std::pair<tcp_connection::pointer, time_t>>
       _acceptor_available_con;
 
   tcp_async() = default;

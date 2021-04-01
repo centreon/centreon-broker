@@ -56,7 +56,7 @@ tcp_connection::pointer tcp_async::get_connection(
                                 })) {
     auto found = _acceptor_available_con.find(acceptor.get());
     if (found != _acceptor_available_con.end()) {
-      tcp_connection::pointer retval = found->second;
+      tcp_connection::pointer retval = found->second.first;
       _acceptor_available_con.erase(found);
       return retval;
     }
@@ -70,6 +70,7 @@ bool tcp_async::contains_available_acceptor_connections(
   return _acceptor_available_con.find(acceptor) !=
          _acceptor_available_con.end();
 }
+
 /**
  * @brief Create an ASIO acceptor listening on the given port. Once it is
  * operational, it begins to accept connections.
@@ -96,7 +97,16 @@ std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
  */
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-
+  std::time_t now = std::time(nullptr);
+  for (auto it = _acceptor_available_con.begin();
+       it != _acceptor_available_con.end(); ) {
+    if (now >= it->second.second + 4) {
+      log_v2::tcp()->info("Destroying too old/not used connection '{}'",
+                          it->second.first->peer());
+      it = _acceptor_available_con.erase(it);
+    } else
+      ++it;
+  }
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
 
@@ -112,7 +122,6 @@ void tcp_async::start_acceptor(
  */
 void tcp_async::stop_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-
   std::lock_guard<std::mutex> lck(_acceptor_con_m);
 
   std::error_code ec;
@@ -139,8 +148,9 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
   if (!ec) {
     new_connection->update_peer();
     std::lock_guard<std::mutex> lck(_acceptor_con_m);
+    std::time_t now = std::time(nullptr);
     _acceptor_available_con.insert(
-        std::make_pair(acceptor.get(), new_connection));
+        std::make_pair(acceptor.get(), std::make_pair(new_connection, now)));
     _acceptor_con_cv.notify_one();
     start_acceptor(acceptor);
   } else
