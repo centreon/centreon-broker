@@ -95,7 +95,8 @@ void conflict_manager::_storage_process_service_status(
     if (index_id == 0) {
       throw msg_fmt(
           "storage: could not fetch index_id of newly inserted index ({}"
-          ", {})", host_id, service_id);
+          ", {})",
+          host_id, service_id);
     }
 
     /* Insert index in cache. */
@@ -182,7 +183,8 @@ void conflict_manager::_storage_process_service_status(
         if (index_id == 0)
           throw msg_fmt(
               "storage: could not fetch index_id of newly inserted index ({}"
-              ", {})", host_id, service_id);
+              ", {})",
+              host_id, service_id);
 
         if (!_index_data_update.prepared())
           _index_data_update = _mysql.prepare_query(
@@ -214,7 +216,8 @@ void conflict_manager::_storage_process_service_status(
       } catch (std::exception const& e) {
         throw msg_fmt(
             "storage: insertion of index ( {}, {}"
-            ") failed: {}", host_id, service_id, e.what());
+            ") failed: {}",
+            host_id, service_id, e.what());
       }
     }
   } else {
@@ -255,7 +258,7 @@ void conflict_manager::_storage_process_service_status(
       storage::parser p;
       try {
         _finish_action(-1, actions::metrics);
-        p.parse_perfdata(ss.perf_data.c_str(), pds);
+        p.parse_perfdata(ss.host_id, ss.service_id, ss.perf_data.c_str(), pds);
 
         std::list<std::shared_ptr<io::data>> to_publish;
         for (auto& pd : pds) {
@@ -327,7 +330,8 @@ void conflict_manager::_storage_process_service_status(
                   pd.critical_low(), pd.critical_mode(), pd.min(), pd.max());
               throw msg_fmt(
                   "storage: insertion of metric '{}"
-                  "' of index {} failed: {}", pd.name(), index_id, e.what());
+                  "' of index {} failed: {}",
+                  pd.name(), index_id, e.what());
             }
           } else {
             std::lock_guard<std::mutex> lock(_metric_cache_m);
@@ -427,17 +431,29 @@ void conflict_manager::_update_metrics() {
         "({},'{}',{},{},'{}',{},{},'{}',{},{},{})", metric->metric_id,
         misc::string::escape(metric->unit_name,
                              get_metrics_col_size(metrics_unit_name)),
-        std::isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
-        std::isnan(metric->warn_low) ? "NULL"
-                                     : fmt::format("{}", metric->warn_low),
+        std::isnan(metric->warn) || std::isinf(metric->warn)
+            ? "NULL"
+            : fmt::format("{}", metric->warn),
+        std::isnan(metric->warn_low) || std::isinf(metric->warn_low)
+            ? "NULL"
+            : fmt::format("{}", metric->warn_low),
         metric->warn_mode ? "1" : "0",
-        std::isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
-        std::isnan(metric->crit_low) ? "NULL"
-                                     : fmt::format("{}", metric->crit_low),
+        std::isnan(metric->crit) || std::isinf(metric->crit)
+            ? "NULL"
+            : fmt::format("{}", metric->crit),
+        std::isnan(metric->crit_low) || std::isinf(metric->crit_low)
+            ? "NULL"
+            : fmt::format("{}", metric->crit_low),
         metric->crit_mode ? "1" : "0",
-        std::isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
-        std::isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
-        metric->value));
+        std::isnan(metric->min) || std::isinf(metric->min)
+            ? "NULL"
+            : fmt::format("{}", metric->min),
+        std::isnan(metric->max) || std::isinf(metric->max)
+            ? "NULL"
+            : fmt::format("{}", metric->max),
+        std::isnan(metric->value) || std::isinf(metric->value)
+            ? "NULL"
+            : fmt::format("{}", metric->value)));
   }
   std::string query(fmt::format(
       "INSERT INTO metrics (metric_id, unit_name, warn, warn_low, "
@@ -540,8 +556,8 @@ void conflict_manager::_check_deleted_index() {
         metrics_to_delete.push_back(res.value_as_u64(1));
       }
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "could not query index table to get index to delete: {} ", e.what());
+      throw msg_fmt("could not query index table to get index to delete: {} ",
+                    e.what());
     }
 
     // Delete metrics.
