@@ -115,7 +115,7 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
         "{}",
         ec.message());
   else {
-    std::unique_lock<std::mutex> lck(_acceptor_con_m);
+    std::lock_guard<std::mutex> lck(_acceptor_con_m);
     std::time_t now = std::time(nullptr);
     for (auto it = _acceptor_available_con.begin();
          it != _acceptor_available_con.end();) {
