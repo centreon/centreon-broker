@@ -18,6 +18,12 @@ have been removed.
 
 ### Bugfixes
 
+*TCP*
+
+If we have an issue on the network between cbd and centengine, it is possible
+that the acceptor among them keeps for an indefined time its connections to the
+other. This leads to socket in CLOSE\_WAIT state.
+
 *streamconnector*
 
 There is a new function broker.md5(str) provided by the streamconnector that
