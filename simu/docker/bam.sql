@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `mod_bam` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 --
--- Contraintes pour les tables export�es
+-- Contraintes pour les tables exportées
 --
 
 --
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS `mod_bam_kpi` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 --
--- Contraintes pour les tables export�es
+-- Contraintes pour les tables exportées
 --
 
 --
