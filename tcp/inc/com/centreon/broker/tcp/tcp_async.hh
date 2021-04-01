@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,8 +70,8 @@ class tcp_async {
   asio::steady_timer _timer;
   std::atomic_bool _clear_available_con_running;
 
-  tcp_async(): _timer(pool::instance().io_context()), _clear_available_con_running(false) {}
-  ~tcp_async() noexcept = default;
+  tcp_async();
+  ~tcp_async() noexcept;
 
   void _clear_available_con(asio::error_code ec);
 
