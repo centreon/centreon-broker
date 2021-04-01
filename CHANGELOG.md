@@ -34,6 +34,8 @@ Now '.' is allowed in names.
 
 When broker is badly configured and the user wants to stop it, it may hang and
 never stop. This new version fixes this issue.
+There were also dangling pointers in the bbdo manager that regularly lead to
+segfault when it was unloaded. It is fixed now.
 
 *Storage rebuilder*
 
