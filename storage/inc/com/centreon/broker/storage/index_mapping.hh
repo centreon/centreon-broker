@@ -41,7 +41,7 @@ namespace storage {
 class index_mapping : public io::data {
  public:
   index_mapping();
-  index_mapping(uint32_t index_id, uint32_t host_id, uint32_t service_id);
+  index_mapping(uint64_t index_id, uint32_t host_id, uint32_t service_id);
   index_mapping(index_mapping const& other) = delete;
   ~index_mapping() = default;
   index_mapping& operator=(index_mapping const& other) = delete;
@@ -50,7 +50,7 @@ class index_mapping : public io::data {
                                  storage::de_index_mapping>::value;
   }
 
-  uint32_t index_id;
+  uint64_t index_id;
   uint32_t host_id;
   uint32_t service_id;
 

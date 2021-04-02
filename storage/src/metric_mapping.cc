@@ -41,7 +41,7 @@ metric_mapping::metric_mapping()
  * @param index_id
  * @param metric_id
  */
-metric_mapping::metric_mapping(uint32_t index_id, uint32_t metric_id)
+metric_mapping::metric_mapping(uint64_t index_id, uint32_t metric_id)
     : io::data(metric_mapping::static_type()),
       index_id{index_id},
       metric_id{metric_id} {}

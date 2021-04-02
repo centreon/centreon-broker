@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Centreon
+** Copyright 2011, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -97,6 +97,13 @@ class property : public source {
   property(uint32_t(T::*I)) { _prop.I = I; }
 
   /**
+   *  Unsigned integer 64 bits constructor.
+   *
+   *  @param[in]  uint64 property.
+   */
+  property(uint64_t(T::*l)) { _prop.l = l; }
+
+  /**
    *  Unsigned short constructor.
    *
    *  @param[in]  S Unsigned short property.
@@ -190,6 +197,18 @@ class property : public source {
   }
 
   /**
+   *  Get an uint64_teger property.
+   *
+   *  @param[in] d Object to get from.
+   *
+   *  @return Unsigned integer property.
+   */
+  uint64_t get_ulong(io::data const& d) {
+    return static_cast<T const*>(&d)->*(_prop.l);
+  }
+
+
+  /**
    *  Get an unsigned short property.
    *
    *  @param[in] d Object to get from.
@@ -268,6 +287,16 @@ class property : public source {
    */
   void set_uint(io::data& d, uint32_t value) {
     static_cast<T*>(&d)->*(_prop.I) = value;
+  }
+
+  /**
+   *  Set an uint64_teger property.
+   *
+   *  @param[out] d     Object to set.
+   *  @param[in]  value New value.
+   */
+  void set_ulong(io::data& d, uint64_t value) {
+    static_cast<T*>(&d)->*(_prop.l) = value;
   }
 
   /**

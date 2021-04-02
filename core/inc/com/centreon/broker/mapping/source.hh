@@ -68,7 +68,9 @@ class source {
   virtual std::string const& get_string(io::data const& d, size_t* max_len) = 0;
   virtual timestamp const& get_time(io::data const& d) = 0;
   virtual uint32_t get_uint(io::data const& d) = 0;
+  virtual uint64_t get_ulong(io::data const& d) = 0;
   virtual unsigned short get_ushort(io::data const& d) = 0;
+
   virtual void set_bool(io::data& d, bool value) = 0;
   virtual void set_double(io::data& d, double value) = 0;
   virtual void set_int(io::data& d, int value) = 0;
@@ -76,6 +78,7 @@ class source {
   virtual void set_string(io::data& d, std::string const& value) = 0;
   virtual void set_time(io::data& d, timestamp const& value) = 0;
   virtual void set_uint(io::data& d, uint32_t value) = 0;
+  virtual void set_ulong(io::data& d, uint64_t value) = 0;
   virtual void set_ushort(io::data& d, unsigned short value) = 0;
 };
 }  // namespace mapping

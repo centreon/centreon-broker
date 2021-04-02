@@ -158,6 +158,27 @@ void broker_event::create_as_table(lua_State* L, const io::data& d) {
                 lua_pushinteger(L, current_entry->get_uint(d));
             }
             break;
+          case mapping::source::ULONG:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                uint64_t val = current_entry->get_ulong(d);
+                if (val == 0)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                uint64_t val = current_entry->get_ulong(d);
+                if (val == static_cast<uint64_t>(-1))
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              default:
+                lua_pushinteger(L, current_entry->get_ulong(d));
+            }
+            break;
+
           default:  // Error in one of the mappings.
             throw exceptions::msg() << "invalid mapping for object "
                                     << "of type '" << info->get_name()
@@ -334,6 +355,27 @@ static int l_broker_event_next(lua_State* L) {
                 lua_pushinteger(L, current_entry->get_uint(*e));
             }
             break;
+          case mapping::source::ULONG:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                uint64_t val = current_entry->get_ulong(*e);
+                if (val == 0)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                uint64_t val = current_entry->get_ulong(*e);
+                if (val == static_cast<uint64_t>(-1))
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              default:
+                lua_pushinteger(L, current_entry->get_ulong(*e));
+            }
+            break;
+
           default:  // Error in one of the mappings.
             lua_pushnil(L);
         }
@@ -460,6 +502,27 @@ static int l_broker_event_index(lua_State* L) {
                 lua_pushinteger(L, current_entry->get_uint(*e));
             }
             break;
+          case mapping::source::ULONG:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                uint64_t val = current_entry->get_ulong(*e);
+                if (val == 0)
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                uint64_t val = current_entry->get_ulong(*e);
+                if (val == static_cast<uint64_t>(-1))
+                  lua_pushnil(L);
+                else
+                  lua_pushinteger(L, val);
+              } break;
+              default:
+                lua_pushinteger(L, current_entry->get_ulong(*e));
+            }
+            break;
+
           default:  // Error in one of the mappings.
             throw exceptions::msg() << "invalid mapping for object "
                                     << "of type '" << info->get_name()
