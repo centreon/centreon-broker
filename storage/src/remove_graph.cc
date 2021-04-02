@@ -21,12 +21,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Defaut constructor
  */
@@ -41,12 +35,6 @@ remove_graph::remove_graph()
  */
 remove_graph::remove_graph(uint64_t index_id, bool is_index)
     : io::data(remove_graph::static_type()), id{index_id}, is_index{is_index} {}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const remove_graph::entries[] = {
