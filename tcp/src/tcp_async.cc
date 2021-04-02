@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ tcp_async& tcp_async::instance() {
 }
 
 tcp_async::tcp_async()
-      : _timer(pool::instance().io_context()),
-        _clear_available_con_running(false) {}
+    : _timer(pool::instance().io_context()),
+      _clear_available_con_running(false) {}
 
 tcp_async::~tcp_async() noexcept {
   if (_clear_available_con_running) {
@@ -46,9 +46,9 @@ tcp_async::~tcp_async() noexcept {
     std::future<bool> f(p.get_future());
     _clear_available_con_running = false;
     asio::post(_timer.get_executor(), [this, &p] {
-        _timer.cancel();
-        p.set_value(true);
-        });
+      _timer.cancel();
+      p.set_value(true);
+    });
     f.get();
   }
 }
