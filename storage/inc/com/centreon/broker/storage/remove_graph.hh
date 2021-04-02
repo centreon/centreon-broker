@@ -38,18 +38,18 @@ namespace storage {
  */
 class remove_graph : public io::data {
  public:
+  uint64_t id;
+  bool is_index;
+
   remove_graph();
   remove_graph(uint64_t index_id, bool is_index);
-  remove_graph(remove_graph const& right) = delete;
-  ~remove_graph() = default;
-  remove_graph& operator=(remove_graph const& right) = delete;
+  ~remove_graph() noexcept = default;
+  remove_graph(remove_graph const&) = delete;
+  remove_graph& operator=(remove_graph const&) = delete;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
                                  storage::de_remove_graph>::value;
   }
-
-  uint32_t id;
-  bool is_index;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

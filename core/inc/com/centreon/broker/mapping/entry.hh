@@ -142,11 +142,8 @@ class entry {
       : _attribute(attr),
         _name_v2(name),
         _serialize(serialize),
-        _type(source::ULONG) {
-    _source = std::make_shared<property<T>>(prop);
-    _ptr = _source.get();
-  }
-
+        _source(new property<T>(prop)),
+        _type(source::ULONG) {}
 
   /**
    *  @brief Integer constructor.

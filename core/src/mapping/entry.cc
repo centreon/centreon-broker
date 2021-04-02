@@ -108,7 +108,7 @@ uint32_t entry::get_uint(io::data const& d) const {
  */
 
 uint64_t entry::get_ulong(io::data const& d) const {
-  return _ptr->get_ulong(d);
+  return _source->get_ulong(d);
 }
 
 /**
@@ -199,7 +199,7 @@ void entry::set_uint(io::data& d, uint32_t value) const {
  *  @param[in]  value New value.
  */
 void entry::set_ulong(io::data& d, uint64_t value) const {
-  _ptr->set_ulong(d, value);
+  _source->set_ulong(d, value);
 }
 
 /**
