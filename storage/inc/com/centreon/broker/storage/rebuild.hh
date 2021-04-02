@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -37,25 +37,22 @@ namespace storage {
  */
 class rebuild : public io::data {
  public:
+  bool end;
+  uint64_t id;
+  bool is_index;
+
   rebuild();
-  rebuild(bool ending, uint32_t id, bool is_index);
-  rebuild(rebuild const& right);
-  ~rebuild() = default;
-  rebuild& operator=(rebuild const& right);
+  rebuild(bool ending, uint64_t id, bool is_index);
+  rebuild(const rebuild&) = delete;
+  ~rebuild() noexcept = default;
+  rebuild& operator=(const rebuild& right) = delete;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
                                  storage::de_rebuild>::value;
   }
 
-  bool end;
-  uint32_t id;
-  bool is_index;
-
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(rebuild const& right);
 };
 }  // namespace storage
 

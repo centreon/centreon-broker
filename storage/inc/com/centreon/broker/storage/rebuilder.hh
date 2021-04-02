@@ -81,7 +81,7 @@ class rebuilder {
                        uint64_t index_id,
                        uint32_t interval,
                        uint32_t length);
-  void _send_rebuild_event(bool end, uint32_t id, bool is_index);
+  void _send_rebuild_event(bool end, uint64_t id, bool is_index);
   void _set_index_rebuild(mysql& db, uint64_t index_id, short state);
   void _run(asio::error_code ec);
 
@@ -91,8 +91,8 @@ class rebuilder {
             uint32_t rrd_length = 15552000,
             uint32_t interval_length = 60);
   ~rebuilder();
-  rebuilder(rebuilder const& other) = delete;
-  rebuilder& operator=(rebuilder const& other) = delete;
+  rebuilder(const rebuilder&) = delete;
+  rebuilder& operator=(const rebuilder&) = delete;
 };
 }  // namespace storage
 

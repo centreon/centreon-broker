@@ -380,7 +380,7 @@ void rebuilder::_rebuild_status(mysql& ms,
  *  @param[in] id       Index or metric ID.
  *  @param[in] is_index true for an index ID, false for a metric ID.
  */
-void rebuilder::_send_rebuild_event(bool end, uint32_t id, bool is_index) {
+void rebuilder::_send_rebuild_event(bool end, uint64_t id, bool is_index) {
   std::shared_ptr<storage::rebuild> rb =
       std::make_shared<storage::rebuild>(end, id, is_index);
   multiplexing::publisher().write(rb);
