@@ -68,7 +68,7 @@ class endpoint {
   std::map<std::string, std::string> params;
   std::set<std::string> read_filters;
   time_t read_timeout;
-  time_t retry_interval;
+  uint32_t retry_interval;
   std::string type;
   std::set<std::string> write_filters;
   bool cache_enabled;
