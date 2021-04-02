@@ -36,7 +36,7 @@ class SubscriberTest : public ::testing::Test {
  public:
   void SetUp() override {
     // Initialization.
-    config::applier::init();
+    config::applier::init(0, "test_broker");
     multiplexing::engine::instance().start();
   }
 

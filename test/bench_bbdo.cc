@@ -85,7 +85,7 @@ static void benchmark_stream(bbdo::stream& bbdos, bench_stream& bbdob) {
 int main(int argc, char* argv[]) {
   // Initialization.
   QCoreApplication app(argc, argv);
-  config::applier::init();
+  config::applier::init(0, "test_broker");
 
   // #1 Default streams.
   std::cout << "Bench #1 (default streams)\n";

@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
   QCoreApplication app(argc, argv);
 
   // Initialization.
-  config::applier::init();
+  config::applier::init(0, "test_broker");
 
   // Generate file name.
   QString filename[4];

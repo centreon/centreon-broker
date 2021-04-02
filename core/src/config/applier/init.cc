@@ -28,9 +28,11 @@
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
+#include "com/centreon/broker/pool.hh"
+#include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/stats/center.hh"
 
 using namespace com::centreon::broker;
 
@@ -42,22 +44,39 @@ std::atomic<config::applier::applier_state> config::applier::state{not_started};
 void config::applier::deinit() {
   state = finished;
   config::applier::endpoint::unload();
-  config::applier::state::unload();
   bbdo::unload();
   compression::unload();
   file::unload();
   multiplexing::engine::instance().clear();
   config::applier::modules::unload();
   multiplexing::engine::unload();
+  config::applier::state::unload();
   io::protocols::unload();
   io::events::unload();
+  pool::unload();
 }
 
 /**
- *  Load necessary structures.
+ * @brief Load necessary structures.
+ *
+ * @param conf The configuration used to initialize the all.
  */
-void config::applier::init() {
+void config::applier::init(const config::state& conf) {
+  init(conf.pool_size(), conf.broker_name());
+}
+
+/**
+ * @brief Load necessary structures. It initializes exactly the same structures
+ * as init(const config::state& conf) just with detailed parameters.
+ *
+ * @param n_thread
+ * @param name
+ */
+void config::applier::init(size_t n_thread, const std::string& name) {
   // Load singletons.
+  pool::load(n_thread);
+  stats::center::load();
+  config::applier::state::load();
   multiplexing::engine::load();
   io::events::load();
   io::protocols::load();
@@ -67,6 +86,5 @@ void config::applier::init() {
   compression::load();
   bbdo::load();
   config::applier::endpoint::load();
-  config::applier::state::load();
   state = initialized;
 }

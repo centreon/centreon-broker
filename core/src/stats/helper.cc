@@ -33,30 +33,39 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
 
+/**
+ * @brief Several generic informations returned in statistics.
+ *
+ * @param object
+ */
 void com::centreon::broker::stats::get_generic_stats(
     json11::Json::object& object) noexcept {
   object["version"] = CENTREON_BROKER_VERSION;
   object["pid"] = getpid();
   object["now"] = std::to_string(::time(nullptr));
 
-  std::string asio_version{std::to_string(ASIO_VERSION / 100000)};
-  asio_version.append(".")
-      .append(std::to_string(ASIO_VERSION / 100 % 1000))
-      .append(".")
-      .append(std::to_string(ASIO_VERSION % 100));
+  std::string asio_version(fmt::format("{}.{}.{}", ASIO_VERSION / 100000,
+                                       ASIO_VERSION / 100 % 1000,
+                                       ASIO_VERSION % 100));
+
   object["asio_version"] = asio_version;
   json11::Json::object pool;
-  pool["size"] = static_cast<int32_t>(pool::instance().get_current_size());
-  pool["latency"] = fmt::format("{:.3f}ms", pool::instance().get_latency());
+  pool["size"] = static_cast<int32_t>(pool::instance().get_pool_size());
+  pool["latency"] = "";
   object["thread_pool"] = pool;
 }
 
+/**
+ * @brief Fill object with the mysql connectors data.
+ *
+ * @param object The json object to fill
+ */
 void com::centreon::broker::stats::get_mysql_stats(
     json11::Json::object& object) noexcept {
   std::map<std::string, std::string> stats(
       mysql_manager::instance().get_stats());
-  for (std::pair<std::string, std::string> const& p : stats)
-    object[p.first] = p.second;
+  for (auto it = stats.begin(), end = stats.end(); it != end; ++it)
+    object[it->first] = it->second;
 }
 
 void com::centreon::broker::stats::get_loaded_module_stats(
@@ -76,6 +85,14 @@ void com::centreon::broker::stats::get_loaded_module_stats(
     object.emplace_back(subtree);
   }
 }
+
+/**
+ * @brief Fill object with each endpoint information.
+ *
+ * @param object The json object to fill
+ *
+ * @return A boolean telling the mutex could be locked to get informations.
+ */
 bool stats::get_endpoint_stats(std::vector<json11::Json::object>& object) {
   // Endpoint applier.
   config::applier::endpoint& endp_applier(

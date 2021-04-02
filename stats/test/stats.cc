@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 - 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2019 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  * For more information : contact@centreon.com
  *
  */
-
 #include <gtest/gtest.h>
 #include <chrono>
 #include <com/centreon/broker/logging/manager.hh>
@@ -40,6 +39,8 @@
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/stats/builder.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
+#include "com/centreon/broker/pool.hh"
+#include "com/centreon/broker/stats/center.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -47,6 +48,8 @@ using namespace com::centreon::broker;
 class StatsTest : public ::testing::Test {
  public:
   void SetUp() override {
+    pool::load(0);
+    stats::center::load();
     multiplexing::engine::load();
     config::applier::state::load();
     config::applier::modules::load();
@@ -62,6 +65,8 @@ class StatsTest : public ::testing::Test {
     io::protocols::unload();
     io::events::unload();
     multiplexing::engine::unload();
+    stats::center::unload();
+    pool::unload();
   }
 };
 

@@ -72,7 +72,7 @@ class OutputTest : public ::testing::Test {
   void SetUp() override {
     io::data::broker_id = 0;
     try {
-      config::applier::init();
+      config::applier::init(0, "broker_test");
     } catch (std::exception const& e) {
       (void)e;
     }

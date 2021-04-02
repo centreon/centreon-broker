@@ -36,7 +36,7 @@ const std::string MSG2("foo bar baz qux");
 
 class PublisherWrite : public testing::Test {
  public:
-  void SetUp() override { config::applier::init(); }
+  void SetUp() override { config::applier::init(0, "test_broker"); }
 
   void TearDown() override { config::applier::deinit(); }
 };

@@ -61,7 +61,7 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
   _total_tcp_count++;
   log_v2::tcp()->info(
       "{} TCP streams are configured on a thread pool of {} threads",
-      _total_tcp_count, pool::instance().get_current_size());
+      _total_tcp_count, pool::instance().get_pool_size());
 }
 
 /**
@@ -81,7 +81,7 @@ stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
   _total_tcp_count++;
   log_v2::tcp()->info(
       "{} TCP streams are configured on a thread pool of {} threads",
-      _total_tcp_count, pool::instance().get_current_size());
+      _total_tcp_count, pool::instance().get_pool_size());
 }
 
 /**
@@ -92,7 +92,7 @@ stream::~stream() noexcept {
   log_v2::tcp()->info(
       "TCP stream destroyed. Still {} configured on a thread pool of {} "
       "threads",
-      _total_tcp_count, pool::instance().get_current_size());
+      _total_tcp_count, pool::instance().get_pool_size());
   log_v2::tcp()->trace("stream closed");
   if (_connection->socket().is_open())
     _connection->close();

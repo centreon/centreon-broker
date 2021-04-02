@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ namespace applier {
 class modules {
   broker::modules::loader _loader;
   std::mutex _m_modules;
+  static modules* _instance;
 
  public:
   typedef broker::modules::loader::iterator iterator;
@@ -55,6 +56,7 @@ class modules {
   static modules& instance();
   static void load();
   static void unload();
+  static bool loaded();
 
   std::mutex& module_mutex();
 };

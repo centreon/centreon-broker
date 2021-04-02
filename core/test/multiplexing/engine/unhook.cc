@@ -40,7 +40,7 @@ const std::string MSG3("last message with qux");
 
 class Unhook : public testing::Test {
  public:
-  void SetUp() override { config::applier::init(); }
+  void SetUp() override { config::applier::init(0, "test_broker"); }
 
   void TearDown() override { config::applier::deinit(); }
 };

@@ -39,7 +39,7 @@ const std::string MSG4("no this is the last message");
 
 class StartStop : public testing::Test {
  public:
-  void SetUp() override { config::applier::init(); }
+  void SetUp() override { config::applier::init(0, "test_broker"); }
 
   void TearDown() override { config::applier::deinit(); }
 };

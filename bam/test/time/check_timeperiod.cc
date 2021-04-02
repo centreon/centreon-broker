@@ -146,7 +146,7 @@ static void parse_file(char const* filename, options& opt) {
 class BamTime : public ::testing::Test {
  public:
   void SetUp() override {
-    config::applier::init();
+    config::applier::init(0, "test_broker");
   }
 
   void TearDown() override {
