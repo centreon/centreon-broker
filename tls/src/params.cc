@@ -58,12 +58,18 @@ void params::apply(gnutls_session_t session) {
   int ret;
   ret = gnutls_priority_set_direct(
       session,
-      (_compress ? "NORMAL:-3DES-CBC:-ARCFOUR-128:-VERS-DTLS1.0:-VERS-TLS1.0:-"
-                   "VERS-TLS1.1:+ANON-DH:%COMPAT"
-                 : "NORMAL:-3DES-CBC:-ARCFOUR-128:-VERS-DTLS1.0:-VERS-TLS1.0:-"
-                   "VERS-TLS1.1:+ANON-DH:+COMP-"
-                   "DEFLATE:%COMPAT"),
+      (_compress
+           ? "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
+             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
+             "VERS-DTLS1.2:-VERS-SSL3.0:-"
+             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
+           : "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
+             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
+             "VERS-DTLS1.2:-VERS-SSL3.0:-"
+             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:+COMP-"
+             "DEFLATE:%COMPAT"),
       nullptr);
+
   if (ret != GNUTLS_E_SUCCESS) {
     log_v2::tls()->error("TLS: encryption parameter application failed: {}",
                          gnutls_strerror(ret));
