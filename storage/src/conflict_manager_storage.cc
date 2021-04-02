@@ -264,7 +264,6 @@ void conflict_manager::_storage_process_service_status(
 
         std::list<std::shared_ptr<io::data>> to_publish;
         for (auto& pd : pds) {
-          // A CHANGER ICI EN DESSOUS CA COMPILE PAS
           auto it_index_cache = _metric_cache.find({index_id, pd.name()});
 
           /* The cache does not contain this metric */

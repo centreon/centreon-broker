@@ -156,7 +156,7 @@ static uint32_t set_timestamp(io::data& t,
                               mapping::entry const& member,
                               void const* data,
                               uint32_t size) {
-  if (size < 2 * sizeof(uint32_t)) {
+  if (size < sizeof(uint64_t)) {
     log_v2::bbdo()->error(
         "BBDO: cannot extract timestamp value: {} bytes left in packet", size);
     throw msg_fmt(
@@ -170,7 +170,7 @@ static uint32_t set_timestamp(io::data& t,
   val <<= 32;
   val |= ntohl(*ptr);
   member.set_time(t, val);
-  return 2 * sizeof(uint32_t);
+  return sizeof(uint64_t);
 }
 
 /**
@@ -210,14 +210,15 @@ static uint32_t set_ulong(io::data& t,
         size);
 
   }
-  uint32_t const* ptr(static_cast<uint32_t const*>(data));
+  const uint32_t* ptr(static_cast<uint32_t const*>(data));
   uint64_t val(ntohl(*ptr));
   ++ptr;
   val <<= 32;
   val |= ntohl(*ptr);
 
+
   member.set_ulong(t, val);
-  return 2 * sizeof(uint32_t);
+  return sizeof(uint64_t);
  }
 
 /**
@@ -272,10 +273,10 @@ static io::data* unserialize(uint32_t event_type,
             case mapping::source::UINT:
               rb = set_uint(*t, *current_entry, buffer, size);
               break;
-
             case mapping::source::ULONG:
               rb = set_ulong(*t, *current_entry, buffer, size);
               break;
+
             default:
               log_v2::bbdo()->error(
                   "BBDO: invalid mapping for object of type '{0}': {1} is not "

@@ -249,7 +249,7 @@ void conflict_manager::_load_caches() {
       // Loop through result set.
       while (_mysql.fetch_row(res)) {
         index_info info{.host_name = res.value_as_str(3),
-                        .index_id = res.value_as_u32(0),
+                        .index_id = res.value_as_u64(0),
                         .locked = res.value_as_bool(7),
                         .rrd_retention = res.value_as_u32(4)
                                              ? res.value_as_u32(4)
