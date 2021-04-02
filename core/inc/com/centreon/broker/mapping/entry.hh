@@ -127,6 +127,28 @@ class entry {
         _type(source::UINT) {}
 
   /**
+   *  @brief Unsigned integer constructor.
+   *
+   *  Build an entry from a property.
+   *
+   *  @param[in] name Entry name.
+   *  @param[in] prop Property.
+   */
+  template <typename T>
+  entry(uint64_t(T::*prop),
+        char const* name,
+        uint32_t attr = always_valid,
+        bool serialize = true)
+      : _attribute(attr),
+        _name_v2(name),
+        _serialize(serialize),
+        _type(source::ULONG) {
+    _source = std::make_shared<property<T>>(prop);
+    _ptr = _source.get();
+  }
+
+
+  /**
    *  @brief Integer constructor.
    *
    *  Build an entry from a property.
@@ -256,6 +278,7 @@ class entry {
    */
   uint32_t get_type() const { return _type; }
   uint32_t get_uint(const io::data& d) const;
+  uint64_t get_ulong(const io::data& d) const;
   unsigned short get_ushort(const io::data& d) const;
   /**
    *  Get if this entry is a null entry.
@@ -270,6 +293,7 @@ class entry {
   void set_string(io::data& d, std::string const& value) const;
   void set_time(io::data& d, timestamp const& value) const;
   void set_uint(io::data& d, uint32_t value) const;
+  void set_ulong(io::data& d, uint64_t value) const;
   void set_ushort(io::data& d, unsigned short value) const;
 };
 }  // namespace mapping

@@ -100,7 +100,7 @@ void rebuilder::_run(asio::error_code ec) {
       _next_index_to_rebuild(info, ms);
       while (!_should_exit && info.index_id) {
         // Get check interval of host/service.
-        uint32_t index_id;
+        uint64_t index_id;
         uint32_t host_id;
         uint32_t service_id;
         uint32_t check_interval(0);
@@ -225,7 +225,7 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
   try {
     database::mysql_result res(promise.get_future().get());
     if (ms.fetch_row(res)) {
-      info.index_id = res.value_as_u32(0);
+      info.index_id = res.value_as_u64(0);
       info.host_id = res.value_as_u32(1);
       info.service_id = res.value_as_u32(2);
       info.rrd_retention = res.value_as_u32(3);
@@ -326,7 +326,7 @@ void rebuilder::_rebuild_metric(mysql& ms,
  *  @param[in] interval  Host/service check interval.
  */
 void rebuilder::_rebuild_status(mysql& ms,
-                                uint32_t index_id,
+                                uint64_t index_id,
                                 uint32_t interval,
                                 uint32_t length) {
   // Log.
@@ -393,7 +393,7 @@ void rebuilder::_send_rebuild_event(bool end, uint32_t id, bool is_index) {
  *  @param[in] index_id  Index to update.
  *  @param[in] state     Rebuild state (0, 1 or 2).
  */
-void rebuilder::_set_index_rebuild(mysql& ms, uint32_t index_id, short state) {
+void rebuilder::_set_index_rebuild(mysql& ms, uint64_t index_id, short state) {
   std::string query(
       fmt::format("UPDATE index_data SET must_be_rebuild='{}' WHERE id={}",
                   state, index_id));

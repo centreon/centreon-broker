@@ -97,6 +97,7 @@ if (WITH_TESTING)
     ${TEST_DIR}/rebuild.cc
     ${TEST_DIR}/remove_graph.cc
     ${TEST_DIR}/status.cc
+    ${TEST_DIR}/status-entry.cc
     PARENT_SCOPE
   )
   set(

@@ -100,6 +100,18 @@ uint32_t entry::get_uint(io::data const& d) const {
 }
 
 /**
+ *  Get the uint64_teger value.
+ *
+ *  @param[in] d Object to work on.
+ *
+ *  @return The uint32_teger value.
+ */
+
+uint64_t entry::get_ulong(io::data const& d) const {
+  return _ptr->get_ulong(d);
+}
+
+/**
  *  Get the unsigned short value.
  *
  *  @param[in] d Object to work on.
@@ -178,6 +190,16 @@ void entry::set_time(io::data& d, timestamp const& value) const {
  */
 void entry::set_uint(io::data& d, uint32_t value) const {
   _source->set_uint(d, value);
+}
+
+/**
+ *  Set the uint64_teger value.
+ *
+ *  @param[out] d     Object to work on.
+ *  @param[in]  value New value.
+ */
+void entry::set_ulong(io::data& d, uint64_t value) const {
+  _ptr->set_ulong(d, value);
 }
 
 /**

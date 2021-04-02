@@ -156,7 +156,7 @@ static uint32_t set_timestamp(io::data& t,
                               mapping::entry const& member,
                               void const* data,
                               uint32_t size) {
-  if (size < 2 * sizeof(uint32_t)) {
+  if (size < sizeof(uint64_t)) {
     log_v2::bbdo()->error(
         "BBDO: cannot extract timestamp value: {} bytes left in packet", size);
     throw msg_fmt(
@@ -170,7 +170,7 @@ static uint32_t set_timestamp(io::data& t,
   val <<= 32;
   val |= ntohl(*ptr);
   member.set_time(t, val);
-  return 2 * sizeof(uint32_t);
+  return sizeof(uint64_t);
 }
 
 /**
@@ -192,6 +192,33 @@ static uint32_t set_uint(io::data& t,
   member.set_uint(t, ntohl(*static_cast<uint32_t const*>(data)));
   return sizeof(uint32_t);
 }
+
+/**
+ *  Set an uint64_teger within an object.
+ */
+static uint32_t set_ulong(io::data& t,
+                         mapping::entry const& member,
+                         void const* data,
+                         uint32_t size) {
+  if (size < sizeof(uint64_t)) {
+    log_v2::bbdo()->error(
+        "BBDO: cannot extract uint64_t integer value: {} bytes left in packet",
+        size);
+    throw msg_fmt(
+        "BBDO: cannot extract uint64_teger value: {}"
+        " bytes left in packet",
+        size);
+  }
+
+  const uint32_t* ptr(static_cast<uint32_t const*>(data));
+  uint64_t val(ntohl(*ptr));
+  ++ptr;
+  val <<= 32;
+  val |= ntohl(*ptr);
+
+  member.set_ulong(t, val);
+  return sizeof(uint64_t);
+ }
 
 /**
  *  Unserialize an event in the BBDO protocol.
@@ -245,6 +272,10 @@ static io::data* unserialize(uint32_t event_type,
             case mapping::source::UINT:
               rb = set_uint(*t, *current_entry, buffer, size);
               break;
+            case mapping::source::ULONG:
+              rb = set_ulong(*t, *current_entry, buffer, size);
+              break;
+
             default:
               log_v2::bbdo()->error(
                   "BBDO: invalid mapping for object of type '{0}': {1} is not "
@@ -372,6 +403,20 @@ static void get_uint(io::data const& t,
 }
 
 /**
+ *  Get an uint64_teger from an object.
+ */
+static void get_ulong(io::data const& t, mapping::entry const& member,
+                      std::vector<char>& buffer) {
+  uint64_t value{member.get_ulong(t)};
+  uint32_t high{htonl(value >> 32)};
+  uint32_t low{htonl(value & 0xffffffff)};
+  char* vh{reinterpret_cast<char*>(&high)};
+  char* vl{reinterpret_cast<char*>(&low)};
+  std::copy(vh, vh + sizeof(high), std::back_inserter(buffer));
+  std::copy(vl, vl + sizeof(low), std::back_inserter(buffer));
+}
+
+/**
  *  Serialize an event in the BBDO protocol.
  *
  *  @param[in] e  Event to serialize.
@@ -417,6 +462,9 @@ static io::raw* serialize(const io::data& e) {
             break;
           case mapping::source::UINT:
             get_uint(e, *current_entry, *content);
+            break;
+          case mapping::source::ULONG:
+            get_ulong(e, *current_entry, *content);
             break;
           default:
             log_v2::bbdo()->error(

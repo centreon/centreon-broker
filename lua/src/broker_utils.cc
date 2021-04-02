@@ -219,6 +219,24 @@ static void broker_json_encode_broker_event(std::shared_ptr<io::data> e,
                                    current_entry->get_uint(*e));
             }
             break;
+          case mapping::source::ULONG:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                uint64_t val = current_entry->get_ulong(*e);
+                if (val != 0)
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                uint64_t val = current_entry->get_ulong(*e);
+                if (val != static_cast<uint64_t>(-1))
+                  oss << fmt::format(", \"{}\":{}", entry_name, val);
+              } break;
+              default:
+                oss << fmt::format(", \"{}\":{}", entry_name,
+                                   current_entry->get_ulong(*e));
+            }
+            break;
+
           default:  // Error in one of the mappings.
             throw msg_fmt(
                 "invalid mapping for object "
