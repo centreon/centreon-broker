@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2017 Centreon
+** Copyright 2011-2012,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,18 +22,22 @@
 
 using namespace com::centreon::broker::config;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
-state::state() {
-  clear();
-}
+state::state()
+    : _broker_id{0},
+      _rpc_port{0},
+      _command_protocol{"json"},
+      _event_queue_max_size{10000},
+      _flush_logs{true},
+      _log_thread_id{false},
+      _log_timestamp{com::centreon::broker::logging::file::with_timestamp()},
+      _log_human_readable_timestamp{
+          com::centreon::broker::logging::file::with_human_redable_timestamp()},
+      _poller_id{0},
+      _pool_size{0},
+      _log_conf{"/var/log/centreon-broker", "", 0, {}} {}
 
 /**
  *  Copy constructor.
