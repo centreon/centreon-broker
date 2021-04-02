@@ -25,6 +25,8 @@ encounters an error during its work, now it returns logs with the host id and
 the service id of the associated service, so it is easier for the user to debug
 his check.
 
+Index_id of index_data and metrics tables are now in unsigned int64_t.
+
 *Log file configuration*
 
 log file configuration is applied even if the configuration contains errors.
