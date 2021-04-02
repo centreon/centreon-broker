@@ -21,12 +21,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
