@@ -69,7 +69,6 @@ void params::apply(gnutls_session_t session) {
              "DEFLATE:%COMPAT"),
       nullptr);
 
-  //  +AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB
   if (ret != GNUTLS_E_SUCCESS) {
     log_v2::tls()->error("TLS: encryption parameter application failed: {}",
                          gnutls_strerror(ret));
