@@ -1,5 +1,5 @@
 /*
-** Copyright 2021 Centreon
+** Copyright 2011, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -102,8 +102,6 @@ class property : public source {
    *  @param[in]  uint64 property.
    */
   property(uint64_t(T::*l)) { _prop.l = l; }
-
-
 
   /**
    *  Unsigned short constructor.
@@ -292,7 +290,7 @@ class property : public source {
   }
 
   /**
-   *  Set an uint54_teger property.
+   *  Set an uint64_teger property.
    *
    *  @param[out] d     Object to set.
    *  @param[in]  value New value.

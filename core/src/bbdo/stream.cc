@@ -208,14 +208,13 @@ static uint32_t set_ulong(io::data& t,
         "BBDO: cannot extract uint64_teger value: {}"
         " bytes left in packet",
         size);
-
   }
+
   const uint32_t* ptr(static_cast<uint32_t const*>(data));
   uint64_t val(ntohl(*ptr));
   ++ptr;
   val <<= 32;
   val |= ntohl(*ptr);
-
 
   member.set_ulong(t, val);
   return sizeof(uint64_t);

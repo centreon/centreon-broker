@@ -111,7 +111,6 @@ uint64_t entry::get_ulong(io::data const& d) const {
   return _ptr->get_ulong(d);
 }
 
-
 /**
  *  Get the unsigned short value.
  *
@@ -202,7 +201,6 @@ void entry::set_uint(io::data& d, uint32_t value) const {
 void entry::set_ulong(io::data& d, uint64_t value) const {
   _ptr->set_ulong(d, value);
 }
-
 
 /**
  *  Set the unsigned short value.

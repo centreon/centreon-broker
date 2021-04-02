@@ -115,7 +115,6 @@ void conflict_manager::_storage_process_service_status(
     _index_cache[{host_id, service_id}] = std::move(info);
     rrd_len = _rrd_len;
     log_v2::perfdata()->debug(
-
         "conflict_manager:: add_metric_in_cache: returned rrd_len {}", rrd_len);
 
     /* Create the metric mapping. */
