@@ -25,10 +25,10 @@
 #include <json11.hpp>
 
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/tcp/connector.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
-#include "com/centreon/broker/pool.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
@@ -40,7 +40,10 @@ class TcpAcceptor : public ::testing::Test {
  public:
   void SetUp() override { pool::load(0); }
 
-  void TearDown() override { pool::unload();}
+  void TearDown() override {
+    tcp::tcp_async::instance().stop_timer();
+    pool::unload();
+  }
 };
 
 static auto try_connect =
