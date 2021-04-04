@@ -23,7 +23,6 @@
 #include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/file/internal.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -52,7 +51,6 @@ void config::applier::init(size_t n_thread, const std::string& name) {
   multiplexing::engine::load();
   io::events::load();
   io::protocols::load();
-  file::load();
   instance_broadcast::load();
   compression::load();
   bbdo::load();
@@ -67,7 +65,6 @@ void config::applier::deinit() {
   config::applier::endpoint::unload();
   bbdo::unload();
   compression::unload();
-  file::unload();
   multiplexing::engine::instance().clear();
   multiplexing::engine::unload();
   config::applier::state::unload();
