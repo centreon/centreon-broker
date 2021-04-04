@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -226,14 +226,12 @@ void availability_thread::_build_availabilities(time_t midnight) {
       first_day =
           time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
     } catch (const std::exception& e) {
-      log_v2::bam()->error(
+      std::string msg(fmt::format(
           "BAM-BI: availability thread could not select the BA availabilities "
           "from the reporting database: {}",
-          e.what());
-      throw msg_fmt("BAM-BI: availability thread "
-                    "could not select the BA availabilities "
-                    "from the reporting database: {}",
-                    e.what());
+          e.what()));
+      log_v2::bam()->error(msg);
+      throw msg_fmt(msg);
     }
   }
 
@@ -320,7 +318,8 @@ void availability_thread::_build_daily_availabilities(int thread_id,
       found->second.set_timeperiod_is_default(res.value_as_bool(7));
     }
   } catch (const std::exception& e) {
-    throw msg_fmt("BAM-BI: availability thread could not build the data {}", e.what());
+    throw msg_fmt("BAM-BI: availability thread could not build the data {}",
+                  e.what());
   }
 
   log_v2::bam()->debug("{} builders of availabilities created",
@@ -457,8 +456,10 @@ void availability_thread::_open_database() {
   try {
     _mysql.reset(new mysql(_db_cfg));
   } catch (const std::exception& e) {
-    throw msg_fmt("BAM-BI: availability thread could not connect to "
-                  "reporting database '{}'", e.what());
+    throw msg_fmt(
+        "BAM-BI: availability thread could not connect to "
+        "reporting database '{}'",
+        e.what());
   }
 }
 

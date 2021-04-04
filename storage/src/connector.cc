@@ -61,7 +61,8 @@ void connector::connect_to(database_config const& dbcfg,
  *
  * @return Storage connection object.
  */
-std::shared_ptr<io::stream> connector::open() {
-  return std::make_shared<stream>(_dbcfg, _rrd_len, _interval_length,
-                                  _rebuild_check_interval, _store_in_data_bin);
+std::unique_ptr<io::stream> connector::open() {
+  return std::unique_ptr<stream>(new stream(_dbcfg, _rrd_len, _interval_length,
+                                            _rebuild_check_interval,
+                                            _store_in_data_bin));
 }

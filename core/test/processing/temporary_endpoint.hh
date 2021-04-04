@@ -67,8 +67,8 @@ class temporary_endpoint : public io::endpoint {
    *
    *  @return New temporary_stream.
    */
-  std::shared_ptr<io::stream> open() {
-    return std::make_shared<temporary_stream>();
+  std::unique_ptr<io::stream> open() override {
+    return std::unique_ptr<io::stream>(new temporary_stream);
   }
 };
 

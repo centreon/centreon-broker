@@ -48,14 +48,14 @@ class TcpAcceptor : public ::testing::Test {
 
 static auto try_connect =
     [](tcp::connector& con) -> std::shared_ptr<io::stream> {
-  std::shared_ptr<io::stream> s;
-  while (!s) {
+  std::unique_ptr<io::stream> u;
+  while (!u) {
     try {
-      s = con.open();
+      u = con.open();
     } catch (...) {
     }
   }
-  return s;
+  return u;
 };
 
 TEST_F(TcpAcceptor, BadPort) {
@@ -68,7 +68,7 @@ TEST_F(TcpAcceptor, BadPort) {
 TEST_F(TcpAcceptor, NoConnector) {
   tcp::acceptor acc(test_port, -1);
 
-  ASSERT_EQ(acc.open(), std::shared_ptr<io::stream>());
+  ASSERT_EQ(acc.open(), std::unique_ptr<io::stream>());
 }
 
 TEST_F(TcpAcceptor, Nominal) {
@@ -77,15 +77,15 @@ TEST_F(TcpAcceptor, Nominal) {
     std::unique_ptr<io::endpoint> endp(a.release());
 
     /* Nominal case, cbd is acceptor and read on the socket */
-    std::shared_ptr<io::stream> s_cbd;
+    std::unique_ptr<io::stream> u_cbd;
     do {
-      s_cbd = endp->open();
-    } while (!s_cbd);
+      u_cbd = endp->open();
+    } while (!u_cbd);
 
     std::shared_ptr<io::data> data_read;
     while (!data_read ||
            std::static_pointer_cast<io::raw>(data_read)->size() < 10000)
-      ASSERT_NO_THROW(s_cbd->read(data_read, static_cast<time_t>(-1)));
+      ASSERT_NO_THROW(u_cbd->read(data_read, static_cast<time_t>(-1)));
 
     std::vector<char> vec(
         std::static_pointer_cast<io::raw>(data_read)->get_buffer());
@@ -140,10 +140,10 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
     std::unique_ptr<io::endpoint> endp(a.release());
 
     /* Nominal case, cbd is acceptor and read on the socket */
-    std::shared_ptr<io::stream> s_cbd;
+    std::unique_ptr<io::stream> u_cbd;
     do {
-      s_cbd = endp->open();
-    } while (!s_cbd);
+      u_cbd = endp->open();
+    } while (!u_cbd);
 
     std::shared_ptr<io::data> data_read;
     std::shared_ptr<io::raw> data_write;
@@ -154,7 +154,7 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
       while (!val || !data_read ||
              std::static_pointer_cast<io::raw>(data_read)->size() <
                  wanted.size()) {
-        val = s_cbd->read(data_read, static_cast<time_t>(0));
+        val = u_cbd->read(data_read, static_cast<time_t>(0));
       }
 
       std::vector<char> vec(
@@ -170,10 +170,10 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
         cc[0] = c;
         data_write->append(cc);
       }
-      s_cbd->write(data_write);
+      u_cbd->write(data_write);
     }
     int retry = 10;
-    while (retry-- && s_cbd->flush() == 0)
+    while (retry-- && u_cbd->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -239,7 +239,7 @@ TEST_F(TcpAcceptor, MultiNominal) {
 
     std::vector<std::string> data(nb_poller);
     {
-      std::vector<std::shared_ptr<io::stream>> s_cbd(nb_poller);
+      std::vector<std::unique_ptr<io::stream>> u_cbd(nb_poller);
       std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
       std::unique_ptr<io::endpoint> endp(a.release());
 
@@ -248,12 +248,12 @@ TEST_F(TcpAcceptor, MultiNominal) {
 
       while (cont) {
         std::cout << "Open stream\n";
-        auto s(endp->open());
-        if (s) {
+        auto u(endp->open());
+        if (u) {
           std::cout << "Open stream done\n";
-          for (auto it = s_cbd.begin(); it != s_cbd.end(); ++it) {
+          for (auto it = u_cbd.begin(); it != u_cbd.end(); ++it) {
             if (!*it) {
-              *it = s;
+              *it = std::move(u);
               break;
             }
           }
@@ -262,11 +262,11 @@ TEST_F(TcpAcceptor, MultiNominal) {
         cont = false;
         for (size_t i = 0; i < nb_poller; i++) {
           std::cout << "READING i = " << i << "\n";
-          auto s = s_cbd[i];
-          if (s) {
+          auto& u = u_cbd[i];
+          if (u) {
             std::shared_ptr<io::data> d;
             /* The read function does not wait... */
-            s->read(d, static_cast<time_t>(0));
+            u->read(d, static_cast<time_t>(0));
             std::vector<char> vec(
                 std::static_pointer_cast<io::raw>(d)->get_buffer());
             data[i].insert(data[i].end(), vec.begin(), vec.end());
@@ -284,7 +284,7 @@ TEST_F(TcpAcceptor, MultiNominal) {
       }
 
       std::cout << "Checking...\n";
-      ASSERT_EQ(s_cbd.size(), nb_poller);
+      ASSERT_EQ(u_cbd.size(), nb_poller);
     }
 
     for (auto d : data)
@@ -377,15 +377,15 @@ TEST_F(TcpAcceptor, NominalReversed) {
     std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
     std::unique_ptr<io::endpoint> endp(a.release());
 
-    std::shared_ptr<io::stream> s_cbd;
+    std::unique_ptr<io::stream> u_cbd;
     do {
-      s_cbd = endp->open();
-    } while (!s_cbd);
+      u_cbd = endp->open();
+    } while (!u_cbd);
 
     std::shared_ptr<io::data> data_read;
     while (!data_read ||
            std::static_pointer_cast<io::raw>(data_read)->size() < 10000)
-      s_cbd->read(data_read, static_cast<time_t>(-1));
+      u_cbd->read(data_read, static_cast<time_t>(-1));
 
     std::vector<char> vec(
         std::static_pointer_cast<io::raw>(data_read)->get_buffer());
@@ -436,15 +436,15 @@ TEST_F(TcpAcceptor, OnePeer) {
         new tcp::connector("localhost", 4141, -1));
     std::unique_ptr<io::endpoint> endp(c.release());
 
-    std::shared_ptr<io::stream> s_cbd;
+    std::unique_ptr<io::stream> u_cbd;
     do {
-      s_cbd = endp->open();
-    } while (!s_cbd);
+      u_cbd = endp->open();
+    } while (!u_cbd);
 
     std::shared_ptr<io::data> data_read;
     while (!data_read ||
            std::static_pointer_cast<io::raw>(data_read)->size() < 10000)
-      s_cbd->read(data_read, static_cast<time_t>(-1));
+      u_cbd->read(data_read, static_cast<time_t>(-1));
 
     std::vector<char> vec(
         std::static_pointer_cast<io::raw>(data_read)->get_buffer());
@@ -471,20 +471,20 @@ TEST_F(TcpAcceptor, OnePeerReversed) {
         new tcp::connector("localhost", 4141, -1));
     std::unique_ptr<io::endpoint> endp(c.release());
 
-    std::shared_ptr<io::stream> s_cbd;
+    std::unique_ptr<io::stream> u_cbd;
     do {
       try {
-        s_cbd = endp->open();
+        u_cbd = endp->open();
       } catch (const std::exception& e) {
         std::cout << '.';
       }
-    } while (!s_cbd);
+    } while (!u_cbd);
     std::cout << '\n';
 
     std::shared_ptr<io::data> data_read;
     while (!data_read ||
            std::static_pointer_cast<io::raw>(data_read)->size() < 10000)
-      s_cbd->read(data_read, static_cast<time_t>(-1));
+      u_cbd->read(data_read, static_cast<time_t>(-1));
 
     std::vector<char> vec(
         std::static_pointer_cast<io::raw>(data_read)->get_buffer());
@@ -579,19 +579,19 @@ TEST_F(TcpAcceptor, MultiOnePeer) {
           new tcp::connector("localhost", 4141, -1));
       std::unique_ptr<io::endpoint> endp(c.release());
 
-      std::shared_ptr<io::stream> s_cbd;
+      std::unique_ptr<io::stream> u_cbd;
       do {
-        s_cbd = endp->open();
-      } while (!s_cbd);
+        u_cbd = endp->open();
+      } while (!u_cbd);
 
       std::shared_ptr<io::raw> data_write = std::make_shared<io::raw>();
       data_write->append(std::string("Hello1!"));
-      ASSERT_NO_THROW(s_cbd->write(data_write));
+      ASSERT_NO_THROW(u_cbd->write(data_write));
 
       std::shared_ptr<io::data> data_read;
       while (!data_read ||
              std::static_pointer_cast<io::raw>(data_read)->size() == 0) {
-        ASSERT_NO_THROW(s_cbd->read(data_read, static_cast<time_t>(-1)));
+        ASSERT_NO_THROW(u_cbd->read(data_read, static_cast<time_t>(-1)));
       }
 
       std::vector<char> vec(
@@ -664,21 +664,21 @@ TEST_F(TcpAcceptor, NominalRepeated) {
       std::unique_ptr<io::endpoint> endp(a.release());
       std::cout << "cbd4 " << i << "\n";
 
-      std::shared_ptr<io::stream> s_cbd;
+      std::unique_ptr<io::stream> u_cbd;
       do {
-        s_cbd = endp->open();
-      } while (!s_cbd);
+        u_cbd = endp->open();
+      } while (!u_cbd);
 
       std::cout << "cbd5 " << i << "\n";
       std::shared_ptr<io::raw> data_write = std::make_shared<io::raw>();
       data_write->append(std::string("Hello1!"));
-      ASSERT_NO_THROW(s_cbd->write(data_write));
+      ASSERT_NO_THROW(u_cbd->write(data_write));
 
       std::shared_ptr<io::data> data_read;
       while (!data_read ||
              std::static_pointer_cast<io::raw>(data_read)->size() == 0) {
         try {
-          s_cbd->read(data_read, static_cast<time_t>(-1));
+          u_cbd->read(data_read, static_cast<time_t>(-1));
         } catch (const std::exception& e) {
           std::cout << "EXCEPTION DURING READING: " << e.what() << "\n";
           break;
@@ -936,10 +936,10 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
       std::unique_ptr<io::endpoint> endp(a.release());
 
       /* Nominal case, cbd is acceptor and read on the socket */
-      std::shared_ptr<io::stream> s_cbd;
+      std::unique_ptr<io::stream> u_cbd;
       do {
-        s_cbd = endp->open();
-      } while (!s_cbd);
+        u_cbd = endp->open();
+      } while (!u_cbd);
 
       std::shared_ptr<io::data> data_read;
       std::shared_ptr<io::raw> data_write;
@@ -950,7 +950,7 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
         while (!val || !data_read ||
                std::static_pointer_cast<io::raw>(data_read)->size() <
                    wanted.size()) {
-          val = s_cbd->read(data_read, static_cast<time_t>(0));
+          val = u_cbd->read(data_read, static_cast<time_t>(0));
         }
 
         std::vector<char> vec(
@@ -966,10 +966,10 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
           cc[0] = c;
           data_write->append(cc);
         }
-        s_cbd->write(data_write);
+        u_cbd->write(data_write);
       }
       int retry = 10;
-      while (retry-- && s_cbd->flush() == 0)
+      while (retry-- && u_cbd->flush() == 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     });
 

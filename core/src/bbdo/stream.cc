@@ -191,9 +191,9 @@ static uint32_t set_uint(io::data& t,
  *  Set an uint64_teger within an object.
  */
 static uint32_t set_ulong(io::data& t,
-                         mapping::entry const& member,
-                         void const* data,
-                         uint32_t size) {
+                          mapping::entry const& member,
+                          void const* data,
+                          uint32_t size) {
   if (size < sizeof(uint64_t)) {
     log_v2::bbdo()->error(
         "BBDO: cannot extract uint64_t integer value: {} bytes left in packet",
@@ -212,7 +212,7 @@ static uint32_t set_ulong(io::data& t,
 
   member.set_ulong(t, val);
   return sizeof(uint64_t);
- }
+}
 
 /**
  *  Unserialize an event in the BBDO protocol.
@@ -393,7 +393,8 @@ static void get_uint(io::data const& t,
 /**
  *  Get an uint64_teger from an object.
  */
-static void get_ulong(io::data const& t, mapping::entry const& member,
+static void get_ulong(io::data const& t,
+                      mapping::entry const& member,
                       std::vector<char>& buffer) {
   uint64_t value{member.get_ulong(t)};
   uint32_t high{htonl(value >> 32)};
@@ -546,7 +547,7 @@ stream::stream()
 int32_t stream::stop() {
   _substream->stop();
   int32_t retval = _acknowledged_events;
-  _acknowledged_events = 0;
+  _acknowledged_events -= retval;
   io::stream::stop();
   return retval;
 }

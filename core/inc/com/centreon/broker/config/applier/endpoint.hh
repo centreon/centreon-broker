@@ -61,6 +61,8 @@ class endpoint {
   std::atomic_bool _discarding;
 
   endpoint();
+  ~endpoint();
+  void _discard();
   processing::failover* _create_failover(
       config::endpoint& cfg,
       std::shared_ptr<multiplexing::subscriber> sbscrbr,
@@ -80,17 +82,16 @@ class endpoint {
  public:
   typedef std::map<config::endpoint, processing::endpoint*>::iterator iterator;
 
-  ~endpoint();
-  endpoint& operator=(endpoint const& other) = delete;
-  endpoint(endpoint const& other) = delete;
+  endpoint& operator=(const endpoint&) = delete;
+  endpoint(const endpoint&) = delete;
   void apply(std::list<config::endpoint> const& endpoints);
-  void discard();
   iterator endpoints_begin();
   iterator endpoints_end();
   std::timed_mutex& endpoints_mutex();
   static endpoint& instance();
   static void load();
   static void unload();
+  static bool loaded();
 };
 }  // namespace applier
 }  // namespace config

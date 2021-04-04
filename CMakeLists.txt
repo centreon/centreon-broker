@@ -432,7 +432,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/misc/uuid.cc
   ${SRC_DIR}/misc/variant.cc
   ${SRC_DIR}/modules/handle.cc
-  ${SRC_DIR}/modules/loader.cc
   ${SRC_DIR}/multiplexing/engine.cc
   ${SRC_DIR}/multiplexing/hooker.cc
   ${SRC_DIR}/multiplexing/muxer.cc
@@ -538,7 +537,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/misc/tokenizer.hh
   ${INC_DIR}/misc/variant.hh
   ${INC_DIR}/modules/handle.hh
-  ${INC_DIR}/modules/loader.hh
   ${INC_DIR}/multiplexing/engine.hh
   ${INC_DIR}/multiplexing/hooker.hh
   ${INC_DIR}/multiplexing/muxer.hh

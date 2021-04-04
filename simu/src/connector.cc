@@ -63,6 +63,6 @@ void connector::connect_to(
  *
  *  @return a lua connection object.
  */
-std::shared_ptr<io::stream> connector::open() {
-  return std::make_shared<stream>(_lua_script, _conf_params);
+std::unique_ptr<io::stream> connector::open() {
+  return std::unique_ptr<io::stream>(new stream(_lua_script, _conf_params));
 }

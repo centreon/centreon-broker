@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2020-2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@
 #include <string>
 #include <thread>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/stats/center.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -32,23 +33,22 @@ using namespace com::centreon::broker::processing;
 class TestStream : public io::stream {
  public:
   TestStream() : io::stream("TestStream") {}
-  bool read(std::shared_ptr<io::data>&, time_t) {
-    return true;
-  }
+  bool read(std::shared_ptr<io::data>&, time_t) { return true; }
 
-  int write(std::shared_ptr<io::data> const&) {
-    return 1;
-  }
+  int write(std::shared_ptr<io::data> const&) { return 1; }
 };
 
 class TestFeeder : public ::testing::Test {
+ protected:
+  std::unique_ptr<feeder> _feeder;
+
  public:
   void SetUp() override {
     config::applier::state::load();
     multiplexing::engine::load();
     io::events::load();
 
-    std::shared_ptr<io::stream> client = std::make_shared<TestStream>();
+    std::unique_ptr<io::stream> client(new TestStream);
     std::unordered_set<uint32_t> read_filters;
     std::unordered_set<uint32_t> write_filters;
     _feeder.reset(
@@ -56,14 +56,13 @@ class TestFeeder : public ::testing::Test {
   }
 
   void TearDown() override {
-    _feeder.reset(nullptr);
+    _feeder.reset();
     io::events::unload();
     multiplexing::engine::unload();
+    stats::center::unload();
+    pool::unload();
     config::applier::state::unload();
   }
-
- protected:
-  std::unique_ptr<feeder> _feeder;
 };
 
 TEST_F(TestFeeder, ImmediateStartExit) {

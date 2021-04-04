@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,27 +35,25 @@ CCB_BEGIN()
  *  data on disk between restarts.
  */
 class persistent_cache {
- public:
-  persistent_cache(std::string const& cache_file);
-  ~persistent_cache();
-  void add(std::shared_ptr<io::data> const& d);
-  void commit();
-  void get(std::shared_ptr<io::data>& d);
-  void rollback();
-  void transaction();
+  const std::string _cache_file;
+  std::shared_ptr<io::stream> _read_file;
+  std::shared_ptr<io::stream> _write_file;
 
-  std::string const& get_cache_file() const;
-
- private:
-  persistent_cache(persistent_cache const& other);
-  persistent_cache& operator=(persistent_cache const& other);
   std::string _new_file() const;
   std::string _old_file() const;
   void _open();
 
-  std::string _cache_file;
-  std::shared_ptr<io::stream> _read_file;
-  std::shared_ptr<io::stream> _write_file;
+ public:
+  persistent_cache(const std::string& cache_file);
+  ~persistent_cache();
+  persistent_cache(const persistent_cache&) = delete;
+  persistent_cache& operator=(const persistent_cache&) = delete;
+  void add(std::shared_ptr<io::data> const& d);
+  void commit();
+  void get(std::shared_ptr<io::data>& d);
+  void transaction();
+
+  const std::string& get_cache_file() const;
 };
 
 CCB_END()

@@ -56,9 +56,9 @@ center::center() : _strand(pool::instance().io_context()) {
   _stats.set_pid(getpid());
 
   /* Bringing modules statistics */
-  if (config::applier::modules::loaded()) {
+  if (config::applier::state::loaded()) {
     config::applier::modules& mod_applier(
-        config::applier::modules::instance());
+        config::applier::state::instance().get_modules());
     for (config::applier::modules::iterator it = mod_applier.begin(),
                                             end = mod_applier.end();
          it != end; ++it) {
@@ -88,7 +88,7 @@ center::~center() {
  *
  * @return A pointer to the engine statistics.
  */
-//EngineStats* center::register_engine() {
+// EngineStats* center::register_engine() {
 //  std::promise<EngineStats*> p;
 //  std::future<EngineStats*> retval = p.get_future();
 //  _strand.post([this, &p] {
@@ -108,7 +108,7 @@ center::~center() {
  *
  * @return A pointer to the feeder statistics.
  */
-//FeederStats* center::register_feeder(EndpointStats* ep_stats,
+// FeederStats* center::register_feeder(EndpointStats* ep_stats,
 //                                     const std::string& name) {
 //  std::promise<FeederStats*> p;
 //  std::future<FeederStats*> retval = p.get_future();
@@ -119,7 +119,7 @@ center::~center() {
 //  return retval.get();
 //}
 
-//bool center::unregister_feeder(EndpointStats* ep_stats,
+// bool center::unregister_feeder(EndpointStats* ep_stats,
 //                               const std::string& name) {
 //  std::promise<bool> p;
 //  std::future<bool> retval = p.get_future();
@@ -130,7 +130,7 @@ center::~center() {
 //  return retval.get();
 //}
 
-//MysqlConnectionStats* center::register_mysql_connection(
+// MysqlConnectionStats* center::register_mysql_connection(
 //    MysqlManagerStats* stats) {
 //  std::promise<MysqlConnectionStats*> p;
 //  std::future<MysqlConnectionStats*> retval = p.get_future();
@@ -141,14 +141,15 @@ center::~center() {
 //  return retval.get();
 //}
 
-//bool center::unregister_mysql_connection(MysqlConnectionStats* c) {
+// bool center::unregister_mysql_connection(MysqlConnectionStats* c) {
 //  std::promise<bool> p;
 //  std::future<bool> retval = p.get_future();
 //  _strand.post([this, c, &p] {
 //    for (auto
 //             it =
 //                 _stats.mutable_mysql_manager()->mutable_connections()->begin(),
-//             end = _stats.mutable_mysql_manager()->mutable_connections()->end();
+//             end =
+//             _stats.mutable_mysql_manager()->mutable_connections()->end();
 //         it != end; ++it) {
 //      if (&(*it) == c) {
 //        _stats.mutable_mysql_manager()->mutable_connections()->erase(it);
@@ -170,7 +171,7 @@ center::~center() {
  *
  * @return A pointer to the endpoint statistics.
  */
-//EndpointStats* center::register_endpoint(const std::string& name) {
+// EndpointStats* center::register_endpoint(const std::string& name) {
 //  std::promise<EndpointStats*> p;
 //  std::future<EndpointStats*> retval = p.get_future();
 //  _strand.post([this, &p, &name] {
@@ -186,7 +187,7 @@ center::~center() {
 //  return retval.get();
 //}
 
-//bool center::unregister_endpoint(const std::string& name) {
+// bool center::unregister_endpoint(const std::string& name) {
 //  std::promise<bool> p;
 //  std::future<bool> retval = p.get_future();
 //  _strand.post([this, &p, &name] {
@@ -210,7 +211,7 @@ center::~center() {
  *
  * @return A pointer to the conflict_manager statistics.
  */
-//ConflictManagerStats* center::register_conflict_manager() {
+// ConflictManagerStats* center::register_conflict_manager() {
 //  std::promise<ConflictManagerStats*> p;
 //  std::future<ConflictManagerStats*> retval = p.get_future();
 //  _strand.post([this, &p] {
@@ -228,7 +229,7 @@ center::~center() {
  *
  * @return A pointer to the mysql_manager statistics.
  */
-//MysqlManagerStats* center::register_mysql_manager() {
+// MysqlManagerStats* center::register_mysql_manager() {
 //  std::promise<MysqlManagerStats*> p;
 //  std::future<MysqlManagerStats*> retval = p.get_future();
 //  _strand.post([this, &p] {
@@ -238,7 +239,7 @@ center::~center() {
 //  return retval.get();
 //}
 
-//bool center::unregister_mysql_manager(void) {
+// bool center::unregister_mysql_manager(void) {
 //  std::promise<bool> p;
 //  std::future<bool> retval = p.get_future();
 //  _strand.post([this, &p] {
@@ -256,7 +257,7 @@ center::~center() {
  *
  * @return A pointer to the module statistics.
  */
-//ModuleStats* center::register_modules() {
+// ModuleStats* center::register_modules() {
 //  std::promise<ModuleStats*> p;
 //  std::future<ModuleStats*> retval = p.get_future();
 //  _strand.post([this, &p] {
@@ -289,7 +290,7 @@ std::string center::to_string() {
   return retval.get();
 }
 
-//void center::get_stats(const StatsQuery* request, BrokerStats* response) {
+// void center::get_stats(const StatsQuery* request, BrokerStats* response) {
 //  std::promise<bool> p;
 //  std::future<bool> done = p.get_future();
 //  _strand.post([&s = this->_stats, &p, request, response] {

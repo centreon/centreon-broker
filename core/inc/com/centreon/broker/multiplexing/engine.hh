@@ -102,8 +102,8 @@ class engine {
   static void unload();
   static engine& instance();
 
-  engine(engine const&) = delete;
-  engine& operator=(engine const&) = delete;
+  engine(const engine&) = delete;
+  engine& operator=(const engine&) = delete;
   ~engine() noexcept = default;
   void clear();
   void publish(const std::shared_ptr<io::data>& d);

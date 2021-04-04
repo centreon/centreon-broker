@@ -61,9 +61,9 @@ class acceptor : public io::endpoint {
            bool coarse = false,
            uint32_t ack_limit = 1000);
   ~acceptor() noexcept;
-  acceptor(acceptor const& other) = delete;
-  acceptor& operator=(acceptor const& other) = delete;
-  std::shared_ptr<io::stream> open() override;
+  acceptor(const acceptor&) = delete;
+  acceptor& operator=(const acceptor&) = delete;
+  std::unique_ptr<io::stream> open() override;
   void stats(json11::Json::object& tree) override;
   bool is_one_peer_retention() const { return _one_peer_retention_mode; }
 

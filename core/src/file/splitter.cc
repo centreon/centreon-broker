@@ -123,7 +123,9 @@ splitter::splitter(std::string const& path,
 /**
  *  Destructor.
  */
-splitter::~splitter() {}
+splitter::~splitter() {
+  close();
+}
 
 /**
  *  Close files open by splitter.

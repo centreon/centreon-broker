@@ -29,6 +29,7 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -43,16 +44,10 @@ using namespace com::centreon::broker::config::applier;
 // Class instance.
 static state* gl_state = nullptr;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
- *  Destructor.
+ *  Default constructor.
  */
-state::~state() {}
+state::state() : _poller_id(0), _rpc_port(0) {}
 
 /**
  *  Apply a configuration state.
@@ -131,23 +126,21 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
       s.log_human_readable_timestamp());
 
   // Apply modules configuration.
-  modules::instance().apply(s.module_list(), s.module_directory(), &s);
+  _modules.apply(s.module_list(), s.module_directory(), &s);
   static bool first_application(true);
   if (first_application)
     first_application = false;
   else {
     uint32_t module_count(0);
-    for (modules::iterator it(modules::instance().begin()),
-         end(modules::instance().end());
+    for (modules::iterator it = _modules.begin(), end = _modules.end();
          it != end; ++it)
       ++module_count;
     if (module_count)
-      logging::config(logging::high)
-          << "applier: " << module_count << " modules loaded";
+      log_v2::config()->info("applier: {} modules loaded", module_count);
     else
-      logging::config(logging::high)
-          << "applier: no module loaded, "
-             "you might want to check the 'module_directory' directive";
+      log_v2::config()->info(
+          "applier: no module loaded, you might want to check the "
+          "'module_directory' directory");
   }
 
   // Event queue max size (used to limit memory consumption).
@@ -177,7 +170,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
  *
  *  @return Cache directory.
  */
-std::string const& state::cache_dir() const throw() {
+const std::string& state::cache_dir() const throw() {
   return _cache_dir;
 }
 
@@ -200,6 +193,15 @@ void state::load() {
 }
 
 /**
+ * @brief Returns if the state instance is already loaded.
+ *
+ * @return a boolean.
+ */
+bool state::loaded() {
+  return gl_state;
+}
+
+/**
  *  Get the poller ID.
  *
  *  @return Poller ID of this Broker instance.
@@ -213,7 +215,7 @@ uint32_t state::poller_id() const throw() {
  *
  *  @return Poller name of this Broker instance.
  */
-std::string const& state::poller_name() const noexcept {
+const std::string& state::poller_name() const noexcept {
   return _poller_name;
 }
 
@@ -235,13 +237,6 @@ void state::unload() {
   gl_state = nullptr;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-state::state() : _poller_id(0), _rpc_port(0) {}
+config::applier::modules& state::get_modules() {
+  return _modules;
+}

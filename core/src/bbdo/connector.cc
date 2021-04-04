@@ -60,9 +60,9 @@ connector::connector(bool negotiate,
  *
  *  @return Open stream.
  */
-std::shared_ptr<io::stream> connector::open() {
+std::unique_ptr<io::stream> connector::open() {
   // Return value.
-  std::shared_ptr<io::stream> retval;
+  std::unique_ptr<io::stream> retval;
 
   // We must have a lower layer.
   if (_from)
@@ -77,11 +77,11 @@ std::shared_ptr<io::stream> connector::open() {
  *
  *  @return Open stream.
  */
-std::shared_ptr<io::stream> connector::_open(
+std::unique_ptr<io::stream> connector::_open(
     std::shared_ptr<io::stream> stream) {
-  std::shared_ptr<bbdo::stream> bbdo_stream;
+  bbdo::stream* bbdo_stream = nullptr;
   if (stream) {
-    bbdo_stream = std::make_shared<bbdo::stream>();
+    bbdo_stream = new bbdo::stream;
     bbdo_stream->set_substream(stream);
     bbdo_stream->set_coarse(_coarse);
     bbdo_stream->set_negotiate(_negotiate, _extensions);
@@ -89,5 +89,5 @@ std::shared_ptr<io::stream> connector::_open(
     bbdo_stream->negotiate(bbdo::stream::negotiate_first);
     bbdo_stream->set_ack_limit(_ack_limit);
   }
-  return bbdo_stream;
+  return std::unique_ptr<io::stream>(bbdo_stream);
 }

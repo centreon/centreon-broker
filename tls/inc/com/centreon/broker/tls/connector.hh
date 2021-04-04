@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,10 +45,10 @@ class connector : public io::endpoint {
             std::string const& ca = std::string(),
             std::string const& tls_hostname = std::string());
   ~connector() = default;
-  connector(connector const& right) = delete;
-  connector& operator=(connector const& right) = delete;
-  std::shared_ptr<io::stream> open();
-  std::shared_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
+  connector(const connector&) = delete;
+  connector& operator=(const connector&) = delete;
+  std::unique_ptr<io::stream> open();
+  std::unique_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 };
 }  // namespace tls
 

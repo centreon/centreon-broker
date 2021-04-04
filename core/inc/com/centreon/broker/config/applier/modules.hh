@@ -20,10 +20,14 @@
 #define CCB_CONFIG_APPLIER_MODULES_HH
 
 #include <list>
+#include <map>
+#include <memory>
 #include <mutex>
 #include <string>
-#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/namespace.hh"
+
+using handle = com::centreon::broker::modules::handle;
 
 CCB_BEGIN()
 
@@ -36,29 +40,26 @@ namespace applier {
  *  Load modules as per the configuration.
  */
 class modules {
-  broker::modules::loader _loader;
+  std::map<std::string, std::shared_ptr<handle>> _handles;
   std::mutex _m_modules;
-  static modules* _instance;
 
  public:
-  typedef broker::modules::loader::iterator iterator;
+  typedef std::map<std::string, std::shared_ptr<handle>>::iterator iterator;
 
   modules() = default;
-  modules(modules const& m) = delete;
-  modules& operator=(modules const& m) = delete;
-  ~modules();
-  void apply(std::list<std::string> const& module_list,
-             std::string const& module_dir,
-             void const* arg = NULL);
+  ~modules() noexcept = default;
+  modules(const modules&) = delete;
+  modules& operator=(const modules&) = delete;
+  void apply(const std::list<std::string>& module_list,
+             const std::string& module_dir,
+             const void* arg = NULL);
   iterator begin();
   iterator end();
   void discard();
-  static modules& instance();
-  static void load();
-  static void unload();
-  static bool loaded();
 
   std::mutex& module_mutex();
+  void load_dir(const std::string& dirname, const void* arg);
+  void load_file(const std::string& filename, const void* arg);
 };
 }  // namespace applier
 }  // namespace config

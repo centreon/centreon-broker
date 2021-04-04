@@ -88,30 +88,30 @@ acceptor::~acceptor() noexcept {
  *  @return Always return null stream. A new thread will be launched to
  *          process the incoming connection.
  */
-std::shared_ptr<io::stream> acceptor::open() {
+std::unique_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
   if (_from) {
-    std::shared_ptr<io::stream> s;
+    std::unique_ptr<io::stream> u;
     do {
-      s = _from->open();
-    } while (_one_peer_retention_mode && !s);
+      u = _from->open();
+    } while (_one_peer_retention_mode && !u);
 
     // Add BBDO layer.
-    if (s) {
+    if (u) {
       assert(!_coarse);
-      std::shared_ptr<bbdo::stream> my_bbdo(std::make_shared<bbdo::stream>());
-      my_bbdo->set_substream(s);
+      bbdo::stream* my_bbdo = new bbdo::stream;
+      my_bbdo->set_substream(std::move(u));
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negotiate(_negotiate, _extensions);
       my_bbdo->set_timeout(_timeout);
       my_bbdo->set_ack_limit(_ack_limit);
       my_bbdo->negotiate(bbdo::stream::negotiate_second);
 
-      return my_bbdo;
+      return std::unique_ptr<io::stream>(my_bbdo);
     }
   }
 
-  return std::shared_ptr<io::stream>();
+  return std::unique_ptr<io::stream>();
 }
 
 /**

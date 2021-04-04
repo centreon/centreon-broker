@@ -67,8 +67,8 @@ add_executable(ut
   ${TESTS_DIR}/compression/stream/read.cc
   ${TESTS_DIR}/compression/stream/write.cc
   ${TESTS_DIR}/compression/zlib/zlib.cc
+  ${TESTS_DIR}/config/init.cc
   ${TESTS_DIR}/config/logger.cc
-  ${TESTS_DIR}/config/parser.cc
   ${TESTS_DIR}/config/parser.cc
   ${TESTS_DIR}/file/splitter/concurrent.cc
   ${TESTS_DIR}/file/splitter/default.cc

@@ -35,10 +35,10 @@ namespace file {
 class opener : public io::endpoint {
  public:
   opener();
-  opener(opener const& other);
+  opener(const opener& other);
   ~opener();
-  opener& operator=(opener const&) = delete;
-  std::shared_ptr<io::stream> open();
+  opener& operator=(const opener&) = delete;
+  std::unique_ptr<io::stream> open();
   void set_auto_delete(bool auto_delete);
   void set_filename(std::string const& filename);
   void set_max_size(unsigned long long max);

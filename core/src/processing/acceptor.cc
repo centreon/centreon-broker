@@ -1,5 +1,5 @@
 /*
-** Copyright 2015-2020 Centreon
+** Copyright 2015-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -57,19 +57,21 @@ void acceptor::accept() {
   static uint32_t connection_id = 0;
 
   // Try to accept connection.
-  std::shared_ptr<io::stream> s(_endp->open());
-  if (s) {
+  std::unique_ptr<io::stream> u = _endp->open();
+
+  if (u) {
     // Create feeder thread.
     std::string name(fmt::format("{}-{}", _name, ++connection_id));
     log_v2::core()->info("New incoming connection '{}'", name);
     std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
-        name, s, _read_filters, _write_filters));
+        name, u, _read_filters, _write_filters));
 
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
     log_v2::core()->trace("Currently {} connections to acceptor '{}'",
                           _feeders.size(), _name);
-  }
+  } else
+    log_v2::core()->debug("accept ('{}') failed.", _name);
 }
 
 /**
@@ -203,14 +205,15 @@ void acceptor::_callback() noexcept {
     } catch (std::exception const& e) {
       _set_listening(false);
       // Log error.
-      logging::error(logging::high)
-          << "acceptor: endpoint '" << _name
-          << "' could not accept client: " << e.what();
+      log_v2::core()->error(
+          "acceptor: endpoint '{}' could not accept client: {}", _name,
+          e.what());
 
       // Sleep a while before reconnection.
-      logging::info(logging::medium)
-          << "acceptor: endpoint '" << _name << "' will wait "
-          << _retry_interval << "s before attempting to accept a new client";
+      log_v2::core()->debug(
+          "acceptor: endpoint '{}' will wait {}s before attempting to accept a "
+          "new client",
+          _name, _retry_interval);
       time_t limit{time(nullptr) + _retry_interval};
       while (!_endp->is_ready() && !_should_exit && time(nullptr) < limit) {
         std::this_thread::sleep_for(std::chrono::seconds(1));

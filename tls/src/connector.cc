@@ -56,13 +56,12 @@ connector::connector(std::string const& cert,
  *
  *  @return New connected stream.
  */
-std::shared_ptr<io::stream> connector::open() {
+std::unique_ptr<io::stream> connector::open() {
   // First connect the lower layer.
-  std::shared_ptr<io::stream> lower(_from->open());
-  std::shared_ptr<io::stream> new_stream;
+  std::unique_ptr<io::stream> lower(_from->open());
   if (lower)
-    new_stream = open(lower);
-  return new_stream;
+    return open(std::move(lower));
+  return nullptr;
 }
 
 /**
@@ -72,8 +71,8 @@ std::shared_ptr<io::stream> connector::open() {
  *
  *  @return Encrypted stream.
  */
-std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
-  std::shared_ptr<io::stream> s;
+std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
+  std::unique_ptr<io::stream> u;
   if (lower) {
     int ret;
     // Load parameters.
@@ -103,13 +102,13 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
       p.apply(*session);
 
       // Create stream object.
-      s = std::shared_ptr<io::stream>(new stream(session));
+      u.reset(new stream(session));
     } catch (...) {
       gnutls_deinit(*session);
-      delete (session);
+      delete session;
       throw;
     }
-    s->set_substream(lower);
+    u->set_substream(lower);
 
     // Bind the TLS session with the stream from the lower layer.
 #if GNUTLS_VERSION_NUMBER < 0x020C00
@@ -117,7 +116,7 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
 #endif  // GNU TLS < 2.12.0
     gnutls_transport_set_pull_function(*session, pull_helper);
     gnutls_transport_set_push_function(*session, push_helper);
-    gnutls_transport_set_ptr(*session, s.get());
+    gnutls_transport_set_ptr(*session, u.get());
 
     // Perform the TLS handshake.
     log_v2::tls()->debug("TLS: performing handshake");
@@ -140,5 +139,5 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     p.validate_cert(*session);
   }
 
-  return s;
+  return u;
 }

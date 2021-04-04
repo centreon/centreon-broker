@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class connector : public io::endpoint {
   connector(connector const& right) = delete;
   ~connector();
   connector& operator=(connector const& right) = delete;
-  std::shared_ptr<io::stream> open() override;
+  std::unique_ptr<io::stream> open() override;
   void set_cache_size(uint32_t cache_size);
   void set_cached_local(std::string const& local_socket);
   void set_cached_net(uint16_t port) noexcept;

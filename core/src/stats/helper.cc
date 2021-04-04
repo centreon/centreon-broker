@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include <json11.hpp>
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include "com/centreon/broker/config/applier/modules.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -70,12 +70,13 @@ void com::centreon::broker::stats::get_mysql_stats(
 
 void com::centreon::broker::stats::get_loaded_module_stats(
     std::vector<json11::Json::object>& object) noexcept {
-  config::applier::modules& mod_applier(config::applier::modules::instance());
+  config::applier::modules& mod_applier(
+      config::applier::state::instance().get_modules());
 
   std::lock_guard<std::mutex> lock(mod_applier.module_mutex());
 
-  for (config::applier::modules::iterator it(mod_applier.begin()),
-       end(mod_applier.end());
+  for (config::applier::modules::iterator it = mod_applier.begin(),
+                                          end = mod_applier.end();
        it != end; ++it) {
     json11::Json::object subtree;
     subtree["name"] = it->first;
@@ -95,6 +96,9 @@ void com::centreon::broker::stats::get_loaded_module_stats(
  */
 bool stats::get_endpoint_stats(std::vector<json11::Json::object>& object) {
   // Endpoint applier.
+  if (!config::applier::endpoint::loaded())
+    return true;
+
   config::applier::endpoint& endp_applier(
       config::applier::endpoint::instance());
 

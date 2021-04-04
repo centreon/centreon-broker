@@ -1,5 +1,5 @@
 /*
-** Copyright 2015-2017 Centreon
+** Copyright 2015-2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ class connector : public io::endpoint {
  public:
   connector();
   ~connector();
-  connector(connector const& other) = delete;
-  connector& operator=(connector const& other) = delete;
+  connector(const connector&) = delete;
+  connector& operator=(const connector&) = delete;
   void connect_to(std::string const& user,
                   std::string const& passwd,
                   std::string const& addr,
@@ -51,7 +51,7 @@ class connector : public io::endpoint {
                   std::string const& metric_ts,
                   std::vector<column> const& metric_cols,
                   std::shared_ptr<persistent_cache> const& cache);
-  std::shared_ptr<io::stream> open() override;
+  std::unique_ptr<io::stream> open() override;
 
  private:
   std::string _user;

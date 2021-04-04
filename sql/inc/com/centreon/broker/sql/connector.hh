@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015 Centreon
+** Copyright 2011-2012,2015-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,16 +42,16 @@ class connector : public io::endpoint {
 
  public:
   connector();
-  connector(connector const& other) = delete;
-  ~connector() = default;
-  connector& operator=(connector const& other) = delete;
+  ~connector() noexcept = default;
+  connector(const connector&) = delete;
+  connector& operator=(const connector&) = delete;
   void connect_to(database_config const& dbcfg,
                   uint32_t cleanup_check_interval = 0,
                   uint32_t loop_timeout = 10,
                   uint32_t instance_timeout = 15,
                   bool with_state_events = false,
                   bool enable_command_cache = false);
-  std::shared_ptr<io::stream> open() override;
+  std::unique_ptr<io::stream> open() override;
 };
 }  // namespace sql
 

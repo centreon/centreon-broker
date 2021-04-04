@@ -55,22 +55,20 @@ connector::~connector() {}
  *
  *  @return Stream object.
  */
-std::shared_ptr<io::stream> connector::open() {
-  std::shared_ptr<io::stream> retval;
+std::unique_ptr<io::stream> connector::open() {
+  std::unique_ptr<io::stream> retval;
   if (!_cached_local.empty())
-    retval = std::shared_ptr<io::stream>(
-        new output<cached<asio::local::stream_protocol::socket>>(
-            _metrics_path, _status_path, _cache_size, _ignore_update_errors,
-            _cached_local, _write_metrics, _write_status));
+    retval.reset(new output<cached<asio::local::stream_protocol::socket>>(
+        _metrics_path, _status_path, _cache_size, _ignore_update_errors,
+        _cached_local, _write_metrics, _write_status));
   else if (_cached_port)
-    retval =
-        std::shared_ptr<io::stream>(new output<cached<asio::ip::tcp::socket>>(
-            _metrics_path, _status_path, _cache_size, _ignore_update_errors,
-            _cached_port, _write_metrics, _write_status));
+    retval.reset(new output<cached<asio::ip::tcp::socket>>(
+        _metrics_path, _status_path, _cache_size, _ignore_update_errors,
+        _cached_port, _write_metrics, _write_status));
   else
-    retval = std::shared_ptr<io::stream>(
-        new output<lib>(_metrics_path, _status_path, _cache_size,
-                        _ignore_update_errors, _write_metrics, _write_status));
+    retval.reset(new output<lib>(_metrics_path, _status_path, _cache_size,
+                                 _ignore_update_errors, _write_metrics,
+                                 _write_status));
   return retval;
 }
 

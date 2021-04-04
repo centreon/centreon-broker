@@ -201,7 +201,7 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
     _acceptor_con_cv.notify_one();
     start_acceptor(acceptor);
   } else
-    log_v2::tcp()->error("acceptor error: {}", ec.message());
+    log_v2::tcp()->info("TCP acceptor interrupted: {}", ec.message());
 }
 
 /**

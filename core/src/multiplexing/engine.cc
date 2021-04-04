@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 #include <unistd.h>
 
@@ -180,7 +181,7 @@ void engine::start() {
 void engine::stop() {
   if (_write_func != &engine::_nop) {
     // Notify hooks of multiplexing loop end.
-    logging::debug(logging::high) << "multiplexing: stopping";
+    log_v2::core()->debug("multiplexing: stopping");
     std::unique_lock<std::mutex> lock(_engine_m);
     for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
          end(_hooks_end);
@@ -280,12 +281,6 @@ void engine::unsubscribe(muxer* subscriber) {
       break;
     }
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Default constructor.

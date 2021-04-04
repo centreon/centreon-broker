@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ acceptor::acceptor(std::string const& cert,
  *
  *  @see tls::stream
  */
-std::shared_ptr<io::stream> acceptor::open() {
+std::unique_ptr<io::stream> acceptor::open() {
   /*
   ** The process of accepting a TLS client is pretty straight-forward.
   ** Just follow the comments the have an overview of performed
@@ -72,11 +72,10 @@ std::shared_ptr<io::stream> acceptor::open() {
   */
 
   // First accept a client from the lower layer.
-  std::shared_ptr<io::stream> lower(_from->open());
-  std::shared_ptr<io::stream> new_stream;
+  std::unique_ptr<io::stream> lower(_from->open());
   if (lower)
-    new_stream = open(lower);
-  return new_stream;
+    return open(std::move(lower));
+  return nullptr;
 }
 
 /**
@@ -86,8 +85,8 @@ std::shared_ptr<io::stream> acceptor::open() {
  *
  *  @return Encrypted stream.
  */
-std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
-  std::shared_ptr<io::stream> s;
+std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
+  std::unique_ptr<io::stream> u;
   if (lower) {
     int ret;
 
@@ -119,13 +118,13 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
       p.apply(*session);
 
       // Create stream object.
-      s = std::shared_ptr<io::stream>(new stream(session));
+      u.reset(new stream(session));
     } catch (...) {
       gnutls_deinit(*session);
       delete session;
       throw;
     }
-    s->set_substream(lower);
+    u->set_substream(lower);
 
     // Bind the TLS session with the stream from the lower layer.
 #if GNUTLS_VERSION_NUMBER < 0x020C00
@@ -133,7 +132,7 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
 #endif  // GNU TLS < 2.12.0
     gnutls_transport_set_pull_function(*session, pull_helper);
     gnutls_transport_set_push_function(*session, push_helper);
-    gnutls_transport_set_ptr(*session, s.get());
+    gnutls_transport_set_ptr(*session, u.get());
 
     // Perform the TLS handshake.
     log_v2::tls()->debug("TLS: performing handshake");
@@ -155,5 +154,5 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     p.validate_cert(*session);
   }
 
-  return s;
+  return u;
 }

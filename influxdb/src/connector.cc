@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2017 Centreon
+** Copyright 2011-2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -71,8 +71,8 @@ void connector::connect_to(std::string const& user,
  *
  * @return An Influxdb connection object.
  */
-std::shared_ptr<io::stream> connector::open() {
-  return std::make_shared<stream>(
-      _user, _password, _addr, _port, _db, _queries_per_transaction, _status_ts,
-      _status_cols, _metric_ts, _metric_cols, _cache);
+std::unique_ptr<io::stream> connector::open() {
+  return std::unique_ptr<stream>(
+      new stream(_user, _password, _addr, _port, _db, _queries_per_transaction,
+                 _status_ts, _status_cols, _metric_ts, _metric_cols, _cache));
 }
