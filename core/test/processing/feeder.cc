@@ -24,6 +24,7 @@
 #include <thread>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/stats/center.hh"
 
@@ -44,8 +45,11 @@ class TestFeeder : public ::testing::Test {
 
  public:
   void SetUp() override {
+    pool::load(0);
+    stats::center::load();
     config::applier::state::load();
     multiplexing::engine::load();
+    io::protocols::load();
     io::events::load();
 
     std::unique_ptr<io::stream> client(new TestStream);
@@ -57,11 +61,12 @@ class TestFeeder : public ::testing::Test {
 
   void TearDown() override {
     _feeder.reset();
-    io::events::unload();
     multiplexing::engine::unload();
+    config::applier::state::unload();
+    io::events::unload();
+    io::protocols::unload();
     stats::center::unload();
     pool::unload();
-    config::applier::state::unload();
   }
 };
 

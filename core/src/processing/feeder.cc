@@ -197,7 +197,7 @@ void feeder::_callback() noexcept {
     // Normal termination.
     (void)e;
     log_v2::core()->info("feeder '{}' shut down", get_name());
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     logging::error(logging::medium)
         << "feeder: error occured while processing client '" << _name
         << "': " << e.what();

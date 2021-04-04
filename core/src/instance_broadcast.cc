@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,12 +19,6 @@
 #include "com/centreon/broker/instance_broadcast.hh"
 
 using namespace com::centreon::broker;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Default constructor.

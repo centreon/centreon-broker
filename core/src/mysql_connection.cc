@@ -517,6 +517,7 @@ void mysql_connection::_run() {
   }
 
   if (config::applier::mode == config::applier::finished) {
+    log_v2::sql()->debug("Connection over.");
     _state = finished;
     locker.unlock();
     _result_condition.notify_all();
@@ -560,6 +561,7 @@ void mysql_connection::_run() {
   }
   mysql_close(_conn);
   mysql_thread_end();
+  log_v2::core()->trace("mysql connection main loop finished.");
 }
 
 /******************************************************************************/

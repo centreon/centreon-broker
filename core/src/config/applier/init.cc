@@ -19,11 +19,8 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include <cstdlib>
 #include <memory>
-#include "com/centreon/broker/bbdo/internal.hh"
-#include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
@@ -49,11 +46,8 @@ void config::applier::init(size_t n_thread, const std::string& name) {
   stats::center::load();
   config::applier::state::load();
   multiplexing::engine::load();
-  io::events::load();
   io::protocols::load();
-  instance_broadcast::load();
-  compression::load();
-  bbdo::load();
+  io::events::load();
   config::applier::endpoint::load();
   mode = initialized;
 }
@@ -63,13 +57,11 @@ void config::applier::init(size_t n_thread, const std::string& name) {
 void config::applier::deinit() {
   mode = finished;
   config::applier::endpoint::unload();
-  bbdo::unload();
-  compression::unload();
   multiplexing::engine::instance().clear();
   multiplexing::engine::unload();
   config::applier::state::unload();
-  io::protocols::unload();
   io::events::unload();
+  io::protocols::unload();
   stats::center::unload();
   pool::unload();
 }

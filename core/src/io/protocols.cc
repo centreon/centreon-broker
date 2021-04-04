@@ -20,9 +20,9 @@
 #include <cassert>
 #include <cstdlib>
 #include <memory>
+#include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/file/factory.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -106,8 +106,7 @@ void protocols::unload() {
  *  @param[in] name Protocol name.
  */
 void protocols::unreg(std::string const& name) {
-  logging::info(logging::low)
-      << "protocols: unregistering protocol '" << name << "'";
+  log_v2::core()->info("protocols: unregistering protocol '{}'", name);
   _protocols.erase(name);
 }
 
@@ -117,12 +116,14 @@ void protocols::unreg(std::string const& name) {
 protocols::protocols() {
   // Registering internal protocols
   reg("file", std::make_shared<file::factory>(), 1, 3);
+  reg("compression", std::make_shared<compression::factory>(), 6, 6);
 }
 
 /**
  * @brief Destructor.
  */
 protocols::~protocols() noexcept {
+  unreg("compression");
   unreg("file");
   log_v2::core()->info("protocols: destruction ({} protocols still registered)",
                        _protocols.size());

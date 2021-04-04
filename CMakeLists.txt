@@ -383,7 +383,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/ceof/ceof_token.cc
   ${SRC_DIR}/ceof/ceof_writer.cc
   ${SRC_DIR}/compression/factory.cc
-  ${SRC_DIR}/compression/internal.cc
   ${SRC_DIR}/compression/opener.cc
   ${SRC_DIR}/compression/stack_array.cc
   ${SRC_DIR}/compression/stream.cc
@@ -476,7 +475,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/ceof/ceof_visitor.hh
   ${INC_DIR}/ceof/ceof_writer.hh
   ${INC_DIR}/compression/factory.hh
-  ${INC_DIR}/compression/internal.hh
   ${INC_DIR}/compression/opener.hh
   ${INC_DIR}/compression/stack_array.hh
   ${INC_DIR}/compression/stream.hh

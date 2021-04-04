@@ -29,8 +29,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
-constexpr std::size_t max_pending_connection = 30;
-
 /**
  * @brief Acceptor constructor. It needs the port used to listen and a read
  * timeout duration given in seconds that can be -1 if no timeout is wanted.
@@ -46,7 +44,6 @@ acceptor::acceptor(uint16_t port, int32_t read_timeout)
  */
 acceptor::~acceptor() noexcept {
   log_v2::tcp()->trace("acceptor destroyed");
-  std::error_code ec;
   if (_acceptor) {
     tcp_async::instance().stop_acceptor(_acceptor);
   }
