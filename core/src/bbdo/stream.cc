@@ -551,8 +551,16 @@ int32_t stream::stop() {
    * I'm engine and my work is to send data to broker.
    * Here, the user wants to stop me/ I need to ask broker how many
    * data I can acknowledge. */
-  if (!_is_input)
-    _send_event_stop_and_wait_for_ack();
+  if (!_is_input) {
+    try {
+      _send_event_stop_and_wait_for_ack();
+    } catch (const std::exception& e) {
+      log_v2::core()->info(
+          "BBDO: unable to send stop message to peer, it is already stopped: "
+          "{}",
+          e.what());
+    }
+  }
 
   _substream->stop();
 
