@@ -372,6 +372,7 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/bbdo/connector.cc
   ${SRC_DIR}/bbdo/factory.cc
   ${SRC_DIR}/bbdo/internal.cc
+  ${SRC_DIR}/bbdo/stop.cc
   ${SRC_DIR}/bbdo/stream.cc
   ${SRC_DIR}/bbdo/version_response.cc
   ${SRC_DIR}/broker_impl.cc
@@ -462,6 +463,7 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/bbdo/connector.hh
   ${INC_DIR}/bbdo/factory.hh
   ${INC_DIR}/bbdo/internal.hh
+  ${INC_DIR}/bbdo/stop.hh
   ${INC_DIR}/bbdo/stream.hh
   ${INC_DIR}/bbdo/version_response.hh
   ${INC_DIR}/broker_impl.hh

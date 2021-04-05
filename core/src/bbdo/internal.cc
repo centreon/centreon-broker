@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
+#include "com/centreon/broker/bbdo/stop.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -29,12 +30,6 @@
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
-
-/**************************************
- *                                     *
- *           Global Objects            *
- *                                     *
- **************************************/
 
 /**
  *  @brief BBDO initialization routine.
@@ -64,6 +59,8 @@ void bbdo::load() {
                    version_response::entries);
   e.register_event(io::events::bbdo, bbdo::de_ack, "ack", &ack::operations,
                    ack::entries);
+  e.register_event(io::events::bbdo, bbdo::de_stop, "stop", &stop::operations,
+                   stop::entries);
 
   // Register BBDO protocol.
   io::protocols::instance().reg("BBDO", std::make_shared<bbdo::factory>(), 7,

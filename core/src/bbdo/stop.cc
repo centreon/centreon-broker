@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2017,2020 Centreon
+** Copyright 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,29 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_BBDO_INTERNAL_HH
-#define CCB_BBDO_INTERNAL_HH
+#include "com/centreon/broker/bbdo/stop.hh"
 
-#include <cstdint>
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::bbdo;
 
-#include "com/centreon/broker/namespace.hh"
+/**
+ *  Default constructor.
+ */
+stop::stop() : io::data(stop::static_type()) {}
 
-#define BBDO_VERSION_MAJOR 2
-#define BBDO_VERSION_MINOR 0
-#define BBDO_VERSION_PATCH 0
-constexpr uint32_t BBDO_HEADER_SIZE = 16u;
+// Mapping.
+mapping::entry const stop::entries[] {mapping::entry()};
 
-CCB_BEGIN()
-
-namespace bbdo {
-// Data elements.
-enum { de_version_response = 1, de_ack, de_stop };
-
-// Load/unload of BBDO protocol.
-void load();
-void unload();
-}  // namespace bbdo
-
-CCB_END()
-
-#endif  // !CCB_BBDO_INTERNAL_HH
+// Operations.
+static io::data* new_stop() { return new stop; }
+io::event_info::event_operations const stop::operations = {&new_stop};

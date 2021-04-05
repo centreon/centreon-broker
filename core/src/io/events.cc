@@ -22,6 +22,7 @@
 #include <cassert>
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
+#include "com/centreon/broker/bbdo/stop.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -275,6 +276,8 @@ events::events() {
                  bbdo::version_response::entries);
   register_event(io::events::bbdo, bbdo::de_ack, "ack", &bbdo::ack::operations,
                  bbdo::ack::entries);
+  register_event(io::events::bbdo, bbdo::de_stop, "stop",
+                 &bbdo::stop::operations, bbdo::stop::entries);
 
   // Register BBDO protocol.
   io::protocols::instance().reg("BBDO", std::make_shared<bbdo::factory>(), 7,
@@ -285,12 +288,12 @@ events::events() {
  *  Destructor.
  */
 events::~events() {
- // Unregister BBDO protocol.
- io::protocols::instance().unreg("BBDO");
+  // Unregister BBDO protocol.
+  io::protocols::instance().unreg("BBDO");
 
- // Unregister category.
- unregister_category(io::events::bbdo);
+  // Unregister category.
+  unregister_category(io::events::bbdo);
 
- // Unregister internal category.
- unregister_category(io::events::internal);
+  // Unregister internal category.
+  unregister_category(io::events::internal);
 }

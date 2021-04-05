@@ -76,11 +76,11 @@ class output : public io::stream {
          unsigned short port,
          bool write_metrics = true,
          bool write_status = true);
-  output(output const&) = delete;
-  output& operator=(output const&) = delete;
-  ~output() noexcept {}
+  output(const output&) = delete;
+  output& operator=(const output&) = delete;
+  ~output() noexcept = default;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
-  void update();
+  void update() override;
   int32_t write(std::shared_ptr<io::data> const& d) override;
   int32_t stop() override { return 0; }
 };
