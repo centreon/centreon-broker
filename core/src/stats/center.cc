@@ -88,15 +88,15 @@ center::~center() {
  *
  * @return A pointer to the engine statistics.
  */
-// EngineStats* center::register_engine() {
-//  std::promise<EngineStats*> p;
-//  std::future<EngineStats*> retval = p.get_future();
-//  _strand.post([this, &p] {
-//    auto eng = _stats.mutable_engine();
-//    p.set_value(eng);
-//  });
-//  return retval.get();
-//}
+EngineStats* center::register_engine() {
+  std::promise<EngineStats*> p;
+  std::future<EngineStats*> retval = p.get_future();
+  _strand.post([this, &p] {
+    auto eng = _stats.mutable_engine();
+    p.set_value(eng);
+  });
+  return retval.get();
+}
 
 /**
  * @brief When a feeder needs to write statistics, it primarily has to

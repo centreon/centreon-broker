@@ -63,11 +63,11 @@ void acceptor::accept() {
     // Create feeder thread.
     std::string name(fmt::format("{}-{}", _name, ++connection_id));
     log_v2::core()->info("New incoming connection '{}'", name);
-    std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
+    std::unique_ptr<processing::feeder> f(new processing::feeder(
         name, u, _read_filters, _write_filters));
 
     std::lock_guard<std::mutex> lock(_stat_mutex);
-    _feeders.push_back(f);
+    _feeders.emplace_back(f.release());
     log_v2::core()->trace("Currently {} connections to acceptor '{}'",
                           _feeders.size(), _name);
   } else
@@ -90,6 +90,11 @@ void acceptor::exit() {
       break;
     case finished:
       break;
+  }
+
+  for (auto it = _feeders.begin(); it != _feeders.end(); ++it) {
+    delete *it;
+    *it = nullptr;
   }
 }
 
@@ -159,10 +164,7 @@ void acceptor::_forward_statistic(json11::Json::object& tree) {
   // Get statistic of acceptor.
   _endp->stats(tree);
   // Get statistics of feeders
-  for (std::list<std::shared_ptr<processing::feeder> >::iterator
-           it(_feeders.begin()),
-       end(_feeders.end());
-       it != end; ++it) {
+  for (auto it = _feeders.begin(), end = _feeders.end(); it != end; ++it) {
     json11::Json::object subtree;
     (*it)->stats(subtree);
     tree[(*it)->get_name()] = subtree;

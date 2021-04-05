@@ -205,6 +205,25 @@ void endpoint::_discard() {
   _discarding = true;
   log_v2::config()->debug("endpoint applier: destruction");
 
+  // Exit threads.
+  {
+    log_v2::config()->debug("endpoint applier: requesting threads termination");
+    std::unique_lock<std::timed_mutex> lock(_endpointsm);
+
+    // Send termination requests.
+    // We begin with feeders
+    for (auto it = _endpoints.begin(); it != _endpoints.end();) {
+      if (it->second->is_feeder()) {
+        log_v2::config()->trace(
+            "endpoint applier: send exit signal on endpoint '{}'",
+            it->second->get_name());
+        delete it->second;
+        it = _endpoints.erase(it);
+      } else
+        ++it;
+    }
+  }
+
   // Stop multiplexing.
   multiplexing::engine::instance().stop();
 
@@ -213,17 +232,15 @@ void endpoint::_discard() {
     log_v2::config()->debug("endpoint applier: requesting threads termination");
     std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
-    // Send termination requests.
-    for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end;
-         ++it) {
-      log_v2::config()->trace(
-          "endpoint applier: send exit signal on endpoint '{}'",
+    // We continue with failovers
+    for (auto it = _endpoints.begin(); it != _endpoints.end();) {
+      log_v2::config()->trace("endpoint applier: send exit signal on endpoint '{}'",
           it->second->get_name());
       delete it->second;
+      it = _endpoints.erase(it);
     }
 
     log_v2::config()->debug("endpoint applier: all threads are terminated");
-    _endpoints.clear();
   }
 }
 

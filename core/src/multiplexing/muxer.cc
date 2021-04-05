@@ -387,12 +387,6 @@ std::string muxer::queue_file(std::string const& name) {
   return retval;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Release all events stored within the internal list.
  */
@@ -401,6 +395,8 @@ void muxer::_clean() {
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
+      log_v2::core()->trace("muxer: sending {} events to {}", _events_size,
+                            _memory_file());
       std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
       while (!_events.empty()) {
         mf->write(_events.front());
