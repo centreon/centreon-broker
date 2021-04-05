@@ -42,7 +42,7 @@ class event_cache_visitor : public io::stream {
 
  public:
   event_cache_visitor();
-  ~event_cache_visitor();
+  ~event_cache_visitor() noexcept = default;
   event_cache_visitor(const event_cache_visitor&) = delete;
   event_cache_visitor& operator=(const event_cache_visitor&) = delete;
   void commit_to(io::stream& to);

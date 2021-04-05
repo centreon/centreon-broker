@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -201,8 +201,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
 void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   // Set KPI as invalid.
   {
-    auto ks(std::make_shared<kpi_status>());
-    ks->kpi_id = kpi.get_id();
+    std::shared_ptr<kpi_status> ks{std::make_shared<kpi_status>(kpi.get_id())};
     ks->state_hard = 3;
     ks->state_soft = 3;
     ks->level_acknowledgement_hard = 0.0;
@@ -239,7 +238,8 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi_ba_id));
   if (my_ba) {
     logging::error(logging::high)
-      << "BAM: BA '" << my_ba->get_name() << "' with id " << my_ba->get_id() << " is set as invalid";
+        << "BAM: BA '" << my_ba->get_name() << "' with id " << my_ba->get_id()
+        << " is set as invalid";
     my_ba->set_valid(false);
   }
 }
@@ -323,8 +323,9 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
   } else
     throw exceptions::config(
-          "created KPI {} is neither related to a service, nor a BA,"
-          " nor a meta-service, nor a boolean expression", cfg.get_id());
+        "created KPI {} is neither related to a service, nor a BA,"
+        " nor a meta-service, nor a boolean expression",
+        cfg.get_id());
 
   my_kpi->set_id(cfg.get_id());
   my_kpi->set_ba_id(cfg.get_ba_id());
@@ -344,16 +345,15 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
   uint32_t ba_id = cfg.get_ba_id();
   std::shared_ptr<bam::ba> my_ba(_bas->find_ba(ba_id));
   if (!my_ba)
-    throw exceptions::config(
-          "target BA {} does not exist", ba_id);
+    throw exceptions::config("target BA {} does not exist", ba_id);
 
   if (cfg.is_ba()) {
     std::shared_ptr<bam::kpi_ba> obj(
         std::static_pointer_cast<bam::kpi_ba>(kpi));
     std::shared_ptr<bam::ba> target(_bas->find_ba(cfg.get_indicator_ba_id()));
     if (!target)
-      throw exceptions::config(
-            "could not find source BA {}", cfg.get_indicator_ba_id());
+      throw exceptions::config("could not find source BA {}",
+                               cfg.get_indicator_ba_id());
     obj->link_ba(target);
     target->add_parent(std::static_pointer_cast<bam::computable>(obj));
     logging::config(logging::medium)
@@ -364,8 +364,8 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
     std::shared_ptr<bam::meta_service> target(
         _metas->find_meta(cfg.get_meta_id()));
     if (!target)
-      throw exceptions::config(
-            "could not find source meta-service {}", cfg.get_meta_id());
+      throw exceptions::config("could not find source meta-service {}",
+                               cfg.get_meta_id());
     obj->link_meta(target);
     target->add_parent(std::static_pointer_cast<bam::computable>(obj));
     logging::config(logging::medium) << "BAM: Resolve KPI " << kpi->get_id()
@@ -377,7 +377,7 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
         _boolexps->find_boolexp(cfg.get_boolexp_id()));
     if (!target)
       throw exceptions::config("could not find source boolean expression {}",
-                   cfg.get_boolexp_id());
+                               cfg.get_boolexp_id());
     obj->link_boolexp(target);
     target->add_parent(std::static_pointer_cast<bam::computable>(obj));
     logging::config(logging::medium)

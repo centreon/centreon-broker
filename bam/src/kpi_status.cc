@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-kpi_status::kpi_status()
+kpi_status::kpi_status(uint32_t kpi_id)
     : io::data(kpi_status::static_type()),
-      kpi_id(0),
+      kpi_id(kpi_id),
       in_downtime(false),
       level_acknowledgement_hard(0.0),
       level_acknowledgement_soft(0.0),
@@ -39,62 +39,6 @@ kpi_status::kpi_status()
       last_state_change(0),
       last_impact(0),
       valid(true) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other Object to copy.
- */
-kpi_status::kpi_status(kpi_status const& other) : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-kpi_status::~kpi_status() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Object to copy.
- *
- *  @return This object.
- */
-kpi_status& kpi_status::operator=(kpi_status const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void kpi_status::_internal_copy(kpi_status const& other) {
-  kpi_id = other.kpi_id;
-  in_downtime = other.in_downtime;
-  level_acknowledgement_hard = other.level_acknowledgement_hard;
-  level_acknowledgement_soft = other.level_acknowledgement_soft;
-  level_downtime_hard = other.level_downtime_hard;
-  level_downtime_soft = other.level_downtime_soft;
-  level_nominal_hard = other.level_nominal_hard;
-  level_nominal_soft = other.level_nominal_soft;
-  state_hard = other.state_hard;
-  state_soft = other.state_soft;
-  last_state_change = other.last_state_change;
-  last_impact = other.last_impact;
-  valid = other.valid;
-}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const kpi_status::entries[] = {
@@ -121,7 +65,7 @@ mapping::entry const kpi_status::entries[] = {
 
 // Operations.
 static io::data* new_kpi_status() {
-  return new kpi_status;
+  return new kpi_status(0);
 }
 io::event_info::event_operations const kpi_status::operations = {
     &new_kpi_status};

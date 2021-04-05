@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -179,8 +179,7 @@ void kpi_ba::visit(io::stream* visitor) {
 
     // Generate status event.
     {
-      std::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
+      std::shared_ptr<kpi_status> status{std::make_shared<kpi_status>(_id)};
       status->level_acknowledgement_hard = hard_values.get_acknowledgement();
       status->level_acknowledgement_soft = soft_values.get_acknowledgement();
       status->level_downtime_hard = hard_values.get_downtime();
@@ -194,7 +193,6 @@ void kpi_ba::visit(io::stream* visitor) {
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
-  return;
 }
 
 /**
@@ -211,12 +209,17 @@ void kpi_ba::_fill_impact(impact_values& impact,
                           double downtime) {
   // Get nominal impact from state.
   double nominal;
-  if (0 == state)
-    nominal = 0.0;
-  else if (1 == state)
-    nominal = _impact_warning;
-  else
-    nominal = _impact_critical;
+  switch (state) {
+    case 0:
+      nominal = 0.0;
+      break;
+    case 1:
+      nominal = _impact_warning;
+      break;
+    default:
+      nominal = _impact_critical;
+      break;
+  }
   impact.set_nominal(nominal);
 
   // Compute acknowledged and downtimed impacts. Acknowledgement and
@@ -234,7 +237,6 @@ void kpi_ba::_fill_impact(impact_values& impact,
     downtime = 100.0;
   impact.set_downtime(downtime * nominal / 100.0);
   impact.set_state(state);
-  return;
 }
 
 /**
