@@ -25,6 +25,7 @@
 
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
+#include "com/centreon/broker/bbdo/stop.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/timeout.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -527,9 +528,10 @@ static io::raw* serialize(const io::data& e) {
 /**
  *  Default constructor.
  */
-stream::stream()
+stream::stream(bool is_input)
     : io::stream("BBDO"),
       _skipped(0),
+      _is_input{is_input},
       _coarse(false),
       _negotiate(true),
       _negotiated(false),
@@ -545,6 +547,13 @@ stream::stream()
  * @return The number of events to acknowledge.
  */
 int32_t stream::stop() {
+  /* A concrete explanation:
+   * I'm engine and my work is to send data to broker.
+   * Here, the user wants to stop me/ I need to ask broker how many
+   * data I can acknowledge. */
+  if (!_is_input)
+    _send_event_stop_and_wait_for_ack();
+
   _substream->stop();
 
   /* We acknowledge peer about received events. */
@@ -569,6 +578,44 @@ int stream::flush() {
   int retval = _acknowledged_events;
   _acknowledged_events -= retval;
   return retval;
+}
+
+ /**
+ * @brief This method is called from a feeder stream. It is called when the
+ * stream is goint soon to be stopped. It sends a stop message to the peer to
+ * count how many events can be acknowledged.
+ */
+void stream::_send_event_stop_and_wait_for_ack() {
+  if (!_coarse) {
+    log_v2::bbdo()->debug("BBDO: sending stop packet to peer");
+
+    std::shared_ptr<bbdo::stop> stop_packet{std::make_shared<bbdo::stop>()};
+    _write(stop_packet);
+
+    log_v2::bbdo()->debug("BBDO: retrieving ack packet from peer");
+    std::shared_ptr<io::data> d;
+    time_t deadline = time(nullptr) + 5;
+
+    _read_any(d, deadline);
+    if (!d || d->type() != ack::static_type()) {
+      std::string msg;
+      if (d)
+        msg = fmt::format(
+            "BBDO: wrong message received (type {}) - expected ack event",
+            d->type());
+      else
+        msg = fmt::format(
+            "BBDO: no message received from peer. Cannot acknowledge properly "
+            "waiting messages before stopping.");
+      log_v2::bbdo()->error(msg);
+    } else {
+      log_v2::bbdo()->info(
+          "BBDO: received acknowledgement for {} events before finishing",
+          std::static_pointer_cast<ack const>(d)->acknowledged_events);
+      acknowledge_events(
+          std::static_pointer_cast<ack const>(d)->acknowledged_events);
+    }
+  }
 }
 
 /**
@@ -606,7 +653,6 @@ void stream::negotiate(stream::negotiation_type neg) {
   else
     deadline = time(nullptr) + _timeout;
 
-  // FIXME DBR
   _read_any(d, deadline);
   if (!d || d->type() != version_response::static_type()) {
     std::string msg;
@@ -754,7 +800,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   uint32_t event_id(!d ? 0 : d->type());
   while (!timed_out && ((event_id >> 16) == io::events::bbdo)) {
     // Version response.
-    if ((event_id & 0xFFFF) == 1) {
+    if ((event_id & 0xffff) == 1) {
       std::shared_ptr<version_response> version(
           std::static_pointer_cast<version_response>(d));
       if (version->bbdo_major != BBDO_VERSION_MAJOR) {
@@ -781,12 +827,15 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
           << "." << version->bbdo_minor << "." << version->bbdo_patch
           << ", we're using version " << BBDO_VERSION_MAJOR << "."
           << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
-    } else if ((event_id & 0xFFFF) == 2) {
+    } else if ((event_id & 0xffff) == 2) {
       log_v2::bbdo()->info(
           "BBDO: received acknowledgement for {} events",
           std::static_pointer_cast<ack const>(d)->acknowledged_events);
       acknowledge_events(
           std::static_pointer_cast<ack const>(d)->acknowledged_events);
+    } else if ((event_id & 0xffff) == 3) {
+      log_v2::bbdo()->info("BBDO: received stop from peer");
+      send_event_acknowledgement();
     }
 
     // Control messages.

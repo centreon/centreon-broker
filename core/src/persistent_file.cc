@@ -45,7 +45,7 @@ persistent_file::persistent_file(const std::string& path)
   cs->set_substream(fs);
 
   // BBDO layer.
-  std::shared_ptr<bbdo::stream> bs(std::make_shared<bbdo::stream>());
+  std::shared_ptr<bbdo::stream> bs(std::make_shared<bbdo::stream>(true));
   bs->set_coarse(true);
   bs->set_negotiate(false);
   bs->set_substream(cs);

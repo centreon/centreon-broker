@@ -109,6 +109,7 @@ class stream : public io::stream {
   // (time_t)-1);
   void _read_packet(size_t size, time_t deadline = (time_t)-1);
 
+  bool _is_input;
   bool _coarse;
   /**
    * the first string contains all the supported extensions.
@@ -124,11 +125,12 @@ class stream : public io::stream {
 
   void _write(std::shared_ptr<io::data> const& d);
   bool _read_any(std::shared_ptr<io::data>& d, time_t deadline);
+  void _send_event_stop_and_wait_for_ack();
 
  public:
   enum negotiation_type { negotiate_first = 1, negotiate_second, negotiated };
 
-  stream();
+  stream(bool is_input);
   ~stream() noexcept = default;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;

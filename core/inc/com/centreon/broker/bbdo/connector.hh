@@ -38,6 +38,7 @@ class connector : public io::endpoint {
   connector(bool negotiate,
             const std::pair<std::string, std::string>& extensions,
             time_t timeout,
+            bool connector_is_input,
             bool coarse = false,
             uint32_t ack_limit = 1000);
   ~connector() noexcept = default;
@@ -48,6 +49,7 @@ class connector : public io::endpoint {
  private:
   std::unique_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
 
+  bool _is_input;
   bool _coarse;
   std::pair<std::string, std::string> _extensions;
   bool _negotiate;

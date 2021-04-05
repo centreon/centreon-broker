@@ -103,7 +103,7 @@ TEST_F(OutputTest, WriteService) {
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -153,7 +153,7 @@ TEST_F(OutputTest, WriteLongService) {
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(new into_memory());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -211,7 +211,7 @@ TEST_F(OutputTest, WriteReadService) {
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<into_memory> memory_stream(new into_memory());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -325,7 +325,7 @@ TEST_F(OutputTest, WriteReadBadChksum) {
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -364,7 +364,7 @@ TEST_F(OutputTest, ServiceTooShort) {
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -409,7 +409,7 @@ TEST_F(OutputTest, ServiceTooShortAndAGoodOne) {
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);

@@ -120,32 +120,27 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end())
       keep_retention = config::parser::parse_boolean(it->second);
 
-    // One peer retention mode? (i.e. keep_retention + reverse_connection)
-    bool reverse_connection = cfg.get_io_type() == config::endpoint::output;
-    if (!reverse_connection && keep_retention)
+    // One peer retention mode? (i.e. keep_retention + acceptor_is_output)
+    bool acceptor_is_output = cfg.get_io_type() == config::endpoint::output;
+    if (!acceptor_is_output && keep_retention)
       log_v2::bbdo()->error(
           "BBDO: Configuration error, the one peer retention mode should be "
           "set only when the connection is reversed");
 
     retval =
         new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
-                           reverse_connection, coarse, ack_limit);
-    if (reverse_connection && keep_retention)
+                           acceptor_is_output, coarse, ack_limit);
+    if (acceptor_is_output && keep_retention)
       is_acceptor = false;
     log_v2::bbdo()->debug("BBDO: new acceptor {}", cfg.name);
   } else {
+    bool connector_is_input = cfg.get_io_type() == config::endpoint::input;
     retval = new bbdo::connector(negotiate, extensions, cfg.read_timeout,
-                                 coarse, ack_limit);
+                                 connector_is_input, coarse, ack_limit);
     log_v2::bbdo()->debug("BBDO: new connector {}", cfg.name);
   }
   return retval;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Get available extensions for an endpoint. Two strings are returned:

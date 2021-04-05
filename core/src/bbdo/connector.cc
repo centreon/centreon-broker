@@ -38,6 +38,8 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] negotiate  True if extension negotiation is allowed.
  *  @param[in] extensions Available extensions.
  *  @param[in] timeout    Timeout.
+ *  @param[in] connector_is_input If true, the stream will receive data from
+ *                        peer.
  *  @param[in] coarse     Is this connection coarse?
  *  @param[in] ack_limit  The number of event received before an ack needs to be
  * sent.
@@ -45,9 +47,11 @@ using namespace com::centreon::broker::bbdo;
 connector::connector(bool negotiate,
                      const std::pair<std::string, std::string>& extensions,
                      time_t timeout,
+                     bool connector_is_input,
                      bool coarse,
                      uint32_t ack_limit)
     : io::endpoint{false},
+      _is_input{connector_is_input},
       _coarse{coarse},
       _extensions{extensions},
       _negotiate{negotiate},
@@ -81,7 +85,8 @@ std::unique_ptr<io::stream> connector::_open(
     std::shared_ptr<io::stream> stream) {
   bbdo::stream* bbdo_stream = nullptr;
   if (stream) {
-    bbdo_stream = new bbdo::stream;
+    // if _is_input, the stream is an input
+    bbdo_stream = new bbdo::stream(_is_input);
     bbdo_stream->set_substream(stream);
     bbdo_stream->set_coarse(_coarse);
     bbdo_stream->set_negotiate(_negotiate, _extensions);

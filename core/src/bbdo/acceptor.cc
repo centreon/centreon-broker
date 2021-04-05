@@ -33,12 +33,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -99,7 +93,8 @@ std::unique_ptr<io::stream> acceptor::open() {
     // Add BBDO layer.
     if (u) {
       assert(!_coarse);
-      bbdo::stream* my_bbdo = new bbdo::stream;
+      // if _one_peer_retention_mode, the stream is an output
+      bbdo::stream* my_bbdo = new bbdo::stream(!_one_peer_retention_mode);
       my_bbdo->set_substream(std::move(u));
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negotiate(_negotiate, _extensions);

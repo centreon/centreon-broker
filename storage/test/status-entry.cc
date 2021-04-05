@@ -114,7 +114,7 @@ TEST_F(StatusEntryTest, WriteStatus) {
       12345, 123456789123456789, 34567, false, 789789, 2)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
