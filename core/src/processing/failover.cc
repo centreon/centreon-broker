@@ -41,7 +41,7 @@ using namespace com::centreon::broker::processing;
 failover::failover(std::shared_ptr<io::endpoint> endp,
                    std::shared_ptr<multiplexing::subscriber> sbscrbr,
                    const std::string& name)
-    : endpoint(name),
+    : endpoint(false, name),
       _should_exit(false),
       _started(false),
       _stopped{false},
