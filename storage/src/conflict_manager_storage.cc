@@ -541,13 +541,12 @@ void conflict_manager::_insert_perfdatas() {
 void conflict_manager::_check_deleted_index() {
   // Info.
   logging::info(logging::medium) << "storage: starting DB cleanup";
-  uint64_t deleted_index(0);
-  uint64_t deleted_metrics(0);
+  uint32_t deleted_index(0);
+  uint32_t deleted_metrics(0);
   //_update_status("status=deleting old performance data (might take a
   // while)\n");
 
   // Fetch next index to delete.
-  uint64_t index_id;
   {
     std::promise<database::mysql_result> promise;
     int32_t conn = _mysql.choose_best_connection(-1);
@@ -577,6 +576,7 @@ void conflict_manager::_check_deleted_index() {
       _mysql.run_query(query, database::mysql_error::delete_metric, false,
                        conn);
       _add_action(conn, actions::metrics);
+      deleted_metrics++;
     }
 
     // Delete index from DB.
@@ -587,14 +587,14 @@ void conflict_manager::_check_deleted_index() {
 
       // Remove associated graph.
       std::shared_ptr<storage::remove_graph> rg{
-          std::make_shared<storage::remove_graph>(index_id, true)};
+          std::make_shared<storage::remove_graph>(i, true)};
       multiplexing::publisher().write(rg);
+      deleted_index++;
     }
   }
 
   // End.
-  logging::info(logging::medium)
-      << "storage: end of DB cleanup: " << deleted_metrics << " metrics and "
-      << deleted_index << " index removed";
-  // _update_status("");
+  log_v2::perfdata()->info(
+      "storage: end of DB cleanup: {} metrics and {} indices removed",
+      deleted_metrics, deleted_index);
 }

@@ -73,9 +73,11 @@ void randomize(io::data& t, std::vector<randval>* values) {
       case mapping::source::STRING: {
         char buffer[1024];
         snprintf(buffer, sizeof(buffer), "%d", rand());
-        r.S = new char[strlen(buffer) + 1];
+        size_t size = strlen(buffer);
+        r.S = new char[size + 1];
         generated.push_back(r.S);
-        strcpy(r.S, buffer);
+        strncpy(r.S, buffer, size + 1);
+        r.S[size] = 0;
         current_entry->set_string(t, r.S);
       } break;
       case mapping::source::TIME: {

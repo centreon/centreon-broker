@@ -241,8 +241,7 @@ int main(int argc, char** argv) {
               "its configuration. The watchdog loop is slow down");
         } else
           timeout = 0;
-      } else
-        freq = 0;
+      }
 
       if (sighup) {
         // Sighup : should reload...

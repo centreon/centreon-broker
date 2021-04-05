@@ -84,7 +84,7 @@ class acceptor : public endpoint {
   ~acceptor();
   void accept();
   void start() override;
-  void exit() override;
+  void exit() override final;
   void set_read_filters(std::unordered_set<uint32_t> const& filters);
   void set_retry_interval(time_t retry_interval);
   void set_write_filters(std::unordered_set<uint32_t> const& filters);

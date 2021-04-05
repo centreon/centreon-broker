@@ -51,9 +51,9 @@ class stream : public io::stream {
   stream(std::string const& host, uint16_t port, int32_t read_timeout);
   stream(tcp_connection::pointer conn, int32_t read_timeout);
   ~stream() noexcept;
-  stream& operator=(const stream& other) = delete;
+  stream& operator=(const stream&) = delete;
   stream(const stream&) = delete;
-  std::string peer() const override;
+  std::string peer() const override final;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void set_parent(acceptor* parent);
   int32_t flush() override;

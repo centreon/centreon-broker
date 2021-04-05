@@ -66,7 +66,7 @@ class monitoring_stream : public io::stream {
   void initialize();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void statistics(json11::Json::object& tree) const override;
-  void update();
+  void update() override final;
   int write(std::shared_ptr<io::data> const& d);
 
  private:

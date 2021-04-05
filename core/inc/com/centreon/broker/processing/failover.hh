@@ -75,7 +75,7 @@ class failover : public endpoint {
   bool get_initialized() const throw();
   time_t get_retry_interval() const throw();
   void start() override;
-  void exit() override;
+  void exit() override final;
   bool should_exit() const;
   void set_buffering_timeout(time_t secs);
   void set_failover(std::shared_ptr<processing::failover> fo);
