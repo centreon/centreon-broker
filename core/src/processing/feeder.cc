@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015,2017 Centreon
+** Copyright 2011-2012,2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -219,6 +219,10 @@ void feeder::_callback() noexcept {
   _state_cv.notify_all();
   lock_stop.unlock();
 
+  /* We don't get back the return value of stop() because it has non sense,
+   * the only interest in calling stop() is to send an acknowledgement to the
+   * peer. */
+  _client->stop();
   {
     misc::read_lock lock(_client_m);
     _client.reset();
