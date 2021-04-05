@@ -20,7 +20,7 @@
 #define CCB_CONFIG_APPLIER_INIT_HH_
 
 #include <atomic>
-#include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()

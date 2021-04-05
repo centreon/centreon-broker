@@ -76,7 +76,7 @@ static void parse_file(char const* filename, options& opt) {
     throw msg_fmt("null file name");
   std::ifstream stream(filename);
   if (!stream.is_open())
-    throw msg_fmt("could not open file '{}'", filename); 
+    throw msg_fmt("could not open file '{}'", filename);
   std::vector<std::string> range;
   std::vector<std::string> exclude;
   std::shared_ptr<time::timeperiod> current_tp(new time::timeperiod);

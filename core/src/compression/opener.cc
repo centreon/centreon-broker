@@ -29,19 +29,6 @@ using namespace com::centreon::broker::compression;
 opener::opener() : io::endpoint(false), _level(-1), _size(0) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] o Object to copy.
- */
-opener::opener(opener const& o)
-    : io::endpoint(o), _level(o._level), _size(o._size) {}
-
-/**
- *  Destructor.
- */
-opener::~opener() noexcept {}
-
-/**
  *  Open a compression stream.
  *
  *  @return New compression object.

@@ -588,7 +588,7 @@ int stream::flush() {
   return retval;
 }
 
- /**
+/**
  * @brief This method is called from a feeder stream. It is called when the
  * stream is goint soon to be stopped. It sends a stop message to the peer to
  * count how many events can be acknowledged.
@@ -825,9 +825,9 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
             BBDO_VERSION_MAJOR, BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
       }
       log_v2::bbdo()->info(
-          "BBDO: peer is using protocol version {0}.{1}.{2} , we're using "
+          "BBDO: peer is using protocol version {}.{}.{} , we're using "
           "version "
-          "{3}.{4}.{5}",
+          "{}.{}.{}",
           version->bbdo_major, version->bbdo_minor, version->bbdo_patch,
           BBDO_VERSION_MAJOR, BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
       logging::info(logging::medium)

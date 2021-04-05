@@ -53,8 +53,8 @@ class state {
 
   state(const state&) = delete;
   state& operator=(const state&) = delete;
-  void apply(config::state const& s, bool run_mux = true);
-  std::string const& cache_dir() const noexcept;
+  void apply(const config::state& s, bool run_mux = true);
+  const std::string& cache_dir() const noexcept;
   uint32_t rpc_port() const noexcept;
   uint32_t poller_id() const noexcept;
   size_t pool_size() const noexcept;

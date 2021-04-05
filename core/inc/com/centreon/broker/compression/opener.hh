@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Centreon
+** Copyright 2011, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ class opener : public io::endpoint {
 
  public:
   opener();
-  ~opener() noexcept;
-  opener(const opener& o);
+  ~opener() noexcept = default;
+  opener(const opener&) = delete;
   opener& operator=(const opener&) = delete;
   std::unique_ptr<io::stream> open() override;
   void set_level(int level = -1);

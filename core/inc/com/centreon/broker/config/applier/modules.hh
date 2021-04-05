@@ -52,7 +52,7 @@ class modules {
   modules& operator=(const modules&) = delete;
   void apply(const std::list<std::string>& module_list,
              const std::string& module_dir,
-             const void* arg = NULL);
+             const void* arg = nullptr);
   iterator begin();
   iterator end();
   void discard();

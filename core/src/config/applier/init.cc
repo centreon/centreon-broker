@@ -26,7 +26,6 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/pool.hh"
-#include "com/centreon/broker/stats/center.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
 
 using namespace com::centreon::broker;
@@ -51,6 +50,7 @@ void config::applier::init(size_t n_thread, const std::string& name) {
   config::applier::endpoint::load();
   mode = initialized;
 }
+
 /**
  *  Unload necessary structures.
  */

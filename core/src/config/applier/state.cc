@@ -170,7 +170,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
  *
  *  @return Cache directory.
  */
-const std::string& state::cache_dir() const throw() {
+const std::string& state::cache_dir() const noexcept {
   return _cache_dir;
 }
 
@@ -206,7 +206,7 @@ bool state::loaded() {
  *
  *  @return Poller ID of this Broker instance.
  */
-uint32_t state::poller_id() const throw() {
+uint32_t state::poller_id() const noexcept {
   return _poller_id;
 }
 
