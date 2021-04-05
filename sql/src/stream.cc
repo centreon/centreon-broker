@@ -94,8 +94,8 @@ int32_t stream::stop() {
   // _cleanup_thread.exit();
   int32_t retval = storage::conflict_manager::instance().unload(
       storage::conflict_manager::sql);
-  log_v2::sql()->debug("sql: stream destruction with {} events to ack", retval);
   _stopped = true;
+  log_v2::core()->info("sql stream stopped with {} ackowledged events", retval);
   return retval;
 }
 

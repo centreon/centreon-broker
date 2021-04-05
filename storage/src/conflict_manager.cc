@@ -200,8 +200,7 @@ void conflict_manager::_load_deleted_instances() {
     while (_mysql.fetch_row(res))
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
   } catch (std::exception const& e) {
-    throw msg_fmt(
-        "could not get list of deleted instances: {}", e.what());
+    throw msg_fmt("could not get list of deleted instances: {}", e.what());
   }
 }
 
@@ -271,8 +270,8 @@ void conflict_manager::_load_caches() {
         pblshr.write(im);
       }
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "storage: could not fetch index list from data DB: {}", e.what());
+      throw msg_fmt("storage: could not fetch index list from data DB: {}",
+                    e.what());
     }
   }
 
@@ -289,8 +288,8 @@ void conflict_manager::_load_caches() {
       while (_mysql.fetch_row(res))
         _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "SQL: could not get the list of host/instance pairs: {}", e.what());
+      throw msg_fmt("SQL: could not get the list of host/instance pairs: {}",
+                    e.what());
     }
   }
 
@@ -307,8 +306,8 @@ void conflict_manager::_load_caches() {
       while (_mysql.fetch_row(res))
         _hostgroup_cache.insert(res.value_as_u32(0));
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "SQL: could not get the list of hostgroups id: {}", e.what());
+      throw msg_fmt("SQL: could not get the list of hostgroups id: {}",
+                    e.what());
     }
   }
 
@@ -325,8 +324,8 @@ void conflict_manager::_load_caches() {
       while (_mysql.fetch_row(res))
         _servicegroup_cache.insert(res.value_as_u32(0));
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "SQL: could not get the list of servicegroups id: {}", e.what());
+      throw msg_fmt("SQL: could not get the list of servicegroups id: {}",
+                    e.what());
     }
   }
 
@@ -364,12 +363,12 @@ void conflict_manager::_load_caches() {
         info.max = res.value_as_f32(11);
         info.value = res.value_as_f32(12);
         info.type = res.value_as_str(13)[0] - '0';
+        info.metric_mapping_sent = false;
         _metric_cache[{res.value_as_u32(1), res.value_as_str(2)}] = info;
       }
     } catch (std::exception const& e) {
-      throw msg_fmt(
-          "conflict_manager: could not get the list of metrics: {}",
-          e.what());
+      throw msg_fmt("conflict_manager: could not get the list of metrics: {}",
+                    e.what());
     }
   }
 }
@@ -387,7 +386,11 @@ void conflict_manager::update_metric_info_cache(uint32_t index_id,
         perfdata::data_type_name[metric_type]);
     std::lock_guard<std::mutex> lock(_metric_cache_m);
     it->second.type = metric_type;
-    it->second.metric_id = metric_id;
+    if (it->second.metric_id != metric_id) {
+      it->second.metric_id = metric_id;
+      // We need to repopulate a new metric_mapping
+      it->second.metric_mapping_sent = false;
+    }
   }
 }
 
@@ -414,7 +417,7 @@ void conflict_manager::_callback() {
       break;
     }
     size_t pos = 0;
-    std::deque<std::tuple<std::shared_ptr<io::data>, uint32_t, bool*> > events;
+    std::deque<std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>> events;
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread

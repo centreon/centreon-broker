@@ -51,8 +51,8 @@ class output : public io::stream {
   rebuild_cache _metrics_rebuild;
   std::string _status_path;
   rebuild_cache _status_rebuild;
-  bool _write_metrics;
-  bool _write_status;
+  const bool _write_metrics;
+  const bool _write_status;
   T _backend;
 
  public:
@@ -79,9 +79,10 @@ class output : public io::stream {
   output(output const&) = delete;
   output& operator=(output const&) = delete;
   ~output() noexcept {}
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void update();
-  int write(std::shared_ptr<io::data> const& d);
+  int32_t write(std::shared_ptr<io::data> const& d) override;
+  int32_t stop() override { return 0; }
 };
 
 }  // namespace rrd

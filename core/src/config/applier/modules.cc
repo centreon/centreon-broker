@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/config/applier/modules.hh"
-#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/log_v2.hh"

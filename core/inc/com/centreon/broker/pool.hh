@@ -79,10 +79,6 @@ class pool {
   asio::steady_timer _timer;
   std::atomic_bool _stats_running;
 
-  /* Latency in milliseconds between the call of check_latency and its real
-   * execution. */
-  std::atomic<double> _latency;
-
   pool(size_t size);
   ~pool() noexcept;
   void _stop();

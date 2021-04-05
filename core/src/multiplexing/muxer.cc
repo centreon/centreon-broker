@@ -101,6 +101,8 @@ muxer::muxer(std::string const& name, bool persistent)
  *  Destructor.
  */
 muxer::~muxer() noexcept {
+  log_v2::core()->info("Destroying muxer {}: number of events in the queue: {}",
+                       _name, _events_size);
   _clean();
 }
 
@@ -139,6 +141,17 @@ void muxer::ack_events(int count) {
       _push_to_queue(e);
     }
   }
+}
+
+/**
+ * @brief Flush the muxer and stop it (in this case, nothing to do to stop it).
+ *
+ * @return The number of acknowledged events.
+ */
+int32_t muxer::stop() {
+  log_v2::core()->info("Stopping muxer {}: number of events in the queue: {}",
+                       _name, _events_size);
+  return 0;
 }
 
 /**

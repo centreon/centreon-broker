@@ -34,9 +34,10 @@ using namespace com::centreon::broker::processing;
 class TestStream : public io::stream {
  public:
   TestStream() : io::stream("TestStream") {}
-  bool read(std::shared_ptr<io::data>&, time_t) { return true; }
+  bool read(std::shared_ptr<io::data>&, time_t) override { return true; }
 
-  int write(std::shared_ptr<io::data> const&) { return 1; }
+  int32_t write(std::shared_ptr<io::data> const&) override { return 1; }
+  int32_t stop() override { return 0; }
 };
 
 class TestFeeder : public ::testing::Test {

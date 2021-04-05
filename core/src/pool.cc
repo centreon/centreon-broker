@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -126,16 +126,16 @@ pool::~pool() noexcept {
  * @brief Stop the thread pool.
  */
 void pool::_stop() {
-  if (_stats_running) {
-    std::promise<bool> p;
-    std::future<bool> f(p.get_future());
-    _stats_running = false;
-    asio::post(_timer.get_executor(), [this, &p] {
-        _timer.cancel();
-        p.set_value(true);
-        });
-    f.get();
-  }
+  //  if (_stats_running) {
+  //    std::promise<bool> p;
+  //    std::future<bool> f(p.get_future());
+  //    _stats_running = false;
+  //    asio::post(_timer.get_executor(), [this, &p] {
+  //        _timer.cancel();
+  //        p.set_value(true);
+  //        });
+  //    f.get();
+  //  }
 
   log_v2::core()->trace("Stopping the TCP thread pool");
   std::lock_guard<std::mutex> lock(_closed_m);

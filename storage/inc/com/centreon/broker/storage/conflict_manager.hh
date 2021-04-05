@@ -128,6 +128,7 @@ class conflict_manager {
     bool crit_mode;
     double min;
     double max;
+    bool metric_mapping_sent;
   };
   struct metric_value {
     time_t c_time;

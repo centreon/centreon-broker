@@ -20,6 +20,7 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -33,12 +34,6 @@ using namespace asio;
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::graphite;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Constructor.
@@ -122,16 +117,27 @@ stream::~stream() {}
  *
  *  @return Number of events acknowledged.
  */
-int stream::flush() {
+int32_t stream::flush() {
   logging::debug(logging::medium)
       << "graphite: commiting " << _actual_query << " queries";
-  int ret(_pending_queries);
+  int32_t ret(_pending_queries);
   if (_actual_query != 0)
     _commit();
   _actual_query = 0;
   _pending_queries = 0;
   _commit_flag = false;
   return ret;
+}
+
+/**
+ * @brief Flush the stream and stop it.
+ *
+ * @return the number of acknowledged events.
+ */
+int32_t stream::stop() {
+  int32_t retval = flush();
+  log_v2::core()->info("graphite stopped with {} events acknowledged", retval);
+  return retval;
 }
 
 /**
@@ -194,12 +200,6 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   else
     return 0;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Process a metric event.

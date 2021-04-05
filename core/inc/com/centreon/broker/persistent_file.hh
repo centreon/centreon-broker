@@ -1,5 +1,5 @@
 /*
-** Copyright 2015,2017 Centreon
+** Copyright 2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,7 +45,8 @@ class persistent_file : public io::stream {
             time_t deadline = (time_t)-1) override;
   void remove_all_files();
   void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d) override;
+  int32_t write(const std::shared_ptr<io::data>& d) override;
+  int32_t stop() override;
 };
 
 CCB_END()

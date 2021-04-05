@@ -44,10 +44,11 @@ class stream : public io::stream {
   stream(std::string const& lua_script,
          std::map<std::string, misc::variant> const& conf_params);
   ~stream();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   stream& operator=(stream const& other) = delete;
   stream(stream const& other) = delete;
-  int write(std::shared_ptr<io::data> const& d);
+  int32_t write(std::shared_ptr<io::data> const& d) override;
+  int32_t stop() override { return 0; }
 };
 }  // namespace simu
 

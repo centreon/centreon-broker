@@ -60,6 +60,8 @@ class into_memory : public io::stream {
     return 1;
   }
 
+  int32_t stop() override { return 0; }
+
   std::vector<char> const& get_memory() const { return _memory; }
   std::vector<char>& get_mutable_memory() { return _memory; }
 

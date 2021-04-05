@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015,2017 Centreon
+** Copyright 2011-2013,2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,7 +41,8 @@ class stream : public io::stream {
   ~stream() noexcept;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
-  int flush();
+  int32_t flush() override;
+  int32_t stop() override;
   bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   void statistics(json11::Json::object& tree) const override;
   int write(std::shared_ptr<io::data> const& d);

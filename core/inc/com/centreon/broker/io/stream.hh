@@ -63,7 +63,7 @@ class stream {
  public:
   stream(const std::string& name);
   virtual ~stream() noexcept = default;
-  virtual int32_t stop();
+  virtual int32_t stop() = 0;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
   virtual int flush();

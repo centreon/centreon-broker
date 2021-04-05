@@ -548,7 +548,8 @@ int32_t stream::stop() {
   _substream->stop();
   int32_t retval = _acknowledged_events;
   _acknowledged_events -= retval;
-  io::stream::stop();
+  log_v2::core()->info("bbdo stream stopped with {} events acknowledged",
+                       retval);
   return retval;
 }
 

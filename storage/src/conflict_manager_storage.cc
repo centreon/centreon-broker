@@ -151,9 +151,9 @@ void conflict_manager::_storage_process_service_status(
     _index_data_insert.bind_value_as_str(4, "0");
     _index_data_insert.bind_value_as_str(5, special ? "1" : "0");
     std::promise<uint64_t> promise;
-    _mysql.run_statement_and_get_int<uint64_t>(_index_data_insert, &promise,
-                                          database::mysql_task::LAST_INSERT_ID,
-                                          conn);
+    _mysql.run_statement_and_get_int<uint64_t>(
+        _index_data_insert, &promise, database::mysql_task::LAST_INSERT_ID,
+        conn);
     try {
       index_id = promise.get_future().get();
       add_metric_in_cache(index_id, host_id, service_id, ss, index_locked,
@@ -267,6 +267,7 @@ void conflict_manager::_storage_process_service_status(
 
           /* The cache does not contain this metric */
           uint32_t metric_id;
+          bool need_metric_mapping = true;
           if (it_index_cache == _metric_cache.end()) {
             log_v2::perfdata()->debug(
                 "conflict_manager: no metrics corresponding to index {} and "
@@ -317,7 +318,9 @@ void conflict_manager::_storage_process_service_status(
                                .crit_low = pd.critical_low(),
                                .crit_mode = pd.critical_mode(),
                                .min = pd.min(),
-                               .max = pd.max()};
+                               .max = pd.max(),
+                               .metric_mapping_sent =
+                                   true};  // It will be done after this block
 
               std::lock_guard<std::mutex> lock(_metric_cache_m);
               _metric_cache[{index_id, pd.name()}] = info;
@@ -338,6 +341,11 @@ void conflict_manager::_storage_process_service_status(
             std::lock_guard<std::mutex> lock(_metric_cache_m);
             /* We have the metric in the cache */
             metric_id = it_index_cache->second.metric_id;
+            if (!it_index_cache->second.metric_mapping_sent)
+              it_index_cache->second.metric_mapping_sent = true;
+            else
+              need_metric_mapping = false;
+
             pd.value_type(
                 static_cast<perfdata::data_type>(it_index_cache->second.type));
 
@@ -380,10 +388,9 @@ void conflict_manager::_storage_process_service_status(
                   &it_index_cache->second;
             }
           }
-          // std::shared_ptr<storage::metric_mapping> mm =
-          //    std::make_shared<storage::metric_mapping>(index_id, metric_id);
-          to_publish.emplace_back(
-              std::make_shared<storage::metric_mapping>(index_id, metric_id));
+          if (need_metric_mapping)
+            to_publish.emplace_back(
+                std::make_shared<storage::metric_mapping>(index_id, metric_id));
 
           if (_store_in_db) {
             // Append perfdata to queue.

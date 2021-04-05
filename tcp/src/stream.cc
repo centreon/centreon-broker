@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,13 @@
 #include <system_error>
 #include <thread>
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -153,6 +153,10 @@ void stream::set_parent(acceptor* parent) {
 
 int32_t stream::flush() {
   return _connection->flush();
+}
+
+int32_t stream::stop() {
+  return flush();
 }
 
 /**

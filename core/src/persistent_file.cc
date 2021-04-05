@@ -1,5 +1,5 @@
 /*
-** Copyright 2015,2017 Centreon
+** Copyright 2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 
@@ -79,8 +80,20 @@ void persistent_file::statistics(json11::Json::object& tree) const {
  *
  *  @param[in] d  Input data.
  */
-int persistent_file::write(std::shared_ptr<io::data> const& d) {
+int32_t persistent_file::write(std::shared_ptr<io::data> const& d) {
   return _substream->write(d);
+}
+
+/**
+ * @brief Flush the stream and stop it.
+ *
+ * @return the number of acknowledged events.
+ */
+int32_t persistent_file::stop() {
+  int32_t retval = _substream->stop();
+  log_v2::core()->info("persistent file stopped with {} acknowledged events",
+                       retval);
+  return retval;
 }
 
 /**

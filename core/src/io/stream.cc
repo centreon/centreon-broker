@@ -36,9 +36,9 @@ stream::stream(const std::string& name) : _name(name) {}
  *
  * @return The number of acknowledged events.
  */
-int32_t stream::stop() {
-  return 0;
-}
+// int32_t stream::stop() {
+//  return 0;
+//}
 
 /**
  *  Flush data.

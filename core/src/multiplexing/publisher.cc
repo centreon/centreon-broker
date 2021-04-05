@@ -72,3 +72,13 @@ int publisher::write(const std::list<std::shared_ptr<io::data>>& to_publish) {
   engine::instance().publish(to_publish);
   return to_publish.size();
 }
+
+/**
+ * @brief Flush the stream and stop it (nothing to do here, but the method is
+ * virtual pure).
+ *
+ * @return the number of acknowledged events.
+ */
+int32_t publisher::stop() {
+  return 0;
+}

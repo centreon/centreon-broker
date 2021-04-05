@@ -57,6 +57,7 @@ class stream : public io::stream {
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void set_parent(acceptor* parent);
   int32_t flush() override;
+  int32_t stop() override;
   int32_t write(std::shared_ptr<io::data> const& d) override;
 };
 }  // namespace tcp

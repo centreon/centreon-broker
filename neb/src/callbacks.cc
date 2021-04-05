@@ -1299,11 +1299,10 @@ int neb::callback_host_status(int callback_type, void* data) {
 
   try {
     // In/Out variables.
-    engine::host const* h;
     std::shared_ptr<neb::host_status> host_status(new neb::host_status);
 
     // Fill output var.
-    h = static_cast<engine::host*>(
+    const engine::host* h = static_cast<engine::host*>(
         static_cast<nebstruct_host_status_data*>(data)->object_ptr);
     host_status->acknowledged = h->get_problem_has_been_acknowledged();
     host_status->acknowledgement_type = h->get_acknowledgement_type();
@@ -1917,7 +1916,8 @@ int neb::callback_service_check(int callback_type, void* data) {
   try {
     // In/Out variables.
     nebstruct_service_check_data const* scdata;
-    std::shared_ptr<neb::service_check> service_check(new neb::service_check);
+    std::shared_ptr<neb::service_check> service_check(
+        std::make_shared<neb::service_check>());
 
     // Fill output var.
     scdata = static_cast<nebstruct_service_check_data*>(data);

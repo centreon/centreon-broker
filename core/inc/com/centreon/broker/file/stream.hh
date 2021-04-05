@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015,2017 Centreon
+** Copyright 2011-2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,23 +35,22 @@ namespace file {
  *  Read and write data to a stream.
  */
 class stream : public io::stream {
- public:
-  stream(splitter* file);
-  ~stream();
-  stream(stream const&) = delete;
-  stream& operator=(stream const&) = delete;
-  std::string peer() const;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void remove_all_files();
-  void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
-
   std::unique_ptr<splitter> _file;
   mutable long long _last_read_offset;
   mutable time_t _last_time;
   mutable long long _last_write_offset;
+
+ public:
+  stream(splitter* file);
+  ~stream();
+  stream(const stream&) = delete;
+  stream& operator=(const stream&) = delete;
+  std::string peer() const;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
+  void remove_all_files();
+  void statistics(json11::Json::object& tree) const override;
+  int32_t write(std::shared_ptr<io::data> const& d) override;
+  int32_t stop() override;
 };
 }  // namespace file
 

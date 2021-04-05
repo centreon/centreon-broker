@@ -53,30 +53,13 @@ namespace graphite {
  *  Insert metrics/statuses into graphite.
  */
 class stream : public io::stream {
- public:
-  stream(std::string const& metric_naming,
-         std::string const& status_naming,
-         std::string const& escape_string,
-         std::string const& db_user,
-         std::string const& db_password,
-         std::string const& db_host,
-         unsigned short db_port,
-         uint32_t queries_per_transaction,
-         std::shared_ptr<persistent_cache> const& cache);
-  ~stream();
-  int flush();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
   // Database parameters
-  std::string _metric_naming;
-  std::string _status_naming;
-  std::string _db_user;
-  std::string _db_password;
-  std::string _db_host;
-  unsigned short _db_port;
+  const std::string _metric_naming;
+  const std::string _status_naming;
+  const std::string _db_user;
+  const std::string _db_password;
+  const std::string _db_host;
+  const unsigned short _db_port;
   uint32_t _queries_per_transaction;
 
   // Internal working members
@@ -102,7 +85,25 @@ class stream : public io::stream {
   // Process metric/status and generate query.
   bool _process_metric(storage::metric const& me);
   bool _process_status(storage::status const& st);
+
   void _commit();
+
+ public:
+  stream(std::string const& metric_naming,
+         std::string const& status_naming,
+         std::string const& escape_string,
+         std::string const& db_user,
+         std::string const& db_password,
+         std::string const& db_host,
+         unsigned short db_port,
+         uint32_t queries_per_transaction,
+         std::shared_ptr<persistent_cache> const& cache);
+  ~stream();
+  int32_t flush() override;
+  int32_t stop() override;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
+  void statistics(json11::Json::object& tree) const override;
+  int32_t write(std::shared_ptr<io::data> const& d) override;
 };
 }  // namespace graphite
 

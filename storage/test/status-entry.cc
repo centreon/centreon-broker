@@ -42,6 +42,8 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 
 class into_memory : public io::stream {
+  std::vector<char> _memory;
+
  public:
   into_memory() : io::stream("into_memory"), _memory() {}
   ~into_memory() override {}
@@ -57,16 +59,15 @@ class into_memory : public io::stream {
     return true;
   }
 
-  int write(std::shared_ptr<io::data> const& d) override {
+  int32_t write(std::shared_ptr<io::data> const& d) override {
     _memory = std::static_pointer_cast<io::raw>(d)->get_buffer();
     return 1;
   }
 
+  int32_t stop() override { return 0; }
+
   std::vector<char> const& get_memory() const { return _memory; }
   std::vector<char>& get_mutable_memory() { return _memory; }
-
- private:
-  std::vector<char> _memory;
 };
 
 class StatusEntryTest : public ::testing::Test {

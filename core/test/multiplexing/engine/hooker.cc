@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
  */
 #include "hooker.hh"
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -84,7 +84,7 @@ void hooker::stopping() {
  *
  *  @return Number of elements acknowledged (1).
  */
-int hooker::write(std::shared_ptr<io::data> const& d) {
+int32_t hooker::write(std::shared_ptr<io::data> const& d) {
   (void)d;
   if (_registered) {
     std::shared_ptr<io::raw> raw(new io::raw);
@@ -93,4 +93,8 @@ int hooker::write(std::shared_ptr<io::data> const& d) {
   } else
     throw msg_fmt("hooker test object is shutdown");
   return 1;
+}
+
+int32_t hooker::stop() {
+  return 0;
 }

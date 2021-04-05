@@ -121,11 +121,13 @@ class st : public io::stream {
     throw exceptions::shutdown("cannot read from connector");
   }
 
-  virtual int write(std::shared_ptr<io::data> const& d
-                    __attribute__((__unused__))) override {
+  int32_t write(std::shared_ptr<io::data> const& d
+                __attribute__((__unused__))) override {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     return 1;
   }
+
+  int32_t stop() override { return 0; }
 };
 
 class endp : public io::endpoint {

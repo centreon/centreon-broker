@@ -159,6 +159,15 @@ stream::stream(std::string const& lua_script,
          * cpus. */
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+    /* Is the flush activated? Then we flush a last time. */
+    if (has_flush) {
+      log_v2::lua()->debug("stream: flush event");
+      int32_t res = lb->flush();
+      log_v2::lua()->trace(
+          "stream: {} acknowledged events by the script flush()", res);
+      _acks_count += res;
+      log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
+    }
 
     // No more need of the Lua interpreter
     delete lb;
@@ -176,9 +185,23 @@ stream::stream(std::string const& lua_script,
  */
 stream::~stream() {
   log_v2::lua()->debug("Destruction of Lua stream");
+  assert(_exit);
+}
+
+/**
+ * @brief Stops the stream and flushes data.
+ *
+ * @return The number of acknowledged events.
+ */
+int32_t stream::stop() {
   _exit = true;
   if (_thread.joinable())
     _thread.join();
+  int32_t retval = _acks_count;
+  _acks_count = 0;
+  log_v2::core()->info("lua stream stopped with {} acknowledged events",
+                       retval);
+  return retval;
 }
 
 /**
