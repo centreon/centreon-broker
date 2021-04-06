@@ -23,9 +23,9 @@
 #ifndef CCE_EVENTS_TIMED_EVENT_HH
 #define CCE_EVENTS_TIMED_EVENT_HH
 
+#include <deque>
 #include <stdint.h>
 #include <time.h>
-#include <deque>
 #include "com/centreon/engine/downtimes/downtime.hh"
 #include "com/centreon/engine/namespace.hh"
 

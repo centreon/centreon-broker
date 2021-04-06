@@ -61,7 +61,7 @@ class error : public std::exception {
   char const* what() const throw() override;
 };
 
-}  // namespace exceptions
+}
 
 CCE_END()
 

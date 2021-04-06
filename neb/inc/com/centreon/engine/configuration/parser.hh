@@ -20,8 +20,8 @@
 #ifndef CCE_CONFIGURATION_PARSER_HH
 #define CCE_CONFIGURATION_PARSER_HH
 
-#include <array>
 #include <fstream>
+#include <array>
 #include <string>
 #include "com/centreon/engine/configuration/command.hh"
 #include "com/centreon/engine/configuration/connector.hh"

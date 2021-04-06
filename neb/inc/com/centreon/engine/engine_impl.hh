@@ -9,7 +9,7 @@ class engine_impl final : public Engine::Service {
   grpc::Status GetVersion(grpc::ServerContext* context,
                           const ::google::protobuf::Empty* /*request*/,
                           Version* response) override;
-  grpc::Status GetStats(grpc::ServerContext* context,
+    grpc::Status GetStats(grpc::ServerContext* context,
                         const GenericString* request,
                         Stats* response) override;
   grpc::Status ProcessServiceCheckResult(grpc::ServerContext* context,
@@ -118,8 +118,8 @@ class engine_impl final : public Engine::Service {
       const ScheduleDowntimeIdentifier* request,
       CommandSuccess* response) override;
   grpc::Status DeleteDowntime(grpc::ServerContext* context,
-                              const GenericValue* request,
-                              CommandSuccess* response) override;
+                                  const GenericValue* request,
+                                  CommandSuccess* response) override;
   grpc::Status DeleteHostDowntimeFull(grpc::ServerContext* context,
                                       const DowntimeCriterias* request,
                                       CommandSuccess* response) override;
@@ -187,8 +187,8 @@ class engine_impl final : public Engine::Service {
       const ChangeObjectCustomVar* request,
       CommandSuccess* response) override;
   grpc::Status ShutdownProgram(grpc::ServerContext* context,
-                               const ::google::protobuf::Empty*,
-                               ::google::protobuf::Empty*) override;
+                             const ::google::protobuf::Empty*,
+                             ::google::protobuf::Empty*) override;
 };
 
 CCE_END()

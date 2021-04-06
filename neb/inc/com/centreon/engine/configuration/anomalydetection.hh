@@ -227,8 +227,7 @@ class anomalydetection : public object {
 typedef std::shared_ptr<anomalydetection> anomalydetection_ptr;
 typedef std::list<anomalydetection_ptr> list_anomalydetection;
 typedef std::set<anomalydetection> set_anomalydetection;
-typedef std::unordered_map<std::pair<std::string, std::string>,
-                           anomalydetection_ptr>
+typedef std::unordered_map<std::pair<std::string, std::string>, anomalydetection_ptr>
     map_anomalydetection;
 }  // namespace configuration
 
