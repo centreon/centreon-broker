@@ -73,8 +73,10 @@ io::endpoint* factory::new_endpoint(
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("path")};
     if (it == cfg.params.end())
-      throw msg_fmt("file: no 'path' defined for file "
-                    "endpoint '{}'", cfg.name);
+      throw msg_fmt(
+          "file: no 'path' defined for file "
+          "endpoint '{}'",
+          cfg.name);
     filename = it->second;
   }
 

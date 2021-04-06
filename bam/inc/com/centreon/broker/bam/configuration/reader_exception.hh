@@ -38,7 +38,7 @@ class reader_exception : public com::centreon::exceptions::msg_fmt {
 
   template <typename... Args>
   explicit reader_exception(std::string const& str, const Args&... args)
-    : msg_fmt(str, args...) {}
+      : msg_fmt(str, args...) {}
   reader_exception(const reader_exception&);
   ~reader_exception() noexcept {};
 };

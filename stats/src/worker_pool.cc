@@ -17,13 +17,13 @@
  *
  */
 
+#include "com/centreon/broker/stats/worker_pool.hh"
 #include <sys/stat.h>
 #include <cerrno>
 #include <cstring>
 #include <memory>
 #include <vector>
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/stats/worker_pool.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -40,13 +40,13 @@ void worker_pool::add_worker(std::string const& fifo) {
   if (stat(fifo_path.c_str(), &s) != 0) {
     char const* msg(strerror(errno));
     logging::config(logging::medium)
-        << "stats: cannot stat() '" << fifo_path << "': "<< msg;
+        << "stats: cannot stat() '" << fifo_path << "': " << msg;
 
     // Create FIFO.
     if (mkfifo(fifo_path.c_str(),
                S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH) != 0) {
       char const* msg(strerror(errno));
-      throw msg_fmt("cannot create FIFO '{}': {}",fifo_path, msg);
+      throw msg_fmt("cannot create FIFO '{}': {}", fifo_path, msg);
     }
   } else if (!S_ISFIFO(s.st_mode))
     throw msg_fmt("file '{}' exists but is not a FIFO", fifo_path);

@@ -89,17 +89,16 @@ daterange& daterange::operator=(daterange const& right) {
  *  @return True if object is the same, otherwise false.
  */
 bool daterange::operator==(daterange const& right) const throw() {
-  return _month_end == right._month_end &&
-          _month_start == right._month_start &&
-          _month_day_end == right._month_day_end &&
-          _month_day_start == right._month_day_start &&
-          _skip_interval == right._skip_interval &&
-          _timeranges == right._timeranges && _type == right._type &&
-          _week_day_end == right._week_day_end &&
-          _week_day_start == right._week_day_start &&
-          _week_day_end_offset == right._week_day_end_offset &&
-          _week_day_start_offset == right._week_day_start_offset &&
-          _year_end == right._year_end && _year_start == right._year_start;
+  return _month_end == right._month_end && _month_start == right._month_start &&
+         _month_day_end == right._month_day_end &&
+         _month_day_start == right._month_day_start &&
+         _skip_interval == right._skip_interval &&
+         _timeranges == right._timeranges && _type == right._type &&
+         _week_day_end == right._week_day_end &&
+         _week_day_start == right._week_day_start &&
+         _week_day_end_offset == right._week_day_end_offset &&
+         _week_day_start_offset == right._week_day_start_offset &&
+         _year_end == right._year_end && _year_start == right._year_start;
 }
 
 /**

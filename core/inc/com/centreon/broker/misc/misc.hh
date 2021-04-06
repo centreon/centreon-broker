@@ -21,8 +21,8 @@
 
 #include <list>
 #include <string>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()

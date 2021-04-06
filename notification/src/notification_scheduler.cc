@@ -51,10 +51,10 @@ void notification_scheduler::run() {
     // if the queue is empty.
     time_t first_time = _queue.get_first_time();
     time_t now = ::time(NULL);
-    unsigned long wait_for =
-        first_time == time_t(-1)
-            ? std::numeric_limits<unsigned long>::max()
-            : (first_time >= now) ? (first_time - now) * 1000 : 0;
+    unsigned long wait_for = first_time == time_t(-1)
+                                 ? std::numeric_limits<unsigned long>::max()
+                             : (first_time >= now) ? (first_time - now) * 1000
+                                                   : 0;
 
     logging::debug(logging::medium) << "notification: scheduler sleeping for "
                                     << wait_for / 1000.0 << " seconds";

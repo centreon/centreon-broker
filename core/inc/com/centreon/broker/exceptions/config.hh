@@ -19,8 +19,8 @@
 #ifndef CC_EXCEPTIONS_CONFIG_HH
 #define CC_EXCEPTIONS_CONFIG_HH
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 CCB_BEGIN()
 
@@ -33,9 +33,9 @@ namespace exceptions {
  */
 class config : public com::centreon::exceptions::msg_fmt {
  public:
-  template <typename...Args>
+  template <typename... Args>
   explicit config(std::string const& str, const Args&... args)
-    : msg_fmt(str, args...) {}
+      : msg_fmt(str, args...) {}
   config() = delete;
   ~config() noexcept {}
   config& operator=(const config&) = delete;

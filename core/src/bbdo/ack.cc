@@ -52,8 +52,8 @@ ack::~ack() {}
  **************************************/
 
 // Mapping.
-mapping::entry const ack::entries[] {
-  mapping::entry(&ack::acknowledged_events, "acknowledged_events"),
+mapping::entry const ack::entries[]{
+    mapping::entry(&ack::acknowledged_events, "acknowledged_events"),
     mapping::entry()};
 
 // Operations.

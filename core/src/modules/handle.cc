@@ -26,12 +26,6 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
 
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
-
 // Routine symbols.
 char const* handle::deinitialization("broker_module_deinit");
 char const* handle::initialization("broker_module_init");

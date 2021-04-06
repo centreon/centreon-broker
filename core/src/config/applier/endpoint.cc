@@ -234,7 +234,8 @@ void endpoint::_discard() {
 
     // We continue with failovers
     for (auto it = _endpoints.begin(); it != _endpoints.end();) {
-      log_v2::config()->trace("endpoint applier: send exit signal on endpoint '{}'",
+      log_v2::config()->trace(
+          "endpoint applier: send exit signal on endpoint '{}'",
           it->second->get_name());
       delete it->second;
       it = _endpoints.erase(it);

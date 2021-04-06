@@ -68,35 +68,32 @@ class center {
   static void unload();
   std::string to_string();
 
-  //EndpointStats* register_endpoint(const std::string& name);
+  // EndpointStats* register_endpoint(const std::string& name);
   EngineStats* register_engine();
-  //FeederStats* register_feeder(EndpointStats* ep_stats,
+  // FeederStats* register_feeder(EndpointStats* ep_stats,
   //                             const std::string& name);
-  //ConflictManagerStats* register_conflict_manager();
-  //MysqlManagerStats* register_mysql_manager();
-  //MysqlConnectionStats* register_mysql_connection(MysqlManagerStats* s);
+  // ConflictManagerStats* register_conflict_manager();
+  // MysqlManagerStats* register_mysql_manager();
+  // MysqlConnectionStats* register_mysql_connection(MysqlManagerStats* s);
   ModuleStats* register_modules(void);
-  //bool unregister_endpoint(const std::string& name);
-  //bool unregister_feeder(EndpointStats* ep_stats, const std::string& name);
-  //bool unregister_mysql_connection(MysqlConnectionStats* c);
-  //bool unregister_mysql_manager(void);
+  // bool unregister_endpoint(const std::string& name);
+  // bool unregister_feeder(EndpointStats* ep_stats, const std::string& name);
+  // bool unregister_mysql_connection(MysqlConnectionStats* c);
+  // bool unregister_mysql_manager(void);
   int get_json_stats_file_creation(void);
 
   void get_stats(const StatsQuery* request, BrokerStats* response);
 
   /**
- * @brief Set the value pointed by ptr to the value value.
- *
- * @tparam T The template class.
- * @param ptr A pointer to object of type T
- * @param value The value of type T to set.
- */
+   * @brief Set the value pointed by ptr to the value value.
+   *
+   * @tparam T The template class.
+   * @param ptr A pointer to object of type T
+   * @param value The value of type T to set.
+   */
   template <typename T>
   void update(T* ptr, T value) {
-    _strand.post([
-      ptr,
-      value = std::move(value)
-    ] { *ptr = value; });
+    _strand.post([ptr, value = std::move(value)] { *ptr = value; });
   }
 
   /**
@@ -106,7 +103,7 @@ class center {
    * @param ptr A pointer to object of type Timestamp.
    * @param value The value of type time_t to set.
    */
-  //void update(google::protobuf::Timestamp* ptr, time_t value) {
+  // void update(google::protobuf::Timestamp* ptr, time_t value) {
   //  _strand.post([ptr, value] {
   //    ptr->Clear();
   //    ptr->set_seconds(value);

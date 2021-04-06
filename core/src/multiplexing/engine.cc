@@ -121,7 +121,7 @@ void engine::start() {
     logging::debug(logging::high) << "multiplexing: starting";
     _write_func = &engine::_write;
     stats::center::instance().update(&EngineStats::set_mode, _stats,
-        EngineStats::WRITE);
+                                     EngineStats::WRITE);
 
     std::lock_guard<std::mutex> lock(_engine_m);
     // Local queue.
@@ -130,7 +130,7 @@ void engine::start() {
     try {
       persistent_cache cache(_cache_file_path());
       std::shared_ptr<io::data> d;
-      while (true) {
+      for (;;) {
         cache.get(d);
         if (!d)
           break;
@@ -371,8 +371,10 @@ void engine::_write(std::shared_ptr<io::data> const& e) {
  */
 void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
   try {
-    if (_cache_file)
+    if (_cache_file) {
       _cache_file->add(d);
+      _unprocessed_events++;
+    }
   } catch (const std::exception& e) {
     logging::error(logging::medium)
         << "multiplexing: could not write to cache file: " << e.what();

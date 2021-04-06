@@ -22,8 +22,8 @@
 
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -181,8 +181,9 @@ void kpi_service::service_update(
   if (status && status->host_id == _host_id &&
       status->service_id == _service_id) {
     // Log message.
-        log_v2::bam()->debug("BAM: KPI {} is getting notified of service ({}, {}) update",
-        _id, _host_id, _service_id);
+    log_v2::bam()->debug(
+        "BAM: KPI {} is getting notified of service ({}, {}) update", _id,
+        _host_id, _service_id);
 
     // Update information.
     if ((status->last_check == (time_t)-1) ||
@@ -216,9 +217,9 @@ void kpi_service::service_update(
     io::stream* visitor) {
   if (ack && ack->host_id == _host_id && ack->service_id == _service_id) {
     // Log message.
-        log_v2::bam()->debug("BAM: KPI {} is getting an acknowledgement event for service ({}, {})",
+    log_v2::bam()->debug(
+        "BAM: KPI {} is getting an acknowledgement event for service ({}, {})",
         _id, _host_id, _service_id);
-
 
     // Update information.
     _acknowledged = (ack->deletion_time != -1);
@@ -241,8 +242,9 @@ void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
                                  io::stream* visitor) {
   if (dt && dt->host_id == _host_id && dt->service_id == _service_id) {
     // Log message.
-        log_v2::bam()->debug("BAM: KPI {} is getting a downtime event for service ({}, {})",
-        _id, _host_id, _service_id);
+    log_v2::bam()->debug(
+        "BAM: KPI {} is getting a downtime event for service ({}, {})", _id,
+        _host_id, _service_id);
 
     // Update information.
     _downtimed = (dt->was_started && dt->actual_end_time.is_null());
@@ -409,10 +411,8 @@ void kpi_service::visit(io::stream* visitor) {
  */
 void kpi_service::_fill_impact(impact_values& impact,
                                kpi_service::state state) {
-  if (state < 0 ||
-      static_cast<size_t>(state) >= _impacts.size())
-    throw msg_fmt(
-          "BAM: could not get impact introduced by state {}", state);
+  if (state < 0 || static_cast<size_t>(state) >= _impacts.size())
+    throw msg_fmt("BAM: could not get impact introduced by state {}", state);
   double nominal(_impacts[state]);
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);

@@ -54,7 +54,7 @@ bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Number of elements acknowledged (1).
  */
-int publisher::write(const std::shared_ptr<io::data>& d) {
+int32_t publisher::write(const std::shared_ptr<io::data>& d) {
   engine::instance().publish(d);
   return 1;
 }

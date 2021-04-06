@@ -38,10 +38,7 @@ class file : public backend {
   file(std::string const& path, uint64_t max = 100000000000ull);
   file(std::ostream& stream, std::string const& filename);
   ~file();
-  void log_msg(char const* msg,
-               uint32_t len,
-               type log_type,
-               level l) throw();
+  void log_msg(char const* msg, uint32_t len, type log_type, level l) throw();
   static bool with_flush() throw();
   static void with_flush(bool enable) throw();
   static bool with_thread_id() throw();

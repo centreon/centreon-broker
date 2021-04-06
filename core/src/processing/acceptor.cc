@@ -63,8 +63,8 @@ void acceptor::accept() {
     // Create feeder thread.
     std::string name(fmt::format("{}-{}", _name, ++connection_id));
     log_v2::core()->info("New incoming connection '{}'", name);
-    std::unique_ptr<processing::feeder> f(new processing::feeder(
-        name, u, _read_filters, _write_filters));
+    std::unique_ptr<processing::feeder> f(
+        new processing::feeder(name, u, _read_filters, _write_filters));
 
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.emplace_back(f.release());

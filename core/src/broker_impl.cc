@@ -71,6 +71,7 @@ grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context,
 
   return grpc::Status::OK;
 }
+
 grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
                                           const GenericNameOrIndex* request,
                                           GenericString* response) {

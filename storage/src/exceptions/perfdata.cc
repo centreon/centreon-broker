@@ -21,4 +21,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage::exceptions;
 
-void perfdata::rethrow() const {throw * this; }
+void perfdata::rethrow() const {
+  throw *this;
+}

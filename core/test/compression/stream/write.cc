@@ -32,7 +32,7 @@ class CompressionStreamWrite : public ::testing::Test {
   void SetUp() override {
     try {
       config::applier::init(0, "test_broker");
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
       (void)e;
     }
     _stream.reset(new compression::stream(-1, 20000));

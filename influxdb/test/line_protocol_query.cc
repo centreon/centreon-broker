@@ -247,7 +247,7 @@ TEST(InfluxDBLineProtoQuery, Except) {
                                    cache};
 
   ASSERT_THROW(q.generate_status(s), msg_fmt);
-  ASSERT_THROW(q2.generate_metric(m),msg_fmt);
+  ASSERT_THROW(q2.generate_metric(m), msg_fmt);
   ASSERT_EQ(q4.generate_metric(m), "test\\ .\\ 3\\ A 0\n");
 
   influxdb::line_protocol_query q5{"test . $INSTANCE$", columns,

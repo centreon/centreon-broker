@@ -17,12 +17,12 @@
 */
 
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
+#include <fmt/format.h>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/service.hh"
-#include <fmt/format.h>
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
@@ -218,10 +218,9 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(uint32_t host_id) {
  *
  *  @return Virtual BA service.
  */
-std::shared_ptr<neb::service> applier::ba::_ba_service(
-    uint32_t ba_id,
-    uint32_t host_id,
-    uint32_t service_id) {
+std::shared_ptr<neb::service> applier::ba::_ba_service(uint32_t ba_id,
+                                                       uint32_t host_id,
+                                                       uint32_t service_id) {
   std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;
@@ -271,7 +270,7 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
 void applier::ba::save_to_cache(persistent_cache& cache) {
   cache.transaction();
   for (std::map<uint32_t, applied>::const_iterator it = _applied.begin(),
-                                                       end = _applied.end();
+                                                   end = _applied.end();
        it != end; ++it) {
     it->second.obj->save_inherited_downtime(cache);
   }

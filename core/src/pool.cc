@@ -73,7 +73,7 @@ asio::io_context& pool::io_context() {
  */
 pool::pool(size_t size)
     : _stats(nullptr),
-      _pool_size{size == 0 ? std::max(std::thread::hardware_concurrency(), 2u)
+      _pool_size{size == 0 ? std::max(std::thread::hardware_concurrency(), 3u)
                            : size},
       _io_context(_pool_size),
       _worker(new asio::io_context::work(_io_context)),
@@ -110,8 +110,14 @@ void pool::start_stats(ThreadPool* stats) {
 
 void pool::stop_stats() {
   if (_stats_running) {
-    _stats_running = false;
-    asio::post(_timer.get_executor(), [this] { _timer.cancel(); });
+    std::promise<bool> p;
+    std::future<bool> f(p.get_future());
+    asio::post(_timer.get_executor(), [this, &p] {
+      _stats_running = false;
+      _timer.cancel();
+      p.set_value(true);
+    });
+    f.get();
   }
 }
 
@@ -126,17 +132,6 @@ pool::~pool() noexcept {
  * @brief Stop the thread pool.
  */
 void pool::_stop() {
-  //  if (_stats_running) {
-  //    std::promise<bool> p;
-  //    std::future<bool> f(p.get_future());
-  //    _stats_running = false;
-  //    asio::post(_timer.get_executor(), [this, &p] {
-  //        _timer.cancel();
-  //        p.set_value(true);
-  //        });
-  //    f.get();
-  //  }
-
   log_v2::core()->trace("Stopping the TCP thread pool");
   std::lock_guard<std::mutex> lock(_closed_m);
   if (!_closed) {

@@ -1917,9 +1917,8 @@ int neb::callback_service(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int neb::callback_service_check(int callback_type, void* data) {
-
   const nebstruct_service_check_data* scdata =
-    static_cast<nebstruct_service_check_data*>(data);
+      static_cast<nebstruct_service_check_data*>(data);
 
   /* For each check, this event is received three times one precheck, one
    * initiate and one processed. We just keep the initiate one. At the processed

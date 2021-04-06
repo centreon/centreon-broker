@@ -146,7 +146,7 @@
 ////            0x55667788);
 ////  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
 ////  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)),
-///12345u); /  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
+/// 12345u); /  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
 ////
 ////  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
 ////  svc->host_id = 78113;
@@ -157,8 +157,8 @@
 ////
 ////  ASSERT_EQ(mem2.size(), 276);
 ////  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)),
-///78113u); /  // The size is 276 - 16: 16 is the header size. /
-///ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
+/// 78113u); /  // The size is 276 - 16: 16 is the header size. /
+/// ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
 ////
 ////  // Check checksum
 ////  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 33491);

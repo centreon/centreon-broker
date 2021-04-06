@@ -47,7 +47,7 @@ class interruption : public basic {
     return (*this);
   }
 };
-}
+}  // namespace exceptions
 
 CC_END()
 

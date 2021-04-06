@@ -45,7 +45,8 @@ class macro_cache {
   std::unordered_map<uint64_t, std::shared_ptr<neb::instance> > _instances;
   std::unordered_map<uint64_t, std::shared_ptr<neb::host> > _hosts;
   std::unordered_map<std::pair<uint64_t, uint64_t>,
-                     std::shared_ptr<neb::service> > _services;
+                     std::shared_ptr<neb::service> >
+      _services;
   std::unordered_map<uint64_t, std::shared_ptr<storage::index_mapping> >
       _index_mappings;
   std::unordered_map<uint64_t, std::shared_ptr<storage::metric_mapping> >

@@ -207,7 +207,6 @@ class property : public source {
     return static_cast<T const*>(&d)->*(_prop.l);
   }
 
-
   /**
    *  Get an unsigned short property.
    *

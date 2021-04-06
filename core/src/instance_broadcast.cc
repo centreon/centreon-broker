@@ -70,12 +70,6 @@ void instance_broadcast::load() {
                    instance_broadcast::entries);
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Copy internal data members.
  *
@@ -88,12 +82,6 @@ void instance_broadcast::_internal_copy(instance_broadcast const& other) {
   poller_id = other.poller_id;
   poller_name = other.poller_name;
 }
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const instance_broadcast::entries[] = {

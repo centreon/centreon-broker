@@ -72,8 +72,8 @@ void services::run(std::string& output, std::string& perfdata) {
     ++total[it->second->get_current_state()];
 
   uint32_t not_ok{total[com::centreon::engine::service::state_warning] +
-                      total[com::centreon::engine::service::state_critical] +
-                      total[com::centreon::engine::service::state_unknown]};
+                  total[com::centreon::engine::service::state_critical] +
+                  total[com::centreon::engine::service::state_unknown]};
 
   // Output.
   std::ostringstream oss;

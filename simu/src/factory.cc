@@ -41,8 +41,7 @@ static std::string find_param(config::endpoint const& cfg,
                               std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw msg_fmt(
-        "lua: no '{}' defined for endpoint '{}'", key, cfg.name);
+    throw msg_fmt("lua: no '{}' defined for endpoint '{}'", key, cfg.name);
   return it->second;
 }
 
@@ -73,10 +72,10 @@ bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
  *
  *  @return New endpoint.
  */
-io::endpoint* factory::new_endpoint(
-    config::endpoint& cfg,
-    bool& is_acceptor,
-    std::shared_ptr<persistent_cache> cache __attribute__((unused))) const {
+io::endpoint* factory::new_endpoint(config::endpoint& cfg,
+                                    bool& is_acceptor,
+                                    std::shared_ptr<persistent_cache> cache
+                                    __attribute__((unused))) const {
   std::map<std::string, misc::variant> conf_map;
   std::string err;
 
@@ -133,7 +132,8 @@ io::endpoint* factory::new_endpoint(
       if (ko)
         throw msg_fmt(
             "simu: unable to read '{}' content ({}"
-            ") as a number", name.string_value(), value.string_value());
+            ") as a number",
+            name.string_value(), value.string_value());
     }
   } else if (js.is_array()) {
     for (Json const& obj : js.array_items()) {
@@ -161,7 +161,8 @@ io::endpoint* factory::new_endpoint(
         } catch (std::exception const& e) {
           throw msg_fmt(
               "lua: unable to read '{}' content ({}"
-              ") as a number", name.string_value(), value.string_value());
+              ") as a number",
+              name.string_value(), value.string_value());
         }
       }
     }

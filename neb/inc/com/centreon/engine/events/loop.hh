@@ -57,11 +57,7 @@ class loop {
   void _dispatching();
 
  public:
-  enum priority {
-    low = 0,
-    high = 1,
-    priority_num
-  };
+  enum priority { low = 0, high = 1, priority_num };
 
   static loop& instance();
   void clear();
@@ -73,9 +69,7 @@ class loop {
   void remove_downtime(uint64_t downtime_id);
   void remove_event(timed_event* event, priority priority);
   void remove_events(priority, uint32_t event_type, void* data) noexcept;
-  timed_event* find_event(priority priority,
-                          uint32_t event_type,
-                          void* data);
+  timed_event* find_event(priority priority, uint32_t event_type, void* data);
   void reschedule_event(timed_event* event, priority priority);
   void resort_event_list(priority priority);
   void schedule(timed_event* evt, bool high_priority);

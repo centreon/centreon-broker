@@ -30,11 +30,7 @@ CCE_BEGIN()
 namespace downtimes {
 class downtime {
  public:
-  enum type {
-    service_downtime = 1,
-    host_downtime = 2,
-    any_downtime = 3
-  };
+  enum type { service_downtime = 1, host_downtime = 2, any_downtime = 3 };
   downtime(type type,
            std::string const& host_name,
            time_t entry_time,

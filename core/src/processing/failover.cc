@@ -333,7 +333,7 @@ void failover::_run() {
         d.reset();
         if (timed_out_stream && timed_out_muxer) {
           time_t now(time(nullptr));
-          int we(0);
+          int we = 0;
           if (should_commit) {
             should_commit = false;
             _next_timeout = now + 1;
@@ -390,8 +390,7 @@ void failover::_run() {
       std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
       if (_stream) {
         // If ack_events is not zero, then we will store data twice
-        int32_t ack_events = _stream->flush();
-        assert(ack_events == 0);
+        int32_t ack_events = _stream->stop();
         _subscriber->get_muxer().ack_events(ack_events);
         _stream.reset();
       }

@@ -143,8 +143,7 @@ void downtime_serializable::visit(ceof::ceof_visitor& visitor) {
       &downtime_serializable::set_downtime_member<bool, &downtime::fixed>);
   visitor.visit(
       *this, "host_id",
-      &downtime_serializable::get_downtime_member<uint32_t,
-                                                  &downtime::host_id>,
+      &downtime_serializable::get_downtime_member<uint32_t, &downtime::host_id>,
       &downtime_serializable::set_downtime_member<uint32_t,
                                                   &downtime::host_id>);
   visitor.visit(

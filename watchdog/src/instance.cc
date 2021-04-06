@@ -102,8 +102,7 @@ void instance::start() {
     char const* argv[]{_config.get_executable().c_str(),
                        _config.get_config_file().c_str(), nullptr};
     _pid = exec_process(argv);
-    logger->info("Process '{}' started (PID {})", _config.get_name(),
-                 _pid);
+    logger->info("Process '{}' started (PID {})", _config.get_name(), _pid);
   }
 }
 
@@ -123,14 +122,12 @@ void instance::update() {
  */
 void instance::stop() {
   if (_started) {
-    logger->info("Stopping process '{}' (PID {})", _config.get_name(),
-                 _pid);
+    logger->info("Stopping process '{}' (PID {})", _config.get_name(), _pid);
     _started = false;
     int res = kill(_pid, SIGTERM);
     if (res)
-      logger->error(
-          "Could not send a kill signal to process '{}' (PID {}): {}",
-          _config.get_name(), _pid, strerror(errno));
+      logger->error("Could not send a kill signal to process '{}' (PID {}): {}",
+                    _config.get_name(), _pid, strerror(errno));
     int status;
     int timeout = 15;
     while ((res = waitpid(_pid, &status, WNOHANG)) == 0) {
@@ -142,19 +139,18 @@ void instance::stop() {
         kill(_pid, SIGKILL);
         res = waitpid(_pid, &status, 0);
         if (res < 0)
-          logger->error(
-              "Unable to kill the process '{}' (PID {}): {}",
-              _config.get_name(), _pid, strerror(errno));
+          logger->error("Unable to kill the process '{}' (PID {}): {}",
+                        _config.get_name(), _pid, strerror(errno));
         else
-          logger->info("Process '{}' (PID {}) killed.",
-                       _config.get_name(), _pid);
+          logger->info("Process '{}' (PID {}) killed.", _config.get_name(),
+                       _pid);
         return;
       }
       sleep(1);
     }
     if (res < 0)
-      logger->error("Unable to stop '{}' (PID {}): {}",
-                    _config.get_name(), _pid, strerror(errno));
+      logger->error("Unable to stop '{}' (PID {}): {}", _config.get_name(),
+                    _pid, strerror(errno));
     else
       logger->info("Process '{}' (PID {}) stopped gracefully",
                    _config.get_name(), _pid);

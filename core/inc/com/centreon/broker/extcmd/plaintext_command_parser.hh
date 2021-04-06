@@ -36,8 +36,8 @@ class plaintext_command_parser : public command_parser {
   virtual ~plaintext_command_parser();
 
   uint32_t parse(std::string const& buffer,
-                     command_result& res,
-                     std::shared_ptr<command_request>& request);
+                 command_result& res,
+                 std::shared_ptr<command_request>& request);
 
   std::string write(command_result const& res);
 

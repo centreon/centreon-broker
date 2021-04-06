@@ -30,8 +30,7 @@ using namespace com::centreon::broker::time;
  *  @param[in] start The start time.
  *  @param[in] end   The end time.
  */
-timerange::timerange(uint64_t start, uint64_t end)
-    : _end(end), _start(start) {}
+timerange::timerange(uint64_t start, uint64_t end) : _end(end), _start(start) {}
 
 /**
  *  Copy constructor.
@@ -193,9 +192,9 @@ bool timerange::to_time_t(struct tm const& midnight,
 }
 
 static bool _build_time_t(std::string const& time_str, uint64_t& ret) {
-  auto f = [](std::string const& str, uint64_t & data) -> bool {
-      std::istringstream iss(str);
-      return ((iss >> data) && iss.eof());
+  auto f = [](std::string const& str, uint64_t& data) -> bool {
+    std::istringstream iss(str);
+    return ((iss >> data) && iss.eof());
   };
 
   std::size_t pos(time_str.find(':'));
@@ -213,7 +212,6 @@ static bool _build_time_t(std::string const& time_str, uint64_t& ret) {
 
 bool timerange::build_timeranges_from_string(std::string const& line,
                                              std::list<timerange>& timeranges) {
-
   if (line.empty())
     return true;
 

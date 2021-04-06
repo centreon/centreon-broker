@@ -103,7 +103,8 @@ TEST(TcpFactory, Connector) {
   cfg.params["host"] = "127.0.0.1";
   std::unique_ptr<io::factory> f{new tcp::factory};
   ASSERT_TRUE(f->has_endpoint(cfg, nullptr));
-  std::unique_ptr<io::endpoint> endp{fact.new_endpoint(cfg, is_acceptor, cache)};
+  std::unique_ptr<io::endpoint> endp{
+      fact.new_endpoint(cfg, is_acceptor, cache)};
 
   ASSERT_FALSE(is_acceptor);
   ASSERT_TRUE(endp->is_connector());

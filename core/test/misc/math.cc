@@ -16,15 +16,13 @@
  * For more information : contact@centreon.com
  *
  */
-#include <gtest/gtest.h>
 #include "com/centreon/broker/misc/math.hh"
+#include <gtest/gtest.h>
 
 using namespace com::centreon::broker::misc;
 
 TEST(LeastSquares, TwoPoints) {
-  std::array<std::pair<int32_t, int32_t>, 5> pts{{
-    {0, 0},
-    {3, 6}}};
+  std::array<std::pair<int32_t, int32_t>, 5> pts{{{0, 0}, {3, 6}}};
   double a, b;
   ASSERT_TRUE(least_squares(pts, 2, a, b));
   ASSERT_EQ(a, 2);
@@ -32,27 +30,20 @@ TEST(LeastSquares, TwoPoints) {
 }
 
 TEST(LeastSquares, BadPoints) {
-  std::array<std::pair<int32_t, int32_t>, 5> pts{{
-    {0, 0},
-    {0, 6}}};
+  std::array<std::pair<int32_t, int32_t>, 5> pts{{{0, 0}, {0, 6}}};
   double a, b;
   ASSERT_FALSE(least_squares(pts, 2, a, b));
 }
 
 TEST(LeastSquares, OnePoint) {
-  std::array<std::pair<int32_t, int32_t>, 5> pts{{
-    {5, 6}}};
+  std::array<std::pair<int32_t, int32_t>, 5> pts{{{5, 6}}};
   double a, b;
   ASSERT_FALSE(least_squares(pts, 1, a, b));
 }
 
 TEST(LeastSquares, FivePoints) {
-  std::array<std::pair<int32_t, int32_t>, 5> pts{{
-    {-3, -5},
-    {1, 3},
-    {3, 6},
-    {5, 10},
-    {7, 14}}};
+  std::array<std::pair<int32_t, int32_t>, 5> pts{
+      {{-3, -5}, {1, 3}, {3, 6}, {5, 10}, {7, 14}}};
   double a, b;
   ASSERT_TRUE(least_squares(pts, 5, a, b));
   ASSERT_NEAR(a, 1.878378, 1E-5);

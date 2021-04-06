@@ -58,8 +58,8 @@ class cached : public backend {
 
     // Check that the file exists.
     if (access(filename.c_str(), F_OK))
-      throw broker::rrd::exceptions::open(
-          "RRD: file '{}' does not exist", filename);
+      throw broker::rrd::exceptions::open("RRD: file '{}' does not exist",
+                                          filename);
 
     // Remember information for further operations.
     _filename = filename;
@@ -136,9 +136,10 @@ class cached : public backend {
     asio::write(_socket, asio::buffer(command), asio::transfer_all(), err);
 
     if (err)
-      throw msg_fmt("RRD: error while sending "
-                            "command to rrdcached: {}",
-                            err.message());
+      throw msg_fmt(
+          "RRD: error while sending "
+          "command to rrdcached: {}",
+          err.message());
 
     // Read response.
     if (!_batch) {
@@ -148,9 +149,10 @@ class cached : public backend {
       asio::read_until(_socket, stream, '\n', err);
 
       if (err)
-        throw msg_fmt("RRD: error while getting "
-                      "response from rrdcached: {}",
-                      err.message());
+        throw msg_fmt(
+            "RRD: error while getting "
+            "response from rrdcached: {}",
+            err.message());
 
       std::istream is(&stream);
       std::getline(is, line);
@@ -165,14 +167,16 @@ class cached : public backend {
       if (lines < 0)
         throw msg_fmt(
             "RRD: rrdcached query failed on file '{}' ({}"
-            "): {}", _filename, command, line);
+            "): {}",
+            _filename, command, line);
       while (lines > 0) {
         asio::read_until(_socket, stream, '\n', err);
         if (err)
           throw msg_fmt(
               "RRD: error while getting "
-              "response from rrdcached for file '{}" 
-              "': {}",  _filename, err.message());
+              "response from rrdcached for file '{}"
+              "': {}",
+              _filename, err.message());
 
         std::istream is(&stream);
         std::getline(is, line);
@@ -202,8 +206,8 @@ class cached : public backend {
     try {
       _socket.connect(ep);
     } catch (std::system_error const& se) {
-      throw msg_fmt("RRD: could not connect to local socket '{}: {}",
-                    name, se.what());
+      throw msg_fmt("RRD: could not connect to local socket '{}: {}", name,
+                    se.what());
     }
   }
 
@@ -235,15 +239,19 @@ class cached : public backend {
       }
 
       if (err) {
-        throw msg_fmt("RRD: could not connect to remote server '{}" 
-                                  ":{} : {}", address, port, err.message());
+        throw msg_fmt(
+            "RRD: could not connect to remote server '{}"
+            ":{} : {}",
+            address, port, err.message());
       }
 
       asio::socket_base::keep_alive option{true};
       _socket.set_option(option);
     } catch (std::system_error const& se) {
-        throw msg_fmt("RRD: could not resolve remove server '{}" 
-                                  ":{} : {}", address, port, se.what());
+      throw msg_fmt(
+          "RRD: could not resolve remove server '{}"
+          ":{} : {}",
+          address, port, se.what());
     }
   }
 

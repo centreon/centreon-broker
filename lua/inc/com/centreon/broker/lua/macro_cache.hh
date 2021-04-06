@@ -85,7 +85,8 @@ class macro_cache {
   void write(std::shared_ptr<io::data> const& data);
 
   storage::index_mapping const& get_index_mapping(uint32_t index_id) const;
-  const std::shared_ptr<storage::metric_mapping>& get_metric_mapping(uint32_t metric_id) const;
+  const std::shared_ptr<storage::metric_mapping>& get_metric_mapping(
+      uint32_t metric_id) const;
   const std::shared_ptr<neb::host>& get_host(uint64_t host_id) const;
   const std::shared_ptr<neb::service>& get_service(uint64_t host_id,
                                                    uint64_t service_id) const;

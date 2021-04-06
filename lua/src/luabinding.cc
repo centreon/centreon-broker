@@ -20,13 +20,13 @@
 #include <fstream>
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/broker_cache.hh"
 #include "com/centreon/broker/lua/broker_event.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_socket.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -138,28 +138,24 @@ void luabinding::_load_script(const std::string& lua_script) {
   // script loading
   if (luaL_loadfile(_L, lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
-    throw msg_fmt(
-        "lua: '{}' could not be loaded: {}", lua_script, error_msg);
+    throw msg_fmt("lua: '{}' could not be loaded: {}", lua_script, error_msg);
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
-    throw msg_fmt(
-        "lua: '{}' could not be compiled", lua_script);
+    throw msg_fmt("lua: '{}' could not be compiled", lua_script);
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw msg_fmt(
-        "lua: '{}' init() global function is missing", lua_script);
+    throw msg_fmt("lua: '{}' init() global function is missing", lua_script);
   lua_pop(_L, 1);
 
   // Checking for write() availability: this function is mandatory
   lua_getglobal(_L, "write");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw msg_fmt(
-        "lua: '{}' write() global function is missing", lua_script);
+    throw msg_fmt("lua: '{}' write() global function is missing", lua_script);
   lua_pop(_L, 1);
 
   // Checking for filter() availability: this function is optional
@@ -279,8 +275,8 @@ void luabinding::_init_script(
     }
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
-    throw msg_fmt(
-        "lua: error running function `init' {}", lua_tostring(_L, -1));
+    throw msg_fmt("lua: error running function `init' {}",
+                  lua_tostring(_L, -1));
 }
 
 /**

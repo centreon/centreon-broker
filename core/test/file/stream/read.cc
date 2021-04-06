@@ -109,8 +109,8 @@ int main(int argc, char* argv[]) {
     if (!retval) {
       // Compare data.
       uint32_t cb(((raw->size() - rawc) < (sizeof(buffer) - 1 - bufferc))
-                          ? (raw->size() - rawc)
-                          : (sizeof(buffer) - 1 - bufferc));
+                      ? (raw->size() - rawc)
+                      : (sizeof(buffer) - 1 - bufferc));
       retval |= memcmp(raw->QByteArray::data() + rawc, buffer + bufferc, cb);
 
       // Adjust buffers.

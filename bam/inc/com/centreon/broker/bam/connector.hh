@@ -39,7 +39,7 @@ class connector : public io::endpoint {
  public:
   connector();
   ~connector() noexcept = default;
-  connector(const connector & ) = delete;
+  connector(const connector&) = delete;
   connector& operator=(const connector&) = delete;
   void connect_monitoring(std::string const& ext_cmd_file,
                           database_config const& db_cfg,

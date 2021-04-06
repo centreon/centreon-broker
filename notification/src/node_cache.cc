@@ -382,9 +382,8 @@ void node_cache::_save_cache() {
            end = _acknowledgements.end();
        it != end; ++it)
     serialized_data.push_back(std::make_shared<neb::acknowledgement>(*it));
-  for (QHash<uint32_t, neb::downtime>::const_iterator
-           it = _downtimes.begin(),
-           end = _downtimes.end();
+  for (QHash<uint32_t, neb::downtime>::const_iterator it = _downtimes.begin(),
+                                                      end = _downtimes.end();
        it != end; ++it)
     serialized_data.push_back(std::make_shared<neb::downtime>(*it));
 

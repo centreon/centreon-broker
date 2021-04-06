@@ -158,13 +158,12 @@ class mysql_task_statement_int : public mysql_task {
   mysql_task_statement_int(database::mysql_stmt& stmt,
                            std::promise<T>* promise,
                            int_type type)
-      : mysql_task((std::is_same<T, int>::value)
-                       ? mysql_task::STATEMENT_INT
-                       : (std::is_same<T, int64_t>::value)
-                             ? mysql_task::STATEMENT_INT64
-                             : (std::is_same<T, uint32_t>::value)
-                                   ? mysql_task::STATEMENT_UINT
-                                   : mysql_task::STATEMENT_UINT64),
+      : mysql_task((std::is_same<T, int>::value) ? mysql_task::STATEMENT_INT
+                   : (std::is_same<T, int64_t>::value)
+                       ? mysql_task::STATEMENT_INT64
+                   : (std::is_same<T, uint32_t>::value)
+                       ? mysql_task::STATEMENT_UINT
+                       : mysql_task::STATEMENT_UINT64),
         promise(promise),
         return_type(type),
         statement_id(stmt.get_id()),

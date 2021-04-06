@@ -29,7 +29,7 @@
 CCE_BEGIN()
 
 namespace commands {
-  class command;
+class command;
 /**
  *  @class command_listener command_listener.hh
  *  @brief Notify command events.
@@ -42,7 +42,7 @@ class command_listener {
  public:
   virtual ~command_listener() noexcept {
     for (auto it = _clean_callbacks.begin(), end = _clean_callbacks.end();
-        it != end; ++it) {
+         it != end; ++it) {
       (it->second)();
     }
   }
@@ -51,9 +51,7 @@ class command_listener {
   void reg(command* const ptr, std::function<void()>& regf) {
     _clean_callbacks.insert({ptr, regf});
   }
-  void unreg(command* const ptr) {
-    _clean_callbacks.erase(ptr);
-  }
+  void unreg(command* const ptr) { _clean_callbacks.erase(ptr); }
 };
 }  // namespace commands
 

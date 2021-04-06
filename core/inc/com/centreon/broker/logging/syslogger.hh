@@ -38,10 +38,7 @@ class syslogger : public backend {
   syslogger(syslogger const& s) = delete;
   ~syslogger();
   syslogger& operator=(syslogger const& s) = delete;
-  void log_msg(char const* msg,
-               uint32_t len,
-               type log_type,
-               level l) throw();
+  void log_msg(char const* msg, uint32_t len, type log_type, level l) throw();
 };
 }  // namespace logging
 

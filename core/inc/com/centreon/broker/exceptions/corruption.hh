@@ -19,8 +19,8 @@
 #ifndef CCB_EXCEPTIONS_CORRUPTION_HH
 #define CCB_EXCEPTIONS_CORRUPTION_HH
 
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 CCB_BEGIN()
 
@@ -37,7 +37,7 @@ class corruption : public com::centreon::exceptions::msg_fmt {
  public:
   template <typename... Args>
   explicit corruption(std::string const& str, const Args&... args)
-    : msg_fmt(str, args...) {}
+      : msg_fmt(str, args...) {}
 
   corruption() = delete;
   ~corruption() noexcept {}

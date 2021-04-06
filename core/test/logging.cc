@@ -156,10 +156,12 @@ TEST_F(LoggingManager, Multiple) {
   std::remove(file_path2.c_str());
 
   // Open log file objects.
-  std::shared_ptr<logging::file> f1{std::make_shared<logging::file>(file_path1)};
+  std::shared_ptr<logging::file> f1{
+      std::make_shared<logging::file>(file_path1)};
   f1->with_thread_id(false);
   f1->with_timestamp(logging::no_timestamp);
-  std::shared_ptr<logging::file> f2{std::make_shared<logging::file>(file_path2)};
+  std::shared_ptr<logging::file> f2{
+      std::make_shared<logging::file>(file_path2)};
   f2->with_thread_id(false);
   f2->with_timestamp(logging::no_timestamp);
 
@@ -222,13 +224,16 @@ TEST_F(LoggingManager, Cross) {
   std::remove(file_path3.c_str());
 
   // Open log file objects.
-  std::shared_ptr<logging::file> f1{std::make_shared<logging::file>(file_path1)};
+  std::shared_ptr<logging::file> f1{
+      std::make_shared<logging::file>(file_path1)};
   f1->with_thread_id(false);
   f1->with_timestamp(logging::no_timestamp);
-  std::shared_ptr<logging::file> f2{std::make_shared<logging::file>(file_path2)};
+  std::shared_ptr<logging::file> f2{
+      std::make_shared<logging::file>(file_path2)};
   f2->with_thread_id(false);
   f2->with_timestamp(logging::no_timestamp);
-  std::shared_ptr<logging::file> f3{std::make_shared<logging::file>(file_path3)};
+  std::shared_ptr<logging::file> f3{
+      std::make_shared<logging::file>(file_path3)};
   f3->with_thread_id(false);
   f3->with_timestamp(logging::no_timestamp);
 
@@ -290,10 +295,12 @@ TEST_F(LoggingManager, BacklogUnlog) {
   std::remove(file_path2.c_str());
 
   // Open log file objects.
-  std::shared_ptr<logging::file> f1{std::make_shared<logging::file>(file_path1)};
+  std::shared_ptr<logging::file> f1{
+      std::make_shared<logging::file>(file_path1)};
   f1->with_thread_id(false);
   f1->with_timestamp(logging::no_timestamp);
-  std::shared_ptr<logging::file> f2{std::make_shared<logging::file>(file_path2)};
+  std::shared_ptr<logging::file> f2{
+      std::make_shared<logging::file>(file_path2)};
   f2->with_thread_id(false);
   f2->with_timestamp(logging::no_timestamp);
 

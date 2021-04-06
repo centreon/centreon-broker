@@ -27,8 +27,10 @@ using namespace com::centreon::broker::bbdo;
 stop::stop() : io::data(stop::static_type()) {}
 
 // Mapping.
-mapping::entry const stop::entries[] {mapping::entry()};
+mapping::entry const stop::entries[]{mapping::entry()};
 
 // Operations.
-static io::data* new_stop() { return new stop; }
+static io::data* new_stop() {
+  return new stop;
+}
 io::event_info::event_operations const stop::operations = {&new_stop};

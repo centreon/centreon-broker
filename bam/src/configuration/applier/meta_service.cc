@@ -194,8 +194,7 @@ void applier::meta_service::_internal_copy(applier::meta_service const& other) {
  *
  *  @return Virtual meta-service host.
  */
-std::shared_ptr<neb::host> applier::meta_service::_meta_host(
-    uint32_t host_id) {
+std::shared_ptr<neb::host> applier::meta_service::_meta_host(uint32_t host_id) {
   std::shared_ptr<neb::host> h(new neb::host);
   h->host_id = host_id;
   h->host_name = "_Module_Meta";

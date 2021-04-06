@@ -150,6 +150,9 @@ std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
                                                 bool is_acceptor,
                                                 std::string const& proto_name) {
   (void)proto_name;
-  return is_acceptor ? acceptor(_public_cert, _private_key, _ca_cert, _tls_hostname).open(to)
-                     : connector(_public_cert, _private_key, _ca_cert, _tls_hostname).open(to);
+  return is_acceptor
+             ? acceptor(_public_cert, _private_key, _ca_cert, _tls_hostname)
+                   .open(to)
+             : connector(_public_cert, _private_key, _ca_cert, _tls_hostname)
+                   .open(to);
 }

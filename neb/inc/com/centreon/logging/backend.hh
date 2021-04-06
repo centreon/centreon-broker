@@ -29,12 +29,7 @@ class stringifier;
 }
 
 namespace logging {
-enum time_precision {
-  none = 0,
-  microsecond = 1,
-  millisecond = 2,
-  second = 3
-};
+enum time_precision { none = 0, microsecond = 1, millisecond = 2, second = 3 };
 
 /**
  *  @class backend backend.hh "com/centreon/logging/backend.hh"
@@ -81,7 +76,7 @@ class backend {
  protected:
   void _internal_copy(backend const& right);
 };
-}
+}  // namespace logging
 
 CC_END()
 
