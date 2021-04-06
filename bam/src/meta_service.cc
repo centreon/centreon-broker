@@ -301,7 +301,7 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
  *  @param[in] old_value  Old value.
  */
 void meta_service::_recompute_partial(double new_value, double old_value) {
-  double old_value = _value;
+  double prev_value = _value;
   switch (_computation) {
       // MIN.
     case min:
@@ -328,7 +328,7 @@ void meta_service::_recompute_partial(double new_value, double old_value) {
       _value = _value + (new_value - old_value) / _metrics.size();
       break;
   }
-  log_v2::bam()->debug("BAM: partial recomputing of meta-service {} --- old value = {}, new value = {}", old_value, _value);
+  log_v2::bam()->debug("BAM: partial recomputing of meta-service {} --- old value = {}, new value = {}", prev_value, _value);
 }
 
 /**
