@@ -19,8 +19,8 @@
 
 #include "com/centreon/broker/influxdb/influxdb12.hh"
 #include <gtest/gtest.h>
-#include "com/centreon/broker/logging/manager.hh"
 #include "../../core/test/test_server.hh"
+#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -50,8 +50,9 @@ TEST_F(InfluxDB12, BadConnection) {
   std::vector<influxdb::column> mcolumns;
   std::vector<influxdb::column> scolumns;
 
-  ASSERT_THROW(influxdb::influxdb12 idb
-                 ("centreon", "pass", "localhost", 4243, "centreon", "host_status", scolumns, "host_metrics", mcolumns, mcache),
+  ASSERT_THROW(influxdb::influxdb12 idb("centreon", "pass", "localhost", 4243,
+                                        "centreon", "host_status", scolumns,
+                                        "host_metrics", mcolumns, mcache),
                msg_fmt);
 }
 
@@ -62,8 +63,9 @@ TEST_F(InfluxDB12, Empty) {
   std::vector<influxdb::column> mcolumns;
   std::vector<influxdb::column> scolumns;
 
-  influxdb::influxdb12 idb
-    ("centreon", "pass", "localhost", 4242, "centreon", "host_status", scolumns, "host_metrics", mcolumns, mcache);
+  influxdb::influxdb12 idb("centreon", "pass", "localhost", 4242, "centreon",
+                           "host_status", scolumns, "host_metrics", mcolumns,
+                           mcache);
   idb.clear();
   ASSERT_NO_THROW(idb.commit());
 }
@@ -74,19 +76,28 @@ TEST_F(InfluxDB12, Simple) {
   storage::metric m1, m2, m3;
 
   std::vector<influxdb::column> mcolumns;
-  mcolumns.push_back(influxdb::column{"mhost1", "42.0", true, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"mhost2", "42.0", false, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"most2", "42.0", false, influxdb::column::string});
-  mcolumns.push_back(influxdb::column{"most3", "43.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"mhost1", "42.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"mhost2", "42.0", false, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"most2", "42.0", false, influxdb::column::string});
+  mcolumns.push_back(
+      influxdb::column{"most3", "43.0", true, influxdb::column::number});
 
   std::vector<influxdb::column> scolumns;
-  mcolumns.push_back(influxdb::column{"shost1", "42.0", true, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"shost2", "42.0", false, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"shost2", "42.0", false, influxdb::column::string});
-  mcolumns.push_back(influxdb::column{"shost3", "43.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"shost1", "42.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"shost2", "42.0", false, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"shost2", "42.0", false, influxdb::column::string});
+  mcolumns.push_back(
+      influxdb::column{"shost3", "43.0", true, influxdb::column::number});
 
-  influxdb::influxdb12 idb
-    ("centreon", "pass", "localhost", 4242, "centreon", "host_status", scolumns, "host_metrics", mcolumns, mcache);
+  influxdb::influxdb12 idb("centreon", "pass", "localhost", 4242, "centreon",
+                           "host_status", scolumns, "host_metrics", mcolumns,
+                           mcache);
   m1.ctime = 2000llu;
   m1.interval = 60;
   m1.is_for_rebuild = true;
@@ -134,8 +145,9 @@ TEST_F(InfluxDB12, BadServerResponse1) {
   std::vector<influxdb::column> mcolumns;
   std::vector<influxdb::column> scolumns;
 
-  influxdb::influxdb12 idb
-    ("centreon", "fail1", "localhost", 4242, "centreon", "host_status", scolumns, "host_metrics", mcolumns, mcache);
+  influxdb::influxdb12 idb("centreon", "fail1", "localhost", 4242, "centreon",
+                           "host_status", scolumns, "host_metrics", mcolumns,
+                           mcache);
 
   m1.ctime = 2000llu;
   m1.interval = 60;
@@ -183,19 +195,28 @@ TEST_F(InfluxDB12, BadServerResponse2) {
   storage::metric m1, m2, m3;
 
   std::vector<influxdb::column> mcolumns;
-  mcolumns.push_back(influxdb::column{"mhost1", "42.0", true, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"mhost2", "42.0", false, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"most2", "42.0", false, influxdb::column::string});
-  mcolumns.push_back(influxdb::column{"most3", "43.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"mhost1", "42.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"mhost2", "42.0", false, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"most2", "42.0", false, influxdb::column::string});
+  mcolumns.push_back(
+      influxdb::column{"most3", "43.0", true, influxdb::column::number});
 
   std::vector<influxdb::column> scolumns;
-  mcolumns.push_back(influxdb::column{"shost1", "42.0", true, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"shost2", "42.0", false, influxdb::column::number});
-  mcolumns.push_back(influxdb::column{"shost2", "42.0", false, influxdb::column::string});
-  mcolumns.push_back(influxdb::column{"shost3", "43.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"shost1", "42.0", true, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"shost2", "42.0", false, influxdb::column::number});
+  mcolumns.push_back(
+      influxdb::column{"shost2", "42.0", false, influxdb::column::string});
+  mcolumns.push_back(
+      influxdb::column{"shost3", "43.0", true, influxdb::column::number});
 
-  influxdb::influxdb12 idb
-    ("centreon", "fail2", "localhost", 4242, "centreon", "host_status", scolumns, "host_metrics", mcolumns, mcache);
+  influxdb::influxdb12 idb("centreon", "fail2", "localhost", 4242, "centreon",
+                           "host_status", scolumns, "host_metrics", mcolumns,
+                           mcache);
 
   m1.ctime = 2000llu;
   m1.interval = 60;
@@ -236,4 +257,3 @@ TEST_F(InfluxDB12, BadServerResponse2) {
 
   ASSERT_THROW(idb.commit(), msg_fmt);
 }
-

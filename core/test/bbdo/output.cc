@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/misc/variant.hh"
-#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
@@ -60,6 +60,8 @@ class into_memory : public io::stream {
     return 1;
   }
 
+  int32_t stop() override { return 0; }
+
   std::vector<char> const& get_memory() const { return _memory; }
   std::vector<char>& get_mutable_memory() { return _memory; }
 
@@ -72,7 +74,7 @@ class OutputTest : public ::testing::Test {
   void SetUp() override {
     io::data::broker_id = 0;
     try {
-      config::applier::init();
+      config::applier::init(0, "broker_test");
     } catch (std::exception const& e) {
       (void)e;
     }
@@ -92,8 +94,7 @@ class OutputTest : public ::testing::Test {
 // Then this event is translated into a Lua table and sent to the lua write()
 // function.
 TEST_F(OutputTest, WriteService) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(std::make_shared<neb::service>());
   svc->host_id = 12345;
@@ -102,7 +103,7 @@ TEST_F(OutputTest, WriteService) {
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -134,12 +135,10 @@ TEST_F(OutputTest, WriteService) {
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 33491u);
 
   ASSERT_EQ(std::string(&mem1[0] + 265), "Conjour");
-  l.unload();
 }
 
 TEST_F(OutputTest, WriteLongService) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   auto svc = std::make_shared<neb::service>();
   svc->host_id = 12;
@@ -154,7 +153,7 @@ TEST_F(OutputTest, WriteLongService) {
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(new into_memory());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -186,8 +185,7 @@ TEST_F(OutputTest, WriteLongService) {
 }
 
 TEST_F(OutputTest, WriteReadService) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -213,7 +211,7 @@ TEST_F(OutputTest, WriteReadService) {
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<into_memory> memory_stream(new into_memory());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -227,12 +225,10 @@ TEST_F(OutputTest, WriteReadService) {
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
   ASSERT_EQ(svc->last_time_ok, new_svc->last_time_ok);
-  l.unload();
 }
 
 TEST_F(OutputTest, ShortPersistentFile) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::shared_ptr<neb::service_status> svc(new neb::service_status);
   svc->host_id = 12345;
@@ -271,13 +267,11 @@ TEST_F(OutputTest, ShortPersistentFile) {
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
 
-  l.unload();
   std::remove("/tmp/test_output");
 }
 
 TEST_F(OutputTest, LongPersistentFile) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -316,13 +310,11 @@ TEST_F(OutputTest, LongPersistentFile) {
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
 
-  l.unload();
   std::remove("/tmp/long_output");
 }
 
 TEST_F(OutputTest, WriteReadBadChksum) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -333,7 +325,7 @@ TEST_F(OutputTest, WriteReadBadChksum) {
   svc->last_time_ok = timestamp(0x55667788);  // 0x1cbe991a83
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -357,12 +349,10 @@ TEST_F(OutputTest, WriteReadBadChksum) {
       std::static_pointer_cast<neb::service>(e);
   ASSERT_EQ(new_svc->output, std::string("ServiceOutput"));
   ASSERT_EQ(new_svc->perf_data, std::string("value=18.0"));
-  l.unload();
 }
 
 TEST_F(OutputTest, ServiceTooShort) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -374,7 +364,7 @@ TEST_F(OutputTest, ServiceTooShort) {
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -404,12 +394,10 @@ TEST_F(OutputTest, ServiceTooShort) {
   stm.read(e, time(nullptr) + 1000);
   new_svc = std::static_pointer_cast<neb::service>(e);
   ASSERT_TRUE(e == nullptr);
-  l.unload();
 }
 
 TEST_F(OutputTest, ServiceTooShortAndAGoodOne) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -421,7 +409,7 @@ TEST_F(OutputTest, ServiceTooShortAndAGoodOne) {
 
   std::shared_ptr<io::stream> stream;
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
-  bbdo::stream stm;
+  bbdo::stream stm(true);
   stm.set_substream(memory_stream);
   stm.set_coarse(false);
   stm.set_negotiate(false);
@@ -454,5 +442,4 @@ TEST_F(OutputTest, ServiceTooShortAndAGoodOne) {
   new_svc = std::static_pointer_cast<neb::service>(e);
   ASSERT_EQ(new_svc->output, std::string("SecondOutput"));
   ASSERT_EQ(new_svc->perf_data, std::string("metric=3.14"));
-  l.unload();
 }

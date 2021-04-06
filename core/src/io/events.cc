@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,12 @@
 
 #include <algorithm>
 #include <cassert>
+#include "com/centreon/broker/bbdo/ack.hh"
+#include "com/centreon/broker/bbdo/factory.hh"
+#include "com/centreon/broker/bbdo/stop.hh"
+#include "com/centreon/broker/bbdo/version_response.hh"
+#include "com/centreon/broker/instance_broadcast.hh"
+#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -28,12 +34,6 @@ using namespace com::centreon::broker::io;
 
 // Class instance.
 static events* _instance(nullptr);
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Get class instance.
@@ -70,7 +70,7 @@ void events::unload() {
  *
  *  @return Assigned category ID. This could be different than hint.
  */
-unsigned short events::register_category(std::string const& name,
+unsigned short events::register_category(const std::string& name,
                                          unsigned short hint) {
   if (!hint)
     ++hint;
@@ -119,10 +119,10 @@ void events::unregister_category(unsigned short category_id) {
  */
 uint32_t events::register_event(unsigned short category_id,
                                 unsigned short event_id,
-                                std::string const& name,
+                                const std::string& name,
                                 event_info::event_operations const* ops,
                                 mapping::entry const* entries,
-                                std::string const& table_v2) {
+                                const std::string& table_v2) {
   categories_container::iterator it(_elements.find(category_id));
   if (it == _elements.end())
     throw msg_fmt(
@@ -174,7 +174,7 @@ events::categories_container::const_iterator events::end() const {
  *  @return Category elements.
  */
 events::events_container events::get_events_by_category_name(
-    std::string const& name) const {
+    const std::string& name) const {
   // Special category matching all registered events.
   if (name == "all") {
     events::events_container all;
@@ -230,7 +230,7 @@ event_info const* events::get_event_info(uint32_t type) {
  *  @return  A list of all the matching events.
  */
 events::events_container events::get_matching_events(
-    std::string const& name) const {
+    const std::string& name) const {
   size_t num = std::count(name.begin(), name.end(), ':');
   if (num == 0)
     return get_events_by_category_name(name);
@@ -254,23 +254,46 @@ events::events_container events::get_matching_events(
     throw msg_fmt("core: too many ':' in '{}'", name);
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
 events::events() {
   // Register internal category.
   register_category("internal", io::events::internal);
+
+  // Register instance_broadcast
+  register_event(io::events::internal, io::events::de_instance_broadcast,
+                 "instance_broadcast", &instance_broadcast::operations,
+                 instance_broadcast::entries);
+
+  // Register BBDO
+  int cat = register_category("bbdo", io::events::bbdo);
+  assert(cat == io::events::bbdo);
+
+  // Register BBDO events.
+  register_event(io::events::bbdo, bbdo::de_version_response,
+                 "version_response", &bbdo::version_response::operations,
+                 bbdo::version_response::entries);
+  register_event(io::events::bbdo, bbdo::de_ack, "ack", &bbdo::ack::operations,
+                 bbdo::ack::entries);
+  register_event(io::events::bbdo, bbdo::de_stop, "stop",
+                 &bbdo::stop::operations, bbdo::stop::entries);
+
+  // Register BBDO protocol.
+  io::protocols::instance().reg("BBDO", std::make_shared<bbdo::factory>(), 7,
+                                7);
 }
 
 /**
  *  Destructor.
  */
 events::~events() {
+  // Unregister BBDO protocol.
+  io::protocols::instance().unreg("BBDO");
+
+  // Unregister category.
+  unregister_category(io::events::bbdo);
+
+  // Unregister internal category.
   unregister_category(io::events::internal);
 }

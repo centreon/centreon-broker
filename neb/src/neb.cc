@@ -96,9 +96,6 @@ int nebmodule_deinit(int flags, int reason) {
  */
 int nebmodule_init(int flags, char const* args, void* handle) {
   try {
-    // Initialization.
-    com::centreon::broker::config::applier::init();
-
     // Save module handle and flags for future use.
     neb::gl_mod_flags = flags;
     neb::gl_mod_handle = handle;
@@ -166,6 +163,9 @@ int nebmodule_init(int flags, char const* args, void* handle) {
       com::centreon::broker::config::parser p;
       com::centreon::broker::config::state s{
           p.parse(neb::gl_configuration_file)};
+
+      // Initialization.
+      com::centreon::broker::config::applier::init(s);
 
       // Apply loggers.
       com::centreon::broker::config::applier::logger::instance().apply(

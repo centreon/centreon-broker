@@ -38,18 +38,19 @@ namespace logging {
 class temp_logger : private misc::stringifier {
  private:
   struct redir {
-    temp_logger& (temp_logger::*redirect_bool)(bool)throw();
-    temp_logger& (temp_logger::*redirect_double)(double)throw();
-    temp_logger& (temp_logger::*redirect_int)(int)throw();
-    temp_logger& (temp_logger::*redirect_long)(long)throw();
-    temp_logger& (temp_logger::*redirect_long_long)(long long)throw();
-    temp_logger& (temp_logger::*redirect_std_string)(std::string const&)throw();
-    temp_logger& (temp_logger::*redirect_unsigned_int)(uint32_t)throw();
-    temp_logger& (temp_logger::*redirect_unsigned_long)(unsigned long)throw();
+    temp_logger& (temp_logger::*redirect_bool)(bool) throw();
+    temp_logger& (temp_logger::*redirect_double)(double) throw();
+    temp_logger& (temp_logger::*redirect_int)(int) throw();
+    temp_logger& (temp_logger::*redirect_long)(long) throw();
+    temp_logger& (temp_logger::*redirect_long_long)(long long) throw();
+    temp_logger& (temp_logger::*redirect_std_string)(
+        std::string const&) throw();
+    temp_logger& (temp_logger::*redirect_unsigned_int)(uint32_t) throw();
+    temp_logger& (temp_logger::*redirect_unsigned_long)(unsigned long) throw();
     temp_logger& (temp_logger::*redirect_unsigned_long_long)(
-        unsigned long long)throw();
-    temp_logger& (temp_logger::*redirect_string)(char const*)throw();
-    temp_logger& (temp_logger::*redirect_pointer)(void const*)throw();
+        unsigned long long) throw();
+    temp_logger& (temp_logger::*redirect_string)(char const*) throw();
+    temp_logger& (temp_logger::*redirect_pointer)(void const*) throw();
   };
   level _level;
   mutable redir const* _redir;

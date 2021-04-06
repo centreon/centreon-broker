@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,20 +38,18 @@ namespace bam {
 class connector : public io::endpoint {
  public:
   connector();
-  connector(connector const& other);
-  ~connector();
-  connector& operator=(connector const&) = delete;
+  ~connector() noexcept = default;
+  connector(const connector&) = delete;
+  connector& operator=(const connector&) = delete;
   void connect_monitoring(std::string const& ext_cmd_file,
                           database_config const& db_cfg,
                           std::string const& storage_db_name,
                           std::shared_ptr<persistent_cache> cache);
   void connect_reporting(database_config const& db_cfg);
-  std::shared_ptr<io::stream> open();
+  std::unique_ptr<io::stream> open() override;
 
  private:
   enum stream_type { bam_monitoring_type = 1, bam_reporting_type };
-
-  void _internal_copy(connector const& other);
 
   database_config _db_cfg;
   std::string _ext_cmd_file;

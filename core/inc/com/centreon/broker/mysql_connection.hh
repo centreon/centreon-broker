@@ -70,7 +70,7 @@ class mysql_connection {
   std::mutex _list_mutex;
   std::condition_variable _tasks_condition;
   std::atomic<bool> _finished;
-  std::list<std::shared_ptr<database::mysql_task> > _tasks_list;
+  std::list<std::shared_ptr<database::mysql_task>> _tasks_list;
   std::atomic_int _tasks_count;
   bool _need_commit;
 
@@ -145,8 +145,8 @@ class mysql_connection {
   void run_statement_and_get_int(database::mysql_stmt& stmt,
                                  std::promise<T>* promise,
                                  database::mysql_task::int_type type) {
-    _push(std::make_shared<database::mysql_task_statement_int<T> >(
-        stmt, promise, type));
+    _push(std::make_shared<database::mysql_task_statement_int<T>>(stmt, promise,
+                                                                  type));
   }
 
   void finish();

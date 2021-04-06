@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/misc/variant.hh"
-#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/storage/status.hh"
@@ -50,7 +50,7 @@ class LuaTest : public ::testing::Test {
  public:
   void SetUp() override {
     try {
-      config::applier::init();
+      config::applier::init(0, "test_broker");
     } catch (std::exception const& e) {
       (void)e;
     }
@@ -168,8 +168,7 @@ TEST_F(LuaTest, SimpleScript) {
   std::map<std::string, misc::variant> conf;
   conf.insert({"address", "127.0.0.1"});
   conf.insert({"port", 8857});
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::string filename("/tmp/test-lua3.lua");
   CreateScript(
@@ -215,7 +214,6 @@ TEST_F(LuaTest, SimpleScript) {
   ASSERT_NE(pos3, std::string::npos);
   ASSERT_NE(pos4, std::string::npos);
   ASSERT_NE(pos5, std::string::npos);
-  l.unload();
   RemoveFile(filename);
 }
 
@@ -229,8 +227,7 @@ TEST_F(LuaTest, WriteAcknowledgement) {
   conf.insert({"double", 3.14159265358979323846});
   conf.insert({"port", 8857});
   conf.insert({"name", "test-centreon"});
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
 
   std::unique_ptr<luabinding> bnd(new luabinding(FILE3, conf, *_cache));
   ASSERT_TRUE(bnd.get());
@@ -257,8 +254,6 @@ TEST_F(LuaTest, WriteAcknowledgement) {
   ASSERT_NE(result.find("INFO: write: host_id => 13"), std::string::npos);
   ASSERT_NE(result.find("INFO: write: author => testAck"), std::string::npos);
   ASSERT_NE(result.find("INFO: write: service_id => 21"), std::string::npos);
-
-  l.unload();
 }
 
 // When a script is loaded and a new socket is created
@@ -272,7 +267,7 @@ TEST_F(LuaTest, SocketCreation) {
                "end\n\n"
                "function write(d)\n"
                "end\n\n");
-  luabinding* bind;
+  luabinding* bind = nullptr;
   ASSERT_NO_THROW(bind = new luabinding(filename, conf, *_cache));
   delete bind;
   RemoveFile(filename);
@@ -548,8 +543,7 @@ TEST_F(LuaTest, CacheTest) {
 // And the cache knows about it
 // Then the hostname is returned from the lua method.
 TEST_F(LuaTest, HostCacheTest) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::host> hst(new neb::host);
@@ -714,8 +708,7 @@ TEST_F(LuaTest, MetricMappingCacheTestV1) {
 }
 
 TEST_F(LuaTest, MetricMappingCacheTestV2) {
-  modules::loader l;
-  l.load_file("./storage/20-storage.so");
+  modules::handle h("./storage/20-storage.so");
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<storage::metric_mapping> mm(new storage::metric_mapping);
@@ -1156,8 +1149,7 @@ TEST_F(LuaTest, BamCacheTestBaV1) {
 }
 
 TEST_F(LuaTest, BamCacheTestBaV2) {
-  modules::loader l;
-  l.load_file("./bam/20-bam.so");
+  modules::handle h("./bam/20-bam.so");
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<bam::dimension_ba_event> ba(new bam::dimension_ba_event);
@@ -1189,7 +1181,6 @@ TEST_F(LuaTest, BamCacheTestBaV2) {
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
-  l.unload();
 }
 
 // Given a ba id,
@@ -1253,8 +1244,7 @@ TEST_F(LuaTest, BamCacheTestBvV1) {
 }
 
 TEST_F(LuaTest, BamCacheTestBvV2) {
-  modules::loader l;
-  l.load_file("./bam/20-bam.so");
+  modules::handle h("./bam/20-bam.so");
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<bam::dimension_bv_event> bv(new bam::dimension_bv_event);
@@ -1777,8 +1767,7 @@ TEST_F(LuaTest, CacheSeverity) {
 }
 
 TEST_F(LuaTest, BrokerEventIndex) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
@@ -1819,8 +1808,7 @@ TEST_F(LuaTest, BrokerEventIndex) {
 }
 
 TEST_F(LuaTest, BrokerEventPairs) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
@@ -1853,8 +1841,7 @@ TEST_F(LuaTest, BrokerEventPairs) {
 }
 
 TEST_F(LuaTest, BrokerEventJsonEncode) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
@@ -1919,8 +1906,7 @@ TEST_F(LuaTest, BrokerEventJsonEncode) {
 }
 
 TEST_F(LuaTest, TestHostApiV1) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 1;
@@ -1947,8 +1933,7 @@ TEST_F(LuaTest, TestHostApiV1) {
 }
 
 TEST_F(LuaTest, TestHostApiV2) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 1;
@@ -1975,8 +1960,7 @@ TEST_F(LuaTest, TestHostApiV2) {
 }
 
 TEST_F(LuaTest, TestSvcApiV2) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
@@ -2007,8 +1991,7 @@ TEST_F(LuaTest, TestSvcApiV2) {
 }
 
 TEST_F(LuaTest, TestSvcApiV1) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
@@ -2039,8 +2022,7 @@ TEST_F(LuaTest, TestSvcApiV1) {
 }
 
 TEST_F(LuaTest, BrokerEventCache) {
-  modules::loader l;
-  l.load_file("./neb/10-neb.so");
+  modules::handle h("./neb/10-neb.so");
   std::map<std::string, misc::variant> conf;
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;

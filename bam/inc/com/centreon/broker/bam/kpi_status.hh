@@ -38,10 +38,10 @@ namespace bam {
  */
 class kpi_status : public io::data {
  public:
-  kpi_status();
-  kpi_status(kpi_status const& other);
-  ~kpi_status();
-  kpi_status& operator=(kpi_status const& other);
+  kpi_status(uint32_t kpi_id);
+  ~kpi_status() noexcept = default;
+  kpi_status(const kpi_status&) = delete;
+  kpi_status& operator=(const kpi_status&) = delete;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam, bam::de_kpi_status>::value;
   }
@@ -62,9 +62,6 @@ class kpi_status : public io::data {
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(kpi_status const& other);
 };
 }  // namespace bam
 

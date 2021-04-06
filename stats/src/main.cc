@@ -72,9 +72,8 @@ void broker_module_init(void const* arg) {
         }
 
         // File configured, load stats engine.
-        for (std::vector<std::string>::const_iterator
-                 it = stats_cfg.begin(),
-                 end = stats_cfg.end();
+        for (std::vector<std::string>::const_iterator it = stats_cfg.begin(),
+                                                      end = stats_cfg.end();
              it != end; ++it) {
           pool.add_worker(*it);
         }

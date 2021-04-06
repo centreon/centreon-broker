@@ -139,7 +139,7 @@ TEST(string_check_utf8, whatever_as_iso8859) {
   std::string txt;
   for (uint8_t c = 32; c < 255; c++) {
     if (c == 32)
-      txt.push_back(129);
+      txt.push_back(0x81);
     if (c != 127)
       txt.push_back(c);
   }

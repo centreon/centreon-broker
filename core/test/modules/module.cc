@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include <iostream>
 #include <string>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/modules/handle.hh"
 
 using namespace com::centreon::broker;
 
@@ -36,10 +36,8 @@ using namespace com::centreon::broker;
 bool check_for(std::string const& module,
                std::string const& expected_error_msg) {
   try {
-    modules::loader l;
-
-    l.load_file(module);
-    return (false);
+    modules::handle h(module);
+    return false;
   } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
     return (std::string{e.what()}.find(expected_error_msg) !=
@@ -49,13 +47,9 @@ bool check_for(std::string const& module,
 
 class Modules : public testing::Test {
  public:
-  void SetUp() override {
-    config::applier::init();
-  }
+  void SetUp() override { config::applier::init(0, "test_broker"); }
 
-  void TearDown() override {
-    config::applier::deinit();
-  }
+  void TearDown() override { config::applier::deinit(); }
 };
 
 /**

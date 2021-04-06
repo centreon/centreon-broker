@@ -42,8 +42,8 @@ TEST(StorageRebuild, DefaultCtor) {
  */
 TEST(StorageRebuild, ReturnType) {
   storage::rebuild r;
-  auto val = io::events::data_type<io::events::storage,
-                                   storage::de_rebuild>::value;
+  auto val =
+      io::events::data_type<io::events::storage, storage::de_rebuild>::value;
 
   ASSERT_TRUE(r.static_type() == val);
   ASSERT_TRUE(r.type() == val);

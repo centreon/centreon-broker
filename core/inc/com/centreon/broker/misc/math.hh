@@ -20,6 +20,7 @@
 #define CCB_MISC_MATH_HH
 
 #include <algorithm>
+#include <array>
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -72,7 +73,7 @@ bool least_squares(std::array<std::pair<T, U>, N> const& pts,
 
   return true;
 }
-}
+}  // namespace misc
 
 CCB_END()
 

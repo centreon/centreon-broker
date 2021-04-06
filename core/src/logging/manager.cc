@@ -82,10 +82,7 @@ manager& manager::instance() {
  *  @param[in] t   Log type.
  *  @param[in] l   Log level.
  */
-void manager::log_msg(char const* msg,
-                      uint32_t len,
-                      type t,
-                      level l) noexcept {
+void manager::log_msg(const char* msg, uint32_t len, type t, level l) noexcept {
   std::lock_guard<std::mutex> lock(_backendsm);
   for (std::vector<manager_backend>::iterator it = _backends.begin(),
                                               end = _backends.end();

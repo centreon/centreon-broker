@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   QCoreApplication app(argc, argv);
 
   // Initialization.
-  config::applier::init();
+  config::applier::init(0, "test_broker");
 
   // Generate file name.
   QString filename(QDir::tempPath());
@@ -109,8 +109,8 @@ int main(int argc, char* argv[]) {
     if (!retval) {
       // Compare data.
       uint32_t cb(((raw->size() - rawc) < (sizeof(buffer) - 1 - bufferc))
-                          ? (raw->size() - rawc)
-                          : (sizeof(buffer) - 1 - bufferc));
+                      ? (raw->size() - rawc)
+                      : (sizeof(buffer) - 1 - bufferc));
       retval |= memcmp(raw->QByteArray::data() + rawc, buffer + bufferc, cb);
 
       // Adjust buffers.

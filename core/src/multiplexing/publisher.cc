@@ -24,21 +24,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
 publisher::publisher() : io::stream("publisher") {}
-
-/**
- *  Destructor.
- */
-publisher::~publisher() noexcept {}
 
 /**
  *  @brief Read data.
@@ -65,7 +54,7 @@ bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Number of elements acknowledged (1).
  */
-int publisher::write(std::shared_ptr<io::data> const& d) {
+int32_t publisher::write(const std::shared_ptr<io::data>& d) {
   engine::instance().publish(d);
   return 1;
 }
@@ -79,7 +68,17 @@ int publisher::write(std::shared_ptr<io::data> const& d) {
  *
  * @return The number of events published.
  */
-int publisher::write(std::list<std::shared_ptr<io::data>> const& to_publish) {
+int publisher::write(const std::list<std::shared_ptr<io::data>>& to_publish) {
   engine::instance().publish(to_publish);
   return to_publish.size();
+}
+
+/**
+ * @brief Flush the stream and stop it (nothing to do here, but the method is
+ * virtual pure).
+ *
+ * @return the number of acknowledged events.
+ */
+int32_t publisher::stop() {
+  return 0;
 }

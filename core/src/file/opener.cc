@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2017 Centreon
+** Copyright 2011-2012,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,12 +24,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  */
@@ -41,7 +35,7 @@ opener::opener()
  *
  *  @param[in] other  Object to copy.
  */
-opener::opener(opener const& other)
+opener::opener(const opener& other)
     : io::endpoint(other),
       _auto_delete(other._auto_delete),
       _filename(other._filename),
@@ -57,10 +51,11 @@ opener::~opener() {}
  *
  *  @return Opened stream.
  */
-std::shared_ptr<io::stream> opener::open() {
+std::unique_ptr<io::stream> opener::open() {
   // Open splitted file.
-  std::shared_ptr<io::stream> retval = std::make_shared<stream>(new splitter(
-      _filename, fs_file::open_read_write_truncate, _max_size, _auto_delete));
+  std::unique_ptr<io::stream> retval = std::unique_ptr<stream>(
+      new stream(new splitter(_filename, fs_file::open_read_write_truncate,
+                              _max_size, _auto_delete)));
   return retval;
 }
 
@@ -71,7 +66,6 @@ std::shared_ptr<io::stream> opener::open() {
  */
 void opener::set_auto_delete(bool auto_delete) {
   _auto_delete = auto_delete;
-  return;
 }
 
 /**
@@ -81,7 +75,6 @@ void opener::set_auto_delete(bool auto_delete) {
  */
 void opener::set_filename(std::string const& filename) {
   _filename = filename;
-  return;
 }
 
 /**
@@ -91,5 +84,4 @@ void opener::set_filename(std::string const& filename) {
  */
 void opener::set_max_size(unsigned long long max) {
   _max_size = max;
-  return;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
@@ -39,19 +40,12 @@ kpi_service::kpi_service()
     : _acknowledged(false),
       _downtimed(false),
       _host_id(0),
+      _impacts(),
       _last_check(0),
       _service_id(0),
       _state_hard(kpi_service::state::state_ok),
       _state_soft(kpi_service::state::state_ok),
-      _state_type(0) {
-  for (uint32_t i(0); i < sizeof(_impacts) / sizeof(*_impacts); ++i)
-    _impacts[i] = 0.0;
-}
-
-/**
- *  Destructor.
- */
-kpi_service::~kpi_service() {}
+      _state_type(0) {}
 
 /**
  *  Unused callback.
@@ -187,9 +181,9 @@ void kpi_service::service_update(
   if (status && status->host_id == _host_id &&
       status->service_id == _service_id) {
     // Log message.
-    logging::debug(logging::low)
-        << "BAM: KPI " << _id << " is getting notified of service (" << _host_id
-        << ", " << _service_id << ") update";
+    log_v2::bam()->debug(
+        "BAM: KPI {} is getting notified of service ({}, {}) update", _id,
+        _host_id, _service_id);
 
     // Update information.
     if ((status->last_check == (time_t)-1) ||
@@ -223,10 +217,9 @@ void kpi_service::service_update(
     io::stream* visitor) {
   if (ack && ack->host_id == _host_id && ack->service_id == _service_id) {
     // Log message.
-    logging::debug(logging::low)
-        << "BAM: KPI " << _id
-        << " is getting an acknowledgement event for service (" << _host_id
-        << ", " << _service_id << ")";
+    log_v2::bam()->debug(
+        "BAM: KPI {} is getting an acknowledgement event for service ({}, {})",
+        _id, _host_id, _service_id);
 
     // Update information.
     _acknowledged = (ack->deletion_time != -1);
@@ -249,9 +242,9 @@ void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
                                  io::stream* visitor) {
   if (dt && dt->host_id == _host_id && dt->service_id == _service_id) {
     // Log message.
-    logging::debug(logging::low)
-        << "BAM: KPI " << _id << " is getting a downtime event for service ("
-        << _host_id << ", " << _service_id << ")";
+    log_v2::bam()->debug(
+        "BAM: KPI {} is getting a downtime event for service ({}, {})", _id,
+        _host_id, _service_id);
 
     // Update information.
     _downtimed = (dt->was_started && dt->actual_end_time.is_null());
@@ -391,8 +384,8 @@ void kpi_service::visit(io::stream* visitor) {
 
     // Generate status event.
     {
-      std::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
+      log_v2::bam()->debug("Generating kpi status {} for service", _id);
+      std::shared_ptr<kpi_status> status{std::make_shared<kpi_status>(_id)};
       status->in_downtime = this->in_downtime();
       status->level_acknowledgement_hard = hard_values.get_acknowledgement();
       status->level_acknowledgement_soft = soft_values.get_acknowledgement();
@@ -418,10 +411,8 @@ void kpi_service::visit(io::stream* visitor) {
  */
 void kpi_service::_fill_impact(impact_values& impact,
                                kpi_service::state state) {
-  if ((state < 0) ||
-      (static_cast<size_t>(state) >= (sizeof(_impacts) / sizeof(*_impacts))))
-    throw msg_fmt(
-          "BAM: could not get impact introduced by state {}", state);
+  if (state < 0 || static_cast<size_t>(state) >= _impacts.size())
+    throw msg_fmt("BAM: could not get impact introduced by state {}", state);
   double nominal(_impacts[state]);
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);

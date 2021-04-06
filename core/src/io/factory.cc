@@ -40,6 +40,7 @@ std::shared_ptr<stream> factory::new_stream(std::shared_ptr<stream> to,
                                             std::string const& proto_name) {
   (void)to;
   (void)is_acceptor;
-  throw msg_fmt("{}: protocol does not support feature negotiation", proto_name);
+  throw msg_fmt("{}: protocol does not support feature negotiation",
+                proto_name);
   return std::shared_ptr<stream>();
 }

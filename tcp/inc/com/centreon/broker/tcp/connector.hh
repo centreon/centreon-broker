@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -47,10 +47,10 @@ class connector : public io::endpoint {
   connector(const std::string& host, uint16_t port, int32_t read_timeout);
   ~connector();
 
-  connector& operator=(connector const& other) = delete;
-  connector(connector const& other) = delete;
+  connector& operator=(const connector&) = delete;
+  connector(const connector&) = delete;
 
-  std::shared_ptr<io::stream> open();
+  std::unique_ptr<io::stream> open() override;
   bool is_ready() const;
 };
 }  // namespace tcp

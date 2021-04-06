@@ -37,21 +37,28 @@ tcp_async& tcp_async::instance() {
   return instance;
 }
 
-tcp_async::tcp_async()
-      : _timer(pool::instance().io_context()),
-        _clear_available_con_running(false) {}
+tcp_async::tcp_async() : _clear_available_con_running(false) {}
 
-tcp_async::~tcp_async() noexcept {
+/**
+ * @brief Stop the timer that clears available connections.
+ */
+void tcp_async::stop_timer() {
   if (_clear_available_con_running) {
     std::promise<bool> p;
     std::future<bool> f(p.get_future());
     _clear_available_con_running = false;
-    asio::post(_timer.get_executor(), [this, &p] {
-        _timer.cancel();
-        p.set_value(true);
-        });
+    asio::post(_timer->get_executor(), [this, &p] {
+      _timer->cancel();
+      p.set_value(true);
+    });
     f.get();
   }
+  if (_timer)
+    _timer.reset();
+}
+
+tcp_async::~tcp_async() noexcept {
+  stop_timer();
 }
 
 /**
@@ -140,9 +147,11 @@ void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
   if (!_clear_available_con_running) {
     _clear_available_con_running = true;
-    _timer.expires_after(std::chrono::seconds(10));
-    _timer.async_wait(std::bind(&tcp_async::_clear_available_con, this,
-                                std::placeholders::_1));
+    if (!_timer)
+      _timer.reset(new asio::steady_timer(pool::instance().io_context()));
+    _timer->expires_after(std::chrono::seconds(10));
+    _timer->async_wait(std::bind(&tcp_async::_clear_available_con, this,
+                                 std::placeholders::_1));
   }
 
   tcp_connection::pointer new_connection =
@@ -192,7 +201,7 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
     _acceptor_con_cv.notify_one();
     start_acceptor(acceptor);
   } else
-    log_v2::tcp()->error("acceptor error: {}", ec.message());
+    log_v2::tcp()->info("TCP acceptor interrupted: {}", ec.message());
 }
 
 /**

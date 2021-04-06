@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 - 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2019 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  * For more information : contact@centreon.com
  *
  */
-
 #include <gtest/gtest.h>
 #include <chrono>
 #include <com/centreon/broker/logging/manager.hh>
@@ -27,7 +26,6 @@
 #include <json11.hpp>
 #include <thread>
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -38,7 +36,9 @@
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/stats/builder.hh"
+#include "com/centreon/broker/stats/center.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -47,21 +47,23 @@ using namespace com::centreon::broker;
 class StatsTest : public ::testing::Test {
  public:
   void SetUp() override {
-    multiplexing::engine::load();
-    config::applier::state::load();
-    config::applier::modules::load();
-    config::applier::endpoint::load();
-    io::events::load();
+    pool::load(0);
+    stats::center::load();
     io::protocols::load();
+    io::events::load();
+    config::applier::state::load();
+    multiplexing::engine::load();
+    config::applier::endpoint::load();
   }
 
   void TearDown() override {
     config::applier::endpoint::unload();
-    config::applier::modules::unload();
-    config::applier::state::load();
-    io::protocols::unload();
-    io::events::unload();
     multiplexing::engine::unload();
+    config::applier::state::unload();
+    io::events::unload();
+    io::protocols::unload();
+    stats::center::unload();
+    pool::unload();
   }
 };
 
@@ -85,12 +87,10 @@ TEST_F(StatsTest, Builder) {
 
 TEST_F(StatsTest, BuilderWithModules) {
   stats::builder build;
-  config::applier::modules::instance().apply(std::list<std::string>{},
-                                             "./storage/", nullptr);
-  config::applier::modules::instance().apply(std::list<std::string>{}, "./neb/",
-                                             nullptr);
-  config::applier::modules::instance().apply(std::list<std::string>{}, "./lua/",
-                                             nullptr);
+  auto& modules = config::applier::state::instance().get_modules();
+  modules.apply(std::list<std::string>{}, "./storage/", nullptr);
+  modules.apply(std::list<std::string>{}, "./neb/", nullptr);
+  modules.apply(std::list<std::string>{}, "./lua/", nullptr);
 
   build.build();
 
@@ -121,23 +121,25 @@ class st : public io::stream {
     throw exceptions::shutdown("cannot read from connector");
   }
 
-  virtual int write(std::shared_ptr<io::data> const& d
-                    __attribute__((__unused__))) override {
+  int32_t write(std::shared_ptr<io::data> const& d
+                __attribute__((__unused__))) override {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     return 1;
   }
+
+  int32_t stop() override { return 0; }
 };
 
 class endp : public io::endpoint {
  public:
   endp() : io::endpoint{false} {}
-  std::shared_ptr<io::stream> open() override {
+  std::unique_ptr<io::stream> open() override {
     static int count = 0;
-    std::shared_ptr<st> retval;
     if (++count < 2)
-      retval = std::make_shared<st>();
-    return retval;
-  };
+      return std::unique_ptr<st>(new st);
+    else
+      return nullptr;
+  }
 };
 
 class fact : public io::factory {

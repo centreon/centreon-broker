@@ -101,6 +101,8 @@ muxer::muxer(std::string const& name, bool persistent)
  *  Destructor.
  */
 muxer::~muxer() noexcept {
+  log_v2::core()->info("Destroying muxer {}: number of events in the queue: {}",
+                       _name, _events_size);
   _clean();
 }
 
@@ -139,6 +141,17 @@ void muxer::ack_events(int count) {
       _push_to_queue(e);
     }
   }
+}
+
+/**
+ * @brief Flush the muxer and stop it (in this case, nothing to do to stop it).
+ *
+ * @return The number of acknowledged events.
+ */
+int32_t muxer::stop() {
+  log_v2::core()->info("Stopping muxer {}: number of events in the queue: {}",
+                       _name, _events_size);
+  return 0;
 }
 
 /**
@@ -374,12 +387,6 @@ std::string muxer::queue_file(std::string const& name) {
   return retval;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Release all events stored within the internal list.
  */
@@ -388,6 +395,8 @@ void muxer::_clean() {
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
+      log_v2::core()->trace("muxer: sending {} events to {}", _events_size,
+                            _memory_file());
       std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
       while (!_events.empty()) {
         mf->write(_events.front());

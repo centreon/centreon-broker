@@ -71,7 +71,7 @@ void hosts::run(std::string& output, std::string& perfdata) {
     ++total[it->second->get_current_state()];
 
   uint32_t not_up{total[com::centreon::engine::host::state_down] +
-                      total[com::centreon::engine::host::state_unreachable]};
+                  total[com::centreon::engine::host::state_unreachable]};
 
   // Output.
   std::ostringstream oss;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,18 +16,21 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_FILE_INTERNAL_HH
-#define CCB_FILE_INTERNAL_HH
+#include "com/centreon/broker/bbdo/stop.hh"
 
-#include "com/centreon/broker/namespace.hh"
+using namespace com::centreon::broker;
+using namespace com::centreon::broker::bbdo;
 
-CCB_BEGIN()
+/**
+ *  Default constructor.
+ */
+stop::stop() : io::data(stop::static_type()) {}
 
-namespace file {
-void load();
-void unload();
-}  // namespace file
+// Mapping.
+mapping::entry const stop::entries[]{mapping::entry()};
 
-CCB_END()
-
-#endif  // !CCB_FILE_INTERNAL_HH
+// Operations.
+static io::data* new_stop() {
+  return new stop;
+}
+io::event_info::event_operations const stop::operations = {&new_stop};

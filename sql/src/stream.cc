@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2017 Centreon
+** Copyright 2009-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@
 
 #include <ctime>
 #include <limits>
-#include <sstream>
-
 
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -44,13 +42,6 @@ using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::sql;
 using namespace com::centreon::broker::database;
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-
 /**
  *  Process log issue event.
  *
@@ -60,12 +51,6 @@ void stream::_process_log_issue(std::shared_ptr<io::data> const& e) {
   // XXX : TODO
   (void)e;
 }
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Constructor.
@@ -89,7 +74,8 @@ stream::stream(database_config const& dbcfg,
       //                      dbcfg.get_name(),
       //                      cleanup_check_interval),
       _pending_events{0},
-      _with_state_events(with_state_events) {
+      _with_state_events(with_state_events),
+      _stopped(false) {
   // FIXME DBR
   (void)cleanup_check_interval;
   //  // Get oudated instances.
@@ -103,14 +89,21 @@ stream::stream(database_config const& dbcfg,
         "SQL: Unable to initialize the sql connection to the database");
 }
 
+int32_t stream::stop() {
+  // Stop cleanup thread.
+  // _cleanup_thread.exit();
+  int32_t retval = storage::conflict_manager::instance().unload(
+      storage::conflict_manager::sql);
+  _stopped = true;
+  log_v2::core()->info("sql stream stopped with {} ackowledged events", retval);
+  return retval;
+}
+
 /**
  *  Destructor.
  */
 stream::~stream() {
-  // Stop cleanup thread.
-  //_cleanup_thread.exit();
-  log_v2::sql()->debug("sql: stream destruction");
-  storage::conflict_manager::instance().unload(storage::conflict_manager::sql);
+  assert(_stopped);
 }
 
 /**

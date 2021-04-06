@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,12 +40,14 @@ namespace multiplexing {
 class publisher : public io::stream {
  public:
   publisher();
-  publisher(publisher const& other) = delete;
-  ~publisher() noexcept;
-  publisher& operator=(publisher const& other) = delete;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
-  int write(std::shared_ptr<io::data> const& d);
-  int write(std::list<std::shared_ptr<io::data>> const& to_publish);
+  ~publisher() noexcept = default;
+  publisher(const publisher&) = delete;
+  publisher& operator=(const publisher&) = delete;
+  bool read(std::shared_ptr<io::data>& d,
+            time_t deadline = (time_t)-1) override;
+  int32_t write(const std::shared_ptr<io::data>& d) override;
+  int32_t write(const std::list<std::shared_ptr<io::data>>& to_publish);
+  int32_t stop() override;
 };
 }  // namespace multiplexing
 

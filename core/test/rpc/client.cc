@@ -47,7 +47,7 @@ class BrokerRPCClient {
 };
 
 int main(int argc, char** argv) {
-  int32_t status;
+  int32_t status = 0;
   BrokerRPCClient client(grpc::CreateChannel(
       "127.0.0.1:40000", grpc::InsecureChannelCredentials()));
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,30 +24,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
 connector::connector() : io::endpoint(false), _type(bam_monitoring_type) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-connector::connector(connector const& other) : io::endpoint(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-connector::~connector() {}
 
 /**
  *  Set connection parameters.
@@ -90,34 +70,17 @@ void connector::connect_reporting(database_config const& db_cfg) {
  *
  * @return BAM connection object.
  */
-std::shared_ptr<io::stream> connector::open() {
+std::unique_ptr<io::stream> connector::open() {
   if (_type == bam_reporting_type)
-    return std::make_shared<reporting_stream>(_db_cfg);
+    return std::unique_ptr<io::stream>(new reporting_stream(_db_cfg));
   else {
     database_config storage_db_cfg(_db_cfg);
     storage_db_cfg.set_name(_storage_db_name);
-    auto s = std::make_shared<monitoring_stream>(_ext_cmd_file, _db_cfg,
-                                                 storage_db_cfg, _cache);
-    s->initialize();
-    return s;
+    auto u =
+        new monitoring_stream(_ext_cmd_file, _db_cfg, storage_db_cfg, _cache);
+    // FIXME DBR: just after this creation, initialize() is called by update()
+    // So I think this call is not needed. But for now not totally sure.
+    // u->initialize();
+    return std::unique_ptr<io::stream>(u);
   }
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void connector::_internal_copy(connector const& other) {
-  _db_cfg = other._db_cfg;
-  _storage_db_name = other._storage_db_name;
-  _type = other._type;
-  _cache = other._cache;
-  return;
 }

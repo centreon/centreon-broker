@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -36,20 +36,19 @@ namespace bam {
  *  this order: others, ba_events, kpi_events.
  */
 class event_cache_visitor : public io::stream {
- public:
-  event_cache_visitor();
-  ~event_cache_visitor();
-  void commit_to(io::stream& to);
-  virtual bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  virtual int write(std::shared_ptr<io::data> const& d);
-
- private:
-  event_cache_visitor(event_cache_visitor const& other);
-  event_cache_visitor& operator=(event_cache_visitor const& other);
-
   std::vector<std::shared_ptr<io::data> > _others;
   std::vector<std::shared_ptr<io::data> > _ba_events;
   std::vector<std::shared_ptr<io::data> > _kpi_events;
+
+ public:
+  event_cache_visitor();
+  ~event_cache_visitor() noexcept = default;
+  event_cache_visitor(const event_cache_visitor&) = delete;
+  event_cache_visitor& operator=(const event_cache_visitor&) = delete;
+  void commit_to(io::stream& to);
+  virtual bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  virtual int write(std::shared_ptr<io::data> const& d);
+  int32_t stop() override { return 0; }
 };
 }  // namespace bam
 

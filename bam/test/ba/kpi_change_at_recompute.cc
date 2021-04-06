@@ -34,7 +34,7 @@ class BamBA : public ::testing::Test {
  public:
   void SetUp() override {
     // Initialization.
-    config::applier::init();
+    config::applier::init(0, "test_broker");
 
     _aply_state.reset(new bam::configuration::applier::state);
     _state.reset(new bam::configuration::state);

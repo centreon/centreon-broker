@@ -65,6 +65,8 @@ class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
     return 1;
   }
 
+  int32_t stop() override { return 0; }
+
   void shutdown(bool shut_it_down = true) { _shutdown = shut_it_down; }
 
   void timeout(bool time_it_out = true) { _timeout = time_it_out; }

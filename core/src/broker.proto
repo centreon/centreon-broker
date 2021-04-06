@@ -16,6 +16,8 @@ service Broker {
 
   rpc GetNumEndpoint(google.protobuf.Empty) returns (GenericSize) {}
   rpc GetEndpointStats(GenericNameOrIndex) returns (GenericString) {}
+
+  rpc GetStats(StatsQuery) returns (BrokerStats) {}
 }
 
 message Version {
@@ -45,4 +47,43 @@ message GenericNameOrIndex {
 message GenericResponse {
   bool ok = 1;
   string err_msg = 2;
+}
+
+message StatsQuery {
+  enum Part {
+    ENGINE = 0;
+    THREAD_POOL = 1;
+  }
+  repeated Part query = 1;
+}
+
+message EngineStats {
+  enum Mode {
+    NOP = 0;
+    WRITE = 1;
+    WRITE_TO_CACHE_FILE = 2;
+  }
+  Mode mode = 1;
+  uint32 unprocessed_events = 2;
+}
+
+message ModuleStats {
+  string name = 1;
+  string size = 2;
+  string state = 3;
+}
+
+message ThreadPool {
+  string latency = 1;
+  uint32 size = 2;
+}
+
+message BrokerStats {
+  string asio_version = 1;
+  string version = 2;
+  uint32 pid = 3;
+  int64 now = 4;
+  ThreadPool pool_stats = 5;
+  EngineStats engine = 6;
+  repeated ModuleStats modules = 7;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -89,7 +89,8 @@ class reporting_stream : public io::stream {
  public:
   reporting_stream(database_config const& db_cfg);
   ~reporting_stream();
-  int flush();
+  int32_t flush() override;
+  int32_t stop() override;
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void statistics(json11::Json::object& tree) const override;
   int write(std::shared_ptr<io::data> const& d);

@@ -48,12 +48,12 @@ class acceptor : public io::endpoint {
   acceptor(uint16_t port, int32_t read_timeout);
   ~acceptor() noexcept;
 
-  acceptor(acceptor const& other) = delete;
-  acceptor& operator=(acceptor const& other) = delete;
+  acceptor(const acceptor&) = delete;
+  acceptor& operator=(const acceptor&) = delete;
 
   void add_child(std::string const& child);
   void listen();
-  std::shared_ptr<io::stream> open() override;
+  std::unique_ptr<io::stream> open() override;
   void remove_child(std::string const& child);
   void stats(json11::Json::object& tree) override;
   bool is_ready() const override;

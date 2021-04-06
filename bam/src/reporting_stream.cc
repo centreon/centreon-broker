@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015,2017 Centreon
+** Copyright 2014-2015,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -119,11 +119,23 @@ void reporting_stream::statistics(json11::Json::object& tree) const {
  *
  *  @return Number of acknowledged events.
  */
-int reporting_stream::flush() {
+int32_t reporting_stream::flush() {
   _mysql.commit();
   int retval(_ack_events + _pending_events);
   _ack_events = 0;
   _pending_events = 0;
+  return retval;
+}
+
+/**
+ * @brief Flush the stream and stop it.
+ *
+ * @return Number of acknowledged events.
+ */
+int32_t reporting_stream::stop() {
+  int32_t retval = flush();
+  log_v2::core()->info("reporting stream stopped with {} events acknowledged",
+                       retval);
   return retval;
 }
 
@@ -138,7 +150,7 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "BAM-BI"))
-    return (0);
+    return 0;
 
   switch (data->type()) {
     case io::events::data_type<io::events::bam, bam::de_kpi_event>::value:

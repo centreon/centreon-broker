@@ -21,11 +21,11 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <thread>
 #include <ctime>
 #include <list>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/processing/endpoint.hh"
@@ -48,11 +48,7 @@ class feeder;
  *  Accept incoming connections and launch a feeder thread.
  */
 class acceptor : public endpoint {
-  enum state {
-    stopped,
-    running,
-    finished
-  };
+  enum state { stopped, running, finished };
 
   std::thread _thread;
   state _state;
@@ -62,7 +58,7 @@ class acceptor : public endpoint {
   std::atomic_bool _should_exit;
 
   std::shared_ptr<io::endpoint> _endp;
-  std::list<std::shared_ptr<processing::feeder> > _feeders;
+  std::list<processing::feeder*> _feeders;
   std::unordered_set<uint32_t> _read_filters;
   std::string _read_filters_str;
   time_t _retry_interval;
@@ -88,7 +84,7 @@ class acceptor : public endpoint {
   ~acceptor();
   void accept();
   void start() override;
-  void exit() override;
+  void exit() override final;
   void set_read_filters(std::unordered_set<uint32_t> const& filters);
   void set_retry_interval(time_t retry_interval);
   void set_write_filters(std::unordered_set<uint32_t> const& filters);

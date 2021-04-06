@@ -484,7 +484,6 @@ void stream::_process_host_status_event(neb::host_status const& event) {
   }
 }
 
-
 /**
  *  Process an ack event.
  *

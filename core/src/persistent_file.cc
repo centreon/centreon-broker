@@ -1,5 +1,5 @@
 /*
-** Copyright 2015,2017 Centreon
+** Copyright 2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 
@@ -30,7 +31,7 @@ using namespace com::centreon::broker;
  *
  *  @param[in] path  Path of the persistent file.
  */
-persistent_file::persistent_file(std::string const& path)
+persistent_file::persistent_file(const std::string& path)
     : io::stream("persistent_file") {
   // On-disk file.
   file::opener opnr;
@@ -39,11 +40,12 @@ persistent_file::persistent_file(std::string const& path)
   _splitter = std::static_pointer_cast<file::stream>(fs);
 
   // Compression layer.
-  std::shared_ptr<compression::stream> cs(new compression::stream);
+  std::shared_ptr<compression::stream> cs(
+      std::make_shared<compression::stream>());
   cs->set_substream(fs);
 
   // BBDO layer.
-  std::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  std::shared_ptr<bbdo::stream> bs(std::make_shared<bbdo::stream>(true));
   bs->set_coarse(true);
   bs->set_negotiate(false);
   bs->set_substream(cs);
@@ -51,11 +53,6 @@ persistent_file::persistent_file(std::string const& path)
   // Set stream.
   io::stream::set_substream(bs);
 }
-
-/**
- *  Destructor.
- */
-persistent_file::~persistent_file() noexcept {}
 
 /**
  *  Read data from file.
@@ -66,7 +63,7 @@ persistent_file::~persistent_file() noexcept {}
  *  @return Always return true, as file never times out.
  */
 bool persistent_file::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  return (_substream->read(d, deadline));
+  return _substream->read(d, deadline);
 }
 
 /**
@@ -76,7 +73,6 @@ bool persistent_file::read(std::shared_ptr<io::data>& d, time_t deadline) {
  */
 void persistent_file::statistics(json11::Json::object& tree) const {
   _substream->statistics(tree);
-  return;
 }
 
 /**
@@ -84,8 +80,20 @@ void persistent_file::statistics(json11::Json::object& tree) const {
  *
  *  @param[in] d  Input data.
  */
-int persistent_file::write(std::shared_ptr<io::data> const& d) {
-  return (_substream->write(d));
+int32_t persistent_file::write(std::shared_ptr<io::data> const& d) {
+  return _substream->write(d);
+}
+
+/**
+ * @brief Flush the stream and stop it.
+ *
+ * @return the number of acknowledged events.
+ */
+int32_t persistent_file::stop() {
+  int32_t retval = _substream->stop();
+  log_v2::core()->info("persistent file stopped with {} acknowledged events",
+                       retval);
+  return retval;
 }
 
 /**

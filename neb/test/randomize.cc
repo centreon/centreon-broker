@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011, 2019-2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,15 @@
 #include <cstring>
 #include <list>
 #include <vector>
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/mapping/property.hh"
 #include "com/centreon/broker/mapping/source.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 static std::list<char*> generated;
 
@@ -72,9 +73,11 @@ void randomize(io::data& t, std::vector<randval>* values) {
       case mapping::source::STRING: {
         char buffer[1024];
         snprintf(buffer, sizeof(buffer), "%d", rand());
-        r.S = new char[strlen(buffer) + 1];
+        size_t size = strlen(buffer);
+        r.S = new char[size + 1];
         generated.push_back(r.S);
-        strcpy(r.S, buffer);
+        strncpy(r.S, buffer, size + 1);
+        r.S[size] = 0;
         current_entry->set_string(t, r.S);
       } break;
       case mapping::source::TIME: {
@@ -96,76 +99,59 @@ void randomize(io::data& t, std::vector<randval>* values) {
  *  Initialize randomization engine.
  */
 void randomize_init() {
+  io::protocols::load();
   io::events::load();
   io::events& e(io::events::instance());
   e.register_category("neb", io::events::neb);
-  e.register_event(
-      io::events::neb, neb::de_acknowledgement,
-      "acknowledgement", &neb::acknowledgement::operations,
-                     neb::acknowledgement::entries);
-  e.register_event(
-      io::events::neb, neb::de_custom_variable,
-      "custom_variable", &neb::custom_variable::operations,
-                     neb::custom_variable::entries);
+  e.register_event(io::events::neb, neb::de_acknowledgement, "acknowledgement",
+                   &neb::acknowledgement::operations,
+                   neb::acknowledgement::entries);
+  e.register_event(io::events::neb, neb::de_custom_variable, "custom_variable",
+                   &neb::custom_variable::operations,
+                   neb::custom_variable::entries);
   e.register_event(io::events::neb, neb::de_custom_variable_status,
                    "custom_variable_status",
-                                  &neb::custom_variable_status::operations,
-                                  neb::custom_variable_status::entries);
-  e.register_event(io::events::neb, neb::de_downtime,
-                   "downtime", &neb::downtime::operations,
-                                  neb::downtime::entries);
-  e.register_event(
-      io::events::neb, neb::de_event_handler,
-      "event_handler", &neb::event_handler::operations,
-                     neb::event_handler::entries);
-  e.register_event(
-      io::events::neb, neb::de_flapping_status,
-      "flapping_status", &neb::flapping_status::operations,
-                     neb::flapping_status::entries);
-  e.register_event(io::events::neb, neb::de_host_check,
-                   "host_check", &neb::host_check::operations,
-                                  neb::host_check::entries);
-  e.register_event(
-      io::events::neb, neb::de_host_dependency,
-      "host_dependency", &neb::host_dependency::operations,
-                     neb::host_dependency::entries);
-  e.register_event(
-      io::events::neb, neb::de_host,
-      "host", &neb::host::operations, neb::host::entries);
-  e.register_event(io::events::neb, neb::de_host_parent,
-                   "host_parent", &neb::host_parent::operations,
-                                  neb::host_parent::entries);
-  e.register_event(io::events::neb, neb::de_host_status,
-                   "host_status", &neb::host_status::operations,
-                                  neb::host_status::entries);
-  e.register_event(io::events::neb, neb::de_instance,
-                   "instance", &neb::instance::operations,
-                                  neb::instance::entries);
-  e.register_event(
-      io::events::neb, neb::de_instance_status,
-      "instance_status", &neb::instance_status::operations,
-                     neb::instance_status::entries);
-  e.register_event(io::events::neb, neb::de_log_entry,
-                   "log_entry", &neb::log_entry::operations,
-                                  neb::log_entry::entries);
-  e.register_event(
-      io::events::neb, neb::de_module,
-      "module", &neb::module::operations, neb::module::entries);
-  e.register_event(
-      io::events::neb, neb::de_service_check,
-      "service_check", &neb::service_check::operations,
-                     neb::service_check::entries);
-  e.register_event(
-      io::events::neb, neb::de_service_dependency,
-      "service_dependency", &neb::service_dependency::operations,
-                     neb::service_dependency::entries);
-  e.register_event(io::events::neb, neb::de_service,
-                   "service", &neb::service::operations,
-                                  neb::service::entries);
-  e.register_event(
-      io::events::neb, neb::de_service_status,
-      "service_status", &neb::service_status::operations,
-                     neb::service_status::entries);
+                   &neb::custom_variable_status::operations,
+                   neb::custom_variable_status::entries);
+  e.register_event(io::events::neb, neb::de_downtime, "downtime",
+                   &neb::downtime::operations, neb::downtime::entries);
+  e.register_event(io::events::neb, neb::de_event_handler, "event_handler",
+                   &neb::event_handler::operations,
+                   neb::event_handler::entries);
+  e.register_event(io::events::neb, neb::de_flapping_status, "flapping_status",
+                   &neb::flapping_status::operations,
+                   neb::flapping_status::entries);
+  e.register_event(io::events::neb, neb::de_host_check, "host_check",
+                   &neb::host_check::operations, neb::host_check::entries);
+  e.register_event(io::events::neb, neb::de_host_dependency, "host_dependency",
+                   &neb::host_dependency::operations,
+                   neb::host_dependency::entries);
+  e.register_event(io::events::neb, neb::de_host, "host",
+                   &neb::host::operations, neb::host::entries);
+  e.register_event(io::events::neb, neb::de_host_parent, "host_parent",
+                   &neb::host_parent::operations, neb::host_parent::entries);
+  e.register_event(io::events::neb, neb::de_host_status, "host_status",
+                   &neb::host_status::operations, neb::host_status::entries);
+  e.register_event(io::events::neb, neb::de_instance, "instance",
+                   &neb::instance::operations, neb::instance::entries);
+  e.register_event(io::events::neb, neb::de_instance_status, "instance_status",
+                   &neb::instance_status::operations,
+                   neb::instance_status::entries);
+  e.register_event(io::events::neb, neb::de_log_entry, "log_entry",
+                   &neb::log_entry::operations, neb::log_entry::entries);
+  e.register_event(io::events::neb, neb::de_module, "module",
+                   &neb::module::operations, neb::module::entries);
+  e.register_event(io::events::neb, neb::de_service_check, "service_check",
+                   &neb::service_check::operations,
+                   neb::service_check::entries);
+  e.register_event(io::events::neb, neb::de_service_dependency,
+                   "service_dependency", &neb::service_dependency::operations,
+                   neb::service_dependency::entries);
+  e.register_event(io::events::neb, neb::de_service, "service",
+                   &neb::service::operations, neb::service::entries);
+  e.register_event(io::events::neb, neb::de_service_status, "service_status",
+                   &neb::service_status::operations,
+                   neb::service_status::entries);
 }
 
 /**
@@ -177,6 +163,7 @@ void randomize_cleanup() {
     delete[] * it;
   generated.clear();
   io::events::unload();
+  io::protocols::unload();
 }
 
 }  // Namespace broker

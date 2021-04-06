@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2019 Centreon
+** Copyright 2011-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,7 +70,8 @@ stream::stream(database_config const& dbcfg,
       _rebuilder(dbcfg,
                  rebuild_check_interval,
                  rrd_len ? rrd_len : 15552000,
-                 interval_length) {
+                 interval_length),
+      _stopped(false) {
   log_v2::sql()->debug("storage stream instanciation");
   if (!rrd_len)
     rrd_len = 15552000;
@@ -81,13 +82,23 @@ stream::stream(database_config const& dbcfg,
         "storage: Unable to initialize the storage connection to the database");
 }
 
+int32_t stream::stop() {
+  // Stop cleanup thread.
+  int32_t retval =
+      conflict_manager::instance().unload(conflict_manager::storage);
+  log_v2::core()->info("storage stream stopped with {} acknowledged events",
+                       retval);
+  _stopped = true;
+  return retval;
+}
+
 /**
  *  Destructor.
  */
 stream::~stream() {
+  assert(_stopped);
   // Stop cleanup thread.
   log_v2::sql()->trace("storage: stream destruction");
-  conflict_manager::instance().unload(conflict_manager::storage);
 }
 
 /**

@@ -67,7 +67,7 @@ class tcp_async {
                           std::pair<tcp_connection::pointer, time_t>>
       _acceptor_available_con;
 
-  asio::steady_timer _timer;
+  std::unique_ptr<asio::steady_timer> _timer;
   std::atomic_bool _clear_available_con_running;
 
   tcp_async();
@@ -77,6 +77,7 @@ class tcp_async {
 
  public:
   static tcp_async& instance();
+  void stop_timer();
 
   tcp_async(const tcp_async&) = delete;
   tcp_async& operator=(const tcp_async&) = delete;

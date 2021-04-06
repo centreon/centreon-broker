@@ -21,12 +21,12 @@
 
 #include <string>
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/host_service_status.hh"
-#include "com/centreon/broker/timestamp.hh"
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #define CCB_CONFIG_APPLIER_STATE_HH
 
 #include <string>
+#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -34,27 +35,31 @@ namespace applier {
  *  Apply some configuration state.
  */
 class state {
-  state();
-  state(state const& other);
-  state& operator=(state const& other);
-
   std::string _cache_dir;
   uint32_t _poller_id;
   uint32_t _rpc_port;
   std::string _poller_name;
   size_t _pool_size;
+  modules _modules;
+
+  state();
+  ~state() noexcept = default;
 
  public:
-  ~state();
-  void apply(config::state const& s, bool run_mux = true);
-  std::string const& cache_dir() const noexcept;
   static state& instance();
   static void load();
+  static void unload();
+  static bool loaded();
+
+  state(const state&) = delete;
+  state& operator=(const state&) = delete;
+  void apply(const config::state& s, bool run_mux = true);
+  const std::string& cache_dir() const noexcept;
   uint32_t rpc_port() const noexcept;
   uint32_t poller_id() const noexcept;
   size_t pool_size() const noexcept;
-  std::string const& poller_name() const noexcept;
-  static void unload();
+  const std::string& poller_name() const noexcept;
+  modules& get_modules();
 };
 }  // namespace applier
 }  // namespace config

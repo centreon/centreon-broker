@@ -21,8 +21,8 @@
 #include <memory>
 
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/rrd/connector.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -49,9 +49,10 @@ static std::string find_param(config::endpoint const& cfg,
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it) {
     if (thrw)
-      throw msg_fmt("RRD: no '{}' defined "
-                    " for endpoint '{}'",
-                    key, cfg.name);
+      throw msg_fmt(
+          "RRD: no '{}' defined "
+          " for endpoint '{}'",
+          key, cfg.name);
     else
       return def;
   }
@@ -102,10 +103,11 @@ io::endpoint* factory::new_endpoint(
       port = static_cast<uint16_t>(
           std::stoul(find_param(cfg, "port", false, "0")));
     } catch (...) {
-      throw msg_fmt("RRD: bad port"
-                    " defined "
-                    " for endpoint '{}'",
-                    cfg.name);
+      throw msg_fmt(
+          "RRD: bad port"
+          " defined "
+          " for endpoint '{}'",
+          cfg.name);
     }
   }
 
@@ -118,10 +120,11 @@ io::endpoint* factory::new_endpoint(
       try {
         cache_size = std::stoul(it->second);
       } catch (std::exception const& e) {
-        throw msg_fmt("RRD: bad port"
-                      " defined "
-                      " for endpoint '{}'",
-                      cfg.name);
+        throw msg_fmt(
+            "RRD: bad port"
+            " defined "
+            " for endpoint '{}'",
+            cfg.name);
       }
   }
 

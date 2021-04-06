@@ -136,8 +136,7 @@ std::vector<char> misc::from_hex(std::string const& str) {
   std::vector<char> retval;
   size_t len{str.size()};
   if (len & 1)
-    throw msg_fmt(
-        "from_hex: '{}' length should be even", str);
+    throw msg_fmt("from_hex: '{}' length should be even", str);
   retval.reserve(len >> 1);
   bool valid{false};
   uint8_t value;
@@ -155,7 +154,8 @@ std::vector<char> misc::from_hex(std::string const& str) {
     else
       throw msg_fmt(
           "from_hex: '{}' should be a string containing some "
-          "hexadecimal digits", str);
+          "hexadecimal digits",
+          str);
     if (valid) {
       retval.push_back(value);
       valid = false;
@@ -200,4 +200,3 @@ std::string misc::dump_filters(std::unordered_set<uint32_t> const& filters) {
   }
   return ret;
 }
-

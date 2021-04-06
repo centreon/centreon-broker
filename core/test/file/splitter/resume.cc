@@ -16,8 +16,8 @@
  * For more information : contact@centreon.com
  *
  */
-#include <gtest/gtest.h>
 #include <fmt/format.h>
+#include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
@@ -41,8 +41,7 @@ class FileSplitterResume : public ::testing::Test {
     for (int i(2); i < 10; ++i) {
       memset(buffer, i, sizeof(buffer));
       std::string ff{fmt::format("{}{}", _path, i)};
-      f.reset(
-          new file::cfile(ff, file::fs_file::open_read_write_truncate));
+      f.reset(new file::cfile(ff, file::fs_file::open_read_write_truncate));
       f->write(buffer, sizeof(buffer));
     }
 

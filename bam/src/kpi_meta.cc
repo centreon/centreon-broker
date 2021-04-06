@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -164,8 +164,7 @@ void kpi_meta::visit(io::stream* visitor) {
 
     // Generate status event.
     {
-      std::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
+      std::shared_ptr<kpi_status> status{std::make_shared<kpi_status>(_id)};
       status->level_acknowledgement_hard = values.get_acknowledgement();
       status->level_acknowledgement_soft = values.get_acknowledgement();
       status->level_downtime_hard = values.get_downtime();
@@ -190,12 +189,17 @@ void kpi_meta::_fill_impact(impact_values& impact) {
   // Get nominal impact from state.
   kpi_meta::state state(_meta->get_state());
   double nominal;
-  if (0 == state)
-    nominal = 0.0;
-  else if (1 == state)
-    nominal = _impact_warning;
-  else
-    nominal = _impact_critical;
+  switch (state) {
+    case 0:
+      nominal = 0.0;
+      break;
+    case 1:
+      nominal = _impact_warning;
+      break;
+    default:
+      nominal = _impact_critical;
+      break;
+  }
   impact.set_nominal(nominal);
   impact.set_acknowledgement(0.0);
   impact.set_downtime(0.0);

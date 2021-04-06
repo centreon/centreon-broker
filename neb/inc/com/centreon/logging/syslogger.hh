@@ -54,7 +54,7 @@ class syslogger : public backend {
   int _facility;
   std::string _id;
 };
-}
+}  // namespace logging
 
 CC_END()
 

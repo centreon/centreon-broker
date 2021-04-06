@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015,2017 Centreon
+** Copyright 2011-2012,2015,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,14 +26,19 @@ using namespace com::centreon::broker::io;
  * @brief Constructor. The name is chosen by the developer. This name is
  * constant.
  *
- * @param name
+ * @param name a string representing the stream.
  */
 stream::stream(const std::string& name) : _name(name) {}
 
 /**
- *  Destructor.
+ * @brief This method provides a mecanism to stop threads behind the stream and
+ * to flush pending events. It returns the number of acknowledged events.
+ *
+ * @return The number of acknowledged events.
  */
-stream::~stream() noexcept {}
+// int32_t stream::stop() {
+//  return 0;
+//}
 
 /**
  *  Flush data.

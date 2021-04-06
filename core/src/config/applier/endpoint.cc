@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015,2017 Centreon
+** Copyright 2011-2012,2015,2017-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include "com/centreon/broker/config/applier/endpoint.hh"
 
 #include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <cstdlib>
 #include <list>
@@ -47,6 +48,7 @@ using namespace com::centreon::broker::config::applier;
 
 // Class instance.
 static config::applier::endpoint* gl_endpoint = nullptr;
+static std::atomic_bool gl_loaded{false};
 
 /**
  * @brief Default constructor.
@@ -101,7 +103,7 @@ class name_match_failover {
  *  Destructor.
  */
 endpoint::~endpoint() {
-  discard();
+  _discard();
 }
 
 /**
@@ -199,9 +201,28 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
  *  Discard applied configuration. Running endpoints are destroyed one by one.
  *
  */
-void endpoint::discard() {
+void endpoint::_discard() {
   _discarding = true;
   log_v2::config()->debug("endpoint applier: destruction");
+
+  // Exit threads.
+  {
+    log_v2::config()->debug("endpoint applier: requesting threads termination");
+    std::unique_lock<std::timed_mutex> lock(_endpointsm);
+
+    // Send termination requests.
+    // We begin with feeders
+    for (auto it = _endpoints.begin(); it != _endpoints.end();) {
+      if (it->second->is_feeder()) {
+        log_v2::config()->trace(
+            "endpoint applier: send exit signal on endpoint '{}'",
+            it->second->get_name());
+        delete it->second;
+        it = _endpoints.erase(it);
+      } else
+        ++it;
+    }
+  }
 
   // Stop multiplexing.
   multiplexing::engine::instance().stop();
@@ -211,17 +232,16 @@ void endpoint::discard() {
     log_v2::config()->debug("endpoint applier: requesting threads termination");
     std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
-    // Send termination requests.
-    for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end;
-         ++it) {
+    // We continue with failovers
+    for (auto it = _endpoints.begin(); it != _endpoints.end();) {
       log_v2::config()->trace(
           "endpoint applier: send exit signal on endpoint '{}'",
           it->second->get_name());
       delete it->second;
+      it = _endpoints.erase(it);
     }
 
     log_v2::config()->debug("endpoint applier: all threads are terminated");
-    _endpoints.clear();
   }
 }
 
@@ -266,14 +286,26 @@ endpoint& endpoint::instance() {
  *  Load singleton.
  */
 void endpoint::load() {
-  if (!gl_endpoint)
+  if (!gl_endpoint) {
     gl_endpoint = new endpoint;
+    gl_loaded = true;
+  }
+}
+
+/**
+ * @brief Tell if the applier is loaded.
+ *
+ * @return a boolean.
+ */
+bool endpoint::loaded() {
+  return gl_loaded;
 }
 
 /**
  *  Unload singleton.
  */
 void endpoint::unload() {
+  gl_loaded = false;
   delete gl_endpoint;
   gl_endpoint = nullptr;
 }

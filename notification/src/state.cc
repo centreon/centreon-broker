@@ -227,8 +227,7 @@ QList<notification_rule::ptr> state::get_notification_rules_by_node(
  *  @return        A notification_rule::ptr to the notification rule, or a null
  * ptr.
  */
-notification_rule::ptr state::get_notification_rule_by_id(
-    uint32_t id) const {
+notification_rule::ptr state::get_notification_rule_by_id(uint32_t id) const {
   return (_notification_rule_by_id.value(id));
 }
 
@@ -276,8 +275,7 @@ objects::contact::ptr state::get_contact_by_id(uint32_t id) const {
  *
  *  @return        A map of the contact infos.
  */
-QHash<std::string, std::string> state::get_contact_infos(
-    uint32_t id) const {
+QHash<std::string, std::string> state::get_contact_infos(uint32_t id) const {
   return (_contact_infos.value(id));
 }
 

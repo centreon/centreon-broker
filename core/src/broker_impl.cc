@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2020-2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@
 #include "com/centreon/broker/broker_impl.hh"
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include "com/centreon/broker/config/applier/modules.hh"
-#include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/stats/center.hh"
 #include "com/centreon/broker/stats/helper.hh"
 #include "com/centreon/broker/version.hh"
 
@@ -49,7 +50,7 @@ grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
 grpc::Status broker_impl::GetNumModules(grpc::ServerContext* context,
                                         const ::google::protobuf::Empty*,
                                         GenericSize* response) {
-  config::applier::modules& mod_applier(config::applier::modules::instance());
+  auto& mod_applier(config::applier::state::instance().get_modules());
 
   std::lock_guard<std::mutex> lock(mod_applier.module_mutex());
   response->set_size(std::distance(mod_applier.begin(), mod_applier.end()));
@@ -70,6 +71,7 @@ grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context,
 
   return grpc::Status::OK;
 }
+
 grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
                                           const GenericNameOrIndex* request,
                                           GenericString* response) {

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015,2017 Centreon
+** Copyright 2011-2012,2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,12 +32,6 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -46,16 +40,16 @@ using namespace com::centreon::broker::processing;
  *  @param[in] read_filters   Read filters.
  *  @param[in] write_filters  Write filters.
  */
-feeder::feeder(std::string const& name,
-               std::shared_ptr<io::stream> client,
-               std::unordered_set<uint32_t> const& read_filters,
-               std::unordered_set<uint32_t> const& write_filters)
+feeder::feeder(const std::string& name,
+               std::unique_ptr<io::stream>& client,
+               const std::unordered_set<uint32_t>& read_filters,
+               const std::unordered_set<uint32_t>& write_filters)
     : stat_visitable(name),
       _state{feeder::stopped},
       _should_exit{false},
-      _client(client),
+      _client(std::move(client)),
       _subscriber(name, false) {
-  if (!client)
+  if (!_client)
     throw msg_fmt("could not process '{}' with no client stream", _name);
 
   _subscriber.get_muxer().set_read_filters(read_filters);
@@ -203,15 +197,18 @@ void feeder::_callback() noexcept {
     // Normal termination.
     (void)e;
     log_v2::core()->info("feeder '{}' shut down", get_name());
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     logging::error(logging::medium)
         << "feeder: error occured while processing client '" << _name
         << "': " << e.what();
     set_last_error(e.what());
+    log_v2::core()->error("feeder '{}' error: ", e.what());
   } catch (...) {
     logging::error(logging::high)
         << "feeder: unknown error occured while processing client '" << _name
         << "'";
+    log_v2::core()->error(
+        "feeder: unknown error occured while processing client '{}'", _name);
   }
 
   /* If we are here, that is because the loop is finished, and if we want
@@ -222,13 +219,17 @@ void feeder::_callback() noexcept {
   _state_cv.notify_all();
   lock_stop.unlock();
 
+  /* We don't get back the return value of stop() because it has non sense,
+   * the only interest in calling stop() is to send an acknowledgement to the
+   * peer. */
+  _client->stop();
   {
     misc::read_lock lock(_client_m);
     _client.reset();
     set_state("disconnected");
     _subscriber.get_muxer().remove_queue_files();
   }
-  log_v2::processing()->info("feeder: thread of client '{}' will exit", _name);
+  log_v2::core()->info("feeder: thread of client '{}' will exit", _name);
 }
 
 uint32_t feeder::_get_queued_events() const {

@@ -41,16 +41,16 @@ class connector : public io::endpoint {
 
  public:
   connector();
-  connector(connector const& other) = delete;
   ~connector() noexcept {}
-  connector& operator=(connector const& other) = delete;
-  bool operator==(connector const& other) = delete;
+  connector(const connector&) = delete;
+  connector& operator=(const connector&) = delete;
+  bool operator==(const connector& other) = delete;
   void connect_to(database_config const& dbcfg,
                   uint32_t rrd_len,
                   uint32_t interval_length,
                   uint32_t rebuild_check_interval,
                   bool store_in_data_bin = true);
-  std::shared_ptr<io::stream> open();
+  std::unique_ptr<io::stream> open() override;
 };
 }  // namespace storage
 

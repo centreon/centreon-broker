@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2020 Centreon
+** Copyright 2014-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -61,11 +61,12 @@ class monitoring_stream : public io::stream {
                     database_config const& storage_db_cfg,
                     std::shared_ptr<persistent_cache> cache);
   ~monitoring_stream();
-  int flush();
+  int32_t flush() override;
+  int32_t stop() override;
   void initialize();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void statistics(json11::Json::object& tree) const override;
-  void update();
+  void update() override final;
   int write(std::shared_ptr<io::data> const& d);
 
  private:

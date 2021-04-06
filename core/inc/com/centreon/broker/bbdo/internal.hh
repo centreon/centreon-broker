@@ -32,7 +32,7 @@ CCB_BEGIN()
 
 namespace bbdo {
 // Data elements.
-enum { de_version_response = 1, de_ack };
+enum { de_version_response = 1, de_ack, de_stop };
 
 // Load/unload of BBDO protocol.
 void load();

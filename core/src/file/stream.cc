@@ -160,7 +160,7 @@ void stream::statistics(json11::Json::object& tree) const {
  *
  *  @return Number of events acknowledged (1).
  */
-int stream::write(std::shared_ptr<io::data> const& d) {
+int32_t stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, get_name()))
     return 1;
@@ -184,6 +184,15 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   }
 
   return 1;
+}
+
+/**
+ * @brief Flush the stream and stop it.
+ *
+ * @return The number of acknowledged events.
+ */
+int32_t stream::stop() {
+  return 0;
 }
 
 /**

@@ -26,6 +26,7 @@
 
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/pool.hh"
 
 using namespace com::centreon::broker;
 
@@ -35,6 +36,7 @@ constexpr static uint16_t test_port(4242);
 class TcpConnector : public testing::Test {
  public:
   void SetUp() override {
+    pool::load(0);
     _server.init();
     _thread = std::thread(&test_server::run, &_server);
 
@@ -43,6 +45,7 @@ class TcpConnector : public testing::Test {
   void TearDown() override {
     _server.stop();
     _thread.join();
+    pool::unload();
   }
 
   test_server _server;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 #include <unistd.h>
 
@@ -29,6 +30,7 @@
 
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 
@@ -118,6 +120,8 @@ void engine::start() {
     // Set writing method.
     logging::debug(logging::high) << "multiplexing: starting";
     _write_func = &engine::_write;
+    stats::center::instance().update(&EngineStats::set_mode, _stats,
+                                     EngineStats::WRITE);
 
     std::lock_guard<std::mutex> lock(_engine_m);
     // Local queue.
@@ -126,13 +130,13 @@ void engine::start() {
     try {
       persistent_cache cache(_cache_file_path());
       std::shared_ptr<io::data> d;
-      while (true) {
+      for (;;) {
         cache.get(d);
         if (!d)
           break;
         kiew.push(d);
       }
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
       logging::error(logging::medium)
           << "multiplexing: couldn't read cache file: " << e.what();
     }
@@ -157,7 +161,7 @@ void engine::start() {
           _kiew.push(d);
           it->first->read(d, 0);
         }
-      } catch (std::exception const& e) {
+      } catch (const std::exception& e) {
         logging::error(logging::low)
             << "multiplexing: cannot read from hook: " << e.what();
       }
@@ -180,7 +184,7 @@ void engine::start() {
 void engine::stop() {
   if (_write_func != &engine::_nop) {
     // Notify hooks of multiplexing loop end.
-    logging::debug(logging::high) << "multiplexing: stopping";
+    log_v2::core()->debug("multiplexing: stopping");
     std::unique_lock<std::mutex> lock(_engine_m);
     for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
          end(_hooks_end);
@@ -203,7 +207,7 @@ void engine::stop() {
       // Process events from hooks.
       _send_to_subscribers();
 
-      // Make sur that no more data is available.
+      // Make sure that no more data is available.
       lock.unlock();
       usleep(200000);
       lock.lock();
@@ -216,7 +220,7 @@ void engine::stop() {
     try {
       _cache_file.reset(new persistent_cache(_cache_file_path()));
       _cache_file->transaction();
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
       logging::error(logging::medium)
           << "multiplexing: could not open cache file: " << e.what();
       _cache_file.reset();
@@ -224,6 +228,8 @@ void engine::stop() {
 
     // Set writing method.
     _write_func = &engine::_write_to_cache_file;
+    stats::center::instance().update(&EngineStats::set_mode, _stats,
+                                     EngineStats::WRITE_TO_CACHE_FILE);
   }
 }
 
@@ -281,12 +287,6 @@ void engine::unsubscribe(muxer* subscriber) {
     }
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
@@ -294,10 +294,15 @@ engine::engine()
     : _hooks{},
       _hooks_begin{_hooks.begin()},
       _hooks_end{_hooks.end()},
+      _stats{stats::center::instance().register_engine()},
+      _unprocessed_events{0u},
       _engine_m{},
       _muxers{},
       _muxers_m{},
-      _write_func(&engine::_nop) {}
+      _write_func(&engine::_nop) {
+  stats::center::instance().update(&EngineStats::set_mode, _stats,
+                                   EngineStats::NOP);
+}
 
 /**
  *  Generate path to the multiplexing engine cache file.
@@ -366,9 +371,11 @@ void engine::_write(std::shared_ptr<io::data> const& e) {
  */
 void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
   try {
-    if (_cache_file)
+    if (_cache_file) {
       _cache_file->add(d);
-  } catch (std::exception const& e) {
+      _unprocessed_events++;
+    }
+  } catch (const std::exception& e) {
     logging::error(logging::medium)
         << "multiplexing: could not write to cache file: " << e.what();
   }

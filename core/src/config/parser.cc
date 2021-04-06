@@ -36,12 +36,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::config;
 using namespace json11;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
@@ -232,10 +226,10 @@ state parser::parse(std::string const& file) {
           int64_t tmp = conf_js["max_size"].number_value();
           if (tmp < 0)
             throw msg_fmt(
-                "'max_size' key in the log configuration must contain a positive number.");
+                "'max_size' key in the log configuration must contain a "
+                "positive number.");
           conf.max_size = tmp;
-        }
-        else if (!conf_js["max_size"].is_null())
+        } else if (!conf_js["max_size"].is_null())
           throw msg_fmt(
               "'max_size' key in the log configuration must contain a size in "
               "bytes (as number or string)");

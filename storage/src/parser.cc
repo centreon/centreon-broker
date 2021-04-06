@@ -252,7 +252,6 @@ void parser::parse_perfdata(uint32_t host_id,
           "after equal sign "
           "'{}'",
           id(), fmt::string_view(s, (tmp - s) + i));
-      error = true;
       tmp = skip(tmp);
       continue;
     }

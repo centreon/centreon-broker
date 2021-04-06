@@ -20,8 +20,8 @@
 #include "com/centreon/broker/graphite/stream.hh"
 #include <gtest/gtest.h>
 #include <com/centreon/broker/graphite/connector.hh>
-#include "com/centreon/broker/logging/manager.hh"
 #include "../../core/test/test_server.hh"
+#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -47,16 +47,17 @@ class graphiteStream : public testing::Test {
 TEST_F(graphiteStream, BadPort) {
   std::shared_ptr<persistent_cache> cache;
 
-  ASSERT_THROW(graphite::stream st("metric_name", "status_name", "a", 
-                                   "user", "pass", "localhost", 4243, 3, cache),
-                                   msg_fmt);
+  ASSERT_THROW(graphite::stream st("metric_name", "status_name", "a", "user",
+                                   "pass", "localhost", 4243, 3, cache),
+               msg_fmt);
 }
 
 TEST_F(graphiteStream, Read) {
   std::shared_ptr<persistent_cache> cache;
   std::shared_ptr<io::data> data;
 
-  graphite::stream st("metric_name", "status_name", "a", "user", "pass", "localhost", 4242, 3, cache);
+  graphite::stream st("metric_name", "status_name", "a", "user", "pass",
+                      "localhost", 4242, 3, cache);
   ASSERT_THROW(st.read(data, -1), msg_fmt);
 }
 
@@ -64,7 +65,8 @@ TEST_F(graphiteStream, Write) {
   std::shared_ptr<persistent_cache> cache;
   storage::metric *m1, *m2, *m3;
   std::shared_ptr<io::data> data;
-  graphite::stream st("metric_name", "status_name", "a", "user", "pass", "localhost", 4242, 3, cache);
+  graphite::stream st("metric_name", "status_name", "a", "user", "pass",
+                      "localhost", 4242, 3, cache);
 
   m1 = new storage::metric;
   m2 = new storage::metric;
@@ -118,7 +120,8 @@ TEST_F(graphiteStream, Flush) {
   std::shared_ptr<persistent_cache> cache;
   storage::metric *m1, *m2, *m3;
   std::shared_ptr<io::data> data;
-  graphite::stream st("metric_name", "status_name", "a", "user", "pass", "localhost", 4242, 9, cache);
+  graphite::stream st("metric_name", "status_name", "a", "user", "pass",
+                      "localhost", 4242, 9, cache);
 
   m1 = new storage::metric;
   m2 = new storage::metric;
@@ -174,15 +177,8 @@ TEST_F(graphiteStream, Flush) {
 TEST_F(graphiteStream, NullData) {
   std::shared_ptr<persistent_cache> cache;
   std::shared_ptr<io::data> data;
-  graphite::stream st("metric_name",
-                      "status_name",
-                      "a",
-                      "user",
-                      "pass",
-                      "localhost",
-                      4242,
-                      9,
-                      cache);
+  graphite::stream st("metric_name", "status_name", "a", "user", "pass",
+                      "localhost", 4242, 9, cache);
 
   std::shared_ptr<io::data> d1{nullptr};
   ASSERT_FALSE(st.write(d1));
@@ -193,7 +189,8 @@ TEST_F(graphiteStream, FlushStatusOK) {
   storage::status *s1, *s2, *s3;
 
   std::shared_ptr<io::data> data;
-  graphite::stream st("metric_name", "status_name", "a", "user", "pass", "localhost", 4242, 9, cache);
+  graphite::stream st("metric_name", "status_name", "a", "user", "pass",
+                      "localhost", 4242, 9, cache);
 
   s1 = new storage::status;
   s2 = new storage::status;
@@ -248,7 +245,8 @@ TEST_F(graphiteStream, StatsAndConnector) {
   storage::metric m1, m2, m3;
   std::shared_ptr<io::data> data;
   graphite::connector con;
-  con.connect_to("metric_name", "status_name", "a", "user", "pass", "localhost", 4242, 3, cache);
+  con.connect_to("metric_name", "status_name", "a", "user", "pass", "localhost",
+                 4242, 3, cache);
 
   json11::Json::object obj;
   con.open()->statistics(obj);

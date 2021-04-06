@@ -57,7 +57,7 @@ class manager : public backend {
   void log_msg(char const* msg, uint32_t len, type t, level l) noexcept;
   void log_on(std::shared_ptr<backend> b,
               uint32_t types = config_type | debug_type | error_type |
-                                   info_type | perf_type,
+                               info_type | perf_type,
               level min_priority = medium);
 };
 }  // namespace logging

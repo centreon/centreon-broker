@@ -32,7 +32,8 @@ class FileSplitterDefault : public ::testing::Test {
   void SetUp() override {
     _path = "/tmp/queue";
     {
-      std::list<std::string> parts{misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+      std::list<std::string> parts{
+          misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
       for (std::string const& f : parts)
         std::remove(f.c_str());
     }
@@ -40,9 +41,7 @@ class FileSplitterDefault : public ::testing::Test {
                                10000, true);
   }
 
-  void TearDown() override {
-    delete _file;
-  }
+  void TearDown() override { delete _file; }
 
  protected:
   file::splitter* _file;

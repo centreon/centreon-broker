@@ -371,9 +371,8 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/bbdo/ack.cc
   ${SRC_DIR}/bbdo/connector.cc
   ${SRC_DIR}/bbdo/factory.cc
-#  ${SRC_DIR}/bbdo/input.cc
   ${SRC_DIR}/bbdo/internal.cc
-#  ${SRC_DIR}/bbdo/output.cc
+  ${SRC_DIR}/bbdo/stop.cc
   ${SRC_DIR}/bbdo/stream.cc
   ${SRC_DIR}/bbdo/version_response.cc
   ${SRC_DIR}/broker_impl.cc
@@ -385,7 +384,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/ceof/ceof_token.cc
   ${SRC_DIR}/ceof/ceof_writer.cc
   ${SRC_DIR}/compression/factory.cc
-  ${SRC_DIR}/compression/internal.cc
   ${SRC_DIR}/compression/opener.cc
   ${SRC_DIR}/compression/stack_array.cc
   ${SRC_DIR}/compression/stream.cc
@@ -403,7 +401,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/file/directory_watcher.cc
   ${SRC_DIR}/file/factory.cc
   ${SRC_DIR}/file/fifo.cc
-  ${SRC_DIR}/file/internal.cc
   ${SRC_DIR}/file/opener.cc
   ${SRC_DIR}/file/splitter.cc
   ${SRC_DIR}/file/stream.cc
@@ -434,7 +431,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/misc/uuid.cc
   ${SRC_DIR}/misc/variant.cc
   ${SRC_DIR}/modules/handle.cc
-  ${SRC_DIR}/modules/loader.cc
   ${SRC_DIR}/multiplexing/engine.cc
   ${SRC_DIR}/multiplexing/hooker.cc
   ${SRC_DIR}/multiplexing/muxer.cc
@@ -454,6 +450,7 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/processing/failover.cc
   ${SRC_DIR}/processing/feeder.cc
   ${SRC_DIR}/processing/stat_visitable.cc
+  ${SRC_DIR}/stats/center.cc
   ${SRC_DIR}/stats/helper.cc
   ${SRC_DIR}/time/daterange.cc
   ${SRC_DIR}/time/timeperiod.cc
@@ -465,9 +462,8 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/bbdo/ack.hh
   ${INC_DIR}/bbdo/connector.hh
   ${INC_DIR}/bbdo/factory.hh
-#  ${INC_DIR}/bbdo/input.hh
   ${INC_DIR}/bbdo/internal.hh
-#  ${INC_DIR}/bbdo/output.hh
+  ${INC_DIR}/bbdo/stop.hh
   ${INC_DIR}/bbdo/stream.hh
   ${INC_DIR}/bbdo/version_response.hh
   ${INC_DIR}/broker_impl.hh
@@ -481,7 +477,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/ceof/ceof_visitor.hh
   ${INC_DIR}/ceof/ceof_writer.hh
   ${INC_DIR}/compression/factory.hh
-  ${INC_DIR}/compression/internal.hh
   ${INC_DIR}/compression/opener.hh
   ${INC_DIR}/compression/stack_array.hh
   ${INC_DIR}/compression/stream.hh
@@ -505,7 +500,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/file/factory.hh
   ${INC_DIR}/file/fifo.hh
   ${INC_DIR}/file/fs_file.hh
-  ${INC_DIR}/file/internal.hh
   ${INC_DIR}/file/opener.hh
   ${INC_DIR}/file/splitter.hh
   ${INC_DIR}/file/stream.hh
@@ -541,7 +535,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/misc/tokenizer.hh
   ${INC_DIR}/misc/variant.hh
   ${INC_DIR}/modules/handle.hh
-  ${INC_DIR}/modules/loader.hh
   ${INC_DIR}/multiplexing/engine.hh
   ${INC_DIR}/multiplexing/hooker.hh
   ${INC_DIR}/multiplexing/muxer.hh
@@ -618,6 +611,7 @@ add_broker_module(GRAPHITE ON)
 add_broker_module(BAM ON)
 add_broker_module(TCP ON)
 add_broker_module(TLS ON)
+add_broker_module(DUMP OFF)
 
 # Lua module.
 option(WITH_MODULE_LUA "Build lua module." ON)

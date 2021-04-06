@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,12 +19,6 @@
 #include "com/centreon/broker/instance_broadcast.hh"
 
 using namespace com::centreon::broker;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Default constructor.
@@ -76,12 +70,6 @@ void instance_broadcast::load() {
                    instance_broadcast::entries);
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Copy internal data members.
  *
@@ -94,12 +82,6 @@ void instance_broadcast::_internal_copy(instance_broadcast const& other) {
   poller_id = other.poller_id;
   poller_name = other.poller_name;
 }
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const instance_broadcast::entries[] = {

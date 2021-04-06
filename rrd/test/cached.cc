@@ -144,8 +144,7 @@ TEST(RRDCached, BatchRemote) {
   while (!init_done)
     ;
 
-  ASSERT_THROW(cached.connect_remote("badurl.centreon.org", 4242),
-               msg_fmt);
+  ASSERT_THROW(cached.connect_remote("badurl.centreon.org", 4242), msg_fmt);
   ASSERT_THROW(cached.connect_remote("localhost", 2), msg_fmt);
   ASSERT_NO_THROW(cached.connect_remote("localhost", 4242));
   cached.begin();

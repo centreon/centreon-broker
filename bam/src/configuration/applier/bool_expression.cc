@@ -170,7 +170,7 @@ void applier::bool_expression::apply(
         (*it2)->resolve_metrics(mapping);
         std::set<uint32_t> const& ids = (*it2)->get_resolved_metrics();
         for (std::set<uint32_t>::const_iterator metrics_it = ids.begin(),
-                                                    metrics_end = ids.end();
+                                                metrics_end = ids.end();
              metrics_it != metrics_end; ++metrics_it)
           metric_book.listen(*metrics_it, it2->get());
       }
@@ -218,12 +218,12 @@ void applier::bool_expression::_internal_copy(
 void applier::bool_expression::_resolve_expression_calls() {
   std::map<std::string, uint32_t> _name_to_ids;
   for (std::map<uint32_t, applied>::const_iterator it = _applied.begin(),
-                                                       end = _applied.end();
+                                                   end = _applied.end();
        it != end; ++it)
     _name_to_ids[it->second.cfg.get_name()] = it->first;
 
-  for (std::map<uint32_t, applied>::iterator it = _applied.begin(),
-                                                 tmp = it, end = _applied.end();
+  for (std::map<uint32_t, applied>::iterator it = _applied.begin(), tmp = it,
+                                             end = _applied.end();
        it != end; it = tmp) {
     ++tmp;
     for (std::list<std::shared_ptr<bam::bool_call> >::iterator

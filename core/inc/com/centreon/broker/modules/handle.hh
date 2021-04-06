@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,27 +34,27 @@ namespace modules {
  *  plugins.
  */
 class handle {
+  const std::string _filename;
+  void* _handle;
+
+  void _init(const void* arg = nullptr);
+  void _check_version();
+  void _close();
+
  public:
-  handle();
-  handle(handle const& other);
-  ~handle();
-  handle& operator=(handle const& other);
-  void close();
+  handle(const std::string& filename, const void* arg = nullptr);
+  ~handle() noexcept;
+  handle() = delete;
+  handle(const handle&) = delete;
+  handle& operator=(const handle&) = delete;
+
   bool is_open() const;
-  void open(std::string const& filename, void const* arg = NULL);
-  void update(void const* arg = NULL);
+  void update(const void* arg = nullptr);
 
   static char const* deinitialization;
   static char const* initialization;
   static char const* updatization;
   static char const* versionning;
-
- private:
-  void _init(void const* arg = NULL);
-  void _check_version();
-
-  std::string _filename;
-  void* _handle;
 };
 }  // namespace modules
 

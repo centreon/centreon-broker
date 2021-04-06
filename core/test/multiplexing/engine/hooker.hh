@@ -37,18 +37,18 @@ using namespace com::centreon::broker;
  *  Simple class that hook events from the multiplexing engine.
  */
 class hooker : public multiplexing::hooker {
+  std::queue<std::shared_ptr<io::data>> _queue;
+
  public:
   hooker();
   ~hooker();
-  hooker(hooker const& other) = delete;
-  hooker& operator=(hooker const& other) = delete;
+  hooker(const hooker&) = delete;
+  hooker& operator=(const hooker&) = delete;
   bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   void starting();
   void stopping();
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
-  std::queue<std::shared_ptr<io::data> > _queue;
+  int32_t write(std::shared_ptr<io::data> const& d) override;
+  int32_t stop() override;
 };
 
 #endif  // !HOOKER_HH

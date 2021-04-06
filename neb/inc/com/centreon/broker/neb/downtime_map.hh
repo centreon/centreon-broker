@@ -56,8 +56,7 @@ class downtime_map {
   std::unordered_map<uint32_t, downtime> _downtimes;
   std::unordered_multimap<node_id, uint32_t> _downtime_id_by_nodes;
   std::unordered_map<uint32_t, downtime> _recurring_downtimes;
-  std::unordered_multimap<node_id, uint32_t>
-      _recurring_downtime_id_by_nodes;
+  std::unordered_multimap<node_id, uint32_t> _recurring_downtime_id_by_nodes;
 };
 }  // namespace neb
 

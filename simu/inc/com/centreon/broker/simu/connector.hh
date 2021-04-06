@@ -42,7 +42,7 @@ class connector : public io::endpoint {
   ~connector();
   void connect_to(std::string const& lua_script,
                   std::map<std::string, misc::variant> const& cfg_params);
-  std::shared_ptr<io::stream> open() override;
+  std::unique_ptr<io::stream> open() override;
 };
 }  // namespace simu
 

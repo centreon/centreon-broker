@@ -17,13 +17,13 @@
 */
 
 #include "com/centreon/broker/misc/diagnostic.hh"
+#include <fmt/format.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include <fmt/format.h>
-#include <sys/stat.h>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
@@ -35,12 +35,6 @@
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Default constructor.
@@ -285,9 +279,8 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
       ls_log_path.append(".log");
       to_remove.push_back(ls_log_path);
 
-      std::string cmd{fmt::format("ls -la {} {}",
-          conf.module_directory(),
-          fmt::join(conf.module_list(), " "))};
+      std::string cmd{fmt::format("ls -la {} {}", conf.module_directory(),
+                                  fmt::join(conf.module_list(), " "))};
       std::string output{misc::exec(cmd)};
 
       std::ofstream out(ls_log_path);
@@ -328,8 +321,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   logging::info(logging::high)
       << "diagnostic: creating tarball '" << my_out_file << "'";
   {
-    std::string cmd{fmt::format("tar czf {} {}",
-        my_out_file, tmp_dir)};
+    std::string cmd{fmt::format("tar czf {} {}", my_out_file, tmp_dir)};
     std::string output{misc::exec(cmd)};
   }
 

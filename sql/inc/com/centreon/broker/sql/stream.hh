@@ -53,6 +53,7 @@ class stream : public io::stream {
   int _pending_events;
   bool _with_state_events;
   mutable std::mutex _stat_mutex;
+  bool _stopped;
 
   void _process_log_issue(std::shared_ptr<io::data> const& e);
 
@@ -65,6 +66,7 @@ class stream : public io::stream {
   stream(stream const& other) = delete;
   stream& operator=(stream const& other) = delete;
   ~stream();
+  int32_t stop() override;
   int flush() override;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void update() override;

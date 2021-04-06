@@ -195,6 +195,16 @@ int stream::flush() {
 }
 
 /**
+ * @brief Flush the stream and stop it.
+ *
+ * @return The number of acknowledged events.
+ */
+int32_t stream::stop() {
+  _flush();
+  return 0;
+}
+
+/**
  *  @brief Write data.
  *
  *  The data can be buffered before being written to the subobject.

@@ -23,12 +23,12 @@
 #include <iostream>
 
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "hooker.hh"
 
 using namespace com::centreon::exceptions;
@@ -40,7 +40,7 @@ const std::string MSG3("last message with qux");
 
 class Unhook : public testing::Test {
  public:
-  void SetUp() override { config::applier::init(); }
+  void SetUp() override { config::applier::init(0, "test_broker"); }
 
   void TearDown() override { config::applier::deinit(); }
 };

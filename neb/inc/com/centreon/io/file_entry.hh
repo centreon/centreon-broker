@@ -19,9 +19,9 @@
 #ifndef CC_IO_FILE_ENTRY_HH
 #define CC_IO_FILE_ENTRY_HH
 
-#include <string>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <string>
 #include "com/centreon/handle.hh"
 #include "com/centreon/namespace.hh"
 
@@ -65,7 +65,7 @@ class file_entry {
   std::string _path;
   struct stat _sbuf;
 };
-}
+}  // namespace io
 
 CC_END()
 

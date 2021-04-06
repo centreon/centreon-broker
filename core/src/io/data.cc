@@ -16,18 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cassert>
 #include "com/centreon/broker/io/data.hh"
+#include <cassert>
 
 using namespace com::centreon::broker::io;
 
 uint32_t data::broker_id(0);
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Constructor.

@@ -82,7 +82,7 @@ class state {
   void rpc_port(uint16_t port) noexcept;
   uint16_t rpc_port(void) const noexcept;
   void broker_name(std::string const& name);
-  std::string const& broker_name() const noexcept;
+  const std::string& broker_name() const noexcept;
   void cache_directory(std::string const& dir);
   std::string const& cache_directory() const noexcept;
   void command_file(std::string const& file);

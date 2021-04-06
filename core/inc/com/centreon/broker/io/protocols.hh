@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ class protocols {
     unsigned short osi_to;
   };
 
-  ~protocols();
+  ~protocols() noexcept;
   protocols(protocols const& p) = delete;
   protocols& operator=(protocols const& p) = delete;
   std::map<std::string, protocol>::const_iterator begin() const;

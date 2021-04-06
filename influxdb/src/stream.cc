@@ -20,6 +20,7 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/influxdb/influxdb12.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -70,7 +71,7 @@ stream::~stream() {}
  *
  *  @return Number of events acknowledged.
  */
-int stream::flush() {
+int32_t stream::flush() {
   logging::debug(logging::medium)
       << "influxdb: commiting " << _actual_query << " queries";
   int ret(_pending_queries);
@@ -79,6 +80,18 @@ int stream::flush() {
   _influx_db->commit();
   _commit = false;
   return ret;
+}
+
+/**
+ * @brief Flush the stream and stop it.
+ *
+ * @return Number of acknowledged events.
+ */
+int32_t stream::stop() {
+  int32_t retval = flush();
+  log_v2::core()->info("influxdb stream stopped with {} acknowledged events",
+                       retval);
+  return retval;
 }
 
 /**

@@ -50,7 +50,7 @@ class basic : public std::exception {
 
   misc::stringifier _buffer;
 };
-}
+}  // namespace exceptions
 
 CC_END()
 

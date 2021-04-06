@@ -84,7 +84,10 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
   _prepare();
 
   // Simulate a configuration update.
-  update();
+  // FIXME DBR: what for? This update() call is made juste after the stream
+  // construction. I keep that in case I'm doing an error but it looks like
+  // a nonsense.
+  // update();
   // Read cache.
   _read_cache();
 }
@@ -108,7 +111,7 @@ monitoring_stream::~monitoring_stream() {
  *
  *  @return Number of acknowledged events.
  */
-int monitoring_stream::flush() {
+int32_t monitoring_stream::flush() {
   _mysql.commit();
   int retval = _pending_events;
   _pending_events = 0;
@@ -116,9 +119,22 @@ int monitoring_stream::flush() {
 }
 
 /**
+ * @brief Flush data and stop the stream.
+ *
+ * @return Number of acknowledged events.
+ */
+int32_t monitoring_stream::stop() {
+  int32_t retval = flush();
+  log_v2::core()->info("monitoring stream: stopped with {} events acknowledged",
+                       retval);
+  return retval;
+}
+
+/**
  *  Generate default state.
  */
 void monitoring_stream::initialize() {
+  log_v2::bam()->trace("monitoring stream: initialize...");
   multiplexing::publisher pblshr;
   event_cache_visitor ev_cache;
   _applier.visit(&ev_cache);
@@ -231,11 +247,11 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
     } break;
     case bam::ba_status::static_type(): {
       ba_status* status(static_cast<ba_status*>(data.get()));
-      logging::debug(logging::low)
-          << "BAM: processing BA status (id " << status->ba_id << ", level "
-          << status->level_nominal << ", acknowledgement "
-          << status->level_acknowledgement << ", downtime "
-          << status->level_downtime << ")";
+      log_v2::bam()->trace(
+          "BAM: processing BA status (id {}, level {}, acknowledgement {}, "
+          "downtime {})",
+          status->ba_id, status->level_nominal, status->level_acknowledgement,
+          status->level_downtime);
       _ba_update.bind_value_as_f64(0, status->level_nominal);
       _ba_update.bind_value_as_f64(1, status->level_acknowledgement);
       _ba_update.bind_value_as_f64(2, status->level_downtime);
@@ -269,11 +285,11 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
     } break;
     case bam::kpi_status::static_type(): {
       kpi_status* status(static_cast<kpi_status*>(data.get()));
-      logging::debug(logging::low)
-          << "BAM: processing KPI status (id " << status->kpi_id << ", level "
-          << status->level_nominal_hard << ", acknowledgement "
-          << status->level_acknowledgement_hard << ", downtime "
-          << status->level_downtime_hard << ")";
+      log_v2::bam()->debug(
+          "BAM: processing KPI status (id {}, level {}, acknowledgement {}, "
+          "downtime {})",
+          status->kpi_id, status->level_nominal_hard,
+          status->level_acknowledgement_hard, status->level_downtime_hard);
 
       _kpi_update.bind_value_as_f64(0, status->level_acknowledgement_hard);
       _kpi_update.bind_value_as_i32(1, status->state_hard);
@@ -376,8 +392,7 @@ void monitoring_stream::_rebuild() {
   if (bas_to_rebuild.empty())
     return;
 
-  logging::debug(logging::medium)
-      << "BAM: rebuild asked, sending the rebuild signal";
+  log_v2::bam()->debug("BAM: rebuild asked, sending the rebuild signal");
 
   std::shared_ptr<rebuild> r(std::make_shared<rebuild>(
       fmt::format("{}", fmt::join(bas_to_rebuild, ", "))));
@@ -421,8 +436,7 @@ void monitoring_stream::_write_external_command(std::string cmd) {
           << "BAM: could not write BA check result to command file '"
           << _ext_cmd_file << "'";
     else
-      logging::debug(logging::medium)
-          << "BAM: sent external command '" << cmd << "'";
+      log_v2::bam()->debug("BAM: sent external command '{}'", cmd);
     ofs.close();
   }
 }
@@ -442,11 +456,11 @@ void monitoring_stream::_read_cache() {
  */
 void monitoring_stream::_write_cache() {
   if (_cache == nullptr) {
-    logging::debug(logging::medium) << "BAM: no cache configured";
+    log_v2::bam()->debug("BAM: no cache configured");
     return;
   }
 
-  logging::debug(logging::medium) << "BAM: loading cache";
+  log_v2::bam()->debug("BAM: loading cache");
 
   _applier.save_to_cache(*_cache);
 }

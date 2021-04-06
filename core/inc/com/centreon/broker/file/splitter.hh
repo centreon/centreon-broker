@@ -92,7 +92,7 @@ class splitter : public fs_file {
   ~splitter();
   splitter(const splitter&) = delete;
   splitter& operator=(const splitter&) = delete;
-  void close() override;
+  void close() override final;
   long read(void* buffer, long max_size) override;
   void remove_all_files();
   void seek(long offset,

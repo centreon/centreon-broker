@@ -36,6 +36,7 @@ namespace io {
  */
 class data {
   const uint32_t _type;
+
  public:
   data() = delete;
   data(uint32_t type = 0);

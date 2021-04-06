@@ -49,8 +49,8 @@ class command_parser {
    * @return  The number of characters parsed succesfully, 0 for none.
    */
   virtual uint32_t parse(std::string const& buffer,
-                             command_result& res,
-                             std::shared_ptr<command_request>& request) = 0;
+                         command_result& res,
+                         std::shared_ptr<command_request>& request) = 0;
   /**
    *  Write a command result into a string.
    *

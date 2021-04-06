@@ -39,21 +39,20 @@ namespace tls {
  *  (http://www.gnu.org/software/gnutls).
  */
 class stream : public io::stream {
- public:
-  stream(gnutls_session_t* session);
-  ~stream();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  long long read_encrypted(void* buffer, long long size);
-  int write(std::shared_ptr<io::data> const& d);
-  long long write_encrypted(void const* buffer, long long size);
-
- private:
-  stream(stream const& other);
-  stream& operator=(stream const& other);
-
   std::vector<char> _buffer;
   time_t _deadline;
   gnutls_session_t* _session;
+
+ public:
+  stream(gnutls_session_t* session);
+  ~stream();
+  stream(const stream&) = delete;
+  stream& operator=(const stream&) = delete;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  long long read_encrypted(void* buffer, long long size);
+  int32_t write(std::shared_ptr<io::data> const& d) override;
+  int32_t stop() override { return 0; }
+  long long write_encrypted(void const* buffer, long long size);
 };
 }  // namespace tls
 

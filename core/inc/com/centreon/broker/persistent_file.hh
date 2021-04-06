@@ -1,5 +1,5 @@
 /*
-** Copyright 2015,2017 Centreon
+** Copyright 2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,19 +34,19 @@ CCB_BEGIN()
  *  It uses BBDO, compression and file streams.
  */
 class persistent_file : public io::stream {
+  std::shared_ptr<file::stream> _splitter;
+
  public:
-  persistent_file(std::string const& path);
-  ~persistent_file() noexcept;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  persistent_file(const std::string& path);
+  ~persistent_file() noexcept = default;
+  persistent_file(const persistent_file&) = delete;
+  persistent_file& operator=(const persistent_file&) = delete;
+  bool read(std::shared_ptr<io::data>& d,
+            time_t deadline = (time_t)-1) override;
   void remove_all_files();
   void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
-  persistent_file(persistent_file const& other);
-  persistent_file& operator=(persistent_file const& other);
-
-  std::shared_ptr<file::stream> _splitter;
+  int32_t write(const std::shared_ptr<io::data>& d) override;
+  int32_t stop() override;
 };
 
 CCB_END()

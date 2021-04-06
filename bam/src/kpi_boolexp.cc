@@ -157,8 +157,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
 
     // Generate status event.
     {
-      std::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
+      std::shared_ptr<kpi_status> status(std::make_shared<kpi_status>(_id));
       status->in_downtime = in_downtime();
       status->level_acknowledgement_hard = values.get_acknowledgement();
       status->level_acknowledgement_soft = values.get_acknowledgement();

@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,15 +45,15 @@ class acceptor : public io::endpoint {
   std::string _tls_hostname;
 
  public:
-  acceptor(std::string const& cert = std::string(),
-           std::string const& key = std::string(),
-           std::string const& ca = std::string(),
-           std::string const& tls_hostname = std::string());
+  acceptor(const std::string& cert = std::string(),
+           const std::string& key = std::string(),
+           const std::string& ca = std::string(),
+           const std::string& tls_hostname = std::string());
   ~acceptor() = default;
   acceptor(acceptor const& right) = delete;
   acceptor& operator=(acceptor const&) = delete;
-  std::shared_ptr<io::stream> open();
-  std::shared_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
+  std::unique_ptr<io::stream> open() override;
+  std::unique_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 };
 }  // namespace tls
 

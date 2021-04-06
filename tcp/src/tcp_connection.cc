@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -287,10 +287,22 @@ void tcp_connection::handle_read(const asio::error_code& ec,
 }
 
 /**
- * @brief Shutdown the socket.
+ * @brief Shutdown the socket. If there are data to write, they are written
+ * before the socket to be closed.
  */
 void tcp_connection::close() {
+  log_v2::tcp()->trace("closing tcp connection");
   if (!_closed) {
+    while (_writing || _write_queue_has_events) {
+      log_v2::tcp()->debug(
+          "Finishing to write data before closing the connection");
+      if (!_writing) {
+        _writing = true;
+        // The strand is useful because of the flush() method.
+        _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
     _closed = true;
     std::error_code ec;
     _socket.shutdown(asio::ip::tcp::socket::shutdown_both, ec);

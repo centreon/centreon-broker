@@ -1242,17 +1242,25 @@ int neb::callback_host(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int neb::callback_host_check(int callback_type, void* data) {
-  // Log message.
-  logging::info(logging::medium) << "callbacks: generating host check event";
   (void)callback_type;
 
+  // In/Out variables.
+  nebstruct_host_check_data const* hcdata =
+      static_cast<nebstruct_host_check_data*>(data);
+
+  /* For each check, this event is received three times one precheck, one
+   * initiate and one processed. We just keep the initiate one. At the processed
+   * one we also received the host status. */
+  if (hcdata->type != NEBTYPE_HOSTCHECK_INITIATE)
+    return 0;
+
+  // Log message.
+  logging::info(logging::medium) << "callbacks: generating host check event";
+
   try {
-    // In/Out variables.
-    nebstruct_host_check_data const* hcdata;
     std::shared_ptr<neb::host_check> host_check(new neb::host_check);
 
     // Fill output var.
-    hcdata = static_cast<nebstruct_host_check_data*>(data);
     engine::host* h(static_cast<engine::host*>(hcdata->object_ptr));
     if (hcdata->command_line) {
       host_check->active_checks_enabled = h->get_checks_enabled();
@@ -1299,11 +1307,10 @@ int neb::callback_host_status(int callback_type, void* data) {
 
   try {
     // In/Out variables.
-    engine::host const* h;
     std::shared_ptr<neb::host_status> host_status(new neb::host_status);
 
     // Fill output var.
-    h = static_cast<engine::host*>(
+    const engine::host* h = static_cast<engine::host*>(
         static_cast<nebstruct_host_status_data*>(data)->object_ptr);
     host_status->acknowledged = h->get_problem_has_been_acknowledged();
     host_status->acknowledgement_type = h->get_acknowledgement_type();
@@ -1910,17 +1917,25 @@ int neb::callback_service(int callback_type, void* data) {
  *  @return 0 on success.
  */
 int neb::callback_service_check(int callback_type, void* data) {
+  const nebstruct_service_check_data* scdata =
+      static_cast<nebstruct_service_check_data*>(data);
+
+  /* For each check, this event is received three times one precheck, one
+   * initiate and one processed. We just keep the initiate one. At the processed
+   * one we also received the service status. */
+  if (scdata->type != NEBTYPE_SERVICECHECK_INITIATE)
+    return 0;
+
   // Log message.
   logging::info(logging::medium) << "callbacks: generating service check event";
   (void)callback_type;
 
   try {
     // In/Out variables.
-    nebstruct_service_check_data const* scdata;
-    std::shared_ptr<neb::service_check> service_check(new neb::service_check);
+    std::shared_ptr<neb::service_check> service_check(
+        std::make_shared<neb::service_check>());
 
     // Fill output var.
-    scdata = static_cast<nebstruct_service_check_data*>(data);
     engine::service* s{static_cast<engine::service*>(scdata->object_ptr)};
     if (scdata->command_line) {
       service_check->active_checks_enabled = s->get_checks_enabled();

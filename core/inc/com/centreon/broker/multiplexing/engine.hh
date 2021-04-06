@@ -27,6 +27,7 @@
 #include "com/centreon/broker/multiplexing/hooker.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/persistent_cache.hh"
+#include "com/centreon/broker/stats/center.hh"
 
 CCB_BEGIN()
 
@@ -85,6 +86,10 @@ class engine {
   std::vector<muxer*> _muxers;
   std::mutex _muxers_m;
 
+  // Statistics.
+  EngineStats* _stats;
+  uint32_t _unprocessed_events;
+
   static std::mutex _load_m;
 
   engine();
@@ -102,8 +107,8 @@ class engine {
   static void unload();
   static engine& instance();
 
-  engine(engine const&) = delete;
-  engine& operator=(engine const&) = delete;
+  engine(const engine&) = delete;
+  engine& operator=(const engine&) = delete;
   ~engine() noexcept = default;
   void clear();
   void publish(const std::shared_ptr<io::data>& d);

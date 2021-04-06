@@ -47,7 +47,6 @@ class builder {
   std::string const& data() const noexcept;
   json11::Json const& root() const noexcept;
 
-
  private:
   std::string _data;
   json11::Json _root;

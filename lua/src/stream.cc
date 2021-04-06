@@ -1,5 +1,5 @@
 /*
-** Copyright 2017-2020 Centreon
+** Copyright 2017-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -104,17 +104,6 @@ stream::stream(std::string const& lua_script,
     int count = 0;
     log_v2::lua()->debug("lua: starting internal thread.");
     for (;;) {
-      /* Is the flush activated and have we received a flush ? */
-      if (has_flush && _flush) {
-        log_v2::lua()->debug("stream: flush event");
-        int32_t res = lb->flush();
-        log_v2::lua()->trace(
-            "stream: {} events acknowledged by the script flush", res);
-        _acks_count += res;
-        log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
-        _flush = false;
-      }
-
       /* If the thread queue is empty, we swap it with exposed events */
       if (events.empty()) {
         std::lock_guard<std::mutex> lck(_exposed_events_m);
@@ -154,10 +143,33 @@ stream::stream(std::string const& lua_script,
         /* We exit only if the events queue is empty */
         log_v2::lua()->debug("stream: exit");
         break;
-      } else
+      } else {
+        auto next_time =
+            std::chrono::system_clock::now() + std::chrono::milliseconds(50);
+        /* Is the flush activated and have we received a flush ? */
+        if (has_flush && _flush) {
+          log_v2::lua()->debug("stream: flush event");
+          int32_t res = lb->flush();
+          log_v2::lua()->trace(
+              "stream: {} events acknowledged by the script flush", res);
+          _acks_count += res;
+          log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
+          _flush = false;
+        }
+
         /* We did nothing, let's wait for 50ms. We don't cook an egg with our
          * cpus. */
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_until(next_time);
+      }
+    }
+    /* Is the flush activated? Then we flush a last time. */
+    if (has_flush) {
+      log_v2::lua()->debug("stream: flush event");
+      int32_t res = lb->flush();
+      log_v2::lua()->trace(
+          "stream: {} acknowledged events by the script flush()", res);
+      _acks_count += res;
+      log_v2::lua()->debug("stream: events to ack size: {}", _acks_count);
     }
 
     // No more need of the Lua interpreter
@@ -176,9 +188,23 @@ stream::stream(std::string const& lua_script,
  */
 stream::~stream() {
   log_v2::lua()->debug("Destruction of Lua stream");
+  assert(_exit);
+}
+
+/**
+ * @brief Stops the stream and flushes data.
+ *
+ * @return The number of acknowledged events.
+ */
+int32_t stream::stop() {
   _exit = true;
   if (_thread.joinable())
     _thread.join();
+  int32_t retval = _acks_count;
+  _acks_count = 0;
+  log_v2::core()->info("lua stream stopped with {} acknowledged events",
+                       retval);
+  return retval;
 }
 
 /**

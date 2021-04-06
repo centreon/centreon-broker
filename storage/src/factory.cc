@@ -22,9 +22,9 @@
 #include <memory>
 
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/connector.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -48,8 +48,10 @@ static std::string const& find_param(config::endpoint const& cfg,
                                      std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw msg_fmt("storage: no '{}"
-                  "' defined for endpoint '{}'", key, cfg.name);
+    throw msg_fmt(
+        "storage: no '{}"
+        "' defined for endpoint '{}'",
+        key, cfg.name);
   return it->second;
 }
 

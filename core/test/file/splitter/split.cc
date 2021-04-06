@@ -18,19 +18,19 @@
  */
 #include <gtest/gtest.h>
 #include "com/centreon/broker/file/cfile.hh"
-#include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker;
 
 class FileSplitterSplit : public ::testing::Test {
  public:
   void SetUp() override {
-
     _path = "/tmp/queue";
     {
-      std::list<std::string> parts{misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+      std::list<std::string> parts{
+          misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
       for (std::string const& f : parts)
         std::remove(f.c_str());
     }

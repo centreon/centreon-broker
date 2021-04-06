@@ -157,7 +157,7 @@ void rebuilder::_run(asio::error_code ec) {
                 info.metric_type = res.value_as_str(2)[0] - '0';
                 metrics_to_rebuild.push_back(info);
               }
-            } catch (std::exception const& e) {
+            } catch (const std::exception& e) {
               throw msg_fmt(
                   "storage: rebuilder: could not fetch metrics of index {}"
                   ": {}",
@@ -195,9 +195,15 @@ void rebuilder::_run(asio::error_code ec) {
         // Get next index to rebuild.
         _next_index_to_rebuild(info, ms);
       }
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
+      log_v2::sql()->error(
+          "storage: rebuilder: Unable to connect to the database: {}",
+          e.what());
       logging::error(logging::high) << e.what();
     } catch (...) {
+      log_v2::sql()->error(
+          "storage: rebuilder: Unable to connect to the database: unknown "
+          "error");
       logging::error(logging::high) << "storage: rebuilder: unknown error";
     }
     if (!_should_exit) {
@@ -233,7 +239,7 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
         info.rrd_retention = _rrd_len;
     } else
       memset(&info, 0, sizeof(info));
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     throw msg_fmt("storage: rebuilder: could not fetch index to rebuild: {} ",
                   e.what());
   }
@@ -302,7 +308,7 @@ void rebuilder::_rebuild_metric(mysql& ms,
 
         multiplexing::publisher().write(entry);
       }
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
       throw msg_fmt("storage: rebuilder: cannot fetch data of metric {} : {}",
                     metric_id, e.what());
     }
@@ -357,7 +363,7 @@ void rebuilder::_rebuild_status(mysql& ms,
                                               res.value_as_i32(1)));
         multiplexing::publisher().write(entry);
       }
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
       throw msg_fmt("storage: rebuilder: cannot fetch data of index {} : {}",
                     index_id, e.what());
     }

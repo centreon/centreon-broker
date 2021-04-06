@@ -29,10 +29,10 @@
 #include "com/centreon/broker/watchdog/configuration.hh"
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include "com/centreon/broker/watchdog/instance.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
-#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -218,7 +218,8 @@ int main(int argc, char** argv) {
       int status, stopped_pid;
       stopped_pid = waitpid(0, &status, WNOHANG);
       if (stopped_pid > 0) {
-        logger->error("cbd instance with PID {} has stopped, attempt to restart it",
+        logger->error(
+            "cbd instance with PID {} has stopped, attempt to restart it",
             stopped_pid);
         for (std::unordered_map<std::string, instance*>::iterator
                  it = instances.begin(),
@@ -241,8 +242,7 @@ int main(int argc, char** argv) {
               "its configuration. The watchdog loop is slow down");
         } else
           timeout = 0;
-      } else
-        freq = 0;
+      }
 
       if (sighup) {
         // Sighup : should reload...
@@ -252,8 +252,7 @@ int main(int argc, char** argv) {
           config = parser.parse(config_filename);
           apply_new_configuration(config);
         } catch (std::exception const& e) {
-          logger->error("Could not parse the new configuration: {}",
-                        e.what());
+          logger->error("Could not parse the new configuration: {}", e.what());
         }
         sighup = false;
         continue;

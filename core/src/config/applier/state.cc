@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015-2016 Centreon
+** Copyright 2011-2013,2015-2016, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -43,16 +44,10 @@ using namespace com::centreon::broker::config::applier;
 // Class instance.
 static state* gl_state = nullptr;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
- *  Destructor.
+ *  Default constructor.
  */
-state::~state() {}
+state::state() : _poller_id(0), _rpc_port(0) {}
 
 /**
  *  Apply a configuration state.
@@ -68,32 +63,35 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_.");
   if (!s.poller_id() || s.poller_name().empty())
     throw msg_fmt(
-          "state applier: poller information are "
-          "not set: please fill poller_id and poller_name");
+        "state applier: poller information are "
+        "not set: please fill poller_id and poller_name");
   if (!s.broker_id() || s.broker_name().empty())
     throw msg_fmt(
-          "state applier: instance information "
-          "are not set: please fill broker_id and broker_name");
+        "state applier: instance information "
+        "are not set: please fill broker_id and broker_name");
   for (std::string::const_iterator it(s.broker_name().begin()),
        end(s.broker_name().end());
        it != end; ++it)
     if (!strchr(allowed_chars, *it))
       throw msg_fmt(
-            "state applier: broker_name is not "
-            " valid: allowed characters are {}", allowed_chars);
+          "state applier: broker_name is not "
+          " valid: allowed characters are {}",
+          allowed_chars);
   for (std::list<config::endpoint>::const_iterator it(s.endpoints().begin()),
        end(s.endpoints().end());
        it != end; ++it) {
     if (it->name.empty())
-      throw msg_fmt("state applier: endpoint name is not set: "
-                              "please fill name of all endpoints");
+      throw msg_fmt(
+          "state applier: endpoint name is not set: "
+          "please fill name of all endpoints");
     for (std::string::const_iterator it_name(it->name.begin()),
          end_name(it->name.end());
          it_name != end_name; ++it_name)
       if (!strchr(allowed_chars, *it_name))
         throw msg_fmt(
-             "state applier: endpoint name '{}'"
-              "' is not valid: allowed characters are '{}'", *it_name, allowed_chars);
+            "state applier: endpoint name '{}'"
+            "' is not valid: allowed characters are '{}'",
+            *it_name, allowed_chars);
   }
 
   // Set Broker instance ID.
@@ -128,23 +126,21 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
       s.log_human_readable_timestamp());
 
   // Apply modules configuration.
-  modules::instance().apply(s.module_list(), s.module_directory(), &s);
+  _modules.apply(s.module_list(), s.module_directory(), &s);
   static bool first_application(true);
   if (first_application)
     first_application = false;
   else {
     uint32_t module_count(0);
-    for (modules::iterator it(modules::instance().begin()),
-         end(modules::instance().end());
+    for (modules::iterator it = _modules.begin(), end = _modules.end();
          it != end; ++it)
       ++module_count;
     if (module_count)
-      logging::config(logging::high)
-          << "applier: " << module_count << " modules loaded";
+      log_v2::config()->info("applier: {} modules loaded", module_count);
     else
-      logging::config(logging::high)
-          << "applier: no module loaded, "
-             "you might want to check the 'module_directory' directive";
+      log_v2::config()->info(
+          "applier: no module loaded, you might want to check the "
+          "'module_directory' directory");
   }
 
   // Event queue max size (used to limit memory consumption).
@@ -152,17 +148,6 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
       s.event_queue_max_size());
 
   com::centreon::broker::config::state st = s;
-
-  //  // Create command file input.
-  //  if (!s.command_file().empty()) {
-  //    config::endpoint ept;
-  //    ept.name = "(external commands)";
-  //    ept.type = "extcmd";
-  //    ept.params.insert({"extcmd", s.command_file()});
-  //    ept.params.insert({"command_protocol", s.command_protocol()});
-  //    ept.read_filters.insert("all");
-  //    st.endpoints().push_back(ept);
-  //  }
 
   // Apply input and output configuration.
   endpoint::instance().apply(st.endpoints());
@@ -185,7 +170,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
  *
  *  @return Cache directory.
  */
-std::string const& state::cache_dir() const throw() {
+const std::string& state::cache_dir() const noexcept {
   return _cache_dir;
 }
 
@@ -208,11 +193,20 @@ void state::load() {
 }
 
 /**
+ * @brief Returns if the state instance is already loaded.
+ *
+ * @return a boolean.
+ */
+bool state::loaded() {
+  return gl_state;
+}
+
+/**
  *  Get the poller ID.
  *
  *  @return Poller ID of this Broker instance.
  */
-uint32_t state::poller_id() const throw() {
+uint32_t state::poller_id() const noexcept {
   return _poller_id;
 }
 
@@ -221,7 +215,7 @@ uint32_t state::poller_id() const throw() {
  *
  *  @return Poller name of this Broker instance.
  */
-std::string const& state::poller_name() const noexcept {
+const std::string& state::poller_name() const noexcept {
   return _poller_name;
 }
 
@@ -243,13 +237,6 @@ void state::unload() {
   gl_state = nullptr;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-state::state() : _poller_id(0), _rpc_port(0) {}
+config::applier::modules& state::get_modules() {
+  return _modules;
+}

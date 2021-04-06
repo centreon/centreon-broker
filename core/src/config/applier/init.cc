@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,54 +19,58 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include <cstdlib>
 #include <memory>
-#include "com/centreon/broker/bbdo/internal.hh"
-#include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/file/internal.hh"
-#include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
 
 using namespace com::centreon::broker;
 
-std::atomic<config::applier::applier_state> config::applier::state{not_started};
+std::atomic<config::applier::applier_state> config::applier::mode{not_started};
+
+/**
+ * @brief Load necessary structures. It initializes exactly the same structures
+ * as init(const config::state& conf) just with detailed parameters.
+ *
+ * @param n_thread number of threads in the pool.
+ * @param name The broker name to give to this cbd instance.
+ */
+void config::applier::init(size_t n_thread, const std::string& name) {
+  // Load singletons.
+  pool::load(n_thread);
+  stats::center::load();
+  config::applier::state::load();
+  multiplexing::engine::load();
+  io::protocols::load();
+  io::events::load();
+  config::applier::endpoint::load();
+  mode = initialized;
+}
 
 /**
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
-  state = finished;
+  mode = finished;
   config::applier::endpoint::unload();
-  config::applier::state::unload();
-  bbdo::unload();
-  compression::unload();
-  file::unload();
   multiplexing::engine::instance().clear();
-  config::applier::modules::unload();
   multiplexing::engine::unload();
-  io::protocols::unload();
+  config::applier::state::unload();
   io::events::unload();
+  io::protocols::unload();
+  stats::center::unload();
+  pool::unload();
 }
 
 /**
- *  Load necessary structures.
+ * @brief Load necessary structures.
+ *
+ * @param conf The configuration used to initialize the all.
  */
-void config::applier::init() {
-  // Load singletons.
-  multiplexing::engine::load();
-  io::events::load();
-  io::protocols::load();
-  config::applier::modules::load();
-  file::load();
-  instance_broadcast::load();
-  compression::load();
-  bbdo::load();
-  config::applier::endpoint::load();
-  config::applier::state::load();
-  state = initialized;
+void config::applier::init(const config::state& conf) {
+  init(conf.pool_size(), conf.broker_name());
 }

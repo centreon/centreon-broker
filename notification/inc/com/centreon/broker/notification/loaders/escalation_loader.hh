@@ -46,12 +46,12 @@ class escalation_loader {
   std::vector<std::string> _rows;
 
   void _load_relations(QSqlQuery& query, escalation_builder& output);
-  void _load_relation(
-      QSqlQuery& query,
-      escalation_builder& output,
-      std::string const& relation_id_name,
-      std::string const& table,
-      void (escalation_builder::*register_method)(uint32_t, uint32_t));
+  void _load_relation(QSqlQuery& query,
+                      escalation_builder& output,
+                      std::string const& relation_id_name,
+                      std::string const& table,
+                      void (escalation_builder::*register_method)(uint32_t,
+                                                                  uint32_t));
 };
 
 }  // namespace notification

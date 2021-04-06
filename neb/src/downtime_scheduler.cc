@@ -44,10 +44,10 @@ void downtime_scheduler::run() {
         std::min(_get_first_timestamp(_downtime_starts),
                  _get_first_timestamp(_downtime_ends), timestamp::less);
     time_t now = ::time(nullptr);
-    unsigned long wait_for =
-        first_time == time_t(-1)
-            ? std::numeric_limits<unsigned long>::max()
-            : (first_time >= now) ? (first_time - now) * 1000 : 0;
+    unsigned long wait_for = first_time == time_t(-1)
+                                 ? std::numeric_limits<unsigned long>::max()
+                             : (first_time >= now) ? (first_time - now) * 1000
+                                                   : 0;
 
     logging::debug(logging::medium)
         << "node events: downtime scheduler sleeping for " << wait_for / 1000.0
@@ -132,8 +132,7 @@ void downtime_scheduler::remove_downtime(uint32_t internal_id) {
   // Lock the mutex.
   std::lock_guard<std::mutex> lock(_general_mutex);
 
-  std::map<uint32_t, downtime>::iterator found =
-      _downtimes.find(internal_id);
+  std::map<uint32_t, downtime>::iterator found = _downtimes.find(internal_id);
   if (found != _downtimes.end()) {
     for (std::multimap<timestamp, uint32_t>::iterator
              it = _downtime_starts.begin(),
@@ -182,9 +181,9 @@ void downtime_scheduler::_process_downtimes() {
     ++tmp;
     _downtime_starts.erase(it);
   }
-  for (std::multimap<timestamp, uint32_t>::iterator
-           it = _downtime_ends.begin(),
-           tmp = it, end = _downtime_ends.end();
+  for (std::multimap<timestamp, uint32_t>::iterator it = _downtime_ends.begin(),
+                                                    tmp = it,
+                                                    end = _downtime_ends.end();
        it != end; it = tmp) {
     if (it->first > now)
       break;

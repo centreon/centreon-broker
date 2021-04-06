@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@
 #include <cstring>
 #include <sstream>
 
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
-#include "com/centreon/broker/config/applier/init.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -273,8 +273,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
         if (_server_error(mysql_stmt_errno(stmt))) {
           set_error_message(err_msg);
           msg_fmt e(err_msg);
-          task->promise->set_exception(
-              std::make_exception_ptr<msg_fmt>(e));
+          task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           break;
         }
         if (mysql_stmt_errno(stmt) != 1213 &&
@@ -287,8 +286,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
         logging::error(logging::medium) << "mysql_connection: " << err_msg;
         if (++attempts >= MAX_ATTEMPTS) {
           msg_fmt e(err_msg);
-          task->promise->set_exception(
-              std::make_exception_ptr<msg_fmt>(e));
+          task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           break;
         }
       } else {
@@ -302,8 +300,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
             if (_server_error(mysql_stmt_errno(stmt)))
               set_error_message(err_msg);
             msg_fmt e(err_msg);
-            task->promise->set_exception(
-                std::make_exception_ptr<msg_fmt>(e));
+            task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           } else
             task->promise->set_value(nullptr);
         } else {
@@ -315,16 +312,14 @@ void mysql_connection::_statement_res(mysql_task* t) {
             if (_server_error(::mysql_stmt_errno(stmt)))
               set_error_message(err_msg);
             msg_fmt e(err_msg);
-            task->promise->set_exception(
-                std::make_exception_ptr<msg_fmt>(e));
+            task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           } else {
             if (mysql_stmt_store_result(stmt)) {
               std::string err_msg(::mysql_stmt_error(stmt));
               if (_server_error(::mysql_stmt_errno(stmt)))
                 set_error_message(err_msg);
               msg_fmt e(err_msg);
-              task->promise->set_exception(
-                  std::make_exception_ptr<msg_fmt>(e));
+              task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
             }
             // Here, we have the first row.
             res.set(prepare_meta_result);
@@ -370,8 +365,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
         if (_server_error(mysql_stmt_errno(stmt))) {
           set_error_message(err_msg);
           msg_fmt e(err_msg);
-          task->promise->set_exception(
-              std::make_exception_ptr<msg_fmt>(e));
+          task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           break;
         }
         if (mysql_stmt_errno(stmt) != 1213 &&
@@ -384,8 +378,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
         logging::error(logging::medium) << "mysql_connection: " << err_msg;
         if (++attempts >= MAX_ATTEMPTS) {
           msg_fmt e(err_msg);
-          task->promise->set_exception(
-              std::make_exception_ptr<msg_fmt>(e));
+          task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           break;
         }
       } else {
@@ -509,7 +502,7 @@ void mysql_connection::_run() {
   } else {
     uint32_t timeout = 10;
     mysql_options(_conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
-    while (config::applier::state != config::applier::finished &&
+    while (config::applier::mode != config::applier::finished &&
            !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                _pwd.c_str(), _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
@@ -523,7 +516,8 @@ void mysql_connection::_run() {
     }
   }
 
-  if (config::applier::state == config::applier::finished) {
+  if (config::applier::mode == config::applier::finished) {
+    log_v2::sql()->debug("Connection over.");
     _state = finished;
     locker.unlock();
     _result_condition.notify_all();
@@ -540,7 +534,7 @@ void mysql_connection::_run() {
     _result_condition.notify_all();
 
     while (!_finished) {
-      std::list<std::shared_ptr<database::mysql_task> > tasks_list;
+      std::list<std::shared_ptr<database::mysql_task>> tasks_list;
       std::unique_lock<std::mutex> locker(_list_mutex);
       if (!_tasks_list.empty()) {
         std::swap(_tasks_list, tasks_list);
@@ -567,6 +561,7 @@ void mysql_connection::_run() {
   }
   mysql_close(_conn);
   mysql_thread_end();
+  log_v2::core()->trace("mysql connection main loop finished.");
 }
 
 /******************************************************************************/
@@ -608,8 +603,7 @@ mysql_connection::~mysql_connection() {
 
 void mysql_connection::_push(std::shared_ptr<mysql_task> const& q) {
   if (_finished)
-    throw msg_fmt(
-        "This connection is closed and does not accept any query");
+    throw msg_fmt("This connection is closed and does not accept any query");
 
   std::lock_guard<std::mutex> locker(_list_mutex);
   _tasks_list.push_back(q);

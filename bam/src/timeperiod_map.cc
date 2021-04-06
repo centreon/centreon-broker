@@ -138,7 +138,8 @@ timeperiod_map::get_timeperiods_by_ba_id(uint32_t ba_id) const {
     bool is_default = found.first->second.second;
     time::timeperiod::ptr tp = get_timeperiod(tp_id);
     if (!tp)
-      throw msg_fmt("BAM-BI: could not find the timeperiod {} in cache.", tp_id);
+      throw msg_fmt("BAM-BI: could not find the timeperiod {} in cache.",
+                    tp_id);
     res.push_back(std::make_pair(tp, is_default));
   }
 

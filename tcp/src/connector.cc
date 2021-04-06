@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,20 +59,21 @@ connector::~connector() {}
  *
  * @return The TCP connection object.
  */
-std::shared_ptr<io::stream> connector::open() {
+std::unique_ptr<io::stream> connector::open() {
   // Launch connection process.
   log_v2::tcp()->info("TCP: connecting to {}:{}", _host, _port);
   try {
-    std::shared_ptr<stream> retval =
-        std::make_shared<stream>(_host, _port, _read_timeout);
+    std::unique_ptr<stream> retval =
+        std::unique_ptr<stream>(new stream(_host, _port, _read_timeout));
     _is_ready_count = 0;
-    return retval;
+    return std::move(retval);
   } catch (const std::exception& e) {
     if (_is_ready_count < 30)
       _is_ready_count++;
-    log_v2::tcp()->debug("Unable to establish the connection to {}:{} (attempt {}): {}",
-                         _host, _port, _is_ready_count, e.what());
-    return std::shared_ptr<stream>();
+    log_v2::tcp()->debug(
+        "Unable to establish the connection to {}:{} (attempt {}): {}", _host,
+        _port, _is_ready_count, e.what());
+    return nullptr;
   }
 }
 

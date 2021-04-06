@@ -38,16 +38,18 @@ class connector : public io::endpoint {
   connector(bool negotiate,
             const std::pair<std::string, std::string>& extensions,
             time_t timeout,
+            bool connector_is_input,
             bool coarse = false,
             uint32_t ack_limit = 1000);
-  ~connector() noexcept {}
-  connector(connector const&) = delete;
-  connector& operator=(connector const&) = delete;
-  std::shared_ptr<io::stream> open();
+  ~connector() noexcept = default;
+  connector(const connector&) = delete;
+  connector& operator=(const connector&) = delete;
+  std::unique_ptr<io::stream> open() override;
 
  private:
-  std::shared_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
+  std::unique_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
 
+  bool _is_input;
   bool _coarse;
   std::pair<std::string, std::string> _extensions;
   bool _negotiate;

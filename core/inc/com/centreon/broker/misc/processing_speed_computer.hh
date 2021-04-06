@@ -36,7 +36,8 @@ class processing_speed_computer {
   processing_speed_computer();
   processing_speed_computer(processing_speed_computer const&) = delete;
   ~processing_speed_computer() noexcept {}
-  processing_speed_computer& operator=(processing_speed_computer const&) = delete;
+  processing_speed_computer& operator=(processing_speed_computer const&) =
+      delete;
 
   double get_processing_speed() const;
   void tick(int events = 1) noexcept;

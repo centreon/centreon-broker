@@ -22,6 +22,7 @@
 
 #include <string>
 #include <thread>
+#include <vector>
 #include "com/centreon/broker/stats/worker.hh"
 
 namespace com {

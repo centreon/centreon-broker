@@ -225,7 +225,8 @@ TEST(SetLogData, GlobalServiceEventHandler) {
 
   // Parse a service alert line.
   neb::set_log_data(
-      le, "GLOBAL SERVICE EVENT HANDLER: myserver;myservice;WARNING;SOFT;3;coucou");
+      le,
+      "GLOBAL SERVICE EVENT HANDLER: myserver;myservice;WARNING;SOFT;3;coucou");
 
   // Check that it was properly parsed.
   ASSERT_FALSE(le.host_name != "myserver");

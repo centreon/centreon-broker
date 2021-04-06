@@ -37,7 +37,6 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
-#include "com/centreon/broker/pool.hh"
 
 using namespace com::centreon::broker;
 
@@ -255,14 +254,16 @@ int main(int argc, char* argv[]) {
         // Parse configuration file.
         config::parser parsr;
         config::state conf{parsr.parse(gl_mainconfigfiles.front())};
-        std::string err;
         try {
           log_v2::instance().apply(conf);
         } catch (const std::exception& e) {
           log_v2::core()->error(e.what());
         }
 
-        config::applier::init();
+        if (n_thread > 0 && n_thread < 100)
+          conf.pool_size(n_thread);
+        config::applier::init(conf);
+
         // Verification modifications.
         if (check) {
           // Loggers.
@@ -270,11 +271,6 @@ int main(int argc, char* argv[]) {
             l.types(0);
           conf.loggers().push_back(default_state.loggers().front());
         }
-
-        if (n_thread > 0 && n_thread < 100)
-          pool::set_size(n_thread);
-        else
-          pool::set_size(conf.pool_size());
 
         // Add debug output if in debug mode.
         if (debug)

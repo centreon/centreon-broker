@@ -367,7 +367,8 @@ static int l_broker_cache_get_metric_mapping_v2(lua_State* L) {
   int metric_id(luaL_checkinteger(L, 2));
 
   try {
-    const std::shared_ptr<storage::metric_mapping>& mm{cache->get_metric_mapping(metric_id)};
+    const std::shared_ptr<storage::metric_mapping>& mm{
+        cache->get_metric_mapping(metric_id)};
     broker_event::create(L, mm);
   } catch (std::exception const& e) {
     (void)e;

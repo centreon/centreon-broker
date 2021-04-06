@@ -45,9 +45,7 @@ class generator {
   void add(uint32_t host_id,
            uint32_t service_id,
            std::shared_ptr<plugin> plugin);
-  void add(uint32_t host_id,
-           uint32_t service_id,
-           std::string const& name);
+  void add(uint32_t host_id, uint32_t service_id, std::string const& name);
   void clear();
   uint32_t interval() const throw();
   void interval(uint32_t value);

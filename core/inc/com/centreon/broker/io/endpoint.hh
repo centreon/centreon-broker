@@ -54,7 +54,7 @@ class endpoint {
   void from(std::shared_ptr<endpoint> endp);
   bool is_acceptor() const noexcept;
   bool is_connector() const noexcept;
-  virtual std::shared_ptr<stream> open() = 0;
+  virtual std::unique_ptr<stream> open() = 0;
   virtual bool is_ready() const;
   virtual void stats(json11::Json::object& tree);
   void set_filter(std::set<uint32_t> const& filter);

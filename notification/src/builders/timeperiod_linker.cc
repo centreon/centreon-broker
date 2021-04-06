@@ -61,9 +61,8 @@ void timeperiod_linker::add_timeperiod_exception(uint32_t timeperiod_id,
  *  @param[in] timeperiod_id  The id of the timeperiod.
  *  @param[in] exclude_id     The id of the timeperiod excluded.
  */
-void timeperiod_linker::add_timeperiod_exclude_relation(
-    uint32_t timeperiod_id,
-    uint32_t exclude_id) {
+void timeperiod_linker::add_timeperiod_exclude_relation(uint32_t timeperiod_id,
+                                                        uint32_t exclude_id) {
   QHash<uint32_t, time::timeperiod::ptr>::iterator found =
       _table.find(timeperiod_id);
   QHash<uint32_t, time::timeperiod::ptr>::iterator excluded =
@@ -83,9 +82,8 @@ void timeperiod_linker::add_timeperiod_exclude_relation(
  *  @param[in] timeperiod_id  The id of the timeperiod.
  *  @param[in] include_id     The id of the timeperiod included.
  */
-void timeperiod_linker::add_timeperiod_include_relation(
-    uint32_t timeperiod_id,
-    uint32_t include_id) {
+void timeperiod_linker::add_timeperiod_include_relation(uint32_t timeperiod_id,
+                                                        uint32_t include_id) {
   QHash<uint32_t, time::timeperiod::ptr>::iterator found =
       _table.find(timeperiod_id);
   QHash<uint32_t, time::timeperiod::ptr>::iterator included =
