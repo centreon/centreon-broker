@@ -47,7 +47,7 @@ class TcpAcceptor : public ::testing::Test {
 };
 
 static auto try_connect =
-    [](tcp::connector& con) -> std::shared_ptr<io::stream> {
+    [](tcp::connector& con) -> std::unique_ptr<io::stream> {
   std::unique_ptr<io::stream> u;
   while (!u) {
     try {
@@ -55,7 +55,7 @@ static auto try_connect =
     } catch (...) {
     }
   }
-  return u;
+  return std::move(u);
 };
 
 TEST_F(TcpAcceptor, BadPort) {

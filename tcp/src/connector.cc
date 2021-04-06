@@ -66,7 +66,7 @@ std::unique_ptr<io::stream> connector::open() {
     std::unique_ptr<stream> retval =
         std::unique_ptr<stream>(new stream(_host, _port, _read_timeout));
     _is_ready_count = 0;
-    return retval;
+    return std::move(retval);
   } catch (const std::exception& e) {
     if (_is_ready_count < 30)
       _is_ready_count++;
