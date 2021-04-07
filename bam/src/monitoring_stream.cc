@@ -79,6 +79,7 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
       _pending_events(0),
       _storage_db_cfg(storage_db_cfg),
       _cache(cache) {
+  log_v2::bam()->trace("BAM: monitoring_stream constructor");
   // Prepare queries.
   _prepare();
 
@@ -93,6 +94,7 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
  */
 monitoring_stream::~monitoring_stream() {
   // save cache
+  log_v2::bam()->trace("BAM: monitoring_stream destructor");
   try {
     _write_cache();
   } catch (std::exception const& e) {
@@ -110,6 +112,7 @@ monitoring_stream::~monitoring_stream() {
 int monitoring_stream::flush() {
   _mysql.commit();
   int retval = _pending_events;
+  log_v2::bam()->trace("BAM: monitoring_stream flush: {} events", retval);
   _pending_events = 0;
   return retval;
 }
@@ -118,6 +121,7 @@ int monitoring_stream::flush() {
  *  Generate default state.
  */
 void monitoring_stream::initialize() {
+  log_v2::bam()->trace("BAM: monitoring_stream initialize");
   multiplexing::publisher pblshr;
   event_cache_visitor ev_cache;
   _applier.visit(&ev_cache);
@@ -154,6 +158,7 @@ void monitoring_stream::statistics(json11::Json::object& tree) const {
  *  Rebuild index and metrics cache.
  */
 void monitoring_stream::update() {
+  log_v2::bam()->trace("BAM: monitoring_stream update");
   try {
     configuration::state s;
     configuration::reader_v2 r(_mysql, _storage_db_cfg);
@@ -177,6 +182,7 @@ void monitoring_stream::update() {
  *  @return Number of events acknowledged.
  */
 int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
+  log_v2::bam()->trace("BAM: monitoring_stream write");
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, get_name()))
@@ -231,11 +237,11 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
     } break;
     case bam::ba_status::static_type(): {
       ba_status* status(static_cast<ba_status*>(data.get()));
-      logging::debug(logging::low)
-          << "BAM: processing BA status (id " << status->ba_id << ", level "
-          << status->level_nominal << ", acknowledgement "
-          << status->level_acknowledgement << ", downtime "
-          << status->level_downtime << ")";
+      log_v2::bam()->trace(
+          "BAM: processing BA status (id {}, level {}, acknowledgement {}, "
+          "downtime {})",
+          status->ba_id, status->level_nominal, status->level_acknowledgement,
+          status->level_downtime);
       _ba_update.bind_value_as_f64(0, status->level_nominal);
       _ba_update.bind_value_as_f64(1, status->level_acknowledgement);
       _ba_update.bind_value_as_f64(2, status->level_downtime);
@@ -269,11 +275,11 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
     } break;
     case bam::kpi_status::static_type(): {
       kpi_status* status(static_cast<kpi_status*>(data.get()));
-      logging::debug(logging::low)
-          << "BAM: processing KPI status (id " << status->kpi_id << ", level "
-          << status->level_nominal_hard << ", acknowledgement "
-          << status->level_acknowledgement_hard << ", downtime "
-          << status->level_downtime_hard << ")";
+      log_v2::bam()->trace(
+          "BAM: processing KPI status (id {}, level {}, acknowledgement {}, "
+          "downtime {})",
+          status->kpi_id, status->level_nominal_hard,
+          status->level_acknowledgement_hard, status->level_downtime_hard);
 
       _kpi_update.bind_value_as_f64(0, status->level_acknowledgement_hard);
       _kpi_update.bind_value_as_i32(1, status->state_hard);
@@ -299,6 +305,9 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       timestamp now = timestamp::now();
       inherited_downtime const& dwn =
           *std::static_pointer_cast<inherited_downtime const>(data);
+      log_v2::bam()->trace(
+          "BAM: processing inherited downtime (ba id {}, now {}", dwn.ba_id,
+          now);
       if (dwn.in_downtime)
         cmd = fmt::format(
             "[{}] "
@@ -334,6 +343,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
  *  Prepare queries.
  */
 void monitoring_stream::_prepare() {
+  log_v2::bam()->trace("BAM: monitoring stream _prepare");
   // BA status.
   {
     std::string query(
@@ -356,6 +366,7 @@ void monitoring_stream::_prepare() {
  *  Rebuilds BA durations/availibities from BA events.
  */
 void monitoring_stream::_rebuild() {
+  log_v2::bam()->trace("BAM: monitoring stream _rebuild");
   // Get the list of the BAs that should be rebuild.
   std::vector<uint32_t> bas_to_rebuild;
   {
@@ -376,8 +387,7 @@ void monitoring_stream::_rebuild() {
   if (bas_to_rebuild.empty())
     return;
 
-  logging::debug(logging::medium)
-      << "BAM: rebuild asked, sending the rebuild signal";
+  log_v2::bam()->trace("BAM: rebuild asked, sending the rebuild signal");
 
   std::shared_ptr<rebuild> r(std::make_shared<rebuild>(
       fmt::format("{}", fmt::join(bas_to_rebuild, ", "))));
@@ -397,6 +407,7 @@ void monitoring_stream::_rebuild() {
  *  @param[in] status New status.
  */
 void monitoring_stream::_update_status(std::string const& status) {
+  log_v2::bam()->trace("BAM: monitoring stream _update_status");
   std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
 }
@@ -406,7 +417,8 @@ void monitoring_stream::_update_status(std::string const& status) {
  *
  *  @param[in] cmd  Command to write to the external command pipe.
  */
-void monitoring_stream::_write_external_command(std::string cmd) {
+void monitoring_stream::_write_external_command(std::string& cmd) {
+  log_v2::bam()->trace("BAM: monitoring stream _write_external_command");
   cmd.append("\n");
   std::ofstream ofs;
   ofs.open(_ext_cmd_file.c_str());
@@ -421,8 +433,7 @@ void monitoring_stream::_write_external_command(std::string cmd) {
           << "BAM: could not write BA check result to command file '"
           << _ext_cmd_file << "'";
     else
-      logging::debug(logging::medium)
-          << "BAM: sent external command '" << cmd << "'";
+      log_v2::bam()->debug("BAM: sent external command '{}'", cmd);
     ofs.close();
   }
 }
@@ -431,6 +442,7 @@ void monitoring_stream::_write_external_command(std::string cmd) {
  *  Get inherited downtime from the cache.
  */
 void monitoring_stream::_read_cache() {
+  log_v2::bam()->trace("BAM: monitoring stream _read_cache");
   if (_cache == nullptr)
     return;
 
@@ -441,12 +453,13 @@ void monitoring_stream::_read_cache() {
  *  Save inherited downtime to the cache.
  */
 void monitoring_stream::_write_cache() {
+  log_v2::bam()->trace("BAM: monitoring stream _write_cache");
   if (_cache == nullptr) {
-    logging::debug(logging::medium) << "BAM: no cache configured";
+    log_v2::bam()->debug("BAM: no cache configured");
     return;
   }
 
-  logging::debug(logging::medium) << "BAM: loading cache";
+  log_v2::bam()->debug("BAM: loading cache");
 
   _applier.save_to_cache(*_cache);
 }

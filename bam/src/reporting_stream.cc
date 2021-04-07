@@ -56,6 +56,7 @@ using namespace com::centreon::broker::database;
 reporting_stream::reporting_stream(database_config const& db_cfg)
     : io::stream("BAM-BI"), _ack_events(0), _pending_events(0), _mysql(db_cfg),
       _processing_dimensions(false) {
+  log_v2::bam()->trace("BAM: reporting stream constructor");
   // Prepare queries.
   _prepare();
 
@@ -78,6 +79,7 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
  *  Destructor.
  */
 reporting_stream::~reporting_stream() {
+  log_v2::bam()->trace("BAM: reporting stream destructor");
   // Terminate the availabilities thread.
   _availabilities->terminate();
   _availabilities->wait();
@@ -116,6 +118,7 @@ void reporting_stream::statistics(json11::Json::object& tree) const {
  *  @return Number of acknowledged events.
  */
 int reporting_stream::flush() {
+  log_v2::bam()->trace("BAM: reporting stream flush");
   _mysql.commit();
   int retval(_ack_events + _pending_events);
   _ack_events = 0;
@@ -131,6 +134,7 @@ int reporting_stream::flush() {
  *  @return Number of events acknowledged.
  */
 int reporting_stream::write(std::shared_ptr<io::data> const& data) {
+  log_v2::bam()->trace("BAM: reporting stream write");
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "BAM-BI"))
@@ -188,7 +192,7 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
  *  @param[in] tp  Timeperiod declaration.
  */
 void reporting_stream::_apply(dimension_timeperiod const& tp) {
-  log_v2::bam()->trace("BAM-BI: adding timeperiod {} to cache", tp.id);
+  log_v2::bam()->trace("BAM-BI: applying timeperiod {} to cache", tp.id);
   _timeperiods.add_timeperiod(
       tp.id, time::timeperiod::ptr(new time::timeperiod(
                  tp.id, tp.name, "", tp.sunday, tp.monday, tp.tuesday,
@@ -201,6 +205,9 @@ void reporting_stream::_apply(dimension_timeperiod const& tp) {
  *  @param[in] tpe  Timeperiod exclusion declaration.
  */
 void reporting_stream::_apply(dimension_timeperiod_exception const& tpe) {
+  log_v2::bam()->trace(
+      "BAM-BI: applying timeperiod exception (timeperiod id {}) to cache",
+      tpe.timeperiod_id);
   time::timeperiod::ptr timeperiod =
       _timeperiods.get_timeperiod(tpe.timeperiod_id);
   if (timeperiod)
@@ -217,6 +224,9 @@ void reporting_stream::_apply(dimension_timeperiod_exception const& tpe) {
  *  @param[in] tpe  Timeperiod exclusion declaration.
  */
 void reporting_stream::_apply(dimension_timeperiod_exclusion const& tpe) {
+  log_v2::bam()->trace(
+      "BAM-BI: applying timeperiod exclusion (timeperiod id {}) to cache",
+      tpe.timeperiod_id);
   time::timeperiod::ptr timeperiod =
       _timeperiods.get_timeperiod(tpe.timeperiod_id);
   time::timeperiod::ptr excluded_tp =
@@ -240,6 +250,10 @@ void reporting_stream::_apply(dimension_timeperiod_exclusion const& tpe) {
 void reporting_stream::_close_inconsistent_events(char const* event_type,
                                                   char const* table,
                                                   char const* id) {
+  log_v2::bam()->trace(
+      "BAM-BI: reporting stream _close_inconsistent events (type {}, table: "
+      "{}, id: {})",
+      event_type, table, id);
   // Get events to close.
   std::list<std::pair<uint32_t, time_t>> events;
   {
@@ -250,6 +264,7 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
                     "NULL AND e1.start_time!=e2.max_start_time",
                     id, table));
     std::promise<mysql_result> promise;
+    log_v2::bam()->trace("reporting_stream: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       mysql_result res(promise.get_future().get());
@@ -273,6 +288,7 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
           fmt::format("SELECT start_time FROM {} WHERE {}={} AND start_time>{} "
                       "ORDER BY start_time ASC LIMIT 1",
                       table, id, it->first, it->second));
+      log_v2::bam()->trace("reporting_stream: query: '{}'", query_str);
       std::promise<mysql_result> promise;
       _mysql.run_query_and_get_result(query_str, &promise);
       try {
@@ -292,23 +308,27 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
       std::string query(
           fmt::format("UPDATE {} SET end_time={} WHERE {}={} AND start_time={}",
                       table, end_time, id, it->first, it->second));
+      log_v2::bam()->trace("reporting_stream: query: '{}'", query);
       _mysql.run_query(query, database::mysql_error::close_event, true);
     }
   }
 }
 
 void reporting_stream::_close_all_events() {
+  log_v2::bam()->trace("reporting stream _close_all_events");
   time_t now(::time(nullptr));
   std::string query(
       fmt::format("UPDATE mod_bam_reporting_ba_events SET end_time={} WHERE "
                   "end_time IS NULL",
                   now));
+  log_v2::bam()->trace("reporting_stream: query: '{}'", query);
   _mysql.run_query(query, database::mysql_error::close_ba_events);
 
   query = fmt::format(
       "UPDATE mod_bam_reporting_kpi_events SET end_time={} WHERE end_time IS "
       "NULL",
       now);
+  log_v2::bam()->trace("reporting_stream: query: '{}'", query);
   _mysql.run_query(query, database::mysql_error::close_kpi_events);
 }
 
@@ -316,6 +336,7 @@ void reporting_stream::_close_all_events() {
  *  Load timeperiods from DB.
  */
 void reporting_stream::_load_timeperiods() {
+  log_v2::bam()->trace("reporting stream _load_timeperiods");
   // Clear old timeperiods.
   _timeperiods.clear();
 
@@ -325,6 +346,7 @@ void reporting_stream::_load_timeperiods() {
         "SELECT timeperiod_id, name, sunday, monday, tuesday, wednesday, "
         "thursday, friday, saturday FROM mod_bam_reporting_timeperiods");
     std::promise<mysql_result> promise;
+    log_v2::bam()->trace("reporting_stream: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       mysql_result res(promise.get_future().get());
@@ -349,6 +371,7 @@ void reporting_stream::_load_timeperiods() {
         "SELECT timeperiod_id, daterange, timerange FROM "
         "mod_bam_reporting_timeperiods_exceptions");
     std::promise<mysql_result> promise;
+    log_v2::bam()->trace("reporting_stream: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       mysql_result res(promise.get_future().get());
@@ -375,6 +398,7 @@ void reporting_stream::_load_timeperiods() {
         "SELECT timeperiod_id, excluded_timeperiod_id"
         "  FROM mod_bam_reporting_timeperiods_exclusions");
     std::promise<mysql_result> promise;
+    log_v2::bam()->trace("reporting_stream: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       mysql_result res(promise.get_future().get());
@@ -403,6 +427,7 @@ void reporting_stream::_load_timeperiods() {
         "SELECT ba_id, timeperiod_id, is_default"
         "  FROM mod_bam_reporting_relations_ba_timeperiods");
     std::promise<mysql_result> promise;
+    log_v2::bam()->trace("reporting_stream: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       mysql_result res(promise.get_future().get());
@@ -420,12 +445,11 @@ void reporting_stream::_load_timeperiods() {
  *  Prepare queries.
  */
 void reporting_stream::_prepare() {
-  std::string query;
-
-  query =
+  log_v2::bam()->trace("reporting stream _prepare");
+  std::string query{
       "INSERT INTO mod_bam_reporting_ba_events (ba_id,"
       "first_level,start_time,end_time,status,in_downtime)"
-      " VALUES(?,?,?,?,?,?)";
+      " VALUES(?,?,?,?,?,?)"};
   _ba_full_event_insert = _mysql.prepare_query(query);
 
   query =
@@ -1318,6 +1342,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
                       "a.ba_event_id = b.ba_event_id WHERE b.ba_id IN ({})",
                       r.bas_to_rebuild));
 
+      log_v2::bam()->trace("reporting_stream: query: '{}'", query);
       _mysql.run_query(query, database::mysql_error::delete_ba_durations, true);
     }
 
@@ -1330,6 +1355,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
                       "IS NOT NULL AND ba_id IN ({})",
                       r.bas_to_rebuild));
       std::promise<mysql_result> promise;
+      log_v2::bam()->trace("reporting_stream: query: '{}'", query);
       _mysql.run_query_and_get_result(query, &promise);
       try {
         mysql_result res(promise.get_future().get());

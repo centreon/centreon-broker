@@ -34,6 +34,7 @@
 #include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/mysql.hh"
@@ -117,6 +118,7 @@ void reader_v2::_load(state::kpis& kpis) {
         "    AND pr.poller_id={}",
         config::applier::state::instance().poller_id()));
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace("reader_v2 query: {}", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       database::mysql_result res(promise.get_future().get());
@@ -172,6 +174,7 @@ void reader_v2::_load(state::kpis& kpis) {
                         "  WHERE s.service_description='meta_{}'",
                         it->second.get_meta_id()));
         std::promise<database::mysql_result> promise;
+        log_v2::bam()->trace("reader_v2 query: {}", query);
         _mysql.run_query_and_get_result(query, &promise);
         try {
           database::mysql_result res(promise.get_future().get());
@@ -217,6 +220,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
                       "    AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("reader_v2 query: {}", query);
       _mysql.run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
@@ -258,6 +262,15 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   // services have for description 'ba_[id]'.
   try {
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "read_v2: query: SELECT h.host_name, s.service_description,"
+        "       hsr.host_host_id, hsr.service_service_id"
+        "  FROM service AS s"
+        "  INNER JOIN host_service_relation AS hsr"
+        "    ON s.service_id=hsr.service_service_id"
+        "  INNER JOIN host AS h"
+        "    ON hsr.host_host_id=h.host_id"
+        "  WHERE s.service_description LIKE 'ba_%'");
     _mysql.run_query_and_get_result(
         "SELECT h.host_name, s.service_description,"
         "       hsr.host_host_id, hsr.service_service_id"
@@ -334,6 +347,7 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
                     "    AND pr.poller_id={}",
                     config::applier::state::instance().poller_id()));
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace("reader_v2: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
@@ -361,6 +375,12 @@ void reader_v2::_load(state::meta_services& meta_services) {
   // Load meta-services.
   try {
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT meta_id, meta_name, calcul_type, warning, critical,"
+        "       meta_select_mode, regexp_str, metric"
+        "  FROM meta_service"
+        "  WHERE meta_activate='1'");
     _mysql.run_query_and_get_result(
         "SELECT meta_id, meta_name, calcul_type, warning, critical,"
         "       meta_select_mode, regexp_str, metric"
@@ -388,6 +408,15 @@ void reader_v2::_load(state::meta_services& meta_services) {
   // associated services have for description 'meta_[id]'.
   try {
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT h.host_name, s.service_description"
+        "  FROM service AS s"
+        "  INNER JOIN host_service_relation AS hsr"
+        "    ON s.service_id=hsr.service_service_id"
+        "  INNER JOIN host AS h"
+        "    ON hsr.host_host_id=h.host_id"
+        "  WHERE s.service_description LIKE 'meta_%'");
     _mysql.run_query_and_get_result(
         "SELECT h.host_name, s.service_description"
         "  FROM service AS s"
@@ -457,6 +486,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
           " WHERE s.description LIKE '{}'"
           " AND m.metric_name='{}'",
           it->second.get_service_filter(), it->second.get_metric_name()));
+      log_v2::bam()->trace("reader_v2: query: '{}'", query);
       if (!storage_mysql)
         try {
           storage_mysql.reset(new mysql(_storage_cfg));
@@ -486,6 +516,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
             fmt::format("SELECT metric_id FROM meta_service_relation"
                         " WHERE meta_id={} AND activate='1'",
                         it->second.get_id()));
+        log_v2::bam()->trace("reader_v2: query: '{}'", query);
         std::promise<database::mysql_result> promise;
         _mysql.run_query_and_get_result(query, &promise);
         database::mysql_result res(promise.get_future().get());
@@ -512,6 +543,15 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
   try {
     // XXX : expand hostgroups and servicegroups
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
+        "   service_activate"
+        "  FROM service AS s"
+        "  LEFT JOIN host_service_relation AS hsr"
+        "    ON s.service_id=hsr.service_service_id"
+        "  LEFT JOIN host AS h"
+        "    ON hsr.host_host_id=h.host_id");
     _mysql.run_query_and_get_result(
         "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
         "   service_activate"
@@ -546,6 +586,7 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
         " ON i.host_id=s.host_id AND i.service_id=s.service_id");
     mysql storage_mysql(_storage_cfg);
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace("reader_v2: query: '{}'", query);
     storage_mysql.run_query_and_get_result(query, &promise);
     database::mysql_result res(promise.get_future().get());
     while (storage_mysql.fetch_row(res)) {
@@ -575,6 +616,11 @@ void reader_v2::_load_dimensions() {
   try {
     // Load the timeperiods themselves.
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
+        "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
+        " FROM timeperiod");
     _mysql.run_query_and_get_result(
         "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
         "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
@@ -623,6 +669,7 @@ void reader_v2::_load_dimensions() {
                     " AND pr.poller_id={}",
                     config::applier::state::instance().poller_id()));
     promise = std::promise<database::mysql_result>();
+    log_v2::bam()->trace("reader_v2: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       database::mysql_result res(promise.get_future().get());
@@ -652,6 +699,10 @@ void reader_v2::_load_dimensions() {
     }
     // Load the BVs.
     promise = std::promise<database::mysql_result>();
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT id_ba_group, ba_group_name, ba_group_description"
+        " FROM mod_bam_ba_groups");
     _mysql.run_query_and_get_result(
         "SELECT id_ba_group, ba_group_name, ba_group_description"
         " FROM mod_bam_ba_groups",
@@ -682,6 +733,7 @@ void reader_v2::_load_dimensions() {
                       " AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("reader_v2: query: '{}'", query);
       _mysql.run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
@@ -745,6 +797,7 @@ void reader_v2::_load_dimensions() {
                       "    AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("reader_v2: query: '{}'", query);
       _mysql.run_query_and_get_result(query, &promise);
 
       try {
@@ -792,6 +845,9 @@ void reader_v2::_load_dimensions() {
 
     // Load the ba-timeperiods relations.
     promise = std::promise<database::mysql_result>();
+    log_v2::bam()->trace(
+        "reader_v2: query: '{}'"
+        "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods");
     _mysql.run_query_and_get_result(
         "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods", &promise);
     try {

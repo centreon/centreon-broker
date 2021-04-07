@@ -21,7 +21,7 @@
 #include <ctime>
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -87,6 +87,10 @@ void availability_builder::add_event(short status,
                                      time_t end,
                                      bool was_in_downtime,
                                      time::timeperiod::ptr const& tp) {
+  log_v2::bam()->trace(
+      "availability_builder::add_event (status: {}, start: {}, end: {}, was in "
+      "downtime: {}",
+      status, start, end, was_in_downtime);
   // Check that the event was closed.
   if (end == 0)
     end = _end;

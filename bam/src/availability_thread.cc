@@ -102,6 +102,7 @@ void availability_thread::run() {
  *  Ask for the thread termination.
  */
 void availability_thread::terminate() {
+  log_v2::bam()->trace("BAM-BI: availability_thread terminate");
   std::lock_guard<std::mutex> lock(_mutex);
   _should_exit = true;
   _wait.notify_one();
@@ -111,6 +112,7 @@ void availability_thread::terminate() {
  *  Start a thread, and wait for its initialization.
  */
 void availability_thread::start_and_wait() {
+  log_v2::bam()->trace("BAM-BI: availability_thread start_and_wait");
   if (!_started_flag) {
     _thread = std::thread(&availability_thread::run, this);
     _started_flag = true;
@@ -118,6 +120,7 @@ void availability_thread::start_and_wait() {
 }
 
 void availability_thread::wait() {
+  log_v2::bam()->trace("BAM-BI: availability_thread wait");
   _thread.join();
   _started_flag = false;
 }
@@ -126,6 +129,7 @@ void availability_thread::wait() {
  *  @brief Lock the main mutex of the availability thread.
  */
 void availability_thread::lock() {
+  log_v2::bam()->trace("BAM-BI: availability_thread lock");
   _mutex.lock();
 }
 
@@ -133,6 +137,7 @@ void availability_thread::lock() {
  * @brief Unlock the main mutex of the availability thread.
  */
 void availability_thread::unlock() {
+  log_v2::bam()->trace("BAM-BI: availability_thread unlock");
   _mutex.unlock();
 }
 
@@ -143,6 +148,7 @@ void availability_thread::unlock() {
  */
 void availability_thread::rebuild_availabilities(
     std::string const& bas_to_rebuild) {
+  log_v2::bam()->trace("BAM-BI: availability_thread rebuild_availabilities");
   std::lock_guard<std::mutex> lock(_mutex);
   if (bas_to_rebuild.empty())
     return;
@@ -173,6 +179,7 @@ void availability_thread::_delete_all_availabilities() {
  *  @param[in] mignight   Midnight of today.
  */
 void availability_thread::_build_availabilities(time_t midnight) {
+  log_v2::bam()->trace("BAM-BI: availability_thread _build_availabilities");
   time_t first_day = 0;
   time_t last_day = midnight;
   std::string query_str;
@@ -189,6 +196,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
         _bas_to_rebuild);
     try {
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("BAM-BI: availability_thread query: {}", query_str);
       thread_id = _mysql->run_query_and_get_result(query_str, &promise);
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
@@ -216,6 +224,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
     query_str = "SELECT MAX(time_id) FROM mod_bam_reporting_ba_availabilities";
     try {
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("BAM-BI: availability_thread query: {}", query_str);
       thread_id = _mysql->run_query_and_get_result(query_str, &promise);
       database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res)) {
@@ -279,6 +288,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
                           : ""));
 
   std::promise<database::mysql_result> promise;
+  log_v2::bam()->trace("availability_thread: query: {}", query);
   _mysql->run_query_and_get_result(query, &promise, thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
@@ -336,6 +346,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
                           : "");
 
   promise = std::promise<database::mysql_result>();
+  log_v2::bam()->trace("availability_thread: query: {}", query);
   _mysql->run_query_and_get_result(query, &promise, thread_id);
 
   try {
@@ -453,6 +464,7 @@ time_t availability_thread::_compute_start_of_day(time_t when) {
  *  Open the database.
  */
 void availability_thread::_open_database() {
+  log_v2::bam()->trace("availability_thread: _open_database");
   // Add database connection.
   try {
     _mysql.reset(new mysql(_db_cfg));
@@ -468,6 +480,7 @@ void availability_thread::_open_database() {
  *  Close the database.
  */
 void availability_thread::_close_database() {
+  log_v2::bam()->trace("availability_thread: _close_database");
   if (_mysql) {
     _mysql.reset();
   }
