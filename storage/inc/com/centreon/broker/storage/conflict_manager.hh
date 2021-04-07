@@ -96,7 +96,7 @@ class conflict_manager {
 
   struct index_info {
     std::string host_name;
-    uint32_t index_id;
+    uint64_t index_id;
     bool locked;
     uint32_t rrd_retention;
     std::string service_description;
@@ -169,7 +169,7 @@ class conflict_manager {
   std::unordered_map<uint64_t, size_t> _cache_hst_cmd;
   std::unordered_map<std::pair<uint64_t, uint64_t>, size_t> _cache_svc_cmd;
   std::unordered_map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
-  std::unordered_map<std::pair<uint32_t, std::string>, metric_info>
+  std::unordered_map<std::pair<uint64_t, std::string>, metric_info>
       _metric_cache;
   std::mutex _metric_cache_m;
 
@@ -330,7 +330,7 @@ class conflict_manager {
 
   int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
-  void update_metric_info_cache(uint32_t index_id,
+  void update_metric_info_cache(uint64_t index_id,
                                 uint32_t metric_id,
                                 std::string const& metric_name,
                                 short metric_type);

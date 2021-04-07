@@ -47,7 +47,7 @@ class rebuilder {
  private:
   // Local types.
   struct index_info {
-    uint32_t index_id;
+    uint64_t index_id;
     uint32_t host_id;
     uint32_t service_id;
     uint32_t rrd_retention;
@@ -71,11 +71,11 @@ class rebuilder {
                        uint32_t interval,
                        unsigned length);
   void _rebuild_status(mysql& ms,
-                       uint32_t index_id,
+                       uint64_t index_id,
                        uint32_t interval,
                        uint32_t length);
   void _send_rebuild_event(bool end, uint32_t id, bool is_index);
-  void _set_index_rebuild(mysql& db, uint32_t index_id, short state);
+  void _set_index_rebuild(mysql& db, uint64_t index_id, short state);
   void _run();
 
   std::unique_ptr<std::thread> _thread;

@@ -148,7 +148,7 @@ static uint32_t set_timestamp(io::data& t,
                               mapping::entry const& member,
                               void const* data,
                               uint32_t size) {
-  if (size < 2 * sizeof(uint32_t)) {
+  if (size < sizeof(uint64_t)) {
     log_v2::bbdo()->error(
         "BBDO: cannot extract timestamp value: {} bytes left in packet", size);
     throw exceptions::msg() << "BBDO: cannot extract timestamp value: " << size
@@ -160,7 +160,7 @@ static uint32_t set_timestamp(io::data& t,
   val <<= 32;
   val |= ntohl(*ptr);
   member.set_time(t, val);
-  return 2 * sizeof(uint32_t);
+  return sizeof(uint64_t);
 }
 
 /**
@@ -180,6 +180,32 @@ static uint32_t set_uint(io::data& t,
   }
   member.set_uint(t, ntohl(*static_cast<uint32_t const*>(data)));
   return sizeof(uint32_t);
+}
+
+/**
+ *  Set an uint64_teger within an object.
+ */
+static uint32_t set_ulong(io::data& t,
+                          mapping::entry const& member,
+                          void const* data,
+                          uint32_t size) {
+  if (size < sizeof(uint64_t)) {
+    log_v2::bbdo()->error(
+        "BBDO: cannot extract uint64_t integer value: {} bytes left in packet",
+        size);
+    throw exceptions::msg()
+        << "BBDO: cannot extract uint64_teger value: " << size
+        << " bytes left in packet";
+  }
+
+  const uint32_t* ptr(static_cast<const uint32_t*>(data));
+  uint64_t val(ntohl(*ptr));
+  ++ptr;
+  val <<= 32;
+  val |= ntohl(*ptr);
+
+  member.set_ulong(t, val);
+  return sizeof(uint64_t);
 }
 
 /**
@@ -233,6 +259,9 @@ static io::data* unserialize(uint32_t event_type,
               break;
             case mapping::source::UINT:
               rb = set_uint(*t, *current_entry, buffer, size);
+              break;
+            case mapping::source::ULONG:
+              rb = set_ulong(*t, *current_entry, buffer, size);
               break;
             default:
               log_v2::bbdo()->error(
@@ -307,6 +336,21 @@ static void get_integer(io::data const& t,
   uint32_t value(htonl(member.get_int(t)));
   char* v(reinterpret_cast<char*>(&value));
   std::copy(v, v + sizeof(value), std::back_inserter(buffer));
+}
+
+/**
+ *  Get an uint64_teger from an object.
+ */
+static void get_ulong(io::data const& t,
+                      mapping::entry const& member,
+                      std::vector<char>& buffer) {
+  uint64_t value{member.get_ulong(t)};
+  uint32_t high{htonl(value >> 32)};
+  uint32_t low{htonl(value & 0xffffffff)};
+  char* vh{reinterpret_cast<char*>(&high)};
+  char* vl{reinterpret_cast<char*>(&low)};
+  std::copy(vh, vh + sizeof(high), std::back_inserter(buffer));
+  std::copy(vl, vl + sizeof(low), std::back_inserter(buffer));
 }
 
 /**
@@ -403,6 +447,9 @@ static io::raw* serialize(const io::data& e) {
             break;
           case mapping::source::UINT:
             get_uint(e, *current_entry, *content);
+            break;
+          case mapping::source::ULONG:
+            get_ulong(e, *current_entry, *content);
             break;
           default:
             log_v2::bbdo()->error(

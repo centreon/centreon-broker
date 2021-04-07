@@ -36,7 +36,7 @@ index_mapping::index_mapping()
  * @param host_id
  * @param service_id
  */
-index_mapping::index_mapping(uint32_t index_id,
+index_mapping::index_mapping(uint64_t index_id,
                              uint32_t host_id,
                              uint32_t service_id)
     : io::data(index_mapping::static_type()),

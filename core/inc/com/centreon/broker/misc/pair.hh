@@ -68,8 +68,8 @@ struct hash<std::pair<uint64_t, uint64_t>> {
 };
 
 template <>
-struct hash<std::pair<uint32_t, std::string>> {
-  size_t operator()(std::pair<uint32_t, std::string> const& kt) const {
+struct hash<std::pair<uint64_t, std::string>> {
+  size_t operator()(std::pair<uint64_t, std::string> const& kt) const {
     size_t hash = 0;
     hash_combine(hash, kt.first);
     hash_combine(hash, kt.second);
