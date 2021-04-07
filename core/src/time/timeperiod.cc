@@ -446,8 +446,9 @@ uint32_t timeperiod::duration_intersect(time_t start_time,
  *
  *  The number of day added can be negative, effectively removing round days.
  *
- *  @param[in] middnight  Midnight of base day.
- *  @param[in] skip       Number of days to skip.
+ *  @param[in] midnight  Midnight of base day. If not midnight, we round to
+ *                       the nearest midnight.
+ *  @param[in] skip  Number of days to skip.
  *
  *  @return Midnight of the day in skip seconds.
  */
@@ -455,6 +456,11 @@ time_t timeperiod::add_round_days_to_midnight(time_t midnight, int32_t skip) {
   // Compute expected time with no DST.
   struct tm next_day;
   localtime_r(&midnight, &next_day);
+  if (next_day.tm_hour != 0 || next_day.tm_min != 0 || next_day.tm_sec != 0) {
+    if (next_day.tm_hour >= 12)
+      next_day.tm_mday++;
+    next_day.tm_hour = next_day.tm_min = next_day.tm_sec = 0;
+  }
   next_day.tm_mday += skip;
   time_t retval = mktime(&next_day);
   return retval;
