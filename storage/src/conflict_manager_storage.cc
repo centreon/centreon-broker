@@ -136,7 +136,8 @@ void conflict_manager::_storage_process_service_status(
     if (!_index_data_insert.prepared())
       _index_data_insert = _mysql.prepare_query(
           "INSERT INTO index_data "
-          "(host_id,host_name,service_id,service_description,must_be_rebuild,"
+          "(host_id,host_name,service_id,service_description,must_be_"
+          "rebuild,"
           "special) VALUES (?,?,?,?,?,?)");
 
     fmt::string_view hv(misc::string::truncate(
@@ -183,7 +184,8 @@ void conflict_manager::_storage_process_service_status(
 
         if (index_id == 0)
           throw msg_fmt(
-              "storage: could not fetch index_id of newly inserted index ({}"
+              "storage: could not fetch index_id of newly inserted index "
+              "({}"
               ", {})",
               host_id, service_id);
 
@@ -226,7 +228,8 @@ void conflict_manager::_storage_process_service_status(
     rrd_len = it_index_cache->second.rrd_retention;
     index_locked = it_index_cache->second.locked;
     log_v2::perfdata()->debug(
-        "conflict_manager: host_id:{}, service_id:{} - index already in cache "
+        "conflict_manager: host_id:{}, service_id:{} - index already in "
+        "cache "
         "- index_id {}, rrd_len {}",
         host_id, service_id, index_id, rrd_len);
   }
@@ -234,7 +237,8 @@ void conflict_manager::_storage_process_service_status(
   if (index_id) {
     /* Generate status event */
     log_v2::perfdata()->debug(
-        "conflict_manager: host_id:{}, service_id:{} - generating status event "
+        "conflict_manager: host_id:{}, service_id:{} - generating status "
+        "event "
         "with index_id {}, rrd_len: {}",
         host_id, service_id, index_id, rrd_len);
     std::shared_ptr<storage::status> status(std::make_shared<storage::status>(
@@ -326,8 +330,10 @@ void conflict_manager::_storage_process_service_status(
               _metric_cache[{index_id, pd.name()}] = info;
             } catch (std::exception const& e) {
               log_v2::perfdata()->error(
-                  "conflict_manager: failed to create metric {} with type {}, "
-                  "value {}, unit_name {}, warn {}, warn_low {}, warn_mode {}, "
+                  "conflict_manager: failed to create metric {} with type "
+                  "{}, "
+                  "value {}, unit_name {}, warn {}, warn_low {}, warn_mode "
+                  "{}, "
                   "crit {}, crit_low {}, crit_mode {}, min {} and max {}",
                   metric_id, type, pd.value(), pd.unit(), pd.warning(),
                   pd.warning_low(), pd.warning_mode(), pd.critical(),
@@ -367,7 +373,8 @@ void conflict_manager::_storage_process_service_status(
                 !check_equality(it_index_cache->second.min, pd.min()) ||
                 !check_equality(it_index_cache->second.max, pd.max())) {
               log_v2::perfdata()->info(
-                  "conflict_manager: updating metric {} of index {}, perfdata "
+                  "conflict_manager: updating metric {} of index {}, "
+                  "perfdata "
                   "'{}' with unit: {}, warning: {}:{}, critical: {}:{}, min: "
                   "{}, max: {}",
                   it_index_cache->second.metric_id, index_id, pd.name(),
