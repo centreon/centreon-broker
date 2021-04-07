@@ -25,66 +25,6 @@
 using namespace com::centreon::broker;
 
 /**
- *  Check that rebuild's assignment operator.
- */
-TEST(StorageRebuild, Assign) {
-  // Base object.
-  storage::rebuild r1;
-  r1.end = true;
-  r1.id = 42;
-  r1.is_index = false;
-
-  // Second object.
-  storage::rebuild r2;
-  r2.end = false;
-  r2.id = 234573485;
-  r2.is_index = true;
-
-  // Assignment.
-  r2 = r1;
-
-  // Reset base object.
-  r1.end = false;
-  r1.id = 36;
-  r1.is_index = true;
-
-  // Check.
-  ASSERT_FALSE(r1.end);
-  ASSERT_FALSE(r1.id != 36);
-  ASSERT_FALSE(!r1.is_index);
-  ASSERT_FALSE(!r2.end);
-  ASSERT_FALSE(r2.id != 42);
-  ASSERT_FALSE(r2.is_index);
-}
-
-/**
- *  Check that rebuild copy constructor works properly.
- */
-TEST(StorageRebuild, CopyCtor) {
-  // Base object.
-  storage::rebuild r1;
-  r1.end = true;
-  r1.id = 42;
-  r1.is_index = false;
-
-  // Copy object.
-  storage::rebuild r2(r1);
-
-  // Reset base object.
-  r1.end = false;
-  r1.id = 36;
-  r1.is_index = true;
-
-  // Check.
-  ASSERT_FALSE(r1.end);
-  ASSERT_FALSE(r1.id != 36);
-  ASSERT_FALSE(!r1.is_index);
-  ASSERT_FALSE(!r2.end);
-  ASSERT_FALSE(r2.id != 42);
-  ASSERT_FALSE(r2.is_index);
-}
-
-/**
  *  Check that the rebuild object properly default constructs.
  */
 TEST(StorageRebuild, DefaultCtor) {
