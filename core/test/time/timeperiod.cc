@@ -42,3 +42,12 @@ TEST(Timeperiod, intersect) {
   auto duration = tp.duration_intersect(1617598800, 1617624000);
   ASSERT_EQ(duration, 4 * 3600);
 }
+
+TEST(Timeperiod, intersectReverseBounds) {
+  timeperiod tp(2, "test", "alias");
+  tp.set_timerange("08:00-12:00", 1);
+
+  // Intersection with start > end
+  auto duration = tp.duration_intersect(1617624000, 1617598800);
+  ASSERT_EQ(duration, 0);
+}
