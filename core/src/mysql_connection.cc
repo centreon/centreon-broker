@@ -262,7 +262,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     std::string err_msg(::mysql_stmt_error(stmt));
     log_v2::sql()->error("mysql_connection: {}", err_msg);
-    msg_fmt e(err_msg);
+    msg_fmt e("statement and get result failed: {}", err_msg);
     task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
   } else {
     int32_t attempts = 0;

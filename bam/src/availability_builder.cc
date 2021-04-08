@@ -20,7 +20,6 @@
 
 #include <ctime>
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
@@ -53,25 +52,6 @@ availability_builder::availability_builder(time_t ending_point,
  *  Destructor
  */
 availability_builder::~availability_builder() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  The object to copy.
- */
-availability_builder::availability_builder(const availability_builder& other)
-    : _start(other._start),
-      _end(other._end),
-      _available(other._available),
-      _unavailable(other._unavailable),
-      _degraded(other._degraded),
-      _unknown(other._unknown),
-      _downtime(other._downtime),
-      _alert_unavailable_opened(other._alert_unavailable_opened),
-      _alert_degraded_opened(other._alert_degraded_opened),
-      _alert_unknown_opened(other._alert_unknown_opened),
-      _nb_downtime(other._nb_downtime),
-      _timeperiods_is_default(other._timeperiods_is_default) {}
 
 /**
  *  Add an event to the builder.

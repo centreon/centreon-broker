@@ -411,11 +411,10 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
 /**
  *  @brief Get the intersection of a timeperiod and a range.
  *
- *  @param[in] start_time     The start of the range.
- *  @param[in] end_time       The end of the range.
+ *  @param[in] start_time  The start of the range.
+ *  @param[in] end_time    The end of the range.
  *
- *  @return                   The duration intersected from the tp and the
- * range.
+ *  @return                The duration intersected from the tp and the range.
  */
 uint32_t timeperiod::duration_intersect(time_t start_time,
                                         time_t end_time) const {
