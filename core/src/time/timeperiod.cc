@@ -26,24 +26,12 @@
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::time;
 
-timeperiod::timeperiod(uint32_t id) : _id(id) {
+timeperiod::timeperiod(uint32_t id,
+                       const std::string& name,
+                       const std::string& alias)
+    : _id(id), _timeperiod_name{name}, _alias{alias} {
   _exceptions.resize(daterange::daterange_types);
 }
-
-/**
- *  Copy constructor.
- *
- *  @param[in] obj  The object to copy.
- */
-timeperiod::timeperiod(const timeperiod& obj)
-    : _id{obj._id},
-      _timeperiod_name{obj._timeperiod_name},
-      _alias{obj._alias},
-      _exceptions{obj._exceptions},
-      _exclude{obj._exclude},
-      _include{obj._include},
-      _timeranges(obj._timeranges),
-      _timezone(obj._timezone) {}
 
 /**
  *  Construct the timeperiod from data.
@@ -116,30 +104,6 @@ std::vector<std::list<daterange> > const& timeperiod::get_exceptions()
 }
 
 /**
- *  Get the timeperiods exceptions from their type.
- *
- *  @param[in] type  The type of the exceptions.
- *
- *  @return          A lit of exceptions.
- */
-const std::list<daterange>& timeperiod::get_exceptions_from_type(
-    int type) const {
-  if (type < 0 || type > daterange::daterange_types)
-    throw std::out_of_range("get_exceptions_from_type(): out of range");
-  else
-    return _exceptions[type];
-}
-
-/**
- *  Add a new timeperiod exception.
- *
- *  @param val The exception to add.
- */
-void timeperiod::add_exceptions(const std::list<daterange>& val) {
-  _exceptions.push_back(val);
-}
-
-/**
  *  Add a new timeperiod exception from text.
  *
  *  @param[in] days    The days to parse.
@@ -154,24 +118,6 @@ bool timeperiod::add_exception(const std::string& days,
 
   // Parse everything.
   return daterange::build_dateranges_from_string(d, _exceptions);
-}
-
-/**
- *  Get the included timeperiods.
- *
- *  @return The included timeperiods.
- */
-const std::vector<timeperiod::ptr>& timeperiod::get_included() const noexcept {
-  return _include;
-}
-
-/**
- *  Add a new included timeperiod.
- *
- *  @param val The new included timeperiod.
- */
-void timeperiod::add_included(timeperiod::ptr val) {
-  _include.push_back(val);
 }
 
 /**
@@ -202,15 +148,6 @@ const std::string& timeperiod::get_name() const noexcept {
 }
 
 /**
- *  Set the timeperiod name.
- *
- * @param value The new name.
- */
-void timeperiod::set_name(const std::string& value) {
-  _timeperiod_name = value;
-}
-
-/**
  *  Get the timeperiod timeranges.
  *
  *  @return The timeperiod timeranges.
@@ -218,17 +155,6 @@ void timeperiod::set_name(const std::string& value) {
 const std::array<std::list<timerange>, 7>& timeperiod::get_timeranges()
     const noexcept {
   return _timeranges;
-}
-
-/**
- *  Get the timerange of a particular day.
- *
- *  @param day The day (from 0 to 6).
- *  @return The timerange on this day.
- */
-const std::list<timerange>& timeperiod::get_timeranges_by_day(
-    int day) const noexcept {
-  return _timeranges[day];
 }
 
 /**

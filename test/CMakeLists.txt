@@ -100,6 +100,7 @@ add_executable(ut
   ${TESTS_DIR}/logging.cc
   ${TESTS_DIR}/main.cc
   ${TESTS_DIR}/test_server.cc
+  ${TESTS_DIR}/time/timeperiod.cc
   # Module sources.
   ${TESTS_SOURCES}
   )
