@@ -39,8 +39,13 @@ namespace time {
  */
 class timeperiod {
   const uint32_t _id;
-  std::string _timeperiod_name;
+  const std::string _timeperiod_name;
   const std::string _alias;
+
+  std::vector<std::list<daterange> > _exceptions;
+  std::vector<std::shared_ptr<timeperiod>> _exclude;
+  std::array<std::list<timerange>, 7> _timeranges;
+  std::string _timezone;
 
  public:
   DECLARE_SHARED_PTR(timeperiod);
@@ -69,7 +74,9 @@ class timeperiod {
 
   friend class exclusion_backup;
 
-  timeperiod(uint32_t id);
+  timeperiod(uint32_t id,
+             const std::string& name,
+             const std::string& alias = "");
   timeperiod(uint32_t id,
              const std::string& name,
              const std::string& alias,
@@ -80,29 +87,22 @@ class timeperiod {
              const std::string& thursday,
              const std::string& friday,
              const std::string& saturday);
-  timeperiod(const timeperiod& obj);
-  timeperiod operator=(timeperiod const& obj) = delete;
+  timeperiod(const timeperiod&) = delete;
+  timeperiod operator=(const timeperiod&) = delete;
 
   uint32_t get_id() const noexcept;
 
   const std::string& get_alias() const noexcept;
 
   std::vector<std::list<daterange> > const& get_exceptions() const noexcept;
-  std::list<daterange> const& get_exceptions_from_type(int type) const;
-  void add_exceptions(std::list<daterange> const& val);
   bool add_exception(const std::string& days, const std::string& range);
-
-  std::vector<timeperiod::ptr> const& get_included() const noexcept;
-  void add_included(ptr val);
   std::vector<ptr> const& get_excluded() const noexcept;
   void add_excluded(ptr val);
 
   const std::string& get_name() const noexcept;
-  void set_name(const std::string& value);
 
   std::array<std::list<timerange>, 7> const& get_timeranges() const noexcept;
   bool set_timerange(const std::string& timerange_text, int day);
-  std::list<timerange> const& get_timeranges_by_day(int day) const noexcept;
 
   const std::string& get_timezone() const noexcept;
   void set_timezone(const std::string& tz);
@@ -114,13 +114,6 @@ class timeperiod {
   uint32_t duration_intersect(time_t start_time, time_t end_time) const;
 
   static time_t add_round_days_to_midnight(time_t midnight, int32_t skip);
-
- private:
-  std::vector<std::list<daterange> > _exceptions;
-  std::vector<ptr> _exclude;
-  std::vector<ptr> _include;
-  std::array<std::list<timerange>, 7> _timeranges;
-  std::string _timezone;
 };
 }  // namespace time
 
