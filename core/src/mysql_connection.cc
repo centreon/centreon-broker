@@ -207,9 +207,9 @@ void mysql_connection::_statement(mysql_task* t) {
     if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
       set_error_message(err_msg);
     else {
-      logging::error(logging::medium)
-          << "mysql_connection: Error while binding values in statement: "
-          << err_msg;
+      log_v2::sql()->error(
+          "mysql_connection: Error while binding values in statement: {}",
+          err_msg);
     }
   } else {
     int32_t attempts = 0;
@@ -229,7 +229,6 @@ void mysql_connection::_statement(mysql_task* t) {
         mysql_commit(_conn);
 
         log_v2::sql()->error("mysql_connection: {}", err_msg);
-        logging::error(logging::medium) << "mysql_connection: " << err_msg;
         if (++attempts >= MAX_ATTEMPTS) {
           if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
             set_error_message("{} {}", mysql_error::msg[task->error_code],
@@ -283,7 +282,6 @@ void mysql_connection::_statement_res(mysql_task* t) {
         mysql_commit(_conn);
 
         log_v2::sql()->error("mysql_connection: {}", err_msg);
-        logging::error(logging::medium) << "mysql_connection: " << err_msg;
         if (++attempts >= MAX_ATTEMPTS) {
           msg_fmt e(err_msg);
           task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
@@ -374,10 +372,8 @@ void mysql_connection::_statement_int(mysql_task* t) {
 
         mysql_commit(_conn);
 
-        log_v2::sql()->error("mysql_connection: {}", err_msg);
-        logging::error(logging::medium) << "mysql_connection: " << err_msg;
         if (++attempts >= MAX_ATTEMPTS) {
-          msg_fmt e(err_msg);
+          msg_fmt e("run statement and get result failed: {}", err_msg);
           task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           break;
         }
@@ -549,8 +545,7 @@ void mysql_connection::_run() {
         if (_task_processing_table[task->type])
           (this->*(_task_processing_table[task->type]))(task.get());
         else {
-          logging::error(logging::medium)
-              << "mysql_connection: Error type not managed...";
+          log_v2::sql()->error("mysql_connection: Error type not managed...");
         }
       }
     }

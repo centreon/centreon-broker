@@ -96,15 +96,13 @@ void conflict_manager::_storage_process_service_status(
     if (index_id == 0) {
       throw msg_fmt(
           "storage: could not fetch index_id of newly inserted index ({}"
-          ", {})",
-          host_id, service_id);
+          ", {})", host_id, service_id);
     }
 
     /* Insert index in cache. */
     log_v2::perfdata()->info(
         "conflict_manager: add_metric_in_cache: index {}, for host_id {} and "
-        "service_id {}",
-        index_id, host_id, service_id);
+        "service_id {}", index_id, host_id, service_id);
     index_info info{.host_name = ss.host_name,
                     .index_id = index_id,
                     .locked = index_locked,
@@ -183,8 +181,8 @@ void conflict_manager::_storage_process_service_status(
 
         if (index_id == 0)
           throw msg_fmt(
-              "storage: could not fetch index_id of newly inserted index ({}"
-              ", {})",
+              "storage: could not fetch index_id of newly inserted index ({}, "
+              "{})",
               host_id, service_id);
 
         if (!_index_data_update.prepared())
@@ -217,8 +215,7 @@ void conflict_manager::_storage_process_service_status(
       } catch (std::exception const& e) {
         throw msg_fmt(
             "storage: insertion of index ( {}, {}"
-            ") failed: {}",
-            host_id, service_id, e.what());
+            ") failed: {}", host_id, service_id, e.what());
       }
     }
   } else {
