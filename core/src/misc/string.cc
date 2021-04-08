@@ -386,11 +386,15 @@ std::string string::escape(const std::string& str, size_t s) {
     ret.resize(adjust_size_utf8(ret, s));
     if (ret.size() > 1) {
       auto it = --ret.end();
-      if (*it == '\\') {
+      size_t nb{0};
+      while (it != ret.begin() && *it == '\\') {
         --it;
-        if (*it != '\\')
-          ret.resize(ret.size() - 1);
+        nb++;
       }
+      if (it == ret.begin() && *it == '\\')
+        nb++;
+      if (nb & 1)
+        ret.resize(ret.size() - 1);
     }
     return ret;
   }
