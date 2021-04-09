@@ -54,6 +54,18 @@ class daterange {
 
  private:
   const type_range _type;
+  uint32_t _month_end;
+  uint32_t _month_start;
+  int _month_day_end;
+  int _month_day_start;
+  uint32_t _skip_interval;
+  std::list<timerange> _timeranges;
+  uint32_t _week_day_end;
+  uint32_t _week_day_start;
+  int _week_day_end_offset;
+  int _week_day_start_offset;
+  uint32_t _year_end;
+  uint32_t _year_start;
 
  public:
   daterange(type_range type);
@@ -86,8 +98,6 @@ class daterange {
   void year_start(uint32_t value);
   uint32_t year_start() const noexcept;
 
-  bool to_time_t(time_t const preferred_time, time_t& start, time_t& end) const;
-
   static bool build_calendar_date(std::string const& line,
                                   std::vector<std::list<daterange> >& list);
   static bool build_other_date(std::string const& line,
@@ -95,34 +105,6 @@ class daterange {
   static bool build_dateranges_from_string(
       std::string const& value,
       std::vector<std::list<daterange> >& list);
-
- private:
-  bool _calendar_date_to_time_t(time_t& start, time_t& end) const;
-  bool _month_date_to_time_t(time_info const& ti,
-                             time_t& start,
-                             time_t& end) const;
-  bool _month_day_to_time_t(time_info const& ti,
-                            time_t& start,
-                            time_t& end) const;
-  bool _month_week_day_to_time_t(time_info const& ti,
-                                 time_t& start,
-                                 time_t& end) const;
-  bool _week_day_to_time_t(time_info const& ti,
-                           time_t& start,
-                           time_t& end) const;
-
-  uint32_t _month_end;
-  uint32_t _month_start;
-  int _month_day_end;
-  int _month_day_start;
-  uint32_t _skip_interval;
-  std::list<timerange> _timeranges;
-  uint32_t _week_day_end;
-  uint32_t _week_day_start;
-  int _week_day_end_offset;
-  int _week_day_start_offset;
-  uint32_t _year_end;
-  uint32_t _year_start;
 };
 }  // namespace time
 

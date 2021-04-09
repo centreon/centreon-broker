@@ -22,7 +22,11 @@
 
 using namespace com::centreon::broker::time;
 
-TEST(Daterange, Constructor) {
+TEST(Daterange, BuildOtherDate_Bad) {
   daterange d(daterange::calendar_date);
   ASSERT_EQ(d.type(), daterange::calendar_date);
+  std::vector<std::list<daterange>> list;
+  list.resize(daterange::daterange_types);
+  ASSERT_FALSE(d.build_dateranges_from_string(
+      "monday 1 january - wednesday 3 january / 1 0", list));
 }
