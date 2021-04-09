@@ -24,7 +24,6 @@
 
 using namespace com::centreon::broker::time;
 
-
 TEST(Timerange, ParseWeirdTimerange) {
   std::unique_ptr<timeperiod> tp;
 
@@ -56,7 +55,6 @@ TEST(Timerange, ParseWeirdTimerange) {
   ASSERT_EQ(v[6].front().end(), 43200u);
   ASSERT_EQ(timerange::build_string_from_timeranges(v[6]),
       "08:00-12:00, 09:00-12:00, 10:00-12:00");
-
 }
 
 TEST(Timerange, ParseWrongTimerange) {
@@ -70,4 +68,10 @@ TEST(Timerange, ParseWrongTimerange) {
   ASSERT_FALSE(t.build_timeranges_from_string("\n   abc08:00-12:00", l));
   ASSERT_FALSE(t.build_timeranges_from_string("08abcd:00-12:00", l));
   ASSERT_FALSE(t.build_timeranges_from_string("  :00-12:00", l));
+}
+
+TEST(Timerange, BuildOtherDate_Bad) {
+  timerange t(10, 60);
+  ASSERT_EQ(t.end() - t.start(), 50u);
+  ASSERT_EQ(t.to_string(), "00:00-00:01");
 }
