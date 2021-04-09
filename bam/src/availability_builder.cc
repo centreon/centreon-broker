@@ -37,7 +37,7 @@ availability_builder::availability_builder(time_t ending_point,
                                            time_t starting_point /* = 0 */)
     : _start(starting_point),
       _end(ending_point),
-      _available(0),
+      _available{0},
       _unavailable(0),
       _degraded(0),
       _unknown(0),
@@ -97,20 +97,25 @@ void availability_builder::add_event(short status,
     if (opened_today)
       ++_nb_downtime;
   } else {
-    if (status == 0)
-      _available += sla_duration;
-    else if (status == 1) {
-      _degraded += sla_duration;
-      if (opened_today)
-        ++_alert_degraded_opened;
-    } else if (status == 2) {
-      _unavailable += sla_duration;
-      if (opened_today)
-        ++_alert_unavailable_opened;
-    } else {
-      _unknown += sla_duration;
-      if (opened_today)
-        ++_alert_unknown_opened;
+    switch (status) {
+      case 0:
+        _available += sla_duration;
+        break;
+      case 1:
+        _degraded += sla_duration;
+        if (opened_today)
+          ++_alert_degraded_opened;
+        break;
+      case 2:
+        _unavailable += sla_duration;
+        if (opened_today)
+          ++_alert_unavailable_opened;
+        break;
+      default:
+        _unknown += sla_duration;
+        if (opened_today)
+          ++_alert_unknown_opened;
+        break;
     }
   }
 }
