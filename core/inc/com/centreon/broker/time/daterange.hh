@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,8 +70,8 @@ class daterange {
  public:
   daterange(type_range type);
   ~daterange() noexcept = default;
-  daterange(daterange const&) = delete;
-  daterange& operator=(daterange const&) = delete;
+  daterange(const daterange&) = delete;
+  daterange& operator=(const daterange&) = delete;
   void month_end(uint32_t value);
   uint32_t month_end() const noexcept;
   void month_start(uint32_t value);
@@ -82,7 +82,7 @@ class daterange {
   int month_day_start() const noexcept;
   void skip_interval(uint32_t value);
   uint32_t skip_interval() const noexcept;
-  void timeranges(std::list<timerange> const& value);
+  void timeranges(std::list<timerange>&& value);
   std::list<timerange> const& timeranges() const noexcept;
   type_range type() const noexcept;
   void week_day_end(uint32_t value);
@@ -99,12 +99,12 @@ class daterange {
   uint32_t year_start() const noexcept;
 
   static bool build_calendar_date(std::string const& line,
-                                  std::vector<std::list<daterange> >& list);
+                                  std::vector<std::list<daterange>>& list);
   static bool build_other_date(std::string const& line,
-                               std::vector<std::list<daterange> >& list);
+                               std::vector<std::list<daterange>>& list);
   static bool build_dateranges_from_string(
       std::string const& value,
-      std::vector<std::list<daterange> >& list);
+      std::vector<std::list<daterange>>& list);
 };
 }  // namespace time
 
