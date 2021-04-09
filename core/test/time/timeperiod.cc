@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ TEST(Timeperiod, Constructor) {
   ASSERT_EQ(tp.get_id(), 12u);
   ASSERT_EQ(tp.get_name(), std::string("test"));
   ASSERT_EQ(tp.get_alias(), std::string("alias"));
-  for (auto e : tp.get_exceptions())
+  for (const auto& e : tp.get_exceptions())
     ASSERT_TRUE(e.empty());
 }
 

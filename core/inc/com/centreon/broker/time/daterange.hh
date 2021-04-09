@@ -52,10 +52,14 @@ class daterange {
     week_day = 4
   };
 
+ private:
+  const type_range _type;
+
+ public:
   daterange(type_range type);
-  daterange(daterange const& right);
-  ~daterange();
-  daterange& operator=(daterange const& right);
+  ~daterange() noexcept = default;
+  daterange(daterange const&) = delete;
+  daterange& operator=(daterange const&) = delete;
   void month_end(uint32_t value);
   uint32_t month_end() const noexcept;
   void month_start(uint32_t value);
@@ -68,7 +72,6 @@ class daterange {
   uint32_t skip_interval() const noexcept;
   void timeranges(std::list<timerange> const& value);
   std::list<timerange> const& timeranges() const noexcept;
-  void type(type_range value);
   type_range type() const noexcept;
   void week_day_end(uint32_t value);
   uint32_t week_day_end() const noexcept;
@@ -114,7 +117,6 @@ class daterange {
   int _month_day_start;
   uint32_t _skip_interval;
   std::list<timerange> _timeranges;
-  type_range _type;
   uint32_t _week_day_end;
   uint32_t _week_day_start;
   int _week_day_end_offset;

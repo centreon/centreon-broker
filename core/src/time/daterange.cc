@@ -28,12 +28,12 @@ using namespace com::centreon::broker::time;
  *  @param[in] type The date range type.
  */
 daterange::daterange(type_range type)
-    : _month_end(0),
+    : _type(type),
+      _month_end(0),
       _month_start(0),
       _month_day_end(0),
       _month_day_start(0),
       _skip_interval(0),
-      _type(type),
       _week_day_end(0),
       _week_day_start(0),
       _week_day_end_offset(0),
@@ -46,14 +46,6 @@ daterange::daterange(type_range type)
  *
  *  @param[in] right The object to copy.
  */
-daterange::daterange(daterange const& right) {
-  operator=(right);
-}
-
-/**
- *  Destructor.
- */
-daterange::~daterange() {}
 
 /**
  *  Copy operator.
@@ -62,24 +54,6 @@ daterange::~daterange() {}
  *
  *  @return This object.
  */
-daterange& daterange::operator=(daterange const& right) {
-  if (this != &right) {
-    _month_end = right._month_end;
-    _month_start = right._month_start;
-    _month_day_end = right._month_day_end;
-    _month_day_start = right._month_day_start;
-    _skip_interval = right._skip_interval;
-    _timeranges = right._timeranges;
-    _type = right._type;
-    _week_day_end = right._week_day_end;
-    _week_day_start = right._week_day_start;
-    _week_day_end_offset = right._week_day_end_offset;
-    _week_day_start_offset = right._week_day_start_offset;
-    _year_end = right._year_end;
-    _year_start = right._year_start;
-  }
-  return *this;
-}
 
 /**
  *  Set month_end value.
@@ -187,15 +161,6 @@ void daterange::timeranges(std::list<timerange> const& value) {
  */
 std::list<timerange> const& daterange::timeranges() const noexcept {
   return _timeranges;
-}
-
-/**
- *  Set type value.
- *
- *  @param[in] value The new type value.
- */
-void daterange::type(type_range value) {
-  _type = value;
 }
 
 /**
@@ -934,7 +899,8 @@ bool daterange::build_calendar_date(std::string const& line,
     if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return false;
 
-    daterange range(daterange::calendar_date);
+    list[daterange::calendar_date].emplace_front(daterange::calendar_date);
+    daterange& range{list[daterange::calendar_date].front()};
     range.year_start(year_start);
     range.month_start(month_start - 1);
     range.month_day_start(month_day_start);
@@ -944,7 +910,6 @@ bool daterange::build_calendar_date(std::string const& line,
     range.skip_interval(skip_interval);
     range.timeranges(timeranges);
 
-    list[daterange::calendar_date].push_front(range);
     return true;
   }
   return false;
@@ -1095,36 +1060,35 @@ bool daterange::build_other_date(std::string const& line,
   }
 
   if (type != daterange::none) {
-    daterange range(type);
+    auto range = list[type].emplace(list[type].begin(), type);
     if (type == daterange::month_day) {
-      range.month_day_start(month_day_start);
-      range.month_day_end(month_day_end);
+      range->month_day_start(month_day_start);
+      range->month_day_end(month_day_end);
     } else if (type == daterange::month_week_day) {
-      range.month_start(month_start);
-      range.week_day_start(week_day_start);
-      range.week_day_start_offset(week_day_start_offset);
-      range.month_end(month_end);
-      range.week_day_end(week_day_end);
-      range.week_day_end_offset(week_day_end_offset);
+      range->month_start(month_start);
+      range->week_day_start(week_day_start);
+      range->week_day_start_offset(week_day_start_offset);
+      range->month_end(month_end);
+      range->week_day_end(week_day_end);
+      range->week_day_end_offset(week_day_end_offset);
     } else if (type == daterange::week_day) {
-      range.week_day_start(week_day_start);
-      range.week_day_start_offset(week_day_start_offset);
-      range.week_day_end(week_day_end);
-      range.week_day_end_offset(week_day_end_offset);
+      range->week_day_start(week_day_start);
+      range->week_day_start_offset(week_day_start_offset);
+      range->week_day_end(week_day_end);
+      range->week_day_end_offset(week_day_end_offset);
     } else if (type == daterange::month_date) {
-      range.month_start(month_start);
-      range.month_day_start(month_day_start);
-      range.month_end(month_end);
-      range.month_day_end(month_day_end);
+      range->month_start(month_start);
+      range->month_day_start(month_day_start);
+      range->month_end(month_end);
+      range->month_day_end(month_day_end);
     }
-    range.skip_interval(skip_interval);
+    range->skip_interval(skip_interval);
 
     std::list<timerange> timeranges;
     if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return false;
 
-    range.timeranges(timeranges);
-    list[type].push_front(range);
+    range->timeranges(timeranges);
     return true;
   }
 
