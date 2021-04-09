@@ -374,16 +374,15 @@ bool daterange::build_calendar_date(std::string const& line,
     if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return false;
 
-    list[daterange::calendar_date].emplace_front(daterange::calendar_date);
-    daterange& range{list[daterange::calendar_date].front()};
-    range.year_start(year_start);
-    range.month_start(month_start - 1);
-    range.month_day_start(month_day_start);
-    range.year_end(year_end);
-    range.month_end(month_end - 1);
-    range.month_day_end(month_day_end);
-    range.skip_interval(skip_interval);
-    range.timeranges(std::move(timeranges));
+    auto range = list[daterange::calendar_date].emplace(list[daterange::calendar_date].begin(), daterange::calendar_date);
+    range->year_start(year_start);
+    range->month_start(month_start - 1);
+    range->month_day_start(month_day_start);
+    range->year_end(year_end);
+    range->month_end(month_end - 1);
+    range->month_day_end(month_day_end);
+    range->skip_interval(skip_interval);
+    range->timeranges(std::move(timeranges));
 
     return true;
   }
