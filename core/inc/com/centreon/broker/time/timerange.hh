@@ -39,12 +39,9 @@ class timerange {
 
  public:
   timerange(time_t start, time_t end);
-  timerange(timerange const& right);
   ~timerange() noexcept = default;
-  timerange& operator=(timerange const& right);
-  bool operator==(timerange const& right) const noexcept;
-  bool operator!=(timerange const& right) const noexcept;
-  bool operator<(timerange const& right) const noexcept;
+  timerange(const timerange&) = delete;
+  timerange& operator=(const timerange&) = delete;
   time_t end() const noexcept;
   uint64_t start() const noexcept;
 
@@ -56,8 +53,6 @@ class timerange {
                                            std::list<timerange>& timeranges);
 
   std::string to_string() const;
-  static std::string build_string_from_timeranges(
-      std::list<timerange> const& timeranges);
 };
 }  // namespace time
 

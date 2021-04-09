@@ -101,6 +101,7 @@ add_executable(ut
   ${TESTS_DIR}/test_server.cc
   ${TESTS_DIR}/time/daterange.cc
   ${TESTS_DIR}/time/timeperiod.cc
+  ${TESTS_DIR}/time/timerange.cc
   # Module sources.
   ${TESTS_SOURCES}
   )

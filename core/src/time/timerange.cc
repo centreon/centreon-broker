@@ -33,64 +33,6 @@ using namespace com::centreon::broker::time;
 timerange::timerange(time_t start, time_t end) : _start{start}, _end{end} {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] right The object to copy.
- */
-timerange::timerange(const timerange& right)
-    : _start{right._start}, _end{right._end} {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right The object to copy.
- *
- *  @return This object.
- */
-timerange& timerange::operator=(const timerange& right) {
-  if (this != &right) {
-    _start = right._start;
-    _end = right._end;
-  }
-  return *this;
-}
-
-/**
- *  Equal operator.
- *
- *  @param[in] right The object to compare.
- *
- *  @return True if the object are the same, otherwise false.
- */
-bool timerange::operator==(const timerange& right) const noexcept {
-  return _start == right._start && _end == right._end;
-}
-
-/**
- *  Not equal operator.
- *
- *  @param[in] right The object to compare.
- *
- *  @return True if the object are not the same, otherwise false.
- */
-bool timerange::operator!=(const timerange& right) const noexcept {
-  return !operator==(right);
-}
-
-/**
- *  Less-than operator.
- *
- *  @param[in] right Object to compare to.
- *
- *  @return True if this object is less than right.
- */
-bool timerange::operator<(const timerange& right) const noexcept {
-  if (_start != right._start)
-    return _start < right._start;
-  return _end < right._end;
-}
-
-/**
  *  Get the end time.
  *
  *  @return The end time.
@@ -130,12 +72,12 @@ bool timerange::to_time_t(const struct tm& midnight,
   return true;
 }
 
-static bool _build_time_t(const std::string& time_str, uint64_t& ret) {
+static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
   const char* endc = time_str.data() + time_str.size();
   char* endptr;
   char* endptr1;
   uint64_t hours = strtoull(time_str.data(), &endptr, 10);
-  if (endptr == time_str.c_str() || endptr + 2 >= endc || *endptr != ':')
+  if (endptr == time_str.data() || endptr + 2 >= endc || *endptr != ':')
     return false;
   uint64_t minutes = strtoull(endptr + 1, &endptr1, 10);
   if (endptr1 == endptr + 1)
@@ -149,42 +91,25 @@ bool timerange::build_timeranges_from_string(const std::string& line,
   if (line.empty())
     return true;
 
-  std::list<std::string> timeranges_str;
-  timeranges_str = misc::string::split(line, ',');
-  for (std::list<std::string>::const_iterator it(timeranges_str.begin()),
-       end(timeranges_str.end());
-       it != end; ++it) {
-    std::size_t pos(it->find('-'));
+  std::list<std::string> timeranges_str{misc::string::split(line, ',')};
+  for (auto& t : timeranges_str) {
+    std::size_t pos(t.find('-'));
     if (pos == std::string::npos)
       return false;
     uint64_t start_time;
-    if (!_build_time_t(it->substr(0, pos), start_time))
+    if (!_build_time_t(fmt::string_view(t.c_str(), pos), start_time))
       return false;
     uint64_t end_time;
-    if (!_build_time_t(it->substr(pos + 1), end_time))
+    if (!_build_time_t(
+            fmt::string_view(t.c_str() + pos + 1, t.size() - pos - 1),
+            end_time))
       return false;
-    timeranges.push_front(timerange(start_time, end_time));
+    timeranges.emplace_front(start_time, end_time);
   }
   return true;
 }
 
 std::string timerange::to_string() const {
-  return fmt::format("{}:{}-{}:{}", _start / 3600, (_start % 3600) / 60,
-                     _end / 3600, (_end % 3600) / 60);
-}
-
-std::string timerange::build_string_from_timeranges(
-    const std::list<timerange>& timeranges) {
-  std::ostringstream oss;
-  bool first = true;
-  for (std::list<time::timerange>::const_iterator it = timeranges.begin(),
-                                                  end = timeranges.end();
-       it != end; ++it) {
-    if (first)
-      first = false;
-    else
-      oss << ",";
-    oss << it->to_string();
-  }
-  return oss.str();
+  return fmt::format("{:02}:{:02}-{:02}:{:02}", _start / 3600,
+                     (_start % 3600) / 60, _end / 3600, (_end % 3600) / 60);
 }

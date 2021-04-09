@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include "com/centreon/broker/time/daterange.hh"
 #include <cstdio>
 #include <cstring>
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker::time;
 
@@ -150,9 +151,18 @@ uint32_t daterange::skip_interval() const noexcept {
  *
  *  @return The timeranges value.
  */
-void daterange::timeranges(std::list<timerange> const& value) {
-  _timeranges = value;
+void daterange::timeranges(std::list<timerange>&& value) {
+  _timeranges = std::move(value);
 }
+
+/**
+ *  Get timeranges value.
+ *
+ *  @return The timeranges value.
+ */
+//void daterange::timeranges(std::list<timerange> const& value) {
+//  _timeranges = value;
+//}
 
 /**
  *  Set timeranges value.
@@ -373,7 +383,7 @@ bool daterange::build_calendar_date(std::string const& line,
     range.month_end(month_end - 1);
     range.month_day_end(month_day_end);
     range.skip_interval(skip_interval);
-    range.timeranges(timeranges);
+    range.timeranges(std::move(timeranges));
 
     return true;
   }
@@ -526,26 +536,34 @@ bool daterange::build_other_date(std::string const& line,
 
   if (type != daterange::none) {
     auto range = list[type].emplace(list[type].begin(), type);
-    if (type == daterange::month_day) {
-      range->month_day_start(month_day_start);
-      range->month_day_end(month_day_end);
-    } else if (type == daterange::month_week_day) {
-      range->month_start(month_start);
-      range->week_day_start(week_day_start);
-      range->week_day_start_offset(week_day_start_offset);
-      range->month_end(month_end);
-      range->week_day_end(week_day_end);
-      range->week_day_end_offset(week_day_end_offset);
-    } else if (type == daterange::week_day) {
-      range->week_day_start(week_day_start);
-      range->week_day_start_offset(week_day_start_offset);
-      range->week_day_end(week_day_end);
-      range->week_day_end_offset(week_day_end_offset);
-    } else if (type == daterange::month_date) {
-      range->month_start(month_start);
-      range->month_day_start(month_day_start);
-      range->month_end(month_end);
-      range->month_day_end(month_day_end);
+    switch (type) {
+      case daterange::month_day:
+        range->month_day_start(month_day_start);
+        range->month_day_end(month_day_end);
+        break;
+      case daterange::month_week_day:
+        range->month_start(month_start);
+        range->week_day_start(week_day_start);
+        range->week_day_start_offset(week_day_start_offset);
+        range->month_end(month_end);
+        range->week_day_end(week_day_end);
+        range->week_day_end_offset(week_day_end_offset);
+        break;
+      case daterange::week_day:
+        range->week_day_start(week_day_start);
+        range->week_day_start_offset(week_day_start_offset);
+        range->week_day_end(week_day_end);
+        range->week_day_end_offset(week_day_end_offset);
+        break;
+      case daterange::month_date:
+        range->month_start(month_start);
+        range->month_day_start(month_day_start);
+        range->month_end(month_end);
+        range->month_day_end(month_day_end);
+        break;
+      default:
+        log_v2::core()->warn("daterange: build_other_date: type {} not managed.", type);
+        // should not occure.
     }
     range->skip_interval(skip_interval);
 
@@ -553,7 +571,7 @@ bool daterange::build_other_date(std::string const& line,
     if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return false;
 
-    range->timeranges(timeranges);
+    range->timeranges(std::move(timeranges));
     return true;
   }
 
