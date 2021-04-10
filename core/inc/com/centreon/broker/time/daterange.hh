@@ -41,46 +41,21 @@ class daterange {
  public:
   DECLARE_SHARED_PTR(daterange);
 
-  static constexpr int daterange_types = 5;
-
-  enum type_range {
-    none = -1,
-    calendar_date = 0,
-    month_date = 1,
-    month_day = 2,
-    month_week_day = 3,
-    week_day = 4
-  };
-
  private:
-  const type_range _type;
-  int _month_day_end;
-  int _month_day_start;
-  uint32_t _skip_interval;
   std::list<timerange> _timeranges;
 
  public:
-  daterange(type_range type);
+  daterange();
   ~daterange() noexcept = default;
   daterange(const daterange&) = delete;
   daterange& operator=(const daterange&) = delete;
-  void month_day_end(int value);
-  int month_day_end() const noexcept;
-  void month_day_start(int value);
-  int month_day_start() const noexcept;
-  void skip_interval(uint32_t value);
-  uint32_t skip_interval() const noexcept;
   void timeranges(std::list<timerange>&& value);
   std::list<timerange> const& timeranges() const noexcept;
-  type_range type() const noexcept;
 
   static bool build_calendar_date(std::string const& line,
-                                  std::vector<std::list<daterange>>& list);
-  static bool build_other_date(std::string const& line,
-                               std::vector<std::list<daterange>>& list);
-  static bool build_dateranges_from_string(
-      std::string const& value,
-      std::vector<std::list<daterange>>& list);
+                                  std::list<daterange>& list);
+  static bool build_dateranges_from_string(std::string const& value,
+                                           std::list<daterange>& list);
 };
 }  // namespace time
 
