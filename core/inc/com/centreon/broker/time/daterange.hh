@@ -54,28 +54,16 @@ class daterange {
 
  private:
   const type_range _type;
-  uint32_t _month_end;
-  uint32_t _month_start;
   int _month_day_end;
   int _month_day_start;
   uint32_t _skip_interval;
   std::list<timerange> _timeranges;
-  uint32_t _week_day_end;
-  uint32_t _week_day_start;
-  int _week_day_end_offset;
-  int _week_day_start_offset;
-  uint32_t _year_end;
-  uint32_t _year_start;
 
  public:
   daterange(type_range type);
   ~daterange() noexcept = default;
   daterange(const daterange&) = delete;
   daterange& operator=(const daterange&) = delete;
-  void month_end(uint32_t value);
-  uint32_t month_end() const noexcept;
-  void month_start(uint32_t value);
-  uint32_t month_start() const noexcept;
   void month_day_end(int value);
   int month_day_end() const noexcept;
   void month_day_start(int value);
@@ -85,18 +73,6 @@ class daterange {
   void timeranges(std::list<timerange>&& value);
   std::list<timerange> const& timeranges() const noexcept;
   type_range type() const noexcept;
-  void week_day_end(uint32_t value);
-  uint32_t week_day_end() const noexcept;
-  void week_day_start(uint32_t value);
-  uint32_t week_day_start() const noexcept;
-  void week_day_end_offset(int value);
-  int week_day_end_offset() const noexcept;
-  void week_day_start_offset(int value);
-  int week_day_start_offset() const noexcept;
-  void year_end(uint32_t value);
-  uint32_t year_end() const noexcept;
-  void year_start(uint32_t value);
-  uint32_t year_start() const noexcept;
 
   static bool build_calendar_date(std::string const& line,
                                   std::vector<std::list<daterange>>& list);

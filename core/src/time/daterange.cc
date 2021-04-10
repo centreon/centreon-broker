@@ -30,103 +30,7 @@ using namespace com::centreon::broker::time;
  */
 daterange::daterange(type_range type)
     : _type(type),
-      _month_end(0),
-      _month_start(0),
-      _month_day_end(0),
-      _month_day_start(0),
-      _skip_interval(0),
-      _week_day_end(0),
-      _week_day_start(0),
-      _week_day_end_offset(0),
-      _week_day_start_offset(0),
-      _year_end(0),
-      _year_start(0) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right The object to copy.
- */
-
-/**
- *  Copy operator.
- *
- *  @param[in] right The object to copy.
- *
- *  @return This object.
- */
-
-/**
- *  Set month_end value.
- *
- *  @param[in] value The new month_end value.
- */
-void daterange::month_end(uint32_t value) {
-  _month_end = value;
-}
-
-/**
- *  Get month_end value.
- *
- *  @return The month_end value.
- */
-uint32_t daterange::month_end() const noexcept {
-  return _month_end;
-}
-
-/**
- *  Set month_start value.
- *
- *  @param[in] value The new month_start value.
- */
-void daterange::month_start(uint32_t value) {
-  _month_start = value;
-}
-
-/**
- *  Get month_start value.
- *
- *  @return The month_start value.
- */
-uint32_t daterange::month_start() const noexcept {
-  return _month_start;
-}
-
-/**
- *  Set month_day_end value.
- *
- *  @param[in] value The new month_day_end value.
- */
-void daterange::month_day_end(int value) {
-  _month_day_end = value;
-}
-
-/**
- *  Get month_day_end value.
- *
- *  @return The month_day_end value.
- */
-int daterange::month_day_end() const noexcept {
-  return _month_day_end;
-}
-
-/**
- *  Set month_day_start value.
- *
- *  @param[in] value The new month_day_start value.
- */
-void daterange::month_day_start(int value) {
-  _month_day_start = value;
-}
-
-/**
- *  Get month_day_start value.
- *
- *  @return The month_day_start value.
- */
-int daterange::month_day_start() const noexcept {
-  return _month_day_start;
-}
+      _skip_interval(0) {}
 
 /**
  *  Set skip_interval value.
@@ -180,114 +84,6 @@ std::list<timerange> const& daterange::timeranges() const noexcept {
  */
 daterange::type_range daterange::type() const noexcept {
   return _type;
-}
-
-/**
- *  Set week_day_end value.
- *
- *  @param[in] value The new week_day_end value.
- */
-void daterange::week_day_end(uint32_t value) {
-  _week_day_end = value;
-}
-
-/**
- *  Get week_day_end value.
- *
- *  @return The week_day_end value.
- */
-uint32_t daterange::week_day_end() const noexcept {
-  return _week_day_end;
-}
-
-/**
- *  Set week_day_start value.
- *
- *  @param[in] value The new week_day_start value.
- */
-void daterange::week_day_start(uint32_t value) {
-  _week_day_start = value;
-}
-
-/**
- *  Get week_day_start value.
- *
- *  @return The week_day_start value.
- */
-uint32_t daterange::week_day_start() const noexcept {
-  return _week_day_start;
-}
-
-/**
- *  Set week_day_end_offset value.
- *
- *  @param[in] value The new week_day_end_offset value.
- */
-void daterange::week_day_end_offset(int value) {
-  _week_day_end_offset = value;
-}
-
-/**
- *  Get week_day_end_offset value.
- *
- *  @return The week_day_end_offset value.
- */
-int daterange::week_day_end_offset() const noexcept {
-  return _week_day_end_offset;
-}
-
-/**
- *  Set week_day_start_offset value.
- *
- *  @param[in] value The new week_day_start_offset value.
- */
-void daterange::week_day_start_offset(int value) {
-  _week_day_start_offset = value;
-}
-
-/**
- *  Get week_day_start_offset value.
- *
- *  @return The week_day_start_offset value.
- */
-int daterange::week_day_start_offset() const noexcept {
-  return _week_day_start_offset;
-}
-
-/**
- *  Set year_end value.
- *
- *  @param[in] value The new year_end value.
- */
-void daterange::year_end(uint32_t value) {
-  _year_end = value;
-}
-
-/**
- *  Get year_end value.
- *
- *  @return The year_end value.
- */
-uint32_t daterange::year_end() const noexcept {
-  return _year_end;
-}
-
-/**
- *  Set year_start value.
- *
- *  @param[in] value The new year_start value.
- */
-void daterange::year_start(uint32_t value) {
-  _year_start = value;
-}
-
-/**
- *  Get year_start value.
- *
- *  @return The year_start value.
- */
-uint32_t daterange::year_start() const noexcept {
-  return _year_start;
 }
 
 // UTILITIES
@@ -374,15 +170,10 @@ bool daterange::build_calendar_date(std::string const& line,
     if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return false;
 
-    auto range = list[daterange::calendar_date].emplace(list[daterange::calendar_date].begin(), daterange::calendar_date);
-    range->year_start(year_start);
-    range->month_start(month_start - 1);
-    range->month_day_start(month_day_start);
-    range->year_end(year_end);
-    range->month_end(month_end - 1);
-    range->month_day_end(month_day_end);
-    range->skip_interval(skip_interval);
-    range->timeranges(std::move(timeranges));
+    list[daterange::calendar_date].emplace_front(daterange::calendar_date);
+    daterange& range{list[daterange::calendar_date].front()};
+    range.skip_interval(skip_interval);
+    range.timeranges(std::move(timeranges));
 
     return true;
   }
@@ -447,7 +238,6 @@ bool daterange::build_other_date(std::string const& line,
     // thursday 2 - 4
     if (_get_day_id(buffer[0], week_day_start)) {
       week_day_start_offset = month_day_start;
-      week_day_end = week_day_start;
       week_day_end_offset = month_day_end;
       type = daterange::week_day;
     }
@@ -537,28 +327,12 @@ bool daterange::build_other_date(std::string const& line,
     auto range = list[type].emplace(list[type].begin(), type);
     switch (type) {
       case daterange::month_day:
-        range->month_day_start(month_day_start);
-        range->month_day_end(month_day_end);
         break;
       case daterange::month_week_day:
-        range->month_start(month_start);
-        range->week_day_start(week_day_start);
-        range->week_day_start_offset(week_day_start_offset);
-        range->month_end(month_end);
-        range->week_day_end(week_day_end);
-        range->week_day_end_offset(week_day_end_offset);
         break;
       case daterange::week_day:
-        range->week_day_start(week_day_start);
-        range->week_day_start_offset(week_day_start_offset);
-        range->week_day_end(week_day_end);
-        range->week_day_end_offset(week_day_end_offset);
         break;
       case daterange::month_date:
-        range->month_start(month_start);
-        range->month_day_start(month_day_start);
-        range->month_end(month_end);
-        range->month_day_end(month_day_end);
         break;
       default:
         log_v2::core()->warn("daterange: build_other_date: type {} not managed.", type);
