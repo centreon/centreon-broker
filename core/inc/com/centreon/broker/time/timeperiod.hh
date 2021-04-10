@@ -42,7 +42,7 @@ class timeperiod {
   const std::string _timeperiod_name;
   const std::string _alias;
 
-  std::vector<std::list<daterange> > _exceptions;
+  std::list<daterange> _exceptions;
   std::vector<std::shared_ptr<timeperiod>> _exclude;
   std::array<std::list<timerange>, 7> _timeranges;
   std::string _timezone;
@@ -94,7 +94,7 @@ class timeperiod {
 
   const std::string& get_alias() const noexcept;
 
-  std::vector<std::list<daterange> > const& get_exceptions() const noexcept;
+  const std::list<daterange>& get_exceptions() const noexcept;
   bool add_exception(const std::string& days, const std::string& range);
   std::vector<ptr> const& get_excluded() const noexcept;
   void add_excluded(ptr val);

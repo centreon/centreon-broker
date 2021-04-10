@@ -29,9 +29,7 @@ using namespace com::centreon::broker::time;
 timeperiod::timeperiod(uint32_t id,
                        const std::string& name,
                        const std::string& alias)
-    : _id(id), _timeperiod_name{name}, _alias{alias} {
-  _exceptions.resize(daterange::daterange_types);
-}
+    : _id(id), _timeperiod_name{name}, _alias{alias} {}
 
 /**
  *  Construct the timeperiod from data.
@@ -57,7 +55,6 @@ timeperiod::timeperiod(uint32_t id,
                        const std::string& friday,
                        const std::string& saturday)
     : _id(id), _timeperiod_name(name), _alias(alias) {
-  _exceptions.resize(daterange::daterange_types);
   std::vector<bool> success;
   if (!set_timerange(sunday, 0))
     throw msg_fmt("BAM: could not parse sunday for time period: {} ", id);
@@ -98,8 +95,7 @@ const std::string& timeperiod::get_alias() const noexcept {
  *
  *  @return The timeperiod exceptions.
  */
-std::vector<std::list<daterange> > const& timeperiod::get_exceptions()
-    const noexcept {
+const std::list<daterange>& timeperiod::get_exceptions() const noexcept {
   return _exceptions;
 }
 

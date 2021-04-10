@@ -27,8 +27,7 @@ TEST(Timeperiod, Constructor) {
   ASSERT_EQ(tp.get_id(), 12u);
   ASSERT_EQ(tp.get_name(), std::string("test"));
   ASSERT_EQ(tp.get_alias(), std::string("alias"));
-  for (const auto& e : tp.get_exceptions())
-    ASSERT_TRUE(e.empty());
+  ASSERT_TRUE(tp.get_exceptions().empty());
 }
 
 TEST(Timeperiod, intersect) {
