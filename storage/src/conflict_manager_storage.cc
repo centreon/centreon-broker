@@ -426,16 +426,26 @@ void conflict_manager::_update_metrics() {
         "({},'{}',{},{},'{}',{},{},'{}',{},{},{})", metric->metric_id,
         misc::string::escape(metric->unit_name,
                              get_metrics_col_size(metrics_unit_name)),
-        std::isnan(metric->warn) ? "NULL" : fmt::format("{}", metric->warn),
-        std::isnan(metric->warn_low) ? "NULL"
-                                     : fmt::format("{}", metric->warn_low),
+        std::isnan(metric->warn) || std::isinf(metric->warn)
+            ? "NULL"
+            : fmt::format("{}", metric->warn),
+        std::isnan(metric->warn_low) || std::isinf(metric->warn_low)
+            ? "NULL"
+            : fmt::format("{}", metric->warn_low),
         metric->warn_mode ? "1" : "0",
-        std::isnan(metric->crit) ? "NULL" : fmt::format("{}", metric->crit),
-        std::isnan(metric->crit_low) ? "NULL"
-                                     : fmt::format("{}", metric->crit_low),
+        std::isnan(metric->crit) || std::isinf(metric->crit)
+            ? "NULL"
+            : fmt::format("{}", metric->crit),
+        std::isnan(metric->crit_low) || std::isinf(metric->crit_low)
+            ? "NULL"
+            : fmt::format("{}", metric->crit_low),
         metric->crit_mode ? "1" : "0",
-        std::isnan(metric->min) ? "NULL" : fmt::format("{}", metric->min),
-        std::isnan(metric->max) ? "NULL" : fmt::format("{}", metric->max),
+        std::isnan(metric->min) || std::isinf(metric->min)
+            ? "NULL"
+            : fmt::format("{}", metric->min),
+        std::isnan(metric->max) || std::isinf(metric->max)
+            ? "NULL"
+            : fmt::format("{}", metric->max),
         metric->value));
   }
   std::string query(fmt::format(
