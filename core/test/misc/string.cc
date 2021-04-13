@@ -295,3 +295,21 @@ TEST(escape, complexe) {
       "oçi 还有中国人! H");
   ASSERT_EQ(string::escape(str1, 255), res1);
 }
+
+TEST(escape, quote1) {
+  std::string str("''''''''''''''''''''");
+  std::string res("\\'\\'\\'\\'\\'");
+  ASSERT_EQ(string::escape(str, 10), res);
+}
+
+TEST(escape, quote2) {
+  std::string str("\\\\\\\\\\");
+  std::string res("\\\\\\\\\\\\\\\\");
+  ASSERT_EQ(string::escape(str, 9), res);
+}
+
+TEST(escape, quote3) {
+  std::string str("\\\\\\\\\\");
+  std::string res("\\\\\\\\\\\\\\\\\\\\");
+  ASSERT_EQ(string::escape(str, 10), res);
+}
