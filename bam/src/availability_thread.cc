@@ -24,6 +24,7 @@
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -38,45 +39,47 @@ using namespace com::centreon::broker::bam;
  */
 availability_thread::availability_thread(database_config const& db_cfg,
                                          timeperiod_map& shared_map)
-    : _started_flag{false},
+    : _timer{pool::io_context()},
       _db_cfg(db_cfg),
       _shared_tps(shared_map),
       _mutex{},
       _should_exit(false),
-      _should_rebuild_all(false) {}
+      _should_rebuild_all(false) {
+  log_v2::bam()->trace("BAM-BI: availability thread constructor");
+  time_t midnight = _compute_next_midnight();
+  uint32_t duration = std::difftime(midnight, ::time(nullptr));
+  log_v2::bam()->debug("BAM-BI: availability thread sleeping for {}s.",
+                       duration);
+  _timer.expires_after(std::chrono::seconds(duration));
+  _timer.async_wait(
+      std::bind(&availability_thread::_run, this, std::placeholders::_1));
+}
 
 /**
  *  Destructor.
  */
 availability_thread::~availability_thread() {
-  _close_database();
+  terminate();
 }
 
 /**
  *  The main loop of thread.
  */
-void availability_thread::run() {
-  // Lock the mutex.
-  std::unique_lock<std::mutex> lock(_mutex);
+void availability_thread::_run(asio::error_code ec) {
+  if (ec)
+    log_v2::bam()->info("BAM-BI: availability thread timer: {}", ec.message());
+  else {
+    log_v2::bam()->debug("BAM-BI: availability thread waking up ");
 
-  // Check for termination asked.
-  if (_should_exit)
-    return;
+    // Termination asked.
+    if (_should_exit) {
+      log_v2::bam()->debug("BAM-BI: availability thread termination");
+      return;
+    }
 
-  for (;;) {
+    std::lock_guard<std::mutex> lck(_mutex);
+
     try {
-      // Calculate the duration until next midnight.
-      time_t midnight = _compute_next_midnight();
-      unsigned long wait_for = std::difftime(midnight, ::time(nullptr));
-      log_v2::bam()->debug(
-          "BAM-BI: availability thread sleeping for {} seconds.", wait_for);
-      _wait.wait_for(lock, std::chrono::seconds(wait_for));
-      log_v2::bam()->debug("BAM-BI: availability thread waking up ");
-
-      // Termination asked.
-      if (_should_exit)
-        break;
-
       log_v2::bam()->debug("BAM-BI: opening database");
       // Open the database.
       _open_database();
@@ -95,6 +98,15 @@ void availability_thread::run() {
       logging::error(logging::medium) << e.what();
       _close_database();
     }
+    if (!_should_exit) {
+      time_t midnight = _compute_next_midnight();
+      uint32_t duration = std::difftime(midnight, ::time(nullptr));
+      log_v2::bam()->debug("BAM-BI: availability thread sleeping for {}s.",
+                           duration);
+      _timer.expires_after(std::chrono::seconds(duration));
+      _timer.async_wait(
+          std::bind(&availability_thread::_run, this, std::placeholders::_1));
+    }
   }
 }
 
@@ -103,26 +115,14 @@ void availability_thread::run() {
  */
 void availability_thread::terminate() {
   log_v2::bam()->trace("BAM-BI: availability_thread terminate");
-  std::lock_guard<std::mutex> lock(_mutex);
   _should_exit = true;
-  _wait.notify_one();
-}
-
-/**
- *  Start a thread, and wait for its initialization.
- */
-void availability_thread::start_and_wait() {
-  log_v2::bam()->trace("BAM-BI: availability_thread start_and_wait");
-  if (!_started_flag) {
-    _thread = std::thread(&availability_thread::run, this);
-    _started_flag = true;
-  }
-}
-
-void availability_thread::wait() {
-  log_v2::bam()->trace("BAM-BI: availability_thread wait");
-  _thread.join();
-  _started_flag = false;
+  std::promise<bool> p;
+  std::future<bool> f(p.get_future());
+  asio::post(_timer.get_executor(), [this, &p] {
+    _timer.cancel();
+    p.set_value(true);
+  });
+  f.get();
 }
 
 /**
@@ -149,12 +149,13 @@ void availability_thread::unlock() {
 void availability_thread::rebuild_availabilities(
     std::string const& bas_to_rebuild) {
   log_v2::bam()->trace("BAM-BI: availability_thread rebuild_availabilities");
-  std::lock_guard<std::mutex> lock(_mutex);
   if (bas_to_rebuild.empty())
     return;
   _should_rebuild_all = true;
   _bas_to_rebuild = bas_to_rebuild;
-  _wait.notify_one();
+  _timer.expires_after(std::chrono::seconds(1));
+  _timer.async_wait(
+      std::bind(&availability_thread::_run, this, std::placeholders::_1));
 }
 
 /**

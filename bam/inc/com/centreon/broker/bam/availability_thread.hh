@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@
 #ifndef CCB_BAM_AVAILABILITY_THREAD_HH
 #define CCB_BAM_AVAILABILITY_THREAD_HH
 
+#include <asio.hpp>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <thread>
 
 #include "com/centreon/broker/bam/availability_builder.hh"
 #include "com/centreon/broker/bam/timeperiod_map.hh"
@@ -46,6 +46,18 @@ namespace bam {
  *
  */
 class availability_thread {
+  asio::steady_timer _timer;
+  database_config _db_cfg;
+  std::unique_ptr<mysql> _mysql;
+  timeperiod_map& _shared_tps;
+
+  std::mutex _mutex;
+  bool _should_exit;
+  bool _should_rebuild_all;
+  std::string _bas_to_rebuild;
+
+  void _run(asio::error_code ec);
+
  public:
   availability_thread(database_config const& db_cfg,
                       timeperiod_map& shared_map);
@@ -54,15 +66,12 @@ class availability_thread {
   availability_thread& operator=(availability_thread const& other) const =
       delete;
 
-  virtual void run();
   void terminate();
-  void start_and_wait();
 
   void lock();
   void unlock();
 
   void rebuild_availabilities(std::string const& bas_to_rebuild);
-  void wait();
 
  private:
   void _delete_all_availabilities();
@@ -81,21 +90,6 @@ class availability_thread {
 
   void _open_database();
   void _close_database();
-
-  std::thread _thread;
-
-  // Checked from master
-  bool _started_flag;
-
-  std::unique_ptr<mysql> _mysql;
-  database_config _db_cfg;
-  timeperiod_map& _shared_tps;
-
-  std::mutex _mutex;
-  bool _should_exit;
-  bool _should_rebuild_all;
-  std::string _bas_to_rebuild;
-  std::condition_variable _wait;
 };
 }  // namespace bam
 
