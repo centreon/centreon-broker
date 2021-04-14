@@ -158,8 +158,8 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   }
 
   // Debug message.
-  logging::debug(logging::high) << "endpoint applier: " << endp_to_create.size()
-                                << " endpoints to create";
+  log_v2::core()->debug("endpoint applier: {} endpoints to create",
+                        endp_to_create.size());
 
   // Create new endpoints.
   for (config::endpoint& ep : endp_to_create) {
@@ -478,11 +478,19 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
  *  @param[out] to_delete     Endpoints that should be deleted.
  */
 void endpoint::_diff_endpoints(
-    std::map<config::endpoint, processing::endpoint*> const& current,
-    std::list<config::endpoint> const& new_endpoints,
+    const std::map<config::endpoint, processing::endpoint*>& current,
+    const std::list<config::endpoint>& new_endpoints,
     std::list<config::endpoint>& to_create,
     std::list<config::endpoint>& to_delete) {
   // Copy some lists that we will modify.
+  log_v2::core()->trace("Running config:");
+  for (auto it = current.begin(); it != current.end(); ++it) {
+    log_v2::core()->trace(" * {}", it->first.name);
+  }
+  log_v2::core()->trace("New endpoints:");
+  for (auto it = new_endpoints.begin(); it != new_endpoints.end(); ++it) {
+    log_v2::core()->trace(" * {}", it->name);
+  }
   std::list<config::endpoint> new_ep(new_endpoints);
   for (auto it = current.begin(); it != current.end(); ++it)
     to_delete.push_back(it->first);
@@ -500,24 +508,27 @@ void endpoint::_diff_endpoints(
           "endpoint applier: error while "
           "diff'ing new and old configuration");
     std::list<config::endpoint> entries;
+
+    log_v2::core()->trace("Applying {} endpoint", list_it->name);
+
     entries.push_back(*list_it);
     new_ep.erase(list_it);
 
     // Find all subentries.
     for (auto& entry : entries) {
       // Find failovers.
-      if (!entry.failovers.empty())
-        for (auto& failover : entry.failovers) {
-          list_it = std::find_if(new_ep.begin(), new_ep.end(),
-                                 failover_match_name(failover));
-          if (list_it == new_ep.end())
-            throw msg_fmt(
-                "endpoint applier: could not find failover '{}'"
-                "' for endpoint '{}'",
-                failover, entry.name);
-          entries.push_back(*list_it);
-          new_ep.erase(list_it);
-        }
+      for (auto& failover : entry.failovers) {
+        list_it = std::find_if(new_ep.begin(), new_ep.end(),
+                               failover_match_name(failover));
+        if (list_it == new_ep.end())
+          throw msg_fmt(
+              "endpoint applier: could not find failover '{}'"
+              "' for endpoint '{}'",
+              failover, entry.name);
+        entries.push_back(*list_it);
+        log_v2::core()->info("sub entry {} added", list_it->name);
+        new_ep.erase(list_it);
+      }
     }
 
     // Try to find entry and subentries in the endpoints already running.
@@ -527,6 +538,16 @@ void endpoint::_diff_endpoints(
         to_create.push_back(entry);
     else
       to_delete.remove(map_it->first);
+  }
+
+  log_v2::core()->trace("Endpoints to delete:");
+  for (auto it = to_delete.begin(); it != to_delete.end(); ++it) {
+    log_v2::core()->trace(" * {}", it->name);
+  }
+
+  log_v2::core()->trace("Endpoints to create:");
+  for (auto it = to_create.begin(); it != to_create.end(); ++it) {
+    log_v2::core()->trace(" * {}", it->name);
   }
 }
 

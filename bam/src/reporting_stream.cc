@@ -76,7 +76,6 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
 
   // Initialize the availabilities thread.
   _availabilities.reset(new availability_thread(db_cfg, _timeperiods));
-  _availabilities->start_and_wait();
 }
 
 /**
@@ -84,10 +83,6 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
  */
 reporting_stream::~reporting_stream() {
   log_v2::bam()->trace("BAM: reporting stream destructor");
-  // Terminate the availabilities thread.
-  _availabilities->terminate();
-  _availabilities->wait();
-  log_v2::sql()->debug("bam: reporting_stream destruction");
 }
 
 /**

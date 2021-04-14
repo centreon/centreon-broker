@@ -93,9 +93,8 @@ bool daterange::build_calendar_date(std::string const& line,
     if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return false;
 
-    list.emplace(list.begin());
-    daterange& range{list.front()};
-    range.timeranges(std::move(timeranges));
+    auto range_it = list.emplace(list.begin());
+    range_it->timeranges(std::move(timeranges));
 
     return true;
   }

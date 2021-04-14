@@ -48,14 +48,12 @@ bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
     *flag = no;
   bool is_bam{!strncasecmp("bam", cfg.type.c_str(), 4)};
   bool is_bam_bi{!strncasecmp("bam_bi", cfg.type.c_str(), 7)};
-  if (is_bam || is_bam_bi) {
-    cfg.params["read_timeout"] = "1";
+  if (is_bam || is_bam_bi)
     cfg.read_timeout = 1;
-  }
-  if (is_bam) {
-    cfg.params["cache"] = "yes";
+
+  if (is_bam)
     cfg.cache_enabled = true;
-  }
+
   return is_bam || is_bam_bi;
 }
 
