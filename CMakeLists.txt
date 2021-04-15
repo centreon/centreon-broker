@@ -66,6 +66,7 @@ set_source_files_properties(${INC_DIR}/database/table_max_size.hh PROPERTIES GEN
 
 set(protobuf_MODULE_COMPATIBLE True)
 find_package(json11 REQUIRED)
+find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(asio REQUIRED)
@@ -80,6 +81,7 @@ find_package(mariadb-connector-c REQUIRED)
 add_definitions(${spdlog_DEFINITIONS} ${mariadb-connector-c_DEFINITIONS})
 
 include_directories(${json11_INCLUDE_DIRS})
+include_directories(${nlohmann_json_INCLUDE_DIRS})
 include_directories(${fmt_INCLUDE_DIRS})
 include_directories(${spdlog_INCLUDE_DIRS})
 include_directories(${asio_INCLUDE_DIRS})
@@ -89,6 +91,7 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 include_directories(${mariadb-connector-c_INCLUDE_DIRS}/mysql)
 
 link_directories(${json11_LIB_DIRS})
+link_directories(${nlohmann_json_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
 link_directories(${spdlog_LIB_DIRS})
 link_directories(${protobuf_LIB_DIRS})
@@ -587,10 +590,10 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${nlohmann_json_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 # Centreon Broker Watchdog
-option(WITH_CBWD "Build centreon broker watchdong." ON)
+option(WITH_CBWD "Build centreon broker watchdog." ON)
 if (WITH_CBWD)
   add_subdirectory(watchdog)
 endif ()

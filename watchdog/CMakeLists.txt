@@ -41,7 +41,7 @@ add_executable("${WATCHDOG}"
   ${INC_DIR}/instance_configuration.hh
 )
 
-target_link_libraries(${WATCHDOG} pthread ${fmt_LIBS} ${spdlog_LIBS} ${json11_LIBS})
+target_link_libraries(${WATCHDOG} pthread ${fmt_LIBS} ${spdlog_LIBS} ${nlohmann_json_LIBS})
 
 if (WITH_WATCHDOG_TESTS)
   # Testing.
