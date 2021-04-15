@@ -94,15 +94,16 @@ void log_v2::apply(const config::state& conf) {
   _core_log->set_level(level::info);
   _core_log->flush_on(level::info);
   _core_log->info("{} : log started", _log_name);
+
   _config_log = std::make_shared<logger>("config", null_sink);
-  _tls_log = std::make_shared<logger>("config", null_sink);
-  _tcp_log = std::make_shared<logger>("config", null_sink);
-  _bbdo_log = std::make_shared<logger>("config", null_sink);
-  _sql_log = std::make_shared<logger>("config", null_sink);
-  _perfdata_log = std::make_shared<logger>("config", null_sink);
-  _lua_log = std::make_shared<logger>("config", null_sink);
-  _processing_log = std::make_shared<logger>("config", null_sink);
-  _bam_log = std::make_shared<logger>("config", null_sink);
+  _tls_log = std::make_shared<logger>("tls", null_sink);
+  _tcp_log = std::make_shared<logger>("tcp", null_sink);
+  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
+  _sql_log = std::make_shared<logger>("sql", null_sink);
+  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
+  _lua_log = std::make_shared<logger>("lua", null_sink);
+  _processing_log = std::make_shared<logger>("processing", null_sink);
+  _bam_log = std::make_shared<logger>("bam", null_sink);
 
   for (auto it = log.loggers.begin(), end = log.loggers.end(); it != end;
        ++it) {

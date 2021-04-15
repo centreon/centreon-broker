@@ -250,7 +250,7 @@ void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
         _host_id, _service_id);
 
     // Update information.
-    _downtimed = (dt->was_started && dt->actual_end_time.is_null());
+    _downtimed = dt->was_started && dt->actual_end_time.is_null();
 
     // Generate status event.
     visit(visitor);
