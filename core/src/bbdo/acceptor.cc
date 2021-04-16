@@ -100,7 +100,12 @@ std::unique_ptr<io::stream> acceptor::open() {
       my_bbdo->set_negotiate(_negotiate, _extensions);
       my_bbdo->set_timeout(_timeout);
       my_bbdo->set_ack_limit(_ack_limit);
-      my_bbdo->negotiate(bbdo::stream::negotiate_second);
+      try {
+        my_bbdo->negotiate(bbdo::stream::negotiate_second);
+      } catch (const std::exception& e) {
+        delete my_bbdo;
+        throw;
+      }
 
       return std::unique_ptr<io::stream>(my_bbdo);
     }

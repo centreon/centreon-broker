@@ -91,7 +91,12 @@ std::unique_ptr<io::stream> connector::_open(
     bbdo_stream->set_coarse(_coarse);
     bbdo_stream->set_negotiate(_negotiate, _extensions);
     bbdo_stream->set_timeout(_timeout);
-    bbdo_stream->negotiate(bbdo::stream::negotiate_first);
+    try {
+      bbdo_stream->negotiate(bbdo::stream::negotiate_first);
+    } catch (std::exception& e) {
+      delete bbdo_stream;
+      throw;
+    }
     bbdo_stream->set_ack_limit(_ack_limit);
   }
   return std::unique_ptr<io::stream>(bbdo_stream);
