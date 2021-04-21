@@ -42,11 +42,11 @@ void metric_book::listen(uint32_t metric_id, metric_listener* listnr) {
 void metric_book::unlisten(uint32_t metric_id, metric_listener* listnr) {
   std::pair<multimap::iterator, multimap::iterator> range(
       _book.equal_range(metric_id));
-  for (; range.first != range.second; ++range.first)
-    if (range.first->second == listnr) {
-      _book.erase(range.first);
-      break;
-    }
+  for (; range.first != range.second;)
+    if (range.first->second == listnr)
+      range.first = _book.erase(range.first);
+    else
+      ++range.first;
 }
 
 /**
