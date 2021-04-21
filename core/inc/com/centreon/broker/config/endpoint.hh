@@ -21,6 +21,7 @@
 
 #include <ctime>
 #include <json11.hpp>
+#include <nlohmann/json.hpp>
 #include <list>
 #include <map>
 #include <set>
@@ -72,7 +73,7 @@ class endpoint {
   std::string type;
   std::set<std::string> write_filters;
   bool cache_enabled;
-  json11::Json cfg;
+  nlohmann::json cfg;
 };
 }  // namespace config
 
