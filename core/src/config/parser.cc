@@ -231,6 +231,7 @@ state parser::parse(std::string const& file) {
           throw msg_fmt(
               "config parser: cannot parse key '"
               "'input':  value type must be an object");
+
       }
 
       else if (it.key() == "log") {
@@ -242,6 +243,7 @@ state parser::parse(std::string const& file) {
         const json& conf_js = it.value();
         if (!conf_js.is_object())
           throw msg_fmt("the log configuration should be a json object");
+
 
         auto& conf = retval.log_conf();
         if (conf_js.contains("directory") && conf_js["directory"].is_string())
@@ -343,6 +345,7 @@ state parser::parse(std::string const& file) {
   if (conf.filename.empty())
     conf.filename = fmt::format("{}.log", retval.broker_name());
   return retval;
+
 }
 
 /**
@@ -428,6 +431,7 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
       std::cout << "for key: " << it.key() << " value is not a string." << std::endl;
   }
 }
+
 
 /**
  *  Parse the configuration of a logging object.
