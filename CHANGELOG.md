@@ -12,6 +12,12 @@
 If we have an issue on the network between cbd and centengine, it is possible
 that the acceptor among them keeps for an indefined time its connections to the
 other. This leads to socket in CLOSE\_WAIT state.
+
+*streamconnector*
+
+There is a new function broker.md5(str) provided by the streamconnector that
+computes the md5 checksum of the given string str.
+
 *perfdata*
 
 If a perfdata contains infinity or nan values, its insertion in database could
