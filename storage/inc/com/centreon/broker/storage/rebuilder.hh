@@ -41,6 +41,8 @@ class rebuilder {
             uint32_t rrd_length = 15552000,
             uint32_t interval_length = 60);
   ~rebuilder();
+  rebuilder(const rebuilder&) = delete;
+  rebuilder& operator=(const rebuilder&) = delete;
   uint32_t get_rebuild_check_interval() const throw();
   uint32_t get_rrd_length() const throw();
 
@@ -59,8 +61,6 @@ class rebuilder {
     short metric_type;
   };
 
-  rebuilder(rebuilder const& other);
-  rebuilder& operator=(rebuilder const& other);
   void _next_index_to_rebuild(index_info& info, mysql& ms);
   void _rebuild_metric(mysql& ms,
                        uint32_t metric_id,
@@ -74,7 +74,7 @@ class rebuilder {
                        uint64_t index_id,
                        uint32_t interval,
                        uint32_t length);
-  void _send_rebuild_event(bool end, uint32_t id, bool is_index);
+  void _send_rebuild_event(bool end, uint64_t id, bool is_index);
   void _set_index_rebuild(mysql& db, uint64_t index_id, short state);
   void _run();
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,58 +34,11 @@ rebuild::rebuild()
  *  @param[in] id       Index or metric ID.
  *  @param[in] is_index true for an index ID, false for a metric ID.
  */
-rebuild::rebuild(bool ending, uint32_t id, bool is_index)
+rebuild::rebuild(bool ending, uint64_t id, bool is_index)
     : io::data(rebuild::static_type()),
       end(ending),
       id(id),
       is_index(is_index) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-rebuild::rebuild(rebuild const& right) : io::data(right) {
-  _internal_copy(right);
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-rebuild& rebuild::operator=(rebuild const& right) {
-  if (this != &right) {
-    io::data::operator=(right);
-    _internal_copy(right);
-  }
-  return *this;
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void rebuild::_internal_copy(rebuild const& right) {
-  end = right.end;
-  id = right.id;
-  is_index = right.is_index;
-}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const rebuild::entries[] = {

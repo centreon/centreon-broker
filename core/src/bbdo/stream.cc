@@ -223,7 +223,7 @@ static io::data* unserialize(uint32_t event_type,
                              uint32_t source_id,
                              uint32_t destination_id,
                              char const* buffer,
-                             uint32_t size) {
+                             uint32_t size, bool old_format) {
   // Get event info (operations and mapping).
   io::event_info const* info(io::events::instance().get_event_info(event_type));
   if (info) {
@@ -261,7 +261,10 @@ static io::data* unserialize(uint32_t event_type,
               rb = set_uint(*t, *current_entry, buffer, size);
               break;
             case mapping::source::ULONG:
-              rb = set_ulong(*t, *current_entry, buffer, size);
+              if (old_format)
+                rb = set_uint(*t, *current_entry, buffer, size);
+              else
+                rb = set_ulong(*t, *current_entry, buffer, size);
               break;
             default:
               log_v2::bbdo()->error(
@@ -909,7 +912,21 @@ bool stream::_read_any(std::shared_ptr<io::data>& d, time_t deadline) {
 
         // Maybe it is bigger now.
         packet_size = content.size();
-        d.reset(unserialize(event_id, source_id, dest_id, pack, packet_size));
+
+        /* This is to simplify transition to uint64 index_id. This code is
+         * just available in 20.10.x version. */
+        bool old_format = false;
+        if ((event_id >> 16) == 3) {
+          if ((event_id == 196610 && packet_size == 6)  // storage::rebuild
+              ||
+              (event_id == 196611 && packet_size == 5)  // storage::remove_graph
+              || (event_id == 196612 && packet_size == 27)  // storage::status
+              || (event_id == 196613 &&
+                  packet_size == 12))  // storage::index_mapping
+            old_format = true;
+        }
+        d.reset(unserialize(event_id, source_id, dest_id, pack, packet_size,
+                            old_format));
         if (d) {
           log_v2::bbdo()->debug("unserialized {} bytes for event of type {}",
                                 BBDO_HEADER_SIZE + packet_size, event_id);
