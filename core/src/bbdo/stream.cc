@@ -183,7 +183,7 @@ static uint32_t set_uint(io::data& t,
 }
 
 /**
- *  Set an uint32_teger within an object.
+ *  Set an uint64_teger within an object.
  */
 static uint32_t set_ulong(io::data& t,
                           mapping::entry const& member,

@@ -252,9 +252,8 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
         e.retry_interval =
           static_cast<uint32_t>(std::stoul(object.second.string_value()));
       } catch (const std::exception& e) {
-        throw msg_fmt(
-          "config parser: cannot parse key "
-          "'retry_interval': value must be an integer");
+        throw exceptions::msg() << "config parser: cannot parse key "
+                                   "'retry_interval': value must be an integer";
       }
     else if (object.first == "filters") {
       std::set<std::string> endpoint::*member;

@@ -6,6 +6,12 @@
 
 ### Bugfixes
 
+*Config*
+
+retry_interval attribute in configuration file seems to be have a safe behavior with a
+decimal value, but but with a chain of character broker quit without understanble error message, 
+now broker quits cleanly with a warning that we can see in by using journalctl command.
+
 
 *TCP*
 
@@ -38,6 +44,9 @@ Now '.' is allowed in names.
 When broker is badly configured and the user wants to stop it, it may hang and
 never stop. This new version fixes this issue.
 
+There were also dangling pointers in the bbdo manager that regularly lead to
+segfault when it was unloaded. It is fixed now.
+
 *Storage rebuilder*
 
 The rebuilder loop has been rewritten. When it is stopped, it is interrupted
@@ -45,7 +54,7 @@ correctly.
 
 *Logs*
 
-The new logs (log_v2) are correctly flushed when cbd is stopped.
+The new logs (log\_v2) are correctly flushed when cbd is stopped.
 
 *Thread pool*
 
