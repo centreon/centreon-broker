@@ -89,6 +89,7 @@ class StatusEntryTest : public ::testing::Test {
     // The cache must be destroyed before the applier deinit() call.
       config::applier::deinit();
       ::remove("/tmp/broker_test_cache");
+      ::remove(log_v2::instance().log_name().c_str());
     }
 };
 

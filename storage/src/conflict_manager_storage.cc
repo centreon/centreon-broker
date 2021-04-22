@@ -447,7 +447,9 @@ void conflict_manager::_update_metrics() {
         std::isnan(metric->max) || std::isinf(metric->max)
             ? "NULL"
             : fmt::format("{}", metric->max),
-        metric->value));
+        std::isnan(metric->value) || std::isinf(metric->value)
+            ? "NULL"
+            : fmt::format("{}", metric->value)));
   }
   std::string query(fmt::format(
       "INSERT INTO metrics (metric_id, unit_name, warn, warn_low, "

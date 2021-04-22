@@ -91,8 +91,8 @@ class rebuilder {
             uint32_t rrd_length = 15552000,
             uint32_t interval_length = 60);
   ~rebuilder();
-  rebuilder(rebuilder const& other) = delete;
-  rebuilder& operator=(rebuilder const& other) = delete;
+  rebuilder(const rebuilder&) = delete;
+  rebuilder& operator=(const rebuilder&) = delete;
 };
 }  // namespace storage
 

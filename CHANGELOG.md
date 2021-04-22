@@ -12,6 +12,16 @@
 If we have an issue on the network between cbd and centengine, it is possible
 that the acceptor among them keeps for an indefined time its connections to the
 other. This leads to socket in CLOSE\_WAIT state.
+*perfdata*
+
+If a perfdata contains infinity or nan values, its insertion in database could
+fail. This fixed now by inserting a NULL value instead. When the perfdata parser
+encounters an error during its work, now it returns logs with the host id and
+the service id of the associated service, so it is easier for the user to debug
+his check.
+
+Index\_id of index\_data and metrics tables are now in unsigned int64_t.
+
 *Log file configuration*
 
 log file configuration is applied even if the configuration contains errors.

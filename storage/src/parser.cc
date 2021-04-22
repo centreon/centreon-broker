@@ -134,6 +134,7 @@ void parser::parse_perfdata(uint32_t host_id,
     else
       return std::string();
   };
+
   size_t start = strspn(str, " \n\r\t");
   const char* buf = str + start;
 
