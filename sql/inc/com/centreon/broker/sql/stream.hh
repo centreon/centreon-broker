@@ -75,12 +75,11 @@ class stream : public io::stream {
   stream(stream const& other) = delete;
   stream& operator=(stream const& other) = delete;
   ~stream();
-  int flush();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void update();
-  int write(std::shared_ptr<io::data> const& d);
+  int flush() override;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
+  void update() override;
+  int write(std::shared_ptr<io::data> const& d) override;
   void statistics(json11::Json::object& tree) const override;
-
 };
 }  // namespace sql
 

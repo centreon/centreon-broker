@@ -431,7 +431,7 @@ static int l_broker_parse_perfdata(lua_State* L) {
   storage::parser p;
   std::list<storage::perfdata> pds;
   try {
-    p.parse_perfdata(perf_data, pds);
+    p.parse_perfdata(0, 0, perf_data, pds);
   } catch (storage::exceptions::perfdata const& e) {
     lua_pushnil(L);
     lua_pushstring(L, e.what());
