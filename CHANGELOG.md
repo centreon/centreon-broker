@@ -6,6 +6,12 @@
 
 ### Bugfixes
 
+
+*TCP*
+
+If we have an issue on the network between cbd and centengine, it is possible
+that the acceptor among them keeps for an indefined time its connections to the
+other. This leads to socket in CLOSE\_WAIT state.
 *Log file configuration*
 
 log file configuration is applied even if the configuration contains errors.
