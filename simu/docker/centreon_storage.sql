@@ -194,14 +194,14 @@ CREATE TABLE `downtimes` (
   `cancelled` tinyint(1) DEFAULT NULL,
   `comment_data` text,
   `deletion_time` int(11) DEFAULT NULL,
-  `duration` int(11) DEFAULT NULL,
-  `end_time` int(11) DEFAULT NULL,
+  `duration` bigint unsigned DEFAULT NULL,
+  `end_time` bigint unsigned DEFAULT NULL,
   `fixed` tinyint(1) DEFAULT NULL,
   `instance_id` int(11) DEFAULT NULL,
   `internal_id` int(11) DEFAULT NULL,
-  `start_time` int(11) DEFAULT NULL,
-  `actual_start_time` int(11) DEFAULT NULL,
-  `actual_end_time` int(11) DEFAULT NULL,
+  `start_time` bigint unsigned DEFAULT NULL,
+  `actual_start_time` bigint unsigned DEFAULT NULL,
+  `actual_end_time` bigint unsigned DEFAULT NULL,
   `started` tinyint(1) DEFAULT NULL,
   `triggered_by` int(11) DEFAULT NULL,
   `type` smallint(6) DEFAULT NULL,
@@ -446,7 +446,7 @@ CREATE TABLE `hoststateevents` (
 --
 
 CREATE TABLE `index_data` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `host_name` varchar(255) DEFAULT NULL,
   `host_id` int(11) DEFAULT NULL,
   `service_description` varchar(255) DEFAULT NULL,
@@ -2015,7 +2015,7 @@ DROP TABLE IF EXISTS `metrics`;
 
 CREATE TABLE `metrics` (
   `metric_id` int(11) NOT NULL AUTO_INCREMENT,
-  `index_id` int(11) DEFAULT NULL,
+  `index_id` bigint unsigned DEFAULT NULL,
   `metric_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `data_source_type` enum('0','1','2','3') DEFAULT NULL,
   `unit_name` varchar(32) DEFAULT NULL,
