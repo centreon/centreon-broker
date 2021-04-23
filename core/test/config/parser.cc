@@ -21,13 +21,16 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
+#include <nlohmann/json.hpp>
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
+using namespace nlohmann;
 
 /**
  *  Check that 'input' and 'output' are properly parsed by the
@@ -72,7 +75,8 @@ TEST(parser, endpoint) {
       "        ],\n"
       "        \"buffering_timeout\": \"10\",\n"
       "        \"read_timeout\": \"5\",\n"
-      "        \"retry_interval\": \"300\"\n"
+      "        \"retry_interval\": \"300\",\n"
+      "        \"f\": \"1\"\n"
       "      },\n"
       "      {\n"
       "        \"name\": \"CentreonRetention\",\n"
@@ -210,6 +214,12 @@ TEST(parser, logger) {
   // Close file.
   fclose(file_stream);
 
+  std::ifstream f(config_file);
+  std::string const& json_to_parse{std::istreambuf_iterator<char>(f),
+                                   std::istreambuf_iterator<char>()};
+
+  json doc = json::parse(json_to_parse);
+
   // Parse.
   config::parser p;
   config::state s{p.parse(config_file)};
@@ -219,7 +229,7 @@ TEST(parser, logger) {
 
   // Check against expected result.
   ASSERT_EQ(s.loggers().size(), 2u);
-
+  
   // Check logger #1.
   std::list<config::logger>::iterator it(s.loggers().begin());
   config::logger l1(*(it++));

@@ -24,6 +24,7 @@
 #include <cstring>
 #include <fstream>
 #include <streambuf>
+#include <iostream>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/defines.hh"
@@ -53,7 +54,7 @@ static bool get_conf(std::pair<std::string const, json> const& obj,
                      bool (json::*is_goodtype)() const,
                      T (json::*get_value)() const) {
   if (obj.first == key) {
-    json const& value{obj.second};
+    json const& value = obj.second;
     if ((value.*is_goodtype)())
       (s.*set_state)((value.*get_value)());
     else
@@ -76,7 +77,7 @@ static bool get_conf(std::pair<std::string const, json> const& obj,
                      bool (json::*is_goodtype)() const
                      ) {
   if (obj.first == key) {
-    json const& value{obj.second};
+    json const& value = obj.second;
     if ((value.*is_goodtype)())
       (s.*set_state)(value.get<std::string>());
     else
@@ -247,9 +248,9 @@ state parser::parse(std::string const& file) {
 
 
         auto& conf = retval.log_conf();
-        if (conf_js["directory"].is_string())
+        if (conf_js.contains("directory") && conf_js["directory"].is_string())
           conf.directory = conf_js["directory"].get<std::string>();
-        else if (!conf_js["directory"].is_null())
+        else if (conf_js.contains("directory") && !conf_js["directory"].is_null())
           throw msg_fmt(
               "'directory' key in the log configuration must contain a "
               "directory name");
@@ -258,21 +259,21 @@ state parser::parse(std::string const& file) {
 
         conf.filename = "";
 
-        if (conf_js["filename"].is_string()) {
+        if (conf_js.contains("filename") && conf_js["filename"].is_string()) {
           conf.filename = conf_js["filename"].get<std::string>();
           if (conf.filename.find("/") != std::string::npos)
             throw msg_fmt(
                 "'filename' must only contain a filename without directory");
 
         }
-        else if (!conf_js["filename"].is_null())
+        else if (conf_js.contains("filename") && !conf_js["filename"].is_null())
           throw msg_fmt(
               "'filename' key in the log configuration must contain the log "
               "file name");
 
         conf.max_size = 0u;
 
-        if (conf_js["max_size"].is_string()) {
+        if (conf_js.contains("max_size") && conf_js["max_size"].is_string()) {
           try {
             conf.max_size = std::stoul(conf_js["max_size"].get<std::string>());
           } catch (const std::exception& e) {
@@ -281,7 +282,7 @@ state parser::parse(std::string const& file) {
                 "in bytes");
           }
         } 
-        else if (conf_js["max_size"].is_number()) {
+        else if (conf_js.contains("max_size") && conf_js["max_size"].is_number()) {
           int64_t tmp = conf_js["max_size"].get<int>();
           if (tmp < 0)
             throw msg_fmt(
@@ -289,12 +290,12 @@ state parser::parse(std::string const& file) {
                 "positive number.");
           conf.max_size = tmp;
         } 
-        else if (!conf_js["max_size"].is_null())
+        else if (conf_js.contains("max_size") && !conf_js["max_size"].is_null())
           throw msg_fmt(
               "'max_size' key in the log configuration must contain a size in "
               "bytes (as number or string)");
 
-        if (conf_js["loggers"].is_object()) {
+        if (conf_js.contains("loggers") && conf_js["loggers"].is_object()) {
           conf.loggers.clear();
           for (auto it = conf_js["loggers"].begin();
               it != conf_js["loggers"].end(); ++it) {
@@ -377,7 +378,7 @@ bool parser::parse_boolean(std::string const& value) {
  *  @param[out] e    Element object.
  */
 void parser::_parse_endpoint(json const& elem, endpoint& e) {
-  //e.cfg = elem;
+  e.cfg = elem;
 
   for (auto it = elem.begin(); it != elem.end(); ++it) {
     if (it.key() == "buffering_timeout")
@@ -400,6 +401,7 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
           "'retry_interval': value must be an integer");
       }
     }
+
     else if (it.key() == "filters") {
       std::set<std::string> endpoint::*member;
       if (e.write_filters.empty())  // Input.
@@ -425,7 +427,10 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
       e.cache_enabled = parse_boolean(it.value().get<std::string>());
     else if (it.key() == "type")
       e.type = it.value().get<std::string>();
-    e.params[it.key()] = it.value().get<std::string>();
+    if (it.value().is_string())
+      e.params[it.key()] = it.value().get<std::string>();
+    else 
+      std::cout << "for key: " << it.key() << " value is not a string." << std::endl;
   }
 }
 
