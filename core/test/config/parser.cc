@@ -229,7 +229,7 @@ TEST(parser, logger) {
 
   // Check against expected result.
   ASSERT_EQ(s.loggers().size(), 2u);
-
+  
   // Check logger #1.
   std::list<config::logger>::iterator it(s.loggers().begin());
   config::logger l1(*(it++));
