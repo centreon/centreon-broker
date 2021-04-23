@@ -1,6 +1,6 @@
 # Changelog
 
-## 20.04.14
+## 20.04.13
 
 `Release date to be defined`
 
@@ -11,10 +11,6 @@
 Sometimes, we want to provide a custom common name instead of the hostname.
 This is now possible thanks to the tls\_hostname. Supports for TLS1.0 and TLS1.1
 have been removed.
-
-## 20.04.13
-
-`Release date to be defined`
 
 ### Bugfixes
 
