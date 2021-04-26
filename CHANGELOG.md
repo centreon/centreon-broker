@@ -1,5 +1,13 @@
 # Changelog
 
+## 20.04.14
+
+### Fixes
+
+*SQL*
+
+The string escape function could badly make its work. This is fixed now.
+
 ## 20.04.13
 
 `Release date to be defined`
