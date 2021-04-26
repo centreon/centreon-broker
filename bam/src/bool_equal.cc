@@ -23,41 +23,12 @@
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
- */
-bool_equal::bool_equal() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-bool_equal::bool_equal(bool_equal const& right) : bool_binary_operator(right) {}
-
-/**
- *  Destructor.
- */
-bool_equal::~bool_equal() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-bool_equal& bool_equal::operator=(bool_equal const& right) {
-  bool_binary_operator::operator=(right);
-  return (*this);
-}
-
-/**
  *  Get the hard value.
  *
  *  @return Evaluation of the expression with hard values.
  */
 double bool_equal::value_hard() {
-  return ((std::fabs(_left_hard - _right_hard) < COMPARE_EPSILON) ? 1.0 : 0.0);
+  return (std::fabs(_left_hard - _right_hard) < COMPARE_EPSILON) ? 1.0 : 0.0;
 }
 
 /**
@@ -66,5 +37,5 @@ double bool_equal::value_hard() {
  *  @return Evaluation of the expression with soft values.
  */
 double bool_equal::value_soft() {
-  return ((std::fabs(_left_soft - _right_soft) < COMPARE_EPSILON) ? 1.0 : 0.0);
+  return (std::fabs(_left_soft - _right_soft) < COMPARE_EPSILON) ? 1.0 : 0.0;
 }

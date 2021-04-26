@@ -41,7 +41,23 @@ class meta_service {
   typedef std::list<uint32_t> metric_container;
   typedef std::set<std::pair<uint32_t, uint32_t> > service_container;
 
-  meta_service(uint32_t id = 0,
+ private:
+  uint32_t _id;
+  uint32_t _host_id;
+  uint32_t _service_id;
+  std::string _computation;
+  double _level_critical;
+  double _level_warning;
+  std::string _metric_name;
+  metric_container _metrics;
+  std::string _name;
+  std::string _service_filter;
+  service_container _services;
+
+ public:
+  meta_service(uint32_t id,
+               uint32_t host_id,
+               uint32_t service_id,
                std::string const& name = "",
                std::string const& computation = "",
                double warning_level = 0.0,
@@ -50,7 +66,8 @@ class meta_service {
                std::string const& metric = "");
   meta_service(meta_service const& other);
   ~meta_service();
-  meta_service& operator=(meta_service const& other);
+  meta_service& operator=(const meta_service& other);
+  meta_service& operator=(meta_service&& other);
   bool operator==(meta_service const& other) const;
   bool operator!=(meta_service const& other) const;
 
@@ -69,29 +86,14 @@ class meta_service {
   void add_metric(uint32_t metric_id);
   void add_service(uint32_t host_id, uint32_t service_id);
   void set_computation(std::string const& function);
-  void set_id(uint32_t id);
-  void set_host_id(uint32_t host_id);
-  void set_service_id(uint32_t service_id);
+  //void set_id(uint32_t id);
+  //void set_host_id(uint32_t host_id);
+  //void set_service_id(uint32_t service_id);
   void set_level_critical(double level);
   void set_level_warning(double level);
   void set_metric_name(std::string const& metric);
   void set_name(std::string const& name);
   void set_service_filter(std::string const& filter);
-
- private:
-  void _internal_copy(meta_service const& other);
-
-  std::string _computation;
-  uint32_t _id;
-  uint32_t _host_id;
-  uint32_t _service_id;
-  double _level_critical;
-  double _level_warning;
-  std::string _metric_name;
-  metric_container _metrics;
-  std::string _name;
-  std::string _service_filter;
-  service_container _services;
 };
 }  // namespace configuration
 }  // namespace bam

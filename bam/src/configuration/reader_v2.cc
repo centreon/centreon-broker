@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2017 Centreon
+** Copyright 2014-2017,2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ void reader_v2::read(state& st) {
     _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
-    _load(st.get_meta_services());
+    _load(st.mutable_meta_services());
     _load(st.get_hst_svc_mapping());
   } catch (std::exception const& e) {
     st.clear();
@@ -363,67 +363,72 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
  *  @param[out] meta_services  Meta-services.
  */
 void reader_v2::_load(state::meta_services& meta_services) {
-  // Load meta-services.
-  try {
-    std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(
-        "SELECT meta_id, meta_name, calcul_type, warning, critical,"
-        "       meta_select_mode, regexp_str, metric"
-        "  FROM meta_service"
-        "  WHERE meta_activate='1'",
-        &promise);
-    database::mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res)) {
-      uint32_t meta_id(res.value_as_u32(0));
-      meta_services[meta_id] = meta_service(
-          res.value_as_u32(0), res.value_as_str(1), res.value_as_str(2),
-          res.value_as_f64(3), res.value_as_f64(4),
-          (res.value_as_i32(5) == 2 ? res.value_as_str(6) : ""),
-          (res.value_as_i32(5) == 2 ? res.value_as_str(7) : ""));
-    }
-  } catch (reader_exception const& e) {
-    (void)e;
-    throw;
-  } catch (std::exception const& e) {
-    throw reader_exception("BAM: could not retrieve meta-services: {}",
-                           e.what());
-  }
+  /* this table gives the associated service as value for a meta_id as key */
+  std::unordered_map<uint32_t, uint32_t> meta_svc;
+  uint32_t host_id{0};
 
-  // Load host_id/service_id of virtual meta-service services. All
+  // Load service_id/meta_id of virtual meta-service services. All
   // associated services have for description 'meta_[id]'.
   try {
     std::promise<database::mysql_result> promise;
+    /* We want services attached to meta-services, that is to say with
+     * service_description like 'meta_%' and with service_register = '2'. Then
+     * we also have host_name = '_Module_Meta'. We get host_id (the one of
+     * _Module_Meta), the service_id and the meta id (given by the service
+     * description). */
     _mysql.run_query_and_get_result(
-        "SELECT h.host_name, s.service_description"
-        "  FROM service AS s"
-        "  INNER JOIN host_service_relation AS hsr"
-        "    ON s.service_id=hsr.service_service_id"
-        "  INNER JOIN host AS h"
-        "    ON hsr.host_host_id=h.host_id"
-        "  WHERE s.service_description LIKE 'meta_%'",
+        "SELECT h.host_id,s.service_id,s.service_description FROM service AS s "
+        "INNER JOIN host_service_relation AS hsr ON "
+        "s.service_id=hsr.service_service_id INNER JOIN host AS h ON "
+        "hsr.host_host_id=h.host_id WHERE s.service_register='2' AND "
+        "s.service_description LIKE 'meta_%'",
         &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
-      std::string service_description(res.value_as_str(1));
-      service_description.erase(0, strlen("meta_"));
-      try {
-        uint32_t meta_id(std::stoul(service_description));
-        state::meta_services::iterator found(meta_services.find(meta_id));
-        if (found == meta_services.end()) {
-          log_v2::bam()->info(
-              "BAM: virtual meta-service service '{}' of host '{}' references "
-              "an unknown meta-service ({})",
-              res.value_as_str(1), res.value_as_str(0), meta_id);
-          continue;
+      uint32_t hst{res.value_as_u32(0)};
+      if (host_id != hst) {
+        if (host_id == 0)
+          host_id = hst;
+        else {
+          log_v2::bam()->error(
+              "BAM: services 'meta_...' usually attached to the host "
+              "'_Module_Meta' do not have all the same host id, ({} != {})",
+              host_id, hst);
+          throw reader_exception(
+              "BAM: services 'meta_...' usually attached to the host "
+              "'_Module_Meta' do not have all the same host id, ({} != {})",
+              host_id, hst);
         }
-      } catch (std::exception const& e) {
+      }
+      uint32_t service_id{res.value_as_u32(1)};
+      std::string service_description{res.value_as_str(2)};
+      uint32_t meta_id = std::strtoul(
+          service_description.c_str() + strlen("meta_"), nullptr, 10);
+      if (meta_id)
+        meta_svc.emplace(meta_id, service_id);
+      else {
         log_v2::bam()->info(
-            "BAM: service '{}' of host '{}' is not a valid virtual "
+            "BAM: service '{}' of host '_Module_Meta' is not a valid virtual "
             "meta-service service",
-            res.value_as_str(1), res.value_as_str(0));
-        continue;
+            service_description);
       }
     }
+
+    //      try {
+    //        uint32_t meta_id(std::stoul(service_description));
+    //        state::meta_services::iterator found(meta_services.find(meta_id));
+    //        if (found == meta_services.end()) {
+    //          log_v2::bam()->info(
+    //              "BAM: virtual meta-service service '{}' of host
+    //              '_Module_Meta' references an unknown meta-service ({})",
+    //	      res.value_as_str(2), meta_id);
+    //          continue;
+    //        }
+    //      } catch (std::exception const& e) {
+    //        log_v2::bam()->info("BAM: service '{}' of host '_Module_Meta' is
+    //        not a valid virtual meta-service service", res.value_as_str(2));
+    //        continue;
+    //      }
   } catch (reader_exception const& e) {
     (void)e;
     throw;
@@ -431,6 +436,41 @@ void reader_v2::_load(state::meta_services& meta_services) {
     throw reader_exception(
         "BAM: could not retrieve meta-services' service IDs from DB: {}",
         e.what());
+  }
+
+  // Load meta-services.
+  try {
+    std::promise<database::mysql_result> promise;
+    _mysql.run_query_and_get_result(
+        "SELECT "
+        "meta_id,meta_name,calcul_type,warning,critical,meta_select_mode,"
+        "regexp_str,metric FROM meta_service WHERE meta_activate='1'",
+        &promise);
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      uint32_t meta_id{res.value_as_u32(0)};
+      if (meta_svc.find(meta_id) == meta_svc.end()) {
+        log_v2::bam()->info(
+            "BAM: no virtual meta-service service of host '_Module_Meta' "
+            "references meta-service '{}' ({})",
+            res.value_as_str(1), meta_id);
+        continue;
+      }
+      // FIXME DBR: should we empty meta_services at the beginning of this call?
+      meta_services.emplace(
+          meta_id,
+          meta_service(meta_id, host_id, meta_svc[meta_id], res.value_as_str(1),
+                       res.value_as_str(2), res.value_as_f64(3),
+                       res.value_as_f64(4),
+                       res.value_as_i32(5) == 2 ? res.value_as_str(6) : "",
+                       res.value_as_i32(5) == 2 ? res.value_as_str(7) : ""));
+    }
+  } catch (reader_exception const& e) {
+    (void)e;
+    throw;
+  } catch (std::exception const& e) {
+    throw reader_exception("BAM: could not retrieve meta-services: {}",
+                           e.what());
   }
 
   // Check for meta-services without service ID.
@@ -756,8 +796,7 @@ void reader_v2::_load_dimensions() {
         database::mysql_result res(promise.get_future().get());
 
         while (_mysql.fetch_row(res)) {
-          auto k(std::make_shared<dimension_kpi_event>());
-          k->kpi_id = res.value_as_u32(0);
+          auto k(std::make_shared<dimension_kpi_event>(res.value_as_u32(0)));
           k->host_id = res.value_as_u32(2);
           k->service_id = res.value_as_u32(3);
           k->ba_id = res.value_as_u32(4);

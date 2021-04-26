@@ -137,7 +137,6 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/configuration/bool_expression.hh"
   "${INC_DIR}/configuration/kpi.hh"
   "${INC_DIR}/configuration/meta_service.hh"
-  "${INC_DIR}/configuration/reader.hh"
   "${INC_DIR}/configuration/reader_exception.hh"
   "${INC_DIR}/configuration/reader_v2.hh"
   "${INC_DIR}/configuration/state.hh"
@@ -194,6 +193,7 @@ if (WITH_TESTING )
       ${TESTS_SOURCES}
       ${TEST_DIR}/ba/kpi_change_at_recompute.cc
       ${TEST_DIR}/configuration/applier-boolexp.cc
+      ${TEST_DIR}/configuration/applier-meta-service.cc
       ${TEST_DIR}/exp_builder/exp_builder.cc
       ${TEST_DIR}/exp_parser/get_postfix.cc
       ${TEST_DIR}/exp_tokenizer/next.cc

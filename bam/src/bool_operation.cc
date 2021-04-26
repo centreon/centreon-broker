@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2016 Centreon
+** Copyright 2014-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -27,50 +27,13 @@ using namespace com::centreon::broker::bam;
  *
  *  @param[in] op  The operation in string format.
  */
-bool_operation::bool_operation(std::string const& op) {
-  if (op == "+")
-    _type = addition;
-  else if (op == "-")
-    _type = substraction;
-  else if (op == "*")
-    _type = multiplication;
-  else if (op == "/")
-    _type = division;
-  else if (op == "%")
-    _type = modulo;
-  else
-    _type = addition;
-}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-bool_operation::bool_operation(bool_operation const& right)
-    : bool_binary_operator(right) {
-  _type = right._type;
-}
-
-/**
- *  Destructor.
- */
-bool_operation::~bool_operation() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-bool_operation& bool_operation::operator=(bool_operation const& right) {
-  bool_binary_operator::operator=(right);
-  if (this != &right) {
-    _type = right._type;
-  }
-  return (*this);
-}
+bool_operation::bool_operation(std::string const& op)
+    : _type((op == "+")   ? addition
+            : (op == "-") ? substraction
+            : (op == "*") ? multiplication
+            : (op == "/") ? division
+            : (op == "%") ? modulo
+                          : addition) {}
 
 /**
  *  Get the hard value.
@@ -80,24 +43,24 @@ bool_operation& bool_operation::operator=(bool_operation const& right) {
 double bool_operation::value_hard() {
   switch (_type) {
     case addition:
-      return (_left_hard + _right_hard);
+      return _left_hard + _right_hard;
     case substraction:
-      return (_left_hard - _right_hard);
+      return _left_hard - _right_hard;
     case multiplication:
-      return (_left_hard * _right_hard);
+      return _left_hard * _right_hard;
     case division:
       if (std::fabs(_right_hard) < COMPARE_EPSILON)
-        return (NAN);
-      return (_left_hard / _right_hard);
+        return NAN;
+      return _left_hard / _right_hard;
     case modulo: {
       long long left_val(static_cast<long long>(_left_hard));
       long long right_val(static_cast<long long>(_right_hard));
       if (right_val == 0)
-        return (NAN);
-      return (left_val % right_val);
+        return NAN;
+      return left_val % right_val;
     }
   }
-  return (NAN);
+  return NAN;
 }
 
 /**
@@ -108,24 +71,24 @@ double bool_operation::value_hard() {
 double bool_operation::value_soft() {
   switch (_type) {
     case addition:
-      return (_left_soft + _right_soft);
+      return _left_soft + _right_soft;
     case substraction:
-      return (_left_soft - _right_soft);
+      return _left_soft - _right_soft;
     case multiplication:
-      return (_left_soft * _right_soft);
+      return _left_soft * _right_soft;
     case division:
       if (std::fabs(_right_soft) < COMPARE_EPSILON)
-        return (NAN);
-      return (_left_soft / _right_soft);
+        return NAN;
+      return _left_soft / _right_soft;
     case modulo: {
       long long left_val(static_cast<long long>(_left_soft));
       long long right_val(static_cast<long long>(_right_soft));
       if (right_val == 0)
-        return (NAN);
-      return (left_val % right_val);
+        return NAN;
+      return left_val % right_val;
     }
   }
-  return (NAN);
+  return NAN;
 }
 
 /**
@@ -138,7 +101,7 @@ bool bool_operation::state_known() const {
   if (known && (_type == division || _type == modulo) &&
       ((std::fabs(_right_hard) < COMPARE_EPSILON) ||
        std::fabs(_right_soft) < COMPARE_EPSILON))
-    return (false);
+    return false;
   else
-    return (known);
+    return known;
 }

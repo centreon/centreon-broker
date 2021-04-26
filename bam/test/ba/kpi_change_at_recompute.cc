@@ -56,12 +56,10 @@ class BamBA : public ::testing::Test {
  */
 TEST_F(BamBA, Recompute) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 1, 1)};
 
-  std::shared_ptr<bam::kpi_service> kpi(new bam::kpi_service);
+  std::shared_ptr<bam::kpi_service> kpi{std::make_shared<bam::kpi_service>(1, 1)};
 
-  kpi->set_host_id(1);
-  kpi->set_service_id(1);
   kpi->set_impact_critical(100.0);
   kpi->set_state_hard(bam::kpi_service::state::state_ok);
   kpi->set_state_soft(kpi->get_state_hard());
@@ -101,7 +99,7 @@ TEST_F(BamBA, Recompute) {
  */
 TEST_F(BamBA, ImpactState) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 2, 1)};
 
   std::vector<std::shared_ptr<bam::kpi_service> > kpis;
   std::stack<short> results;
@@ -113,22 +111,15 @@ TEST_F(BamBA, ImpactState) {
   results.push(0);
   results.push(0);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_impact_warning(10);
-    kpis[i]->set_impact_critical(20);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 3; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_impact_warning(10);
+    s->set_impact_critical(20);
+    s->set_state_hard(bam::kpi_service::state::state_ok);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   test_ba->set_level_warning(70.0);
@@ -174,7 +165,7 @@ TEST_F(BamBA, ImpactState) {
  */
 TEST_F(BamBA, BestState) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 3, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_best);
 
   std::vector<std::shared_ptr<bam::kpi_service> > kpis;
@@ -187,20 +178,13 @@ TEST_F(BamBA, BestState) {
   results.push(0);
   results.push(0);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (size_t i = 0; i < 3; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_state_hard(bam::kpi_service::state::state_ok);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -243,7 +227,7 @@ TEST_F(BamBA, BestState) {
  */
 TEST_F(BamBA, WorstState) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_worst);
 
   std::vector<std::shared_ptr<bam::kpi_service> > kpis;
@@ -256,20 +240,15 @@ TEST_F(BamBA, WorstState) {
   results.push(1);
   results.push(1);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 3; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_impact_warning(10);
+    s->set_impact_critical(20);
+    s->set_state_hard(bam::kpi_service::state::state_ok);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -312,7 +291,7 @@ TEST_F(BamBA, WorstState) {
  */
 TEST_F(BamBA, RatioNum) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_number);
   test_ba->set_level_critical(4);
   test_ba->set_level_warning(2);
@@ -325,22 +304,13 @@ TEST_F(BamBA, RatioNum) {
   results.push(1);
   results.push(0);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 4; i++) {
+    std::shared_ptr<bam::kpi_service> s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_state_hard(bam::kpi_service::state::state_ok);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -381,7 +351,7 @@ TEST_F(BamBA, RatioNum) {
  */
 TEST_F(BamBA, RatioPercent) {
   // Build BAM objects.
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -394,22 +364,13 @@ TEST_F(BamBA, RatioPercent) {
   results.push(0);
   results.push(0);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_state_hard(bam::kpi_service::state::state_ok);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -435,7 +396,7 @@ TEST_F(BamBA, RatioPercent) {
 }
 
 TEST_F(BamBA, DtInheritAllCritical) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -449,22 +410,13 @@ TEST_F(BamBA, DtInheritAllCritical) {
   results.push(false);
   results.push(false);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_state_hard(bam::kpi_service::state::state_critical);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -495,7 +447,7 @@ TEST_F(BamBA, DtInheritAllCritical) {
 }
 
 TEST_F(BamBA, DtInheritOneOK) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(90);
@@ -509,25 +461,16 @@ TEST_F(BamBA, DtInheritOneOK) {
   results.push(false);
   results.push(false);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
     if (i == 0)
-      kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
+      s->set_state_hard(bam::kpi_service::state::state_ok);
     else
-      kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+      s->set_state_hard(bam::kpi_service::state::state_critical);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -562,7 +505,7 @@ TEST_F(BamBA, DtInheritOneOK) {
 }
 
 TEST_F(BamBA, IgnoreDt) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -576,22 +519,13 @@ TEST_F(BamBA, IgnoreDt) {
   results.push(false);
   results.push(false);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_state_hard(bam::kpi_service::state::state_critical);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -622,7 +556,7 @@ TEST_F(BamBA, IgnoreDt) {
 }
 
 TEST_F(BamBA, DtIgnoreKpi) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_percent);
   test_ba->set_level_critical(100);
   test_ba->set_level_warning(75);
@@ -636,22 +570,13 @@ TEST_F(BamBA, DtIgnoreKpi) {
   results.push(false);
   results.push(false);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_state_hard(bam::kpi_service::state::state_critical);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -682,7 +607,7 @@ TEST_F(BamBA, DtIgnoreKpi) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiImpact) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_impact);
   test_ba->set_level_critical(50);
   test_ba->set_level_warning(75);
@@ -696,26 +621,17 @@ TEST_F(BamBA, DtIgnoreKpiImpact) {
   results.push(1);
   results.push(2);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
     if (i == 3)
-      kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
+      s->set_state_hard(bam::kpi_service::state::state_ok);
     else
-      kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    kpis[i]->set_impact_critical(25);
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+      s->set_state_hard(bam::kpi_service::state::state_critical);
+    s->set_state_soft(s->get_state_hard());
+    s->set_impact_critical(25);
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -749,7 +665,7 @@ TEST_F(BamBA, DtIgnoreKpiImpact) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiBest) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_best);
   test_ba->set_downtime_behaviour(bam::configuration::ba::dt_ignore_kpi);
 
@@ -761,34 +677,24 @@ TEST_F(BamBA, DtIgnoreKpiBest) {
   results.push(1);
   results.push(0);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
     switch (i) {
       case 0:
       case 1:
-        kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
+        s->set_state_hard(bam::kpi_service::state::state_ok);
         break;
       case 2:
-        kpis[i]->set_state_hard(bam::kpi_service::state::state_warning);
+        s->set_state_hard(bam::kpi_service::state::state_warning);
         break;
       case 3:
-        kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
+        s->set_state_hard(bam::kpi_service::state::state_critical);
         break;
     }
-
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -819,7 +725,7 @@ TEST_F(BamBA, DtIgnoreKpiBest) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiWorst) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_worst);
   test_ba->set_downtime_behaviour(bam::configuration::ba::dt_ignore_kpi);
 
@@ -831,34 +737,24 @@ TEST_F(BamBA, DtIgnoreKpiWorst) {
   results.push(1);
   results.push(2);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
     switch (i) {
       case 0:
       case 1:
-        kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
+        s->set_state_hard(bam::kpi_service::state::state_critical);
         break;
       case 2:
-        kpis[i]->set_state_hard(bam::kpi_service::state::state_warning);
+        s->set_state_hard(bam::kpi_service::state::state_warning);
         break;
       case 3:
-        kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
+        s->set_state_hard(bam::kpi_service::state::state_ok);
         break;
     }
-
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
@@ -889,7 +785,7 @@ TEST_F(BamBA, DtIgnoreKpiWorst) {
 }
 
 TEST_F(BamBA, DtIgnoreKpiRatio) {
-  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>(1, 4, 1)};
   test_ba->set_state_source(bam::configuration::ba::state_source_ratio_number);
   test_ba->set_downtime_behaviour(bam::configuration::ba::dt_ignore_kpi);
   test_ba->set_level_warning(1);
@@ -903,22 +799,13 @@ TEST_F(BamBA, DtIgnoreKpiRatio) {
   results.push(2);
   results.push(2);
 
-  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
-  kpis.push_back(s1);
-  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
-  kpis.push_back(s2);
-  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
-  kpis.push_back(s3);
-  std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
-  kpis.push_back(s4);
-
-  for (size_t i = 0; i < kpis.size(); i++) {
-    kpis[i]->set_host_id(i + 1);
-    kpis[i]->set_service_id(1);
-    kpis[i]->set_state_hard(bam::kpi_service::state::state_critical);
-    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
-    test_ba->add_impact(kpis[i]);
-    kpis[i]->add_parent(test_ba);
+  for (int i = 0; i < 4; i++) {
+    auto s = std::make_shared<bam::kpi_service>(i + 1, 1);
+    s->set_state_hard(bam::kpi_service::state::state_critical);
+    s->set_state_soft(s->get_state_hard());
+    test_ba->add_impact(s);
+    s->add_parent(test_ba);
+    kpis.push_back(s);
   }
 
   // Change KPI state as much time as needed to trigger a
