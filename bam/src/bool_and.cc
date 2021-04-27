@@ -21,41 +21,12 @@
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
- */
-bool_and::bool_and() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-bool_and::bool_and(bool_and const& right) : bool_binary_operator(right) {}
-
-/**
- *  Destructor.
- */
-bool_and::~bool_and() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-bool_and& bool_and::operator=(bool_and const& right) {
-  bool_binary_operator::operator=(right);
-  return (*this);
-}
-
-/**
  *  Get the hard value.
  *
  *  @return Evaluation of the expression with hard values.
  */
 double bool_and::value_hard() {
-  return (_left_hard && _right_hard);
+  return _left_hard && _right_hard;
 }
 
 /**
@@ -64,5 +35,5 @@ double bool_and::value_hard() {
  *  @return Evaluation of the expression with soft values.
  */
 double bool_and::value_soft() {
-  return (_left_soft && _right_soft);
+  return _left_soft && _right_soft;
 }

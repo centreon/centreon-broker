@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@
 
 #include "com/centreon/broker/bam/meta_service.hh"
 
+#include <cassert>
 #include <cmath>
 #include <com/centreon/broker/bam/kpi_meta.hh>
 #include <ctime>
-#include <sstream>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -32,18 +33,24 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ * @brief Constructor.
+ *
+ * @param host_id The host id
+ * @param service_id The service id
+ * @param id The id of this meta_service.
  */
-meta_service::meta_service()
-    : _computation(meta_service::average),
-      _id(0),
-      _host_id(0),
-      _service_id(0),
+meta_service::meta_service(uint32_t host_id, uint32_t service_id, uint32_t id)
+    : _host_id(host_id),
+      _service_id(service_id),
+      _id(id),
+      _computation(meta_service::average),
       _last_state(meta_service::state::state_unknown),
       _level_critical(0.0),
       _level_warning(0.0),
       _recompute_count(0),
-      _value(NAN) {}
+      _value(NAN) {
+  assert(_host_id);
+}
 
 /**
  *  Destructor.
@@ -107,9 +114,7 @@ uint32_t meta_service::get_service_id() const {
  *  @return Meta-service output.
  */
 std::string meta_service::get_output() const {
-  std::ostringstream oss;
-  oss << "Meta-Service " << _id;
-  return (oss.str());
+  return fmt::format("Meta-Service {}", _id);
 }
 
 /**
@@ -118,9 +123,7 @@ std::string meta_service::get_output() const {
  *  @return Meta-servier performance data.
  */
 std::string meta_service::get_perfdata() const {
-  std::ostringstream oss;
-  oss << "g[rta]=" << _value << ";" << _level_warning << ";" << _level_critical;
-  return (oss.str());
+  return fmt::format("g[rta]={};{};{}", _value, _level_warning, _level_critical);
 }
 
 /**
@@ -239,33 +242,6 @@ void meta_service::remove_metric(uint32_t metric_id) {
 void meta_service::set_computation(meta_service::computation_type type) {
   _computation = type;
   _recompute_count = _recompute_limit;
-}
-
-/**
- *  Set meta-service ID.
- *
- *  @param[in] id  Meta-service ID.
- */
-void meta_service::set_id(uint32_t id) {
-  _id = id;
-}
-
-/**
- *  Set the meta-service's virtual host ID.
- *
- *  @param[in] host_id  Virtual host ID.
- */
-void meta_service::set_host_id(uint32_t host_id) {
-  _host_id = host_id;
-}
-
-/**
- *  Set the meta-service's virtual service ID.
- *
- *  @param[in] service_id  Virtual service ID.
- */
-void meta_service::set_service_id(uint32_t service_id) {
-  _service_id = service_id;
 }
 
 /**

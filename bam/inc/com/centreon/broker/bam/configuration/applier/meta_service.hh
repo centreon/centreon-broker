@@ -47,35 +47,35 @@ namespace applier {
  *  Create, update and delete meta-services.
  */
 class meta_service {
- public:
-  meta_service();
-  meta_service(meta_service const& other);
-  ~meta_service();
-  meta_service& operator=(meta_service const& other);
-  void apply(configuration::state::meta_services const& my_meta,
-             metric_book& book);
-  std::shared_ptr<bam::meta_service> find_meta(uint32_t id);
-
- private:
   struct applied {
     configuration::meta_service cfg;
     std::shared_ptr<bam::meta_service> obj;
   };
 
-  void _internal_copy(meta_service const& other);
+  std::map<uint32_t, applied> _applied;
+
+ private:
+  // void _internal_copy(const meta_service& other);
   std::shared_ptr<neb::host> _meta_host(uint32_t host_id);
   std::shared_ptr<neb::service> _meta_service(uint32_t meta_id,
                                               uint32_t host_id,
                                               uint32_t service_id);
   void _modify_meta(bam::meta_service& obj,
                     metric_book& book,
-                    configuration::meta_service const& old_cfg,
-                    configuration::meta_service const& new_cfg);
+                    const configuration::meta_service* old_cfg,
+                    const configuration::meta_service* new_cfg);
   std::shared_ptr<bam::meta_service> _new_meta(
-      configuration::meta_service const& cfg,
+      const configuration::meta_service& cfg,
       metric_book& book);
 
-  std::map<uint32_t, applied> _applied;
+ public:
+  meta_service();
+  ~meta_service() noexcept = default;
+  meta_service(const meta_service&) = delete;
+  meta_service& operator=(const meta_service&) = delete;
+  void apply(configuration::state::meta_services const& my_meta,
+             metric_book& book);
+  std::shared_ptr<bam::meta_service> find_meta(uint32_t id);
 };
 }  // namespace applier
 }  // namespace configuration
