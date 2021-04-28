@@ -21,7 +21,7 @@
 #include <fstream>
 #include <memory>
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
 #include "com/centreon/broker/mapping/entry.hh"
@@ -45,8 +45,7 @@ luabinding::luabinding(std::string const& lua_script,
   _L = _load_interpreter();
   _update_lua_path(path);
 
-  logging::debug(logging::medium)
-      << "simu: initializing the Lua virtual machine";
+  log_v2::lua()->debug("simu: initializing the Lua state machine");
 
   _load_script();
   _init_script(conf_params);
@@ -178,7 +177,7 @@ void luabinding::_init_script(
  */
 bool luabinding::read(std::shared_ptr<io::data>& data) {
   bool retval(false);
-  logging::debug(logging::medium) << "simu: luabinding::read call";
+  log_v2::lua()->trace("simu: luabinding::read call");
 
   // Total to acknowledge incremented
   ++_total;
@@ -282,7 +281,10 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
                   *t, static_cast<short>(it->second.as_long()));
               break;
             case mapping::source::STRING:
-              current_entry->set_string(*t, it->second.as_string());
+              if (it->second.is_string())
+                current_entry->set_string(*t, it->second.as_string());
+              else
+                current_entry->set_string(*t, it->second.to_string());
               break;
             case mapping::source::TIME:
               current_entry->set_time(*t, it->second.as_ulong());
@@ -307,9 +309,10 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
           " whereas it has been registered",
           map["_type"].as_int());
   } else {
-    logging::info(logging::high)
-        << "simu: cannot unserialize event of ID " << map["_type"].as_uint()
-        << ": event was not registered and will therefore be ignored";
+    log_v2::lua()->info(
+        "simu: cannot unserialize event of ID {}: event was not registered and "
+        "will therefore be ignored",
+        map["_type"].as_uint());
     retval = false;
   }
   return retval;
