@@ -130,6 +130,15 @@ void kpi_ba::set_impact_warning(double impact) {
 }
 
 /**
+ *  Set impact if BA is UNKNOWN.
+ *
+ *  @param[in] impact Impact if BA is UNKNOWN.
+ */
+void kpi_ba::set_impact_unknown(double impact) {
+  _impact_unknown = impact;
+}
+
+/**
  *  Unlink from BA.
  */
 void kpi_ba::unlink_ba() {
@@ -218,8 +227,11 @@ void kpi_ba::_fill_impact(impact_values& impact,
     case 1:
       nominal = _impact_warning;
       break;
-    default:
+    case 2:
       nominal = _impact_critical;
+      break;
+    default:
+      nominal = _impact_unknown;
       break;
   }
   impact.set_nominal(nominal);
