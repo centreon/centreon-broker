@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,29 +24,32 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-kpi_event::kpi_event()
+kpi_event::kpi_event(uint32_t kpi_id, uint32_t ba_id)
     : io::data(kpi_event::static_type()),
-      kpi_id(0),
+      kpi_id(kpi_id),
       impact_level(0),
       in_downtime(false),
       status(kpi_event::state::state_unknown),
-      ba_id(0) {}
+      ba_id(ba_id) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-kpi_event::kpi_event(kpi_event const& other) : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-kpi_event::~kpi_event() {}
+kpi_event::kpi_event(kpi_event const& other)
+    : io::data(other),
+      end_time(other.end_time),
+      kpi_id(other.kpi_id),
+      impact_level(other.impact_level),
+      in_downtime(other.in_downtime),
+      output(other.output),
+      perfdata(other.perfdata),
+      start_time(other.start_time),
+      status(other.status),
+      ba_id(other.ba_id) {}
 
 /**
  *  Assignment operator.
@@ -58,7 +61,15 @@ kpi_event::~kpi_event() {}
 kpi_event& kpi_event::operator=(kpi_event const& other) {
   if (this != &other) {
     io::data::operator=(other);
-    _internal_copy(other);
+    end_time = other.end_time;
+    kpi_id = other.kpi_id;
+    impact_level = other.impact_level;
+    in_downtime = other.in_downtime;
+    output = other.output;
+    perfdata = other.perfdata;
+    start_time = other.start_time;
+    status = other.status;
+    ba_id = other.ba_id;
   }
   return *this;
 }
@@ -71,35 +82,12 @@ kpi_event& kpi_event::operator=(kpi_event const& other) {
  *  @return  True if the two objects are equal.
  */
 bool kpi_event::operator==(kpi_event const& other) const {
-  return ((end_time == other.end_time) && (kpi_id == other.kpi_id) &&
-          (impact_level == other.impact_level) &&
-          (in_downtime == other.in_downtime) && (output == other.output) &&
-          (perfdata == other.perfdata) && (start_time == other.start_time) &&
-          (status == other.status) && (ba_id == other.ba_id));
+  return end_time == other.end_time && kpi_id == other.kpi_id &&
+         impact_level == other.impact_level &&
+         in_downtime == other.in_downtime && output == other.output &&
+         perfdata == other.perfdata && start_time == other.start_time &&
+         status == other.status && ba_id == other.ba_id;
 }
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void kpi_event::_internal_copy(kpi_event const& other) {
-  end_time = other.end_time;
-  kpi_id = other.kpi_id;
-  impact_level = other.impact_level;
-  in_downtime = other.in_downtime;
-  output = other.output;
-  perfdata = other.perfdata;
-  start_time = other.start_time;
-  status = other.status;
-  ba_id = other.ba_id;
-}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const kpi_event::entries[] = {
@@ -123,6 +111,7 @@ mapping::entry const kpi_event::entries[] = {
 
 // Operations.
 static io::data* new_kpi_event() {
-  return new kpi_event;
+  return new kpi_event(0, 0);
 }
+
 io::event_info::event_operations const kpi_event::operations = {&new_kpi_event};

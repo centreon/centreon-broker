@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,6 +38,9 @@ namespace bam {
  */
 class inherited_downtime : public io::data {
  public:
+  uint32_t ba_id;
+  bool in_downtime;
+
   inherited_downtime();
   inherited_downtime(inherited_downtime const& other);
   ~inherited_downtime();
@@ -46,9 +49,6 @@ class inherited_downtime : public io::data {
     return io::events::data_type<io::events::bam,
                                  bam::de_inherited_downtime>::value;
   }
-
-  uint32_t ba_id;
-  bool in_downtime;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

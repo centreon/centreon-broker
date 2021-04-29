@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,14 +26,9 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-kpi::kpi() : _id(0) {}
-
-/**
- *  Destructor.
- */
-kpi::~kpi() {}
+kpi::kpi(uint32_t kpi_id, uint32_t ba_id) : _id(kpi_id), _ba_id(ba_id) {}
 
 /**
  *  Get KPI ID.
@@ -41,7 +36,7 @@ kpi::~kpi() {}
  *  @return KPI ID.
  */
 uint32_t kpi::get_id() const {
-  return (_id);
+  return _id;
 }
 
 /**
@@ -50,7 +45,7 @@ uint32_t kpi::get_id() const {
  *  @return BA ID.
  */
 uint32_t kpi::get_ba_id() const {
-  return (_ba_id);
+  return _ba_id;
 }
 
 /**
@@ -59,27 +54,7 @@ uint32_t kpi::get_ba_id() const {
  *  @return Last state change.
  */
 timestamp kpi::get_last_state_change() const {
-  return (_event ? _event->start_time : timestamp(time(nullptr)));
-}
-
-/**
- *  Set KPI ID.
- *
- *  @param[in] id KPI ID.
- */
-void kpi::set_id(uint32_t id) {
-  _id = id;
-  return;
-}
-
-/**
- *  Set BA id impacted by KPI.
- *
- *  @param[in] id KPI ID.
- */
-void kpi::set_ba_id(uint32_t id) {
-  _ba_id = id;
-  return;
+  return _event ? _event->start_time : timestamp::now();
 }
 
 /**
@@ -138,5 +113,5 @@ void kpi::commit_initial_events(io::stream* visitor) {
  *  @return  Default value: false.
  */
 bool kpi::in_downtime() const {
-  return (false);
+  return false;
 }

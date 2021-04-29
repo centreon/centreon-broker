@@ -282,7 +282,8 @@ void availability_thread::_build_daily_availabilities(int thread_id,
   _mysql->run_query_and_get_result(query, &promise, thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
-  std::map<std::pair<uint32_t, uint32_t>, availability_builder> builders;
+  std::map<std::pair<uint32_t, uint32_t>, std::unique_ptr<availability_builder>>
+      builders;
   try {
     database::mysql_result res(promise.get_future().get());
     while (_mysql->fetch_row(res)) {
@@ -296,27 +297,27 @@ void availability_thread::_build_daily_availabilities(int thread_id,
         continue;
       }
       // Find the builder.
-      std::map<std::pair<uint32_t, uint32_t>, availability_builder>::iterator
-          found = builders.find(std::make_pair(ba_id, timeperiod_id));
+      auto found = builders.find({ba_id, timeperiod_id});
       // No builders found, create one.
       if (found == builders.end()) {
         log_v2::bam()->debug(
-            "no builder found for ba id {} and timeperiod id {}: Adding it",
-            ba_id, timeperiod_id);
+            "adding new builder for ba id {} and timeperiod id {}", ba_id,
+            timeperiod_id);
         found = builders
                     .insert(std::make_pair(
                         std::make_pair(ba_id, timeperiod_id),
-                        availability_builder(day_end, day_start)))
+                        std::unique_ptr<availability_builder>(
+                            new availability_builder(day_end, day_start))))
                     .first;
       }
       // Add the event to the builder.
-      found->second.add_event(res.value_as_i32(8),   // Status
-                              res.value_as_i32(2),   // Start time
-                              res.value_as_i32(3),   // End time
-                              res.value_as_bool(9),  // Was in downtime
-                              tp);
+      found->second->add_event(res.value_as_i32(8),   // Status
+                               res.value_as_i32(2),   // Start time
+                               res.value_as_i32(3),   // End time
+                               res.value_as_bool(9),  // Was in downtime
+                               tp);
       // Add the timeperiod is default flag.
-      found->second.set_timeperiod_is_default(res.value_as_bool(7));
+      found->second->set_timeperiod_is_default(res.value_as_bool(7));
     }
   } catch (const std::exception& e) {
     throw msg_fmt("BAM-BI: availability thread could not build the data {}",
@@ -356,18 +357,19 @@ void availability_thread::_build_daily_availabilities(int thread_id,
           found = builders
                       .insert(std::make_pair(
                           std::make_pair(ba_id, tp_id),
-                          availability_builder(day_end, day_start)))
+                          std::unique_ptr<availability_builder>(
+                              new availability_builder(day_end, day_start))))
                       .first;
           count++;
         }
         // Add the event to the builder.
-        found->second.add_event(res.value_as_i32(4),   // Status
-                                res.value_as_i32(2),   // Start time
-                                res.value_as_i32(3),   // End time
-                                res.value_as_bool(5),  // Was in downtime
-                                it->first);
+        found->second->add_event(res.value_as_i32(4),   // Status
+                                 res.value_as_i32(2),   // Start time
+                                 res.value_as_i32(3),   // End time
+                                 res.value_as_bool(5),  // Was in downtime
+                                 it->first);
         // Add the timeperiod is default flag.
-        found->second.set_timeperiod_is_default(it->second);
+        found->second->set_timeperiod_is_default(it->second);
       }
       log_v2::bam()->debug("{} builder(s) were missing for ba {}", count,
                            ba_id);
@@ -381,14 +383,15 @@ void availability_thread::_build_daily_availabilities(int thread_id,
                        builders.size());
   // For each builder, write the availabilities.
   for (auto it = builders.begin(), end = builders.end(); it != end; ++it)
-    _write_availability(thread_id, it->second, it->first.first, day_start,
+    _write_availability(thread_id, *it->second, it->first.first, day_start,
                         it->first.second);
 }
 
 /**
- *  Write an availability to the database.
+ *  Write an availability to the database. *One* row is inserted by ba and by
+ *  day.
  *
- *  @param[in] q                      A QSqlQuery connected to this database.
+ *  @param[in] thread_id              Index to one connection to the database.
  *  @param[in] builder                The builder of an availability.
  *  @param[in] ba_id                  The id of the ba.
  *  @param[in] day_start              The start of the day.

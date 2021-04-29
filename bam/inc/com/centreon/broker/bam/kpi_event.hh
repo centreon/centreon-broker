@@ -45,11 +45,11 @@ class kpi_event : public io::data {
 
  public:
   typedef impact_values::state state;
-  kpi_event();
-  kpi_event(kpi_event const& other);
-  ~kpi_event();
-  kpi_event& operator=(kpi_event const& other);
-  bool operator==(kpi_event const& other) const;
+  kpi_event(uint32_t kpi_id, uint32_t ba_id);
+  kpi_event(const kpi_event& other);
+  ~kpi_event() noexcept = default;
+  kpi_event& operator=(const kpi_event& other);
+  bool operator==(const kpi_event& other) const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam, bam::de_kpi_event>::value;
   }
