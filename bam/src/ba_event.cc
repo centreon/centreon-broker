@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,11 +41,6 @@ ba_event::ba_event(ba_event const& other) : io::data(other) {
 }
 
 /**
- *  Destructor.
- */
-ba_event::~ba_event() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] other  Object to copy.
@@ -68,9 +63,9 @@ ba_event& ba_event::operator=(ba_event const& other) {
  *  @return  True if the two objects are equal.
  */
 bool ba_event::operator==(ba_event const& other) const {
-  return ((ba_id == other.ba_id) && (first_level == other.first_level) &&
-          (end_time == other.end_time) && (in_downtime == other.in_downtime) &&
-          (start_time == other.start_time) && (status == other.status));
+  return ba_id == other.ba_id && first_level == other.first_level &&
+          end_time == other.end_time && in_downtime == other.in_downtime &&
+          start_time == other.start_time && status == other.status;
 }
 
 /**
@@ -86,12 +81,6 @@ void ba_event::_internal_copy(ba_event const& other) {
   start_time = other.start_time;
   status = other.status;
 }
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const ba_event::entries[] = {
