@@ -58,12 +58,10 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/configuration/applier/ba.cc"
   "${SRC_DIR}/configuration/applier/bool_expression.cc"
   "${SRC_DIR}/configuration/applier/kpi.cc"
-  "${SRC_DIR}/configuration/applier/meta_service.cc"
   "${SRC_DIR}/configuration/applier/state.cc"
   "${SRC_DIR}/configuration/ba.cc"
   "${SRC_DIR}/configuration/bool_expression.cc"
   "${SRC_DIR}/configuration/kpi.cc"
-  "${SRC_DIR}/configuration/meta_service.cc"
   "${SRC_DIR}/configuration/reader_v2.cc"
   "${SRC_DIR}/configuration/state.cc"
   "${SRC_DIR}/connector.cc"
@@ -88,12 +86,9 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/kpi_ba.cc"
   "${SRC_DIR}/kpi_boolexp.cc"
   "${SRC_DIR}/kpi_event.cc"
-  "${SRC_DIR}/kpi_meta.cc"
   "${SRC_DIR}/kpi_service.cc"
   "${SRC_DIR}/kpi_status.cc"
   "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/meta_service.cc"
-  "${SRC_DIR}/meta_service_status.cc"
   "${SRC_DIR}/metric_book.cc"
   "${SRC_DIR}/metric_listener.cc"
   "${SRC_DIR}/monitoring_stream.cc"
@@ -131,12 +126,10 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/configuration/applier/ba.hh"
   "${INC_DIR}/configuration/applier/bool_expression.hh"
   "${INC_DIR}/configuration/applier/kpi.hh"
-  "${INC_DIR}/configuration/applier/meta_service.hh"
   "${INC_DIR}/configuration/applier/state.hh"
   "${INC_DIR}/configuration/ba.hh"
   "${INC_DIR}/configuration/bool_expression.hh"
   "${INC_DIR}/configuration/kpi.hh"
-  "${INC_DIR}/configuration/meta_service.hh"
   "${INC_DIR}/configuration/reader_exception.hh"
   "${INC_DIR}/configuration/reader_v2.hh"
   "${INC_DIR}/configuration/state.hh"
@@ -164,11 +157,8 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/kpi_ba.hh"
   "${INC_DIR}/kpi_boolexp.hh"
   "${INC_DIR}/kpi_event.hh"
-  "${INC_DIR}/kpi_meta.hh"
   "${INC_DIR}/kpi_service.hh"
   "${INC_DIR}/kpi_status.hh"
-  "${INC_DIR}/meta_service.hh"
-  "${INC_DIR}/meta_service_status.hh"
   "${INC_DIR}/metric_book.hh"
   "${INC_DIR}/metric_listener.hh"
   "${INC_DIR}/monitoring_stream.hh"
@@ -193,7 +183,6 @@ if (WITH_TESTING )
       ${TESTS_SOURCES}
       ${TEST_DIR}/ba/kpi_change_at_recompute.cc
       ${TEST_DIR}/configuration/applier-boolexp.cc
-      ${TEST_DIR}/configuration/applier-meta-service.cc
       ${TEST_DIR}/exp_builder/exp_builder.cc
       ${TEST_DIR}/exp_parser/get_postfix.cc
       ${TEST_DIR}/exp_tokenizer/next.cc

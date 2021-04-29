@@ -30,7 +30,6 @@
 #include "com/centreon/broker/bam/event_cache_visitor.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -99,6 +98,7 @@ monitoring_stream::~monitoring_stream() {
   try {
     _write_cache();
   } catch (std::exception const& e) {
+    log_v2::bam()->error("BAM: can't save cache: '{}' ", e.what());
     logging::error(logging::medium)
         << "BAM: can't save cache: '" << e.what() << "'";
   }
@@ -269,6 +269,10 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
         std::pair<std::string, std::string> ba_svc_name(
             _ba_mapping.get_service(status->ba_id));
         if (ba_svc_name.first.empty() || ba_svc_name.second.empty()) {
+          log_v2::bam()->error(
+              "BAM: could not trigger check of virtual service of BA {}: host "
+              "name and service description were not found ",
+              status->ba_id);
           logging::error(logging::high)
               << "BAM: could not trigger check of virtual service of BA "
               << status->ba_id
@@ -425,16 +429,22 @@ void monitoring_stream::_write_external_command(std::string cmd) {
   std::ofstream ofs;
   ofs.open(_ext_cmd_file.c_str());
   if (!ofs.good()) {
+    log_v2::bam()->error(
+        "BAM: could not write BA check result to command file '{}' ",
+        _ext_cmd_file);
     logging::error(logging::medium)
         << "BAM: could not write BA check result to command file '"
         << _ext_cmd_file << "'";
   } else {
     ofs.write(cmd.c_str(), cmd.size());
-    if (!ofs.good())
+    if (!ofs.good()) {
+      log_v2::bam()->error(
+          "BAM: could not write BA check result to command file '{}' ",
+          _ext_cmd_file);
       logging::error(logging::medium)
           << "BAM: could not write BA check result to command file '"
           << _ext_cmd_file << "'";
-    else
+    } else
       log_v2::bam()->debug("BAM: sent external command '{}'", cmd);
     ofs.close();
   }
