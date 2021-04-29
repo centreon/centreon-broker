@@ -308,6 +308,7 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
         << cfg.get_indicator_ba_id() << " impacting BA " << cfg.get_ba_id();
     std::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
     obj->set_impact_critical(cfg.get_impact_critical());
+    obj->set_impact_unknown(cfg.get_impact_unknown());
     obj->set_impact_warning(cfg.get_impact_warning());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
   } else if (cfg.is_boolexp()) {

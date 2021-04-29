@@ -48,6 +48,7 @@ class kpi_ba : public kpi {
   std::shared_ptr<ba> _ba;
   double _impact_critical;
   double _impact_warning;
+  double _impact_unknown;
 
   void _fill_impact(impact_values& impact,
                     kpi_ba::state state,
@@ -71,6 +72,7 @@ class kpi_ba : public kpi {
   void link_ba(std::shared_ptr<ba>& my_ba);
   void set_impact_critical(double impact);
   void set_impact_warning(double impact);
+  void set_impact_unknown(double impact);
   void unlink_ba();
   void visit(io::stream* visitor);
   bool ok_state() const;
