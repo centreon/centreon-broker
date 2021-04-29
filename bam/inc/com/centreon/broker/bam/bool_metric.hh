@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,39 +41,39 @@ namespace bam {
  *  value.
  */
 class bool_metric : public bool_value, public metric_listener {
- public:
-  typedef std::shared_ptr<bool_metric> ptr;
-
-  bool_metric(std::string const& metric_name,
-              uint32_t host_id,
-              uint32_t service_id);
-  bool_metric(bool_metric const& right);
-  ~bool_metric();
-  bool_metric& operator=(bool_metric const& right);
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
-  void metric_update(std::shared_ptr<storage::metric> const& m,
-                     io::stream* visitor = NULL);
-  double value_hard();
-  double value_soft();
-  bool state_known() const;
-  std::string const& get_name() const;
-  uint32_t get_host_id() const;
-  uint32_t get_service_id() const;
-  void resolve_metrics(hst_svc_mapping const& mappings);
-  std::set<uint32_t> const& get_resolved_metrics() const;
-  std::map<uint32_t, double> const& values() const;
-
- private:
-  std::string _metric_name;
+  const uint32_t _host_id;
+  const uint32_t _service_id;
+  const std::string _metric_name;
   double _value;
-  uint32_t _host_id;
-  uint32_t _service_id;
 
   std::set<uint32_t> _resolved_metric_ids;
   std::set<uint32_t> _unknown_state_metrics;
   std::map<uint32_t, double> _values;
 
   bool _metric_matches(storage::metric const& m) const;
+
+ public:
+  typedef std::shared_ptr<bool_metric> ptr;
+
+  bool_metric(const std::string& metric_name,
+              uint32_t host_id,
+              uint32_t service_id);
+  ~bool_metric() noexcept = default;
+  bool_metric(const bool_metric&) = delete;
+  bool_metric& operator=(const bool_metric&) = delete;
+  bool child_has_update(computable* child,
+                        io::stream* visitor = nullptr) override;
+  void metric_update(const std::shared_ptr<storage::metric>& m,
+                     io::stream* visitor = nullptr) override;
+  double value_hard() override;
+  double value_soft() override;
+  bool state_known() const override;
+  const std::string& get_name() const;
+  uint32_t get_host_id() const;
+  uint32_t get_service_id() const;
+  void resolve_metrics(const hst_svc_mapping& mappings);
+  const std::set<uint32_t>& get_resolved_metrics() const;
+  const std::map<uint32_t, double>& values() const;
 };
 }  // namespace bam
 

@@ -72,7 +72,7 @@ class muxer : public io::stream {
   static void event_queue_max_size(uint32_t max) noexcept;
   static uint32_t event_queue_max_size() throw();
   void publish(std::shared_ptr<io::data> const d);
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void set_read_filters(filters const& fltrs);
   void set_write_filters(filters const& fltrs);
   filters const& get_read_filters() const;

@@ -49,11 +49,6 @@ applier::kpi::kpi(applier::kpi const& other) {
 }
 
 /**
- *  Destructor.
- */
-applier::kpi::~kpi() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] other  Object to copy.
