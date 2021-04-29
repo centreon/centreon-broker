@@ -50,7 +50,6 @@ class monitoring_stream : public io::stream {
   mysql _mysql;
   database::mysql_stmt _ba_update;
   database::mysql_stmt _kpi_update;
-  database::mysql_stmt _meta_service_update;
   int32_t _pending_events;
   database_config _storage_db_cfg;
   std::shared_ptr<persistent_cache> _cache;

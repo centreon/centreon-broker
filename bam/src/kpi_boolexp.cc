@@ -17,10 +17,10 @@
 */
 
 #include "com/centreon/broker/bam/kpi_boolexp.hh"
-
 #include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -49,6 +49,9 @@ bool kpi_boolexp::child_has_update(computable* child, io::stream* visitor) {
   // this class, as the bool_expression class already cache most of them.
   if (child == _boolexp.get()) {
     // Logging.
+    log_v2::bam()->debug(
+        "BAM: boolean expression KPI {} is getting notified of child update",
+        _id);
     logging::debug(logging::low) << "BAM: boolean expression KPI " << _id
                                  << " is getting notified of child update";
 

@@ -19,9 +19,9 @@
 #include "com/centreon/broker/bam/bool_expression.hh"
 
 #include <ctime>
-
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::bam;
@@ -51,6 +51,8 @@ bool bool_expression::child_has_update(computable* child, io::stream* visitor) {
   // class, as the bool_* classes already cache most of them.
   if (child == _expression.get()) {
     // Logging.
+    log_v2::bam()->debug(
+        "BAM: boolean expression {} is getting notified of child update", _id);
     logging::debug(logging::low) << "BAM: boolean expression " << _id
                                  << " is getting notified of child update";
   }
