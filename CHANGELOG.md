@@ -1,5 +1,16 @@
 # Changelog
 
+## 20.10.5
+
+`Release date to be defined`
+
+### Enhancement 
+
+*Storage*
+
+We optimize queries by removing useless join. A join with hosts table is not necessary in 
+certain queries.
+
 ## 20.10.4
 
 `Release date to be defined`
@@ -8,10 +19,9 @@
 
 *Config*
 
-retry_interval attribute in configuration file seems to be have a safe behavior with a
+retry\_interval attribute in configuration file seems to be have a safe behavior with a
 decimal value, but but with a chain of character broker quit without understanble error message, 
 now broker quits cleanly with a warning that we can see in by using journalctl command.
-
 
 *TCP*
 
