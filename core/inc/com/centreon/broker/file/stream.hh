@@ -45,7 +45,7 @@ class stream : public io::stream {
   ~stream();
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
-  std::string peer() const;
+  std::string peer() const override;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void remove_all_files();
   void statistics(json11::Json::object& tree) const override;

@@ -31,7 +31,7 @@
 
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -166,14 +166,13 @@ long splitter::read(void* buffer, long max_size) {
   // Read data.
   long rb = fread(buffer, 1, max_size, _rfile.get());
   std::string file_path(get_file_path(_rid));
-  logging::debug(logging::low)
-      << "file: read " << rb << " bytes from '" << file_path << "'";
+  log_v2::bbdo()->debug("file: read {} bytes from '{}'", rb, file_path);
   _roffset += rb;
   if (rb == 0) {
     if (feof(_rfile.get())) {
       if (_auto_delete) {
-        logging::info(logging::high)
-            << "file: end of file '" << file_path << "' reached, erasing it";
+        log_v2::bbdo()->info("file: end of file '{}' reached, erasing it",
+                             file_path);
         std::remove(file_path.c_str());
       }
       if (_rid < _wid) {
@@ -243,8 +242,8 @@ long splitter::write(void const* buffer, long size) {
   fseek(_wfile.get(), _woffset, SEEK_SET);
 
   // Debug message.
-  logging::debug(logging::low) << "file: write request of " << size
-                               << " bytes for '" << get_file_path(_wid) << "'";
+  log_v2::bbdo()->debug("file: write request of {} bytes for '{}'", size,
+                        get_file_path(_wid));
 
   // Write data.
   long remaining = size;
