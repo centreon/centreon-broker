@@ -155,22 +155,19 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   // Cancellation of downtimes.
   log_v2::sql()->debug("SQL: Cancellation of downtimes (instance_id: {})",
                        instance_id);
-  query = fmt::format(
-      "UPDATE downtimes AS d INNER JOIN hosts AS h ON d.host_id=h.host_id "
-      "SET d.cancelled=1 WHERE d.actual_end_time IS NULL AND d.cancelled=0 "
-      "AND h.instance_id={}",
-      instance_id);
+  query = fmt::format("UPDATE downtimes SET cancelled=1 WHERE actual_end_time IS NULL AND cancelled=0 "
+      "AND instance_id={}", instance_id);
+
   _mysql.run_query(query, database::mysql_error::clean_downtimes, false, conn);
   _add_action(conn, actions::downtimes);
 
   // Remove comments.
   log_v2::sql()->debug("conflict_manager: remove comments (instance_id: {})",
                        instance_id);
-  query = fmt::format(
-      "UPDATE comments AS c JOIN hosts AS h ON c.host_id=h.host_id SET "
-      "c.deletion_time={} WHERE h.instance_id={} AND c.persistent=0 AND "
-      "(c.deletion_time IS NULL OR c.deletion_time=0)",
-      time(nullptr), instance_id);
+  
+  query = fmt::format("UPDATE comments SET deletion_time={} WHERE instance_id={} AND persistent=0 AND "
+      "(deletion_time IS NULL OR deletion_time=0)", time(nullptr), instance_id);
+
   _mysql.run_query(query, database::mysql_error::clean_comments, false, conn);
   _add_action(conn, actions::comments);
 
