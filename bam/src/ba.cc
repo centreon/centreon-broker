@@ -18,12 +18,13 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 
-#include <sstream>
+#include <fmt/format.h>
+#include <cassert>
 
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
@@ -825,13 +826,11 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
   else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime) {
+    _inherited_downtime->in_downtime = false;
+    _in_downtime = false;
+
+    if (visitor)
+      visitor->write(std::move(_inherited_downtime));
     _inherited_downtime.reset();
-    if (visitor) {
-      std::shared_ptr<inherited_downtime> dwn(
-          std::make_shared<inherited_downtime>());
-      dwn->ba_id = _id;
-      dwn->in_downtime = false;
-      visitor->write(dwn);
-    }
   }
 }
