@@ -640,32 +640,13 @@ void ba::set_inherited_downtime(inherited_downtime const& dwn) {
 void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
                        ba::impact_info& impact) {
   auto is_state_worse = [&](short current_state, short new_state) -> bool {
-    if (current_state == ba::state::state_ok &&
-        new_state != ba::state::state_ok)  // OK => something elses
-      return true;
-    if (current_state == ba::state::state_warning &&
-        new_state == ba::state::state_critical)  // WARNING => CRITICAL
-      return true;
-    if (current_state == ba::state::state_unknown &&
-        (new_state == ba::state::state_warning ||
-         new_state ==
-             ba::state::state_critical))  // UNKNOWN => WARNING or CRITICAL
-      return true;
-    return false;
+    std::array<short, 4> ord{0, 2, 3, 1};
+    return ord[new_state] > ord[current_state];
   };
 
   auto is_state_better = [&](short current_state, short new_state) -> bool {
-    if (current_state == ba::state::state_critical &&
-        new_state != ba::state::state_critical)  // CRITICAL => something else
-      return true;
-    if (current_state == ba::state::state_unknown &&
-        new_state == ba::state::state_ok)  // UNKNOWN => OK
-      return true;
-    if (current_state == ba::state::state_warning &&
-        (new_state == ba::state::state_ok ||
-         new_state == ba::state::state_unknown))  // WARNING => UNKNOW or OK
-      return true;
-    return false;
+    std::array<short, 4> ord{0, 2, 3, 1};
+    return ord[new_state] < ord[current_state];
   };
 
   // Adjust values.
