@@ -24,36 +24,6 @@
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
- */
-metric_book::metric_book() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-metric_book::metric_book(metric_book const& other) : _book(other._book) {}
-
-/**
- *  Destructor.
- */
-metric_book::~metric_book() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Object to copy.
- *
- *  @return This object.
- */
-metric_book& metric_book::operator=(metric_book const& other) {
-  if (this != &other)
-    _book = other._book;
-  return (*this);
-}
-
-/**
  *  Make a metric listener listen to metric updates.
  *
  *  @param[in]     metric_id  Metric ID.
@@ -72,14 +42,11 @@ void metric_book::listen(uint32_t metric_id, metric_listener* listnr) {
 void metric_book::unlisten(uint32_t metric_id, metric_listener* listnr) {
   std::pair<multimap::iterator, multimap::iterator> range(
       _book.equal_range(metric_id));
-  while (range.first != range.second) {
+  for (; range.first != range.second; ++range.first)
     if (range.first->second == listnr) {
       _book.erase(range.first);
       break;
     }
-    ++range.first;
-  }
-  return;
 }
 
 /**
