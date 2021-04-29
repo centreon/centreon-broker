@@ -71,7 +71,6 @@ void reader_v2::read(state& st) {
     _load(st.get_bas(), st.get_ba_svc_mapping());
     _load(st.get_kpis());
     _load(st.get_bool_exps());
-    //_load(st.mutable_meta_services());
     _load(st.get_hst_svc_mapping());
   } catch (std::exception const& e) {
     st.clear();
@@ -120,6 +119,7 @@ void reader_v2::_load(state::kpis& kpis) {
         "    AND pr.poller_id={}",
         config::applier::state::instance().poller_id()));
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace("reader_v2 query: {}", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       database::mysql_result res(promise.get_future().get());
@@ -146,9 +146,7 @@ void reader_v2::_load(state::kpis& kpis) {
 
         // KPI state.
         if (!res.value_is_null(17)) {
-          kpi_event e;
-          e.kpi_id = kpi_id;
-          e.ba_id = res.value_as_u32(4);
+          kpi_event e(kpi_id, res.value_as_u32(4));
           e.status = res.value_as_i32(8);
           e.start_time = res.value_as_u64(17);
           e.in_downtime = res.value_as_bool(18);
@@ -175,6 +173,7 @@ void reader_v2::_load(state::kpis& kpis) {
                         "  WHERE s.service_description='meta_{}'",
                         it->second.get_meta_id()));
         std::promise<database::mysql_result> promise;
+        log_v2::bam()->trace("reader_v2 query: {}", query);
         _mysql.run_query_and_get_result(query, &promise);
         try {
           database::mysql_result res(promise.get_future().get());
@@ -221,6 +220,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
                       "    AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("reader_v2 query: {}", query);
       _mysql.run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
@@ -262,6 +262,15 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   // services have for description 'ba_[id]'.
   try {
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "read_v2: query: SELECT h.host_name, s.service_description,"
+        "       hsr.host_host_id, hsr.service_service_id"
+        "  FROM service AS s"
+        "  INNER JOIN host_service_relation AS hsr"
+        "    ON s.service_id=hsr.service_service_id"
+        "  INNER JOIN host AS h"
+        "    ON hsr.host_host_id=h.host_id"
+        "  WHERE s.service_description LIKE 'ba_%'");
     _mysql.run_query_and_get_result(
         "SELECT h.host_name, s.service_description,"
         "hsr.host_host_id, hsr.service_service_id"
@@ -337,6 +346,7 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
                     " AND pr.poller_id={}",
                     config::applier::state::instance().poller_id()));
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace("reader_v2: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
@@ -357,202 +367,8 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
   }
 }
 
-// /**
-//  *  Load meta-services from the DB.
-//  *
-//  *  @param[out] meta_services  Meta-services.
-//  */
-// void reader_v2::_load(state::meta_services& meta_services) {
-//   /* this table gives the associated service as value for a meta_id as key */
-//   std::unordered_map<uint32_t, uint32_t> meta_svc;
-//   uint32_t host_id{0};
 
-//   // Load service_id/meta_id of virtual meta-service services. All
-//   // associated services have for description 'meta_[id]'.
-//   try {
-//     std::promise<database::mysql_result> promise;
-//     /* We want services attached to meta-services, that is to say with
-//      * service_description like 'meta_%' and with service_register = '2'.
-//      Then
-//      * we also have host_name = '_Module_Meta'. We get host_id (the one of
-//      * _Module_Meta), the service_id and the meta id (given by the service
-//      * description). */
-//     _mysql.run_query_and_get_result(
-//         "SELECT h.host_id,s.service_id,s.service_description FROM service AS
-//         s " "INNER JOIN host_service_relation AS hsr ON "
-//         "s.service_id=hsr.service_service_id INNER JOIN host AS h ON "
-//         "hsr.host_host_id=h.host_id WHERE s.service_register='2' AND "
-//         "s.service_description LIKE 'meta_%'",
-//         &promise);
-//     database::mysql_result res(promise.get_future().get());
-//     while (_mysql.fetch_row(res)) {
-//       uint32_t hst{res.value_as_u32(0)};
-//       if (host_id != hst) {
-//         if (host_id == 0)
-//           host_id = hst;
-//         else {
-//           log_v2::bam()->error(
-//               "BAM: services 'meta_...' usually attached to the host "
-//               "'_Module_Meta' do not have all the same host id, ({} != {})",
-//               host_id, hst);
-//           throw reader_exception(
-//               "BAM: services 'meta_...' usually attached to the host "
-//               "'_Module_Meta' do not have all the same host id, ({} != {})",
-//               host_id, hst);
-//         }
-//       }
-//       uint32_t service_id{res.value_as_u32(1)};
-//       std::string service_description{res.value_as_str(2)};
-//       uint32_t meta_id = std::strtoul(
-//           service_description.c_str() + strlen("meta_"), nullptr, 10);
-//       if (meta_id)
-//         meta_svc.emplace(meta_id, service_id);
-//       else {
-//         log_v2::bam()->info(
-//             "BAM: service '{}' of host '_Module_Meta' is not a valid virtual
-//             " "meta-service service", service_description);
-//       }
-//     }
 
-//     //      try {
-//     //        uint32_t meta_id(std::stoul(service_description));
-//     //        state::meta_services::iterator
-//     found(meta_services.find(meta_id));
-//     //        if (found == meta_services.end()) {
-//     //          log_v2::bam()->info(
-//     //              "BAM: virtual meta-service service '{}' of host
-//     //              '_Module_Meta' references an unknown meta-service ({})",
-//     //	      res.value_as_str(2), meta_id);
-//     //          continue;
-//     //        }
-//     //      } catch (std::exception const& e) {
-//     //        log_v2::bam()->info("BAM: service '{}' of host '_Module_Meta'
-//     is
-//     //        not a valid virtual meta-service service",
-//     res.value_as_str(2));
-//     //        continue;
-//     //      }
-//   } catch (reader_exception const& e) {
-//     (void)e;
-//     throw;
-//   } catch (std::exception const& e) {
-//     throw reader_exception(
-//         "BAM: could not retrieve meta-services' service IDs from DB: {}",
-//         e.what());
-//   }
-
-//   // Load meta-services.
-//   try {
-//     std::promise<database::mysql_result> promise;
-//     _mysql.run_query_and_get_result(
-//         "SELECT "
-//         "meta_id,meta_name,calcul_type,warning,critical,meta_select_mode,"
-//         "regexp_str,metric FROM meta_service WHERE meta_activate='1'",
-//         &promise);
-//     database::mysql_result res(promise.get_future().get());
-//     while (_mysql.fetch_row(res)) {
-//       uint32_t meta_id{res.value_as_u32(0)};
-//       if (meta_svc.find(meta_id) == meta_svc.end()) {
-//         log_v2::bam()->info(
-//             "BAM: no virtual meta-service service of host '_Module_Meta' "
-//             "references meta-service '{}' ({})",
-//             res.value_as_str(1), meta_id);
-//         continue;
-//       }
-//       // FIXME DBR: should we empty meta_services at the beginning of this
-//       call? meta_services.emplace(
-//           meta_id,
-//           meta_service(meta_id, host_id, meta_svc[meta_id],
-//           res.value_as_str(1),
-//                        res.value_as_str(2), res.value_as_f64(3),
-//                        res.value_as_f64(4),
-//                        res.value_as_i32(5) == 2 ? res.value_as_str(6) : "",
-//                        res.value_as_i32(5) == 2 ? res.value_as_str(7) : ""));
-//     }
-//   } catch (reader_exception const& e) {
-//     (void)e;
-//     throw;
-//   } catch (std::exception const& e) {
-//     throw reader_exception("BAM: could not retrieve meta-services: {}",
-//                            e.what());
-//   }
-
-//   // Check for meta-services without service ID.
-//   for (state::meta_services::const_iterator it(meta_services.begin()),
-//        end(meta_services.end());
-//        it != end; ++it) {
-//     // std::pair<std::string, std::string>
-//     //   svc(mapping.get_service(it->first));
-//     // if (svc.first.empty() || svc.second.empty())
-//     //   throw (reader_exception() << "BAM: meta-service "
-//     //          << it->first << " has no associated service");
-//   }
-
-//   // Load metrics of meta-services.
-//   std::unique_ptr<mysql> storage_mysql;
-//   for (state::meta_services::iterator it(meta_services.begin()),
-//        end(meta_services.end());
-//        it != end; ++it) {
-//     // SQL LIKE mode.
-//     if (!it->second.get_service_filter().empty() &&
-//         !it->second.get_metric_name().empty()) {
-//       std::string query(fmt::format(
-//           "SELECT m.metric_id"
-//           " FROM metrics AS m"
-//           " INNER JOIN index_data AS i"
-//           " ON m.index_id=i.id"
-//           " INNER JOIN services AS s"
-//           " ON i.host_id=s.host_id AND i.service_id=s.service_id"
-//           " WHERE s.description LIKE '{}'"
-//           " AND m.metric_name='{}'",
-//           it->second.get_service_filter(), it->second.get_metric_name()));
-//       if (!storage_mysql)
-//         try {
-//           storage_mysql.reset(new mysql(_storage_cfg));
-//         } catch (std::exception const& e) {
-//           throw reader_exception(
-//               "BAM: could not initialize storage database to "
-//               "retrieve metrics associated with some "
-//               "meta-service: {}",
-//               e.what());
-//         }
-//       std::promise<database::mysql_result> promise;
-//       storage_mysql->run_query_and_get_result(query, &promise);
-//       try {
-//         database::mysql_result res(promise.get_future().get());
-//         while (storage_mysql->fetch_row(res))
-//           it->second.add_metric(res.value_as_u32(0));
-//       } catch (std::exception const& e) {
-//         throw reader_exception(
-//             "BAM: could not retrieve members of meta-service '{}"
-//             "': {}",
-//             it->second.get_name(), e.what());
-//       }
-//     }
-//     // Service list mode.
-//     else {
-//       try {
-//         std::string query(
-//             fmt::format("SELECT metric_id FROM meta_service_relation"
-//                         " WHERE meta_id={} AND activate='1'",
-//                         it->second.get_id()));
-//         std::promise<database::mysql_result> promise;
-//         _mysql.run_query_and_get_result(query, &promise);
-//         database::mysql_result res(promise.get_future().get());
-//         while (_mysql.fetch_row(res))
-//           it->second.add_metric(res.value_as_u32(0));
-//       } catch (reader_exception const& e) {
-//         (void)e;
-//         throw;
-//       } catch (std::exception const& e) {
-//         throw reader_exception(
-//             "BAM: could not retrieve members of meta-service '{}"
-//             "': {}",
-//             it->second.get_name(), e.what());
-//       }
-//     }
-//   }
-// }
 
 /**
  *  Load host/service IDs from the DB.
@@ -563,6 +379,15 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
   try {
     // XXX : expand hostgroups and servicegroups
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
+        "   service_activate"
+        "  FROM service AS s"
+        "  LEFT JOIN host_service_relation AS hsr"
+        "    ON s.service_id=hsr.service_service_id"
+        "  LEFT JOIN host AS h"
+        "    ON hsr.host_host_id=h.host_id");
     _mysql.run_query_and_get_result(
         "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
         "   service_activate"
@@ -597,6 +422,7 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
         " ON i.host_id=s.host_id AND i.service_id=s.service_id");
     mysql storage_mysql(_storage_cfg);
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace("reader_v2: query: '{}'", query);
     storage_mysql.run_query_and_get_result(query, &promise);
     database::mysql_result res(promise.get_future().get());
     while (storage_mysql.fetch_row(res)) {
@@ -627,6 +453,11 @@ void reader_v2::_load_dimensions() {
   try {
     // Load the timeperiods themselves.
     std::promise<database::mysql_result> promise;
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
+        "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
+        " FROM timeperiod");
     _mysql.run_query_and_get_result(
         "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
         "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
@@ -675,6 +506,7 @@ void reader_v2::_load_dimensions() {
                     " AND pr.poller_id={}",
                     config::applier::state::instance().poller_id()));
     promise = std::promise<database::mysql_result>();
+    log_v2::bam()->trace("reader_v2: query: '{}'", query);
     _mysql.run_query_and_get_result(query, &promise);
     try {
       database::mysql_result res(promise.get_future().get());
@@ -703,6 +535,10 @@ void reader_v2::_load_dimensions() {
     }
     // Load the BVs.
     promise = std::promise<database::mysql_result>();
+    log_v2::bam()->trace(
+        "reader_v2: query: "
+        "SELECT id_ba_group, ba_group_name, ba_group_description"
+        " FROM mod_bam_ba_groups");
     _mysql.run_query_and_get_result(
         "SELECT id_ba_group, ba_group_name, ba_group_description"
         " FROM mod_bam_ba_groups",
@@ -732,6 +568,7 @@ void reader_v2::_load_dimensions() {
                       " AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("reader_v2: query: '{}'", query);
       _mysql.run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
@@ -794,6 +631,7 @@ void reader_v2::_load_dimensions() {
                       "    AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
+      log_v2::bam()->trace("reader_v2: query: '{}'", query);
       _mysql.run_query_and_get_result(query, &promise);
 
       try {
@@ -843,6 +681,9 @@ void reader_v2::_load_dimensions() {
 
     // Load the ba-timeperiods relations.
     promise = std::promise<database::mysql_result>();
+    log_v2::bam()->trace(
+        "reader_v2: query: '{}'"
+        "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods");
     _mysql.run_query_and_get_result(
         "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods", &promise);
     try {
