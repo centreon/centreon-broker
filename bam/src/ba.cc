@@ -39,20 +39,18 @@ static double normalize(double d) {
   return d;
 }
 
-auto _every_kpi_in_dt = [](std::unordered_map<kpi*, bam::ba::impact_info>& imp,
-                           bool look_for_state = true) -> bool {
+static bool _every_kpi_in_dt(
+    std::unordered_map<kpi*, bam::ba::impact_info>& imp) {
   if (imp.empty())
     return false;
 
   for (auto it = imp.begin(), end = imp.end(); it != end; ++it) {
-    if ((look_for_state && it->first->ok_state()) ||
-        !it->first->in_downtime()) {
+    if (!it->first->in_downtime())
       return false;
-    }
   }
 
   return true;
-};
+}
 
 /**
  *  Constructor.
