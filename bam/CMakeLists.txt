@@ -181,9 +181,11 @@ if (WITH_TESTING )
     set(
       TESTS_SOURCES
       ${TESTS_SOURCES}
-      ${TEST_DIR}/ba/kpi_change_at_recompute.cc
+      ${TEST_DIR}/ba/kpi_service.cc
+      ${TEST_DIR}/ba/kpi_ba.cc
       ${TEST_DIR}/configuration/applier-boolexp.cc
       ${TEST_DIR}/exp_builder/exp_builder.cc
+      ${TEST_DIR}/exp_builder/availability_builder.cc
       ${TEST_DIR}/exp_parser/get_postfix.cc
       ${TEST_DIR}/exp_tokenizer/next.cc
       ${TEST_DIR}/time/check_timeperiod.cc

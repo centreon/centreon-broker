@@ -22,7 +22,6 @@
 
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -262,7 +261,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     std::string err_msg(::mysql_stmt_error(stmt));
     log_v2::sql()->error("mysql_connection: {}", err_msg);
-    msg_fmt e(err_msg);
+    msg_fmt e("statement and get result failed: {}", err_msg);
     task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
   } else {
     int32_t attempts = 0;
