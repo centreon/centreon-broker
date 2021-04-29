@@ -61,7 +61,6 @@ metric_book& metric_book::operator=(metric_book const& other) {
  */
 void metric_book::listen(uint32_t metric_id, metric_listener* listnr) {
   _book.insert(std::make_pair(metric_id, listnr));
-  return;
 }
 
 /**
@@ -97,5 +96,4 @@ void metric_book::update(std::shared_ptr<storage::metric> const& m,
     range.first->second->metric_update(m, visitor);
     ++range.first;
   }
-  return;
 }

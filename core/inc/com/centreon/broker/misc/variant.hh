@@ -65,6 +65,8 @@ class variant {
   uint64_t as_ulong() const;
   double as_double() const;
   std::string const& as_string() const;
+  std::string to_string() const;
+  bool is_string() const;
 
  private:
   meta_type _type;
