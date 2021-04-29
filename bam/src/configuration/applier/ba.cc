@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2017 Centreon
+** Copyright 2014-2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -248,9 +248,9 @@ void applier::ba::_internal_copy(applier::ba const& other) {
 std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
                                               service_book& book) {
   std::shared_ptr<bam::ba> obj{std::make_shared<bam::ba>(
-      cfg.get_host_id(), cfg.get_service_id(), cfg.get_id(), false)};
+      cfg.get_id(), cfg.get_host_id(), cfg.get_service_id(),
+      cfg.get_state_source(), false)};
   obj->set_name(cfg.get_name());
-  obj->set_state_source(cfg.get_state_source());
   obj->set_level_warning(cfg.get_warning_level());
   obj->set_level_critical(cfg.get_critical_level());
   obj->set_downtime_behaviour(cfg.get_downtime_behaviour());

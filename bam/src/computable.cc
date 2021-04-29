@@ -72,8 +72,7 @@ void computable::add_parent(std::shared_ptr<computable> const& parent) {
  *  @param[out] visitor  Object that will receive events.
  */
 void computable::propagate_update(io::stream* visitor) {
-  std::vector<bool> filter;
-  filter.resize(_parents.size());
+  std::vector<bool> filter(_parents.size());
   uint32_t i = 0;
   for (std::list<std::weak_ptr<computable> >::iterator it(_parents.begin()),
        end(_parents.end());
@@ -88,7 +87,7 @@ void computable::propagate_update(io::stream* visitor) {
   for (std::list<std::weak_ptr<computable> >::iterator it(_parents.begin()),
        end(_parents.end());
        it != end; ++it)
-    if (filter[i++] == true) {
+    if (filter[i++]) {
       std::shared_ptr<computable> ptr = it->lock();
       if (ptr)
         ptr->propagate_update(visitor);
