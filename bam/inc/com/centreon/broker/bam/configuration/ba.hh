@@ -37,6 +37,10 @@ namespace configuration {
  *  the DB.
  */
 class ba {
+  uint32_t _id;
+  uint32_t _host_id;
+  uint32_t _service_id;
+
  public:
   typedef enum {
     state_source_impact,
@@ -49,9 +53,6 @@ class ba {
   typedef enum { dt_ignore = 0, dt_inherit, dt_ignore_kpi } downtime_behaviour;
 
  private:
-  uint32_t _id;
-  uint32_t _host_id;
-  uint32_t _service_id;
   std::string _name;
   ba::state_source _state_source;
   double _warning_level;
@@ -84,7 +85,6 @@ class ba {
   std::vector<uint32_t> const& get_timeperiods() const;
   downtime_behaviour get_downtime_behaviour() const;
 
-  void set_id(uint32_t id);
   void set_host_id(uint32_t host_id);
   void set_service_id(uint32_t service_id);
   void set_name(std::string const& name);

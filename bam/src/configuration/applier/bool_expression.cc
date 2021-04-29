@@ -26,43 +26,10 @@
 #include "com/centreon/broker/bam/metric_book.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
-
-/**
- *  Default constructor.
- */
-applier::bool_expression::bool_expression() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-applier::bool_expression::bool_expression(
-    applier::bool_expression const& other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-applier::bool_expression::~bool_expression() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Object to copy.
- *
- *  @return This object.
- */
-applier::bool_expression& applier::bool_expression::operator=(
-    applier::bool_expression const& other) {
-  if (this != &other)
-    _internal_copy(other);
-  return (*this);
-}
 
 /**
  *  Apply boolean expressions.
@@ -121,8 +88,8 @@ void applier::bool_expression::apply(
   for (std::map<uint32_t, applied>::iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
-    logging::config(logging::medium)
-        << "BAM: removing boolean expression " << it->second.cfg.get_id();
+    log_v2::bam()->info(
+        "BAM: removing boolean expression {}", it->second.cfg.get_id());
     for (std::list<bool_service::ptr>::const_iterator
              it2(it->second.svc.begin()),
          end2(it->second.svc.end());
@@ -137,8 +104,8 @@ void applier::bool_expression::apply(
   for (bam::configuration::state::bool_exps::iterator it(to_create.begin()),
        end(to_create.end());
        it != end; ++it) {
-    logging::config(logging::medium)
-        << "BAM: creating new boolean expression " << it->first;
+    log_v2::bam()->info(
+        "BAM: creating new boolean expression {}", it->first);
     std::shared_ptr<bam::bool_expression> new_bool_exp(
         new bam::bool_expression);
     try {
@@ -175,6 +142,10 @@ void applier::bool_expression::apply(
           metric_book.listen(*metrics_it, it2->get());
       }
     } catch (std::exception const& e) {
+      log_v2::bam()->error(
+          "BAM: could not create boolean expression {} so it will be "
+          "discarded: {}",
+          it->first, e.what());
       logging::error(logging::high)
           << "BAM: could not create boolean expression " << it->first
           << " so it will be discarded: " << e.what();
@@ -184,7 +155,6 @@ void applier::bool_expression::apply(
   }
 
   _resolve_expression_calls();
-  return;
 }
 
 /**
@@ -199,17 +169,6 @@ std::shared_ptr<bam::bool_expression> applier::bool_expression::find_boolexp(
   std::map<uint32_t, applied>::iterator it(_applied.find(id));
   return ((it != _applied.end()) ? it->second.obj
                                  : std::shared_ptr<bam::bool_expression>());
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void applier::bool_expression::_internal_copy(
-    applier::bool_expression const& other) {
-  _applied = other._applied;
-  return;
 }
 
 /**
@@ -233,6 +192,8 @@ void applier::bool_expression::_resolve_expression_calls() {
       std::map<std::string, uint32_t>::const_iterator found =
           _name_to_ids.find((*call_it)->get_name());
       if (found == _name_to_ids.end()) {
+        log_v2::bam()->error(
+            "BAM: could not resolve the external boolean called '{}' for expression '{}'", (*call_it)->get_name(), it->second.cfg.get_name());
         logging::error(logging::high)
             << "BAM: could not resolve the external boolean called '"
             << (*call_it)->get_name() << "' for expression '"
