@@ -33,7 +33,6 @@
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -106,8 +105,6 @@ void broker_module_init(void const* arg) {
     {
       register_bam_event<bam::ba_status>(e, bam::de_ba_status, "ba_status");
       register_bam_event<bam::kpi_status>(e, bam::de_kpi_status, "kpi_status");
-      register_bam_event<bam::meta_service_status>(
-          e, bam::de_meta_service_status, "meta_service_status");
       register_bam_event<bam::ba_event>(e, bam::de_ba_event, "ba_event");
       register_bam_event<bam::kpi_event>(e, bam::de_kpi_event, "kpi_event");
       register_bam_event<bam::ba_duration_event>(e, bam::de_ba_duration_event,

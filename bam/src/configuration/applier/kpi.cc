@@ -20,13 +20,10 @@
 #include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
-#include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
 #include "com/centreon/broker/bam/kpi_boolexp.hh"
-#include "com/centreon/broker/bam/kpi_meta.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/exceptions/config.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -42,8 +39,7 @@ applier::kpi::kpi()
     : _bas(nullptr),
       _book(nullptr),
       _boolexps(nullptr),
-      _mapping(nullptr),
-      _metas(nullptr) {}
+      _mapping(nullptr) {}
 
 /**
  *  Copy constructor.
@@ -77,7 +73,6 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& other) {
  *
  *  @param[in]     my_kpis      Object to copy.
  *  @param[in,out] my_bas       Already applied BAs.
- *  @param[in,out] my_metas     Already applied meta-services.
  *  @param[in,out] my_boolexps  Already applied boolean expressions.
  *  @param[out]    book         Service book.
  *
@@ -86,13 +81,11 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& other) {
 void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
                          hst_svc_mapping const& mapping,
                          applier::ba& my_bas,
-                         applier::meta_service& my_metas,
                          applier::bool_expression& my_boolexps,
                          bam::service_book& book) {
   // Set internal parameters.
   _mapping = &mapping;
   _bas = &my_bas;
-  _metas = &my_metas;
   _boolexps = &my_boolexps;
   _book = &book;
 
@@ -267,7 +260,6 @@ void applier::kpi::_internal_copy(applier::kpi const& other) {
   _book = other._book;
   _boolexps = other._boolexps;
   _mapping = other._mapping;
-  _metas = other._metas;
 }
 
 /**
@@ -303,14 +295,6 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
         << "BAM: creating new KPI " << cfg.get_id() << " of BA "
         << cfg.get_indicator_ba_id() << " impacting BA " << cfg.get_ba_id();
     std::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
-    obj->set_impact_critical(cfg.get_impact_critical());
-    obj->set_impact_warning(cfg.get_impact_warning());
-    my_kpi = std::static_pointer_cast<bam::kpi>(obj);
-  } else if (cfg.is_meta()) {
-    std::shared_ptr<bam::kpi_meta> obj(new bam::kpi_meta);
-    logging::config(logging::medium)
-        << "BAM: creating new KPI " << cfg.get_id() << " of meta-service "
-        << cfg.get_meta_id() << " impacting BA " << cfg.get_ba_id();
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
@@ -359,18 +343,6 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
     target->add_parent(std::static_pointer_cast<bam::computable>(obj));
     logging::config(logging::medium)
         << "BAM: Resolve KPI " << kpi->get_id() << " connections to its BA";
-  } else if (cfg.is_meta()) {
-    std::shared_ptr<bam::kpi_meta> obj(
-        std::static_pointer_cast<bam::kpi_meta>(kpi));
-    std::shared_ptr<bam::meta_service> target(
-        _metas->find_meta(cfg.get_meta_id()));
-    if (!target)
-      throw(exceptions::config()
-            << "could not find source meta-service " << cfg.get_meta_id());
-    obj->link_meta(target);
-    target->add_parent(std::static_pointer_cast<bam::computable>(obj));
-    logging::config(logging::medium) << "BAM: Resolve KPI " << kpi->get_id()
-                                     << " connections to its meta-service";
   } else if (cfg.is_boolexp()) {
     std::shared_ptr<bam::kpi_boolexp> obj(
         std::static_pointer_cast<bam::kpi_boolexp>(kpi));

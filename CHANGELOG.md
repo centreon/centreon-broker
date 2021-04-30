@@ -2,6 +2,13 @@
 
 ## 20.04.14
 
+### Bam
+
+*meta-services*
+
+Meta-services are removed from broker. This code was not used and could produce
+bugs. For example, services/hosts with host\_id=0.
+
 ### Fixes
 
 *SQL*
