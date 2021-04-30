@@ -38,7 +38,6 @@ namespace applier {
 // Forward declarations.
 class ba;
 class bool_expression;
-class meta_service;
 
 /**
  *  @class kpi kpi.hh "com/centreon/broker/bam/configuration/applier/kpi.hh"
@@ -55,7 +54,6 @@ class kpi {
   void apply(configuration::state::kpis const& my_kpis,
              hst_svc_mapping const& mapping,
              ba& my_bas,
-             meta_service& my_metas,
              bool_expression& my_boolexps,
              service_book& book);
   void visit(io::stream* visitor);
@@ -78,7 +76,6 @@ class kpi {
   service_book* _book;
   bool_expression* _boolexps;
   hst_svc_mapping const* _mapping;
-  meta_service* _metas;
 };
 }  // namespace applier
 }  // namespace configuration
