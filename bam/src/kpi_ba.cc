@@ -17,9 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/kpi_ba.hh"
-
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -48,6 +48,8 @@ bool kpi_ba::child_has_update(computable* child, io::stream* visitor) {
   // the ba class already cache most of them.
   if (child == _ba.get()) {
     // Logging.
+    log_v2::bam()->debug("BAM: BA KPI {} is getting notified of child update",
+                         _id);
     logging::debug(logging::low)
         << "BAM: BA KPI " << _id << " is getting notified of child update";
 
