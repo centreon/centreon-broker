@@ -25,7 +25,6 @@
 #include "com/centreon/broker/bam/configuration/ba.hh"
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #include "com/centreon/broker/bam/configuration/kpi.hh"
-#include "com/centreon/broker/bam/configuration/meta_service.hh"
 #include "com/centreon/broker/bam/hst_svc_mapping.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -45,7 +44,6 @@ class state {
   typedef std::map<uint32_t, ba> bas;
   typedef std::map<uint32_t, kpi> kpis;
   typedef std::map<uint32_t, bool_expression> bool_exps;
-  typedef std::map<uint32_t, meta_service> meta_services;
 
   state();
   state(state const& other);
@@ -56,7 +54,6 @@ class state {
   bas const& get_bas() const;
   kpis const& get_kpis() const;
   bool_exps const& get_bool_exps() const;
-  meta_services const& get_meta_services() const;
   hst_svc_mapping const& get_hst_svc_mapping() const;
   ba_svc_mapping const& get_ba_svc_mapping() const;
   ba_svc_mapping const& get_meta_svc_mapping() const;
@@ -64,7 +61,6 @@ class state {
   bas& get_bas();
   kpis& get_kpis();
   bool_exps& get_bool_exps();
-  meta_services& mutable_meta_services();
   hst_svc_mapping& get_hst_svc_mapping();
   ba_svc_mapping& get_ba_svc_mapping();
   ba_svc_mapping& get_meta_svc_mapping();
@@ -76,7 +72,6 @@ class state {
   bool_exps _bool_expressions;
   hst_svc_mapping _hst_svc_mapping;
   ba_svc_mapping _meta_svc_mapping;
-  meta_services _meta_services;
 };
 }  // namespace configuration
 }  // namespace bam

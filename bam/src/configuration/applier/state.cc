@@ -92,13 +92,11 @@ void applier::state::apply(bam::configuration::state const& my_state) {
 
   // Really apply objects.
   _ba_applier.apply(my_state.get_bas(), _book_service);
-  _meta_service_applier.apply(my_state.get_meta_services(), _book_metric);
   _bool_exp_applier.apply(my_state.get_bool_exps(),
                           my_state.get_hst_svc_mapping(), _book_service,
                           _book_metric);
   _kpi_applier.apply(my_state.get_kpis(), my_state.get_hst_svc_mapping(),
-                     _ba_applier, _meta_service_applier, _bool_exp_applier,
-                     _book_service);
+                     _ba_applier, _bool_exp_applier, _book_service);
 }
 
 /**
@@ -159,22 +157,7 @@ void applier::state::_circular_check(configuration::state const& my_state) {
     n.targets.insert(
         service_node_id(it->second.get_host_id(), it->second.get_service_id()));
   }
-  // Add meta-services.
-  for (configuration::state::meta_services::const_iterator
-           it(my_state.get_meta_services().begin()),
-       end(my_state.get_meta_services().end());
-       it != end; ++it) {
-    std::string meta_id(meta_node_id(it->first));
-    circular_check_node& n(_nodes[meta_id]);
-    n.targets.insert(
-        service_node_id(it->second.get_host_id(), it->second.get_service_id()));
-    for (configuration::meta_service::service_container::const_iterator
-             it_svc(it->second.get_services().begin()),
-         end_svc(it->second.get_services().end());
-         it_svc != end_svc; ++it)
-      _nodes[service_node_id(it_svc->first, it_svc->second)].targets.insert(
-          meta_id);
-  }
+
   // Add boolean expressions.
   for (configuration::state::bool_exps::const_iterator
            it(my_state.get_bool_exps().begin()),

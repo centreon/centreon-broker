@@ -37,8 +37,7 @@ state::state(state const& other)
       _kpis(other._kpis),
       _bool_expressions(other._bool_expressions),
       _hst_svc_mapping(other._hst_svc_mapping),
-      _meta_svc_mapping(other._meta_svc_mapping),
-      _meta_services(other._meta_services) {}
+      _meta_svc_mapping(other._meta_svc_mapping) {}
 
 /**
  *  Destructor
@@ -60,7 +59,6 @@ state& state::operator=(state const& other) {
     _bool_expressions = other._bool_expressions;
     _hst_svc_mapping = other._hst_svc_mapping;
     _meta_svc_mapping = other._meta_svc_mapping;
-    _meta_services = other._meta_services;
   }
   return *this;
 }
@@ -72,7 +70,6 @@ void state::clear() {
   _bas.clear();
   _kpis.clear();
   _bool_expressions.clear();
-  _meta_services.clear();
 }
 
 /**
@@ -100,15 +97,6 @@ state::kpis const& state::get_kpis() const {
  */
 state::bool_exps const& state::get_bool_exps() const {
   return _bool_expressions;
-}
-
-/**
- *  Get meta-services.
- *
- *  @return  A list of meta-services.
- */
-state::meta_services const& state::get_meta_services() const {
-  return _meta_services;
 }
 
 /**
@@ -163,15 +151,6 @@ state::kpis& state::get_kpis() {
  */
 state::bool_exps& state::get_bool_exps() {
   return _bool_expressions;
-}
-
-/**
- *  Get all the meta-services.
- *
- *  @return  A list of meta-services.
- */
-state::meta_services& state::mutable_meta_services() {
-  return _meta_services;
 }
 
 /**
