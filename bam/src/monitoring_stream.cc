@@ -25,13 +25,11 @@
 #include <sstream>
 
 #include "com/centreon/broker/bam/ba_status.hh"
-#include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/event_cache_visitor.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"

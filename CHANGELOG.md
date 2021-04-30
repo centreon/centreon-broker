@@ -4,11 +4,18 @@
 
 `Release date to be defined`
 
-### Enhancement 
+### Enhancement
+
+*Bam*
+
+*meta-services*
+
+Meta-services are removed from broker. This code was not used and could produce
+bugs. For example, services/hosts with host\_id=0.
 
 *Storage*
 
-We optimize queries by removing useless join. A join with hosts table is not necessary in 
+We optimize queries by removing useless join. A join with hosts table is not necessary in
 certain queries.
 
 ## 20.10.4
@@ -20,7 +27,7 @@ certain queries.
 *Config*
 
 retry\_interval attribute in configuration file seems to be have a safe behavior with a
-decimal value, but but with a chain of character broker quit without understanble error message, 
+decimal value, but but with a chain of character broker quit without understanble error message,
 now broker quits cleanly with a warning that we can see in by using journalctl command.
 
 *TCP*
