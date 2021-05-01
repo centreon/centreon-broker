@@ -318,139 +318,139 @@ TEST_F(KpiBA, KpiBaDt) {
  *                  /
  *     kpi-service-2 (ok)
  */
-//TEST_F(KpiBA, KpiBaDtOff) {
-//  /* Construction of BA1 */
-//  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>()};
-//  test_ba->set_id(1);
-//  test_ba->set_host_id(5);
-//  test_ba->set_service_id(13);
-//  test_ba->set_state_source(bam::configuration::ba::state_source_worst);
-//
-//  test_ba->set_name("test-ba");
-//  test_ba->set_state_source(bam::configuration::ba::state_source_worst);
-//  test_ba->set_level_critical(100);
-//  test_ba->set_level_warning(75);
-//  test_ba->set_downtime_behaviour(bam::configuration::ba::dt_inherit);
-//
-//  /* Construction of BA2 */
-//  std::shared_ptr<bam::ba> test_ba_child{std::make_shared<bam::ba>()};
-//  test_ba_child->set_id(2);
-//  test_ba_child->set_host_id(5);
-//  test_ba_child->set_service_id(14);
-//  test_ba_child->set_state_source(bam::configuration::ba::state_source_worst);
-//
-//  test_ba_child->set_name("test-ba-child");
-//  test_ba_child->set_level_critical(100);
-//  test_ba_child->set_level_warning(75);
-//  test_ba_child->set_downtime_behaviour(bam::configuration::ba::dt_inherit);
-//
-//  std::vector<std::shared_ptr<bam::kpi_service>> kpis;
-//
-//  /* Construction of kpi_services */
-//  for (int i = 0; i < 2; i++) {
-//    auto s = std::make_shared<bam::kpi_service>();
-//    s->set_id(i + 1);
-//    s->set_ba_id(2);
-//    s->set_host_id(3);
-//    s->set_service_id(1 + i);
-//    s->set_downtimed(false);
-//    s->set_impact_critical(100);
-//    s->set_impact_unknown(0);
-//    s->set_impact_warning(75);
-//    s->set_state_hard(bam::kpi_service::state::state_ok);
-//    s->set_state_type(1);
-//
-//    // test_ba_child->add_impact(s);
-//    // s->add_parent(test_ba_child);
-//    kpis.push_back(s);
-//  }
-//
-//  /* Construction of kpi_ba */
-//  auto kpi_ba_child = std::make_shared<bam::kpi_ba>();
-//  kpi_ba_child->set_id(3);
-//  kpi_ba_child->set_ba_id(2);
-//  kpi_ba_child->set_impact_critical(100);
-//  kpi_ba_child->set_impact_warning(75);
-//
-//  auto kpi_ba = std::make_shared<bam::kpi_ba>();
-//  kpi_ba->set_id(4);
-//  kpi_ba->set_ba_id(1);
-//  kpi_ba->set_impact_critical(100);
-//  kpi_ba->set_impact_warning(75);
-//
-//  /* Resolutions */
-//  /* Link between the kpi_ba_child and its ba test_ba_child */
-//  kpi_ba_child->link_ba(test_ba_child);
-//  test_ba_child->add_parent(kpi_ba_child);
-//
-//  /* Link between the kpi_ba and its ba test_ba */
-//  kpi_ba->link_ba(test_ba);
-//  test_ba->add_impact(kpi_ba_child);
-//
-//  /* Link between the kpi_ba_child and the ba parent test_ba */
-//  test_ba->add_impact(kpi_ba_child);
-//  kpi_ba_child->add_parent(test_ba);
-//
-//  for (int i = 0; i < 2; i++) {
-//    test_ba_child->add_impact(kpis[i]);
-//    kpis[i]->add_parent(test_ba_child);
-//  }
-//
-//  time_t now{time(nullptr)};
-//
-//  for (int i = 0; i < 2; i++) {
-//    auto ss = std::make_shared<neb::service_status>();
-//    ss->host_id = 3;
-//    ss->service_id = i + 1;
-//
-//    ss->last_check = now;
-//    ss->last_hard_state = 0;
-//    kpis[i]->service_update(ss, _visitor.get());
-//  }
-//
-//  auto ss = std::make_shared<neb::service_status>();
-//  ss->host_id = 3;
-//  ss->service_id = 1;
-//
-//  /* The first kpi is set to status critical. */
-//  ss->last_check = now + 10;
-//  ss->last_hard_state = 2;
-//  kpis[0]->service_update(ss, _visitor.get());
-//
-//  /* Let's put a downtime on the service. */
-//  auto dt = std::make_shared<neb::downtime>();
-//  dt->host_id = 3;
-//  dt->service_id = 1;
-//  dt->entry_time = now + 12;
-//  dt->actual_start_time = now + 12;
-//  dt->actual_end_time = -1;
-//  dt->was_started = true;
-//  kpis[0]->service_update(dt, _visitor.get());
-//
-//  /* Let's remove the downtime from the service. */
-//  dt = std::make_shared<neb::downtime>();
-//  dt->host_id = 3;
-//  dt->service_id = 1;
-//  dt->entry_time = now + 12;
-//  dt->actual_end_time = now + 20;
-//  dt->deletion_time = now + 20;
-//  dt->was_started = true;
-//  dt->was_cancelled = true;
-//  kpis[0]->service_update(dt, _visitor.get());
-//  ASSERT_TRUE(!test_ba->get_in_downtime());
-//
-//  auto events = _visitor->queue();
-//
-//  _visitor->print_events();
-//
-//  /* We have to check that the test-ba is no more in downtime */
-//
-//  auto it = events.rbegin();
-//  ASSERT_EQ(it->typ, test_visitor::test_event::ba);
-//  ASSERT_EQ(it->ba_id, 1u);
-//  ASSERT_FALSE(it->in_downtime);
-//  ASSERT_EQ(it->end_time, -1);
-//}
+TEST_F(KpiBA, KpiBaDtOff) {
+  /* Construction of BA1 */
+  std::shared_ptr<bam::ba> test_ba{std::make_shared<bam::ba>()};
+  test_ba->set_id(1);
+  test_ba->set_host_id(5);
+  test_ba->set_service_id(13);
+  test_ba->set_state_source(bam::configuration::ba::state_source_worst);
+
+  test_ba->set_name("test-ba");
+  test_ba->set_state_source(bam::configuration::ba::state_source_worst);
+  test_ba->set_level_critical(100);
+  test_ba->set_level_warning(75);
+  test_ba->set_downtime_behaviour(bam::configuration::ba::dt_inherit);
+
+  /* Construction of BA2 */
+  std::shared_ptr<bam::ba> test_ba_child{std::make_shared<bam::ba>()};
+  test_ba_child->set_id(2);
+  test_ba_child->set_host_id(5);
+  test_ba_child->set_service_id(14);
+  test_ba_child->set_state_source(bam::configuration::ba::state_source_worst);
+
+  test_ba_child->set_name("test-ba-child");
+  test_ba_child->set_level_critical(100);
+  test_ba_child->set_level_warning(75);
+  test_ba_child->set_downtime_behaviour(bam::configuration::ba::dt_inherit);
+
+  std::vector<std::shared_ptr<bam::kpi_service>> kpis;
+
+  /* Construction of kpi_services */
+  for (int i = 0; i < 2; i++) {
+    auto s = std::make_shared<bam::kpi_service>();
+    s->set_id(i + 1);
+    s->set_ba_id(2);
+    s->set_host_id(3);
+    s->set_service_id(1 + i);
+    s->set_downtimed(false);
+    s->set_impact_critical(100);
+    s->set_impact_unknown(0);
+    s->set_impact_warning(75);
+    s->set_state_hard(bam::kpi_service::state::state_ok);
+    s->set_state_type(1);
+
+    // test_ba_child->add_impact(s);
+    // s->add_parent(test_ba_child);
+    kpis.push_back(s);
+  }
+
+  /* Construction of kpi_ba */
+  auto kpi_ba_child = std::make_shared<bam::kpi_ba>();
+  kpi_ba_child->set_id(3);
+  kpi_ba_child->set_ba_id(2);
+  kpi_ba_child->set_impact_critical(100);
+  kpi_ba_child->set_impact_warning(75);
+
+  auto kpi_ba = std::make_shared<bam::kpi_ba>();
+  kpi_ba->set_id(4);
+  kpi_ba->set_ba_id(1);
+  kpi_ba->set_impact_critical(100);
+  kpi_ba->set_impact_warning(75);
+
+  /* Resolutions */
+  /* Link between the kpi_ba_child and its ba test_ba_child */
+  kpi_ba_child->link_ba(test_ba_child);
+  test_ba_child->add_parent(kpi_ba_child);
+
+  /* Link between the kpi_ba and its ba test_ba */
+  kpi_ba->link_ba(test_ba);
+  test_ba->add_impact(kpi_ba_child);
+
+  /* Link between the kpi_ba_child and the ba parent test_ba */
+  test_ba->add_impact(kpi_ba_child);
+  kpi_ba_child->add_parent(test_ba);
+
+  for (int i = 0; i < 2; i++) {
+    test_ba_child->add_impact(kpis[i]);
+    kpis[i]->add_parent(test_ba_child);
+  }
+
+  time_t now{time(nullptr)};
+
+  for (int i = 0; i < 2; i++) {
+    auto ss = std::make_shared<neb::service_status>();
+    ss->host_id = 3;
+    ss->service_id = i + 1;
+
+    ss->last_check = now;
+    ss->last_hard_state = 0;
+    kpis[i]->service_update(ss, _visitor.get());
+  }
+
+  auto ss = std::make_shared<neb::service_status>();
+  ss->host_id = 3;
+  ss->service_id = 1;
+
+  /* The first kpi is set to status critical. */
+  ss->last_check = now + 10;
+  ss->last_hard_state = 2;
+  kpis[0]->service_update(ss, _visitor.get());
+
+  /* Let's put a downtime on the service. */
+  auto dt = std::make_shared<neb::downtime>();
+  dt->host_id = 3;
+  dt->service_id = 1;
+  dt->entry_time = now + 12;
+  dt->actual_start_time = now + 12;
+  dt->actual_end_time = -1;
+  dt->was_started = true;
+  kpis[0]->service_update(dt, _visitor.get());
+
+  /* Let's remove the downtime from the service. */
+  dt = std::make_shared<neb::downtime>();
+  dt->host_id = 3;
+  dt->service_id = 1;
+  dt->entry_time = now + 12;
+  dt->actual_end_time = now + 20;
+  dt->deletion_time = now + 20;
+  dt->was_started = true;
+  dt->was_cancelled = true;
+  kpis[0]->service_update(dt, _visitor.get());
+  ASSERT_TRUE(!test_ba->get_in_downtime());
+
+  auto events = _visitor->queue();
+
+  _visitor->print_events();
+
+  /* We have to check that the test-ba is no more in downtime */
+
+  auto it = events.rbegin();
+  ASSERT_EQ(it->typ, test_visitor::test_event::ba);
+  ASSERT_EQ(it->ba_id, 1u);
+  ASSERT_FALSE(it->in_downtime);
+  ASSERT_EQ(it->end_time, -1);
+}
 
 /**
  *     kpi-service-1 (ok)

@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 
-#include <sstream>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
@@ -280,11 +280,8 @@ std::string const& ba::get_name() const {
  *  @return Service output.
  */
 std::string ba::get_output() const {
-  std::ostringstream oss;
-  oss << "BA : " << _name
-      << " - current_level = " << static_cast<int>(normalize(_level_hard))
-      << "%";
-  return (oss.str());
+  return fmt::format("BA : {} - current_level = {}%", _name,
+                     static_cast<int>(normalize(_level_hard)));
 }
 
 /**
@@ -293,12 +290,11 @@ std::string ba::get_output() const {
  *  @return Performance data.
  */
 std::string ba::get_perfdata() const {
-  std::ostringstream oss;
-  oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
-      << static_cast<int>(_level_warning) << ";"
-      << static_cast<int>(_level_critical) << ";0;100 "
-      << "BA_Downtime=" << static_cast<int>(normalize(_downtime_hard));
-  return (oss.str());
+  return fmt::format("BA_Level={}%;{};{};0;100 BA_Downtime={}",
+                     static_cast<int>(normalize(_level_hard)),
+                     static_cast<int>(_level_warning),
+                     static_cast<int>(_level_critical),
+                     static_cast<int>(normalize(_downtime_hard)));
 }
 
 /**
@@ -589,21 +585,13 @@ void ba::visit(io::stream* visitor) {
       status->latency = 0.0;
       status->max_check_attempts = 1;
       status->obsess_over = false;
-      {
-        std::ostringstream oss;
-        oss << "BA : Business Activity " << _id
-            << " - current_level = " << static_cast<int>(normalize(_level_hard))
-            << "%";
-        status->output = oss.str();
-      }
+      status->output = fmt::format("BA : Business Activity {} - current_level = {}%",
+          _id, static_cast<int>(normalize(_level_hard)));
       // status->percent_state_chagne = XXX;
-      {
-        std::ostringstream oss;
-        oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
-            << static_cast<int>(_level_warning) << ";"
-            << static_cast<int>(_level_critical) << ";0;100";
-        status->perf_data = oss.str();
-      }
+      status->perf_data = fmt::format("BA_Level={}%;{};{};0;100",
+        static_cast<int>(normalize(_level_hard)),
+            static_cast<int>(_level_warning),
+            static_cast<int>(_level_critical));
       status->retry_interval = 0;
       // status->service_description = XXX;
       status->service_id = _service_id;
@@ -862,13 +850,11 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
   else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime) {
+    _inherited_downtime->in_downtime = false;
+    _in_downtime = false;
+
+    if (visitor)
+      visitor->write(std::move(_inherited_downtime));
     _inherited_downtime.reset();
-    if (visitor) {
-      std::shared_ptr<inherited_downtime> dwn(
-          std::make_shared<inherited_downtime>());
-      dwn->ba_id = _id;
-      dwn->in_downtime = false;
-      visitor->write(dwn);
-    }
   }
 }
