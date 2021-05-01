@@ -8,6 +8,8 @@
 
 *Bam*
 
+Impact on unknown state is handled now for kpi ba.
+
 *meta-services*
 
 Meta-services are removed from broker. This code was not used and could produce
@@ -15,8 +17,8 @@ bugs. For example, services/hosts with host\_id=0.
 
 *Storage*
 
-We optimize queries by removing useless join. A join with hosts table is not necessary in
-certain queries.
+We optimize queries by removing useless join. A join with hosts table is not
+necessary in certain queries.
 
 ## 20.10.4
 
@@ -26,9 +28,10 @@ certain queries.
 
 *Config*
 
-retry\_interval attribute in configuration file seems to be have a safe behavior with a
-decimal value, but but with a chain of character broker quit without understanble error message,
-now broker quits cleanly with a warning that we can see in by using journalctl command.
+retry\_interval attribute in configuration file seems to be have a safe behavior
+with a decimal value, but but with a chain of character broker quit without
+understanble error message, now broker quits cleanly with a warning that we can
+see in by using journalctl command.
 
 *TCP*
 
@@ -49,7 +52,7 @@ encounters an error during its work, now it returns logs with the host id and
 the service id of the associated service, so it is easier for the user to debug
 his check.
 
-Index\_id of index\_data and metrics tables are now in unsigned int64_t.
+Index\_id of index\_data and metrics tables are now in unsigned int64\_t.
 
 *Log file configuration*
 
