@@ -83,7 +83,6 @@ double kpi_ba::get_impact_warning() const {
 void kpi_ba::impact_hard(impact_values& hard_impact) {
   _fill_impact(hard_impact, _ba->get_state_hard(), _ba->get_ack_impact_hard(),
                _ba->get_downtime_impact_hard());
-  return;
 }
 
 /**
@@ -94,7 +93,6 @@ void kpi_ba::impact_hard(impact_values& hard_impact) {
 void kpi_ba::impact_soft(impact_values& soft_impact) {
   _fill_impact(soft_impact, _ba->get_state_soft(), _ba->get_ack_impact_soft(),
                _ba->get_downtime_impact_soft());
-  return;
 }
 
 /**
@@ -104,7 +102,6 @@ void kpi_ba::impact_soft(impact_values& soft_impact) {
  */
 void kpi_ba::link_ba(std::shared_ptr<ba>& my_ba) {
   _ba = my_ba;
-  return;
 }
 
 /**
@@ -114,7 +111,6 @@ void kpi_ba::link_ba(std::shared_ptr<ba>& my_ba) {
  */
 void kpi_ba::set_impact_critical(double impact) {
   _impact_critical = impact;
-  return;
 }
 
 /**
@@ -124,7 +120,15 @@ void kpi_ba::set_impact_critical(double impact) {
  */
 void kpi_ba::set_impact_warning(double impact) {
   _impact_warning = impact;
-  return;
+}
+
+/**
+ *  Set impact if BA is UNKNOWN.
+ *
+ *  @param[in] impact Impact if BA is UNKNOWN.
+ */
+void kpi_ba::set_impact_unknown(double impact) {
+  _impact_unknown = impact;
 }
 
 /**
@@ -194,7 +198,6 @@ void kpi_ba::visit(io::stream* visitor) {
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
-  return;
 }
 
 /**
@@ -211,12 +214,20 @@ void kpi_ba::_fill_impact(impact_values& impact,
                           double downtime) {
   // Get nominal impact from state.
   double nominal;
-  if (0 == state)
-    nominal = 0.0;
-  else if (1 == state)
-    nominal = _impact_warning;
-  else
-    nominal = _impact_critical;
+  switch (state) {
+    case 0:
+      nominal = 0.0;
+      break;
+    case 1:
+      nominal = _impact_warning;
+      break;
+    case 2:
+      nominal = _impact_critical;
+      break;
+    default:
+      nominal = _impact_unknown;
+      break;
+  }
   impact.set_nominal(nominal);
 
   // Compute acknowledged and downtimed impacts. Acknowledgement and
@@ -234,7 +245,6 @@ void kpi_ba::_fill_impact(impact_values& impact,
     downtime = 100.0;
   impact.set_downtime(downtime * nominal / 100.0);
   impact.set_state(state);
-  return;
 }
 
 /**
@@ -262,7 +272,6 @@ void kpi_ba::_open_new_event(io::stream* visitor,
     std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
-  return;
 }
 
 /**

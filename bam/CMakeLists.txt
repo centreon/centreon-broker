@@ -1,5 +1,5 @@
 ##
-## Copyright 2011-2016 Centreon
+## Copyright 2011-2021 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -182,6 +182,7 @@ if (WITH_TESTING )
     set(
       TESTS_SOURCES
       ${TESTS_SOURCES}
+      ${TEST_DIR}/ba/kpi_ba.cc
       ${TEST_DIR}/ba/kpi_change_at_recompute.cc
       ${TEST_DIR}/configuration/applier-boolexp.cc
       ${TEST_DIR}/exp_builder/exp_builder.cc
