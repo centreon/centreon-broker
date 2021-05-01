@@ -8,6 +8,12 @@
 
 *Bam*
 
+*ba worst/best states computation*
+
+There was a bug in the computation of these states.
+
+*ba impact and unknown state*
+
 Impact on unknown state is handled now for kpi ba.
 
 *meta-services*
