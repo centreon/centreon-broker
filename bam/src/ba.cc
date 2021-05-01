@@ -54,20 +54,17 @@ auto _num_kpi_in_dt =
   return num;
 };
 
-auto _every_kpi_in_dt = [](std::unordered_map<kpi*, bam::ba::impact_info>& imp,
-                           bool look_for_state = true) -> bool {
+static bool _every_kpi_in_dt(std::unordered_map<kpi*, bam::ba::impact_info>& imp) {
   if (imp.empty())
     return false;
 
   for (auto it = imp.begin(), end = imp.end(); it != end; ++it) {
-    if ((look_for_state && it->first->ok_state()) ||
-        !it->first->in_downtime()) {
+    if (!it->first->in_downtime())
       return false;
-    }
   }
 
   return true;
-};
+}
 
 /**
  *  Constructor.
@@ -333,7 +330,7 @@ ba::state ba::get_state_hard() {
   else if (_state_source == configuration::ba::state_source_best ||
            _state_source == configuration::ba::state_source_worst) {
     if (_dt_behaviour == configuration::ba::dt_ignore_kpi &&
-        _every_kpi_in_dt(_impacts, false))
+        _every_kpi_in_dt(_impacts))
       state = impact_values::state_ok;
     else
       state = _computed_hard_state;
@@ -346,7 +343,7 @@ ba::state ba::get_state_hard() {
   else
     state =
         ba::state::state_unknown;  // unknown _state_source so unknown state...
-  return (state);
+  return state;
 }
 
 /**
