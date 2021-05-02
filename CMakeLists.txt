@@ -70,8 +70,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(asio REQUIRED)
-find_package(protobuf REQUIRED)
-find_package(protoc_installer REQUIRED)
+find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
@@ -86,9 +85,10 @@ include_directories(${fmt_INCLUDE_DIRS})
 include_directories(${spdlog_INCLUDE_DIRS})
 include_directories(${asio_INCLUDE_DIRS})
 include_directories(${protobuf_INCLUDE_DIRS})
+include_directories(${absl_INCLUDE_DIRS})
 include_directories(${gRPC_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
-include_directories(${mariadb-connector-c_INCLUDE_DIRS}/mysql)
+include_directories(${mariadb-connector-c_INCLUDE_DIRS})
 
 link_directories(${json11_LIB_DIRS})
 link_directories(${nlohmann_json_LIB_DIRS})
@@ -101,8 +101,7 @@ link_directories(${OpenSSL_LIB_DIRS})
 link_directories(${ZLIB_LIB_DIRS})
 link_directories(${mariadb-connector-c_LIB_DIRS})
 
-message(STATUS "Using protobuf ${gRPC_VERSION}")
-set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
+set(PROTOBUF_PREFIX "${protobuf_LIB_DIRS}/..")
 message(STATUS "${PROTOBUF_PREFIX}/bin/protoc")
 set(GRPC_PREFIX "${gRPC_LIB_DIRS}/..")
 
@@ -577,12 +576,12 @@ set(LIBROKER_SOURCES
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
 set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "-fPIC")
-target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${mariadb-connector-c_LIBS} pthread dl berpc)
+target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} ${mariadb-connector-c_LIBS} pthread dl berpc)
 
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection)
+target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection)
 
 # Standalone binary.
 set(DAEMON cbd)
