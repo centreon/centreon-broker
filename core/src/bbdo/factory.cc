@@ -43,11 +43,12 @@ using namespace com::centreon::broker::bbdo;
  *
  *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
   std::map<std::string, std::string>::const_iterator it{
       cfg.params.find("protocol")};
-  if (flag)
-    *flag = no;
+  if (ext)
+    *ext = io::extension("BBDO", false, false);
+
   return it != cfg.params.end() && it->second == "bbdo";
 }
 
@@ -79,7 +80,7 @@ io::endpoint* factory::new_endpoint(
 
   // Negotiation allowed ?
   bool negotiate = false;
-  std::pair<std::string, std::string> extensions;
+  std::list<io::extension> extensions;
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("negotiation"));
@@ -152,27 +153,20 @@ io::endpoint* factory::new_endpoint(
  *
  *  return a pair of two strings, extensions and mandatories.
  */
-std::pair<std::string, std::string> factory::_extensions(
-    config::endpoint& cfg) const {
-  std::string extensions;
-  std::string mandatory;
+std::list<io::extension> factory::_extensions(config::endpoint& cfg) const {
+  std::list<io::extension> retval;
+
   for (std::map<std::string, io::protocols::protocol>::const_iterator
            it{io::protocols::instance().begin()},
        end{io::protocols::instance().end()};
        it != end; ++it) {
-    flag flag;
-    bool has = it->second.endpntfactry->has_endpoint(cfg, &flag);
+
+    io::extension ext;
+    bool has = it->second.endpntfactry->has_endpoint(cfg, &ext);
     if (it->second.osi_from > 1 && it->second.osi_to < 7 &&
-        (has || flag != io::factory::flag::no)) {
-      if (!extensions.empty())
-        extensions.append(" ");
-      extensions.append(it->first);
-      if (flag == yes) {
-        if (!mandatory.empty())
-          mandatory.append(" ");
-        mandatory.append(it->first);
-      }
+        (has || ext.is_mandatory() || ext.is_optional())) {
+      retval.push_back(ext);
     }
   }
-  return std::make_pair(extensions, mandatory);
+  return retval;
 }

@@ -24,7 +24,7 @@
 #include <string>
 
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/extension.hh"
 
 CCB_BEGIN()
 
@@ -45,7 +45,7 @@ class stream;
  */
 class acceptor : public io::endpoint {
   bool _coarse;
-  std::pair<std::string, std::string> _extensions;
+  std::list<io::extension> _extensions;
   std::string _name;
   bool _negotiate;
   const bool _one_peer_retention_mode;
@@ -55,7 +55,7 @@ class acceptor : public io::endpoint {
  public:
   acceptor(std::string const& name,
            bool negotiate,
-           const std::pair<std::string, std::string>& extensions,
+           const std::list<io::extension>& extensions,
            time_t timeout,
            bool one_peer_retention_mode = false,
            bool coarse = false,

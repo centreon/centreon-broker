@@ -52,7 +52,7 @@ using namespace com::centreon::broker::bbdo;
  */
 acceptor::acceptor(std::string const& name,
                    bool negotiate,
-                   std::pair<std::string, std::string> const& extensions,
+                   const std::list<io::extension>& extensions,
                    time_t timeout,
                    bool one_peer_retention_mode,
                    bool coarse,
