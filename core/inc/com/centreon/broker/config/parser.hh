@@ -45,7 +45,6 @@ class parser {
   static bool parse_boolean(std::string const& value);
 
  private:
-  nlohmann::json _json_document;
   void _parse_endpoint(nlohmann::json const& elem, endpoint& e);
   void _parse_logger(nlohmann::json const& elem, logger& l);
 };
