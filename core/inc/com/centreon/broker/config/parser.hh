@@ -20,6 +20,7 @@
 #define CCB_CONFIG_PARSER_HH
 
 #include <json11.hpp>
+#include <nlohmann/json.hpp>
 #include <string>
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -44,8 +45,9 @@ class parser {
   static bool parse_boolean(std::string const& value);
 
  private:
-  void _parse_endpoint(json11::Json const& elem, endpoint& e);
-  void _parse_logger(json11::Json const& elem, logger& l);
+  //nlohmann::json _json_document;
+  void _parse_endpoint(nlohmann::json const& elem, endpoint& e);
+  void _parse_logger(nlohmann::json const& elem, logger& l);
 };
 }  // namespace config
 
