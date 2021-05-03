@@ -112,33 +112,34 @@ state parser::parse(std::string const& file) {
   std::string const& json_to_parse{std::istreambuf_iterator<char>(f),
                                    std::istreambuf_iterator<char>()};
   std::string err;
+  nlohmann::json json_document;
 
   try {
-    _json_document = json::parse(json_to_parse);
+    json_document = json::parse(json_to_parse);
   } catch (const json::parse_error& e) {
     err = e.what();
   }
 
-  if (_json_document.is_null())
+  if (json_document.is_null())
     throw msg_fmt("Config parser: Cannot parse file '{}': {}", file,
                   err);
 
-  if (_json_document.is_object() && _json_document["centreonBroker"].is_object()) {
-    for (auto it = _json_document["centreonBroker"].begin();
-      it != _json_document["centreonBroker"].end(); ++it) {
+  if (json_document.is_object() && json_document["centreonBroker"].is_object()) {
+    for (auto it = json_document["centreonBroker"].begin();
+      it != json_document["centreonBroker"].end(); ++it) {
       if (it.key() == "command_file" && it.value().is_object())
         ;
       else if (get_conf<int, state>({it.key(), it.value()}, "broker_id", retval,
-                &state::broker_id, &json::is_number, &json::get<int>)) 
+                &state::broker_id, &json::is_number, &json::get<int>))
         ;
       else if (it.key() == "grpc" && it.value().is_object()) {
-        if (_json_document["centreonBroker"]["grpc"]["rpc_port"].is_number()){
+        if (json_document["centreonBroker"]["grpc"]["rpc_port"].is_number()){
           retval.rpc_port(static_cast<uint16_t>(
-              _json_document["centreonBroker"]["grpc"]["rpc_port"].get<int>()));
+              json_document["centreonBroker"]["grpc"]["rpc_port"].get<int>()));
         }
       }
       else if (get_conf<state>(
-                     {it.key(), it.value()}, "broker_name", 
+                     {it.key(), it.value()}, "broker_name",
                      retval, &state::broker_name,
                      &json::is_string))
         ;
@@ -146,13 +147,13 @@ state parser::parse(std::string const& file) {
                                     &state::poller_id, &json::is_number,
                                     &json::get<int>))
         ;
-      else if (get_conf<bool, state>({it.key(), it.value()}, 
+      else if (get_conf<bool, state>({it.key(), it.value()},
                                     "log_thread_id", retval,
                                      &state::log_thread_id, &json::is_boolean,
                                      &json::get<bool>))
         ;
       else if (get_conf<state>({it.key(), it.value()}, "poller_name", retval,
-                &state::poller_name, &json::is_string)) 
+                &state::poller_name, &json::is_string))
         ;
       else if (get_conf<state>(
                    {it.key(), it.value()}, "module_directory", retval,
@@ -178,12 +179,12 @@ state parser::parse(std::string const& file) {
                                     &state::event_queue_max_size,
                                     &json::is_number, &json::get<int>))
         ;
-      else if (get_conf<bool, state>({it.key(), it.value()}, 
+      else if (get_conf<bool, state>({it.key(), it.value()},
                                      "log_thread_id", retval,
                                      &state::log_thread_id, &json::is_boolean,
                                      &json::get<bool>))
         ;
-      else if (get_conf<bool, state>({it.key(), it.value()}, 
+      else if (get_conf<bool, state>({it.key(), it.value()},
                                      "log_human_readable_timestamp",
                                      retval,
                                      &state::log_human_readable_timestamp,
@@ -226,7 +227,7 @@ state parser::parse(std::string const& file) {
           in.read_filters.insert("all");
           _parse_endpoint(it.value(), in);
           retval.endpoints().push_back(in);
-        } 
+        }
         else
           throw msg_fmt(
               "config parser: cannot parse key '"
@@ -279,7 +280,7 @@ state parser::parse(std::string const& file) {
                 "'max_size' key in the log configuration must contain a size "
                 "in bytes");
           }
-        } 
+        }
         else if (conf_js.contains("max_size") && conf_js["max_size"].is_number()) {
           int64_t tmp = conf_js["max_size"].get<int>();
           if (tmp < 0)
@@ -287,7 +288,7 @@ state parser::parse(std::string const& file) {
                 "'max_size' key in the log configuration must contain a "
                 "positive number.");
           conf.max_size = tmp;
-        } 
+        }
         else if (conf_js.contains("max_size") && !conf_js["max_size"].is_null())
           throw msg_fmt(
               "'max_size' key in the log configuration must contain a size in "
@@ -323,12 +324,12 @@ state parser::parse(std::string const& file) {
             _parse_logger(node, logr);
             retval.loggers().push_back(logr);
           }
-        } 
+        }
         else if (it.value().is_object()) {
           logger logr;
           _parse_logger(it.value(), logr);
           retval.loggers().push_back(logr);
-        } 
+        }
         else {
           throw msg_fmt(
               "config parser: cannot parse key "
@@ -362,12 +363,6 @@ bool parser::parse_boolean(std::string const& value) {
          !strcasecmp(value.c_str(), "enabled") ||
          !strcasecmp(value.c_str(), "true") || false;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Parse the configuration of an endpoint.
