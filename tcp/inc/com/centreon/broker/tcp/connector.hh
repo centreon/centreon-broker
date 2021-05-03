@@ -51,7 +51,7 @@ class connector : public io::endpoint {
   connector(const connector&) = delete;
 
   std::unique_ptr<io::stream> open() override;
-  bool is_ready() const;
+  bool is_ready() const override;
 };
 }  // namespace tcp
 

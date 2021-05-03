@@ -56,7 +56,8 @@ kpi::kpi(uint32_t id,
       _ignore_acknowledgement(ignore_acknowledgement),
       _impact_warning(warning),
       _impact_critical(critical),
-      _impact_unknown(unknown) {}
+      _impact_unknown(unknown),
+      _event(_id, _ba_id) {}
 
 /**
  *  Copy constructor.

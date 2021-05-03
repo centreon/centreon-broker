@@ -9,7 +9,7 @@ Meta-services are removed from broker. This code was not used and could produce
 
 ## 21.04.1
 
-`To be released in april 2021`
+`Date of the release`
 
 ### Enhancements
 
@@ -20,11 +20,11 @@ certain queries.
 
 ## 21.04.0
 
-`To be released in april 2021`
+`2021 april 20th`
 
 ### Enhancements
 
 *Broker exceptions*
 
-They are all based on a small msg_fmt exception that is lighter than the old
+They are all based on a small msg\_fmt exception that is lighter than the old
 msg one.

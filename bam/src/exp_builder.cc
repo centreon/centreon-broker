@@ -70,15 +70,15 @@ exp_builder::exp_builder(exp_parser::notation const& postfix,
       // Binary operators.
       else {
         bool_binary_operator::ptr binary;
-        if ((*it == "&&") || (*it == "AND"))
+        if (*it == "&&" || *it == "AND")
           binary.reset(new bool_and());
-        else if ((*it == "||") || (*it == "OR"))
+        else if (*it == "||" || *it == "OR")
           binary.reset(new bool_or());
-        else if ((*it == "^") || (*it == "XOR"))
+        else if (*it == "^" || *it == "XOR")
           binary.reset(new bool_xor());
-        else if ((*it == "==") || (*it == "IS"))
+        else if (*it == "==" || *it == "IS")
           binary.reset(new bool_equal());
-        else if ((*it == "!=") || (*it == "NOT"))
+        else if (*it == "!=" || *it == "NOT")
           binary.reset(new bool_not_equal());
         else if (*it == ">")
           binary.reset(new bool_more_than(true));
@@ -88,8 +88,8 @@ exp_builder::exp_builder(exp_parser::notation const& postfix,
           binary.reset(new bool_less_than(true));
         else if (*it == "<=")
           binary.reset(new bool_less_than(false));
-        else if ((*it == "+") || (*it == "-") || (*it == "*") || (*it == "/") ||
-                 (*it == "%"))
+        else if (*it == "+" || *it == "-" || *it == "*" || *it == "/" ||
+                 *it == "%")
           binary.reset(new bool_operation(*it));
         else
           throw msg_fmt(
@@ -140,9 +140,8 @@ exp_builder::exp_builder(exp_parser::notation const& postfix,
               svc, hst);
 
         // Build object.
-        bool_service::ptr obj(new bool_service);
-        obj->set_host_id(ids.first);
-        obj->set_service_id(ids.second);
+        bool_service::ptr obj{
+            std::make_shared<bool_service>(ids.first, ids.second)};
 
         // Store it in the operand stack and within the service list.
         _operands.push(any_operand(obj, ""));

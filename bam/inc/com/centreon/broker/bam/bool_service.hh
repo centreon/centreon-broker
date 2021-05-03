@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -38,34 +38,30 @@ namespace bam {
  *  value.
  */
 class bool_service : public bool_value, public service_listener {
- public:
-  typedef std::shared_ptr<bool_service> ptr;
-
-  bool_service();
-  bool_service(bool_service const& right);
-  ~bool_service();
-  bool_service& operator=(bool_service const& right);
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
-  uint32_t get_host_id() const;
-  uint32_t get_service_id() const;
-  void set_host_id(uint32_t host_id);
-  void set_service_id(uint32_t service_id);
-  void service_update(std::shared_ptr<neb::service_status> const& status,
-                      io::stream* visitor = NULL);
-  double value_hard();
-  double value_soft();
-  bool state_known() const;
-  bool in_downtime() const;
-
- private:
-  void _internal_copy(bool_service const& right);
-
-  uint32_t _host_id;
-  uint32_t _service_id;
+  const uint32_t _host_id;
+  const uint32_t _service_id;
   short _state_hard;
   short _state_soft;
   bool _state_known;
   bool _in_downtime;
+
+ public:
+  typedef std::shared_ptr<bool_service> ptr;
+
+  bool_service(uint32_t host_id, uint32_t service_id);
+  ~bool_service() noexcept = default;
+  bool_service(const bool_service&) = delete;
+  bool_service& operator=(const bool_service&) = delete;
+  bool child_has_update(computable* child,
+                        io::stream* visitor = nullptr) override;
+  uint32_t get_host_id() const;
+  uint32_t get_service_id() const;
+  void service_update(std::shared_ptr<neb::service_status> const& status,
+                      io::stream* visitor = nullptr) override;
+  double value_hard() override;
+  double value_soft() override;
+  bool state_known() const override;
+  bool in_downtime() const override;
 };
 }  // namespace bam
 

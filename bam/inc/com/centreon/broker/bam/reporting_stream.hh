@@ -89,15 +89,15 @@ class reporting_stream : public io::stream {
  public:
   reporting_stream(database_config const& db_cfg);
   ~reporting_stream();
+  reporting_stream(const reporting_stream&);
+  reporting_stream& operator=(const reporting_stream&);
   int32_t flush() override;
   int32_t stop() override;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void statistics(json11::Json::object& tree) const override;
-  int write(std::shared_ptr<io::data> const& d);
+  int write(std::shared_ptr<io::data> const& d) override;
 
  private:
-  reporting_stream(reporting_stream const& other);
-  reporting_stream& operator=(reporting_stream const& other);
   void _apply(dimension_timeperiod const& tp);
   void _apply(dimension_timeperiod_exception const& tpe);
   void _apply(dimension_timeperiod_exclusion const& tpe);

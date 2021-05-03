@@ -562,14 +562,16 @@ int neb::callback_downtime(int callback_type, void* data) {
   // Log message.
   logging::info(logging::medium) << "callbacks: generating downtime event";
   (void)callback_type;
+  nebstruct_downtime_data const* downtime_data{
+      static_cast<nebstruct_downtime_data*>(data)};
+  if (downtime_data->type == NEBTYPE_DOWNTIME_LOAD)
+    return 0;
 
   try {
     // In/Out variables.
-    nebstruct_downtime_data const* downtime_data;
-    std::shared_ptr<neb::downtime> downtime(new neb::downtime);
+    std::shared_ptr<neb::downtime> downtime(std::make_shared<neb::downtime>());
 
     // Fill output var.
-    downtime_data = static_cast<nebstruct_downtime_data*>(data);
     if (downtime_data->author_name)
       downtime->author =
           misc::string::check_string_utf8(downtime_data->author_name);
@@ -605,24 +607,31 @@ int neb::callback_downtime(int callback_type, void* data) {
     downtime->start_time = downtime_data->start_time;
     downtime->triggered_by = downtime_data->triggered_by;
     private_downtime_params& params(downtimes[downtime->internal_id]);
-    if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type) ||
-        (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
-      params.cancelled = false;
-      params.deletion_time = -1;
-      params.end_time = -1;
-      params.started = false;
-      params.start_time = -1;
-    } else if (NEBTYPE_DOWNTIME_START == downtime_data->type) {
-      params.started = true;
-      params.start_time = downtime_data->timestamp.tv_sec;
-    } else if (NEBTYPE_DOWNTIME_STOP == downtime_data->type) {
-      if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
-        params.cancelled = true;
-      params.end_time = downtime_data->timestamp.tv_sec;
-    } else if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type) {
-      if (!params.started)
-        params.cancelled = true;
-      params.deletion_time = downtime_data->timestamp.tv_sec;
+    switch (downtime_data->type) {
+      case NEBTYPE_DOWNTIME_ADD:
+        params.cancelled = false;
+        params.deletion_time = -1;
+        params.end_time = -1;
+        params.started = false;
+        params.start_time = -1;
+        break;
+      case NEBTYPE_DOWNTIME_START:
+        params.started = true;
+        params.start_time = downtime_data->timestamp.tv_sec;
+        break;
+      case NEBTYPE_DOWNTIME_STOP:
+        if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
+          params.cancelled = true;
+        params.end_time = downtime_data->timestamp.tv_sec;
+        break;
+      case NEBTYPE_DOWNTIME_DELETE:
+        if (!params.started)
+          params.cancelled = true;
+        params.deletion_time = downtime_data->timestamp.tv_sec;
+        break;
+      default:
+        throw msg_fmt("Downtime with not managed type {}.",
+                      downtime_data->host_name);
     }
     downtime->actual_start_time = params.start_time;
     downtime->actual_end_time = params.end_time;
@@ -1382,7 +1391,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     // Acknowledgement event.
     std::map<std::pair<uint32_t, uint32_t>, neb::acknowledgement>::iterator it(
         gl_acknowledgements.find(std::make_pair(host_status->host_id, 0u)));
-    if ((it != gl_acknowledgements.end()) && !host_status->acknowledged) {
+    if (it != gl_acknowledgements.end() && !host_status->acknowledged) {
       if (!(!host_status->current_state  // !(OK or (normal ack and NOK))
             || (!it->second.is_sticky &&
                 (host_status->current_state != it->second.state)))) {

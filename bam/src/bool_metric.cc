@@ -1,5 +1,5 @@
 /*
-** Copyright 2016 Centreon
+** Copyright 2016, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,62 +18,27 @@
 
 #include "com/centreon/broker/bam/bool_metric.hh"
 
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker::bam;
 
 /**
- *  Constructor.
+ * @brief Constructor.
  *
- *  @param[in] metric_name  The name of the metric.
+ * @param metric_name The name of the metric.
+ * @param host_id The host id.
+ * @param service_id The service_id.
  */
-bool_metric::bool_metric(std::string const& metric_name,
+bool_metric::bool_metric(const std::string& metric_name,
                          uint32_t host_id,
                          uint32_t service_id)
-    : _metric_name(metric_name),
-      _value(false),
-      _host_id(host_id),
-      _service_id(service_id) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-bool_metric::bool_metric(bool_metric const& right)
-    : bool_value(right),
-      metric_listener(right),
-      _metric_name(right._metric_name),
-      _value(right._value),
-      _host_id(right._host_id),
-      _service_id(right._service_id),
-      _resolved_metric_ids(right._resolved_metric_ids),
-      _unknown_state_metrics(right._unknown_state_metrics) {}
-
-/**
- *  Destructor.
- */
-bool_metric::~bool_metric() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-bool_metric& bool_metric::operator=(bool_metric const& right) {
-  bool_value::operator=(right);
-  if (this != &right) {
-    _metric_name = right._metric_name;
-    _value = right._value;
-    _host_id = right._host_id;
-    _service_id = right._service_id;
-    _resolved_metric_ids = right._resolved_metric_ids;
-    _unknown_state_metrics = right._unknown_state_metrics;
-  }
-  return (*this);
+    : _host_id(host_id),
+      _service_id(service_id),
+      _metric_name(metric_name),
+      _value(false) {
+  assert(_host_id);
 }
 
 /**
@@ -84,10 +49,10 @@ bool_metric& bool_metric::operator=(bool_metric const& right) {
  *
  *  @return True if the parent was modified.
  */
-bool bool_metric::child_has_update(computable* child, io::stream* visitor) {
-  (void)child;
-  (void)visitor;
-  return (true);
+bool bool_metric::child_has_update(computable* child __attribute__((unused)),
+                                   io::stream* visitor
+                                   __attribute__((unused))) {
+  return true;
 }
 
 /**
@@ -97,7 +62,7 @@ bool bool_metric::child_has_update(computable* child, io::stream* visitor) {
  *  @param[in]visitor   A visitor.
  */
 void bool_metric::metric_update(std::shared_ptr<storage::metric> const& m,
-                                io::stream* visitor) {
+                                io::stream* visitor __attribute__((unused))) {
   if (!_metric_matches(*m))
     return;
 
@@ -107,7 +72,6 @@ void bool_metric::metric_update(std::shared_ptr<storage::metric> const& m,
     propagate_update(visitor);
     _unknown_state_metrics.erase(m->metric_id);
   }
-  (void)visitor;
 }
 
 /**
@@ -116,7 +80,7 @@ void bool_metric::metric_update(std::shared_ptr<storage::metric> const& m,
  *  @return Evaluation of the expression with hard values.
  */
 double bool_metric::value_hard() {
-  return (_value);
+  return _value;
 }
 
 /**
@@ -125,7 +89,7 @@ double bool_metric::value_hard() {
  *  @return Evaluation of the expression with soft values.
  */
 double bool_metric::value_soft() {
-  return (_value);
+  return _value;
 }
 
 /**
@@ -134,7 +98,7 @@ double bool_metric::value_soft() {
  *  @return  True if the state is known.
  */
 bool bool_metric::state_known() const {
-  return (_unknown_state_metrics.empty());
+  return _unknown_state_metrics.empty();
 }
 
 /**
@@ -142,8 +106,8 @@ bool bool_metric::state_known() const {
  *
  *  @return  The name of the metric being watched.
  */
-std::string const& bool_metric::get_name() const {
-  return (_metric_name);
+const std::string& bool_metric::get_name() const {
+  return _metric_name;
 }
 
 /**
@@ -152,7 +116,7 @@ std::string const& bool_metric::get_name() const {
  *  @return  The host id.
  */
 uint32_t bool_metric::get_host_id() const {
-  return (_host_id);
+  return _host_id;
 }
 
 /**
@@ -161,7 +125,7 @@ uint32_t bool_metric::get_host_id() const {
  *  @return  The service id.
  */
 uint32_t bool_metric::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**
@@ -172,9 +136,12 @@ uint32_t bool_metric::get_service_id() const {
 void bool_metric::resolve_metrics(hst_svc_mapping const& mappings) {
   std::set<uint32_t> ids =
       mappings.get_metric_ids(_metric_name, _host_id, _service_id);
-  if (ids.empty())
+  if (ids.empty()) {
+    log_v2::bam()->error("bam: could not find metric ids for metric '{}'",
+                         _metric_name);
     logging::error(logging::high)
         << "bam: could not find metric ids for metric '" << _metric_name << "'";
+  }
   _resolved_metric_ids = ids;
   _unknown_state_metrics = ids;
 }
@@ -184,8 +151,8 @@ void bool_metric::resolve_metrics(hst_svc_mapping const& mappings) {
  *
  *  @return  Resolved metrics.
  */
-std::set<uint32_t> const& bool_metric::get_resolved_metrics() const {
-  return (_resolved_metric_ids);
+const std::set<uint32_t>& bool_metric::get_resolved_metrics() const {
+  return _resolved_metric_ids;
 }
 
 /**
@@ -193,8 +160,8 @@ std::set<uint32_t> const& bool_metric::get_resolved_metrics() const {
  *
  *  @return  All values.
  */
-std::map<uint32_t, double> const& bool_metric::values() const {
-  return (_values);
+const std::map<uint32_t, double>& bool_metric::values() const {
+  return _values;
 }
 
 /**
@@ -205,5 +172,5 @@ std::map<uint32_t, double> const& bool_metric::values() const {
  *  @return  True if it matches.
  */
 bool bool_metric::_metric_matches(storage::metric const& m) const {
-  return (_resolved_metric_ids.find(m.metric_id) != _resolved_metric_ids.end());
+  return _resolved_metric_ids.find(m.metric_id) != _resolved_metric_ids.end();
 }

@@ -158,8 +158,8 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   }
 
   // Debug message.
-  logging::debug(logging::high) << "endpoint applier: " << endp_to_create.size()
-                                << " endpoints to create";
+  log_v2::core()->debug("endpoint applier: {} endpoints to create",
+                        endp_to_create.size());
 
   // Create new endpoints.
   for (config::endpoint& ep : endp_to_create) {
@@ -478,8 +478,8 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
  *  @param[out] to_delete     Endpoints that should be deleted.
  */
 void endpoint::_diff_endpoints(
-    std::map<config::endpoint, processing::endpoint*> const& current,
-    std::list<config::endpoint> const& new_endpoints,
+    const std::map<config::endpoint, processing::endpoint*>& current,
+    const std::list<config::endpoint>& new_endpoints,
     std::list<config::endpoint>& to_create,
     std::list<config::endpoint>& to_delete) {
   // Copy some lists that we will modify.
