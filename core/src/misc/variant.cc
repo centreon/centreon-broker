@@ -17,6 +17,7 @@
  */
 
 #include "com/centreon/broker/misc/variant.hh"
+#include <fmt/format.h>
 #include <cassert>
 
 using namespace com::centreon::broker::misc;
@@ -257,4 +258,37 @@ double variant::as_double() const {
 std::string const& variant::as_string() const {
   assert(_type == type_string);
   return _str_value;
+}
+
+bool variant::is_string() const {
+  return _type == type_string;
+}
+
+std::string variant::to_string() const {
+  switch (_type) {
+    case type_bool:
+      return fmt::format("{}", _bool_value);
+      break;
+    case type_int:
+      return fmt::format("{}", _int_value);
+      break;
+    case type_uint:
+      return fmt::format("{}", _uint_value);
+      break;
+    case type_long:
+      return fmt::format("{}", _long_value);
+      break;
+    case type_ulong:
+      return fmt::format("{}", _ulong_value);
+      break;
+    case type_double:
+      return fmt::format("{}", _dbl_value);
+      break;
+    case type_string:
+      return _str_value;
+      break;
+    default:
+      // If we enter here, it is a bug.
+      assert(1 == 0);
+  }
 }

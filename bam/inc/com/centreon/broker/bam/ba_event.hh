@@ -39,7 +39,7 @@ class ba_event : public io::data {
  public:
   ba_event();
   ba_event(ba_event const& other);
-  ~ba_event();
+  ~ba_event() noexcept = default;
   ba_event& operator=(ba_event const& other);
   bool operator==(ba_event const& other) const;
   constexpr static uint32_t static_type() {

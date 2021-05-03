@@ -27,6 +27,7 @@ set(WDOG_TESTS_DIR ${PROJECT_SOURCE_DIR}/watchdog/test)
 
 # Include directories.
 include_directories(${PROJECT_SOURCE_DIR}/bam/inc)
+include_directories(${PROJECT_SOURCE_DIR}/bam/test)
 include_directories(${PROJECT_SOURCE_DIR}/storage/inc)
 include_directories(${PROJECT_SOURCE_DIR}/graphite/inc)
 include_directories(${PROJECT_SOURCE_DIR}/sql/inc)

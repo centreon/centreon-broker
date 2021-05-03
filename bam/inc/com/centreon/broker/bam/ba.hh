@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -49,9 +49,10 @@ class kpi;
  *  of value.
  */
 class ba : public computable, public service_listener {
+  const uint32_t _id;
+  configuration::ba::state_source _state_source;
   const uint32_t _host_id;
   const uint32_t _service_id;
-  const uint32_t _id;
   const bool _generate_virtual_status;
 
  public:
@@ -73,7 +74,6 @@ class ba : public computable, public service_listener {
   void _unapply_impact(kpi* kpi_ptr, impact_info& impact);
   void _compute_inherited_downtime(io::stream* visitor);
 
-  configuration::ba::state_source _state_source;
   ba::state _computed_soft_state;
   ba::state _computed_hard_state;
   float _num_soft_critical_childs;
@@ -101,15 +101,17 @@ class ba : public computable, public service_listener {
   std::vector<std::shared_ptr<ba_event> > _initial_events;
 
  public:
-  ba(uint32_t host_id,
+  ba(uint32_t id,
+     uint32_t host_id,
      uint32_t service_id,
-     uint32_t id,
+     configuration::ba::state_source source,
      bool generate_virtual_status = true);
   ba(const ba&) = delete;
   ~ba() noexcept = default;
   ba& operator=(ba const& other) = delete;
   void add_impact(std::shared_ptr<kpi> const& impact);
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  bool child_has_update(computable* child,
+                        io::stream* visitor = nullptr) override;
   double get_ack_impact_hard();
   double get_ack_impact_soft();
   ba_event* get_ba_event();
@@ -136,7 +138,7 @@ class ba : public computable, public service_listener {
   void set_state_source(configuration::ba::state_source source);
   void visit(io::stream* visitor);
   void service_update(std::shared_ptr<neb::downtime> const& dt,
-                      io::stream* visitor);
+                      io::stream* visitor) override;
   void save_inherited_downtime(persistent_cache& cache) const;
   void set_inherited_downtime(inherited_downtime const& dwn);
 };

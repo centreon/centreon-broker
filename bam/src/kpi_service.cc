@@ -37,8 +37,12 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-kpi_service::kpi_service(uint32_t host_id, uint32_t service_id)
-    : _host_id(host_id),
+kpi_service::kpi_service(uint32_t kpi_id,
+                         uint32_t ba_id,
+                         uint32_t host_id,
+                         uint32_t service_id)
+    : kpi(kpi_id, ba_id),
+      _host_id(host_id),
       _service_id(service_id),
       _acknowledged(false),
       _downtimed(false),
@@ -189,12 +193,12 @@ void kpi_service::service_update(
         _host_id, _service_id);
 
     // Update information.
-    if ((status->last_check == (time_t)-1) ||
-        (status->last_check == (time_t)0)) {
-      if ((_last_check == (time_t)-1) || (_last_check == (time_t)0))
+    if (status->last_check.is_null()) {
+      if (_last_check.is_null())
         _last_check = status->last_update;
-    } else
+    } else {
       _last_check = status->last_check;
+    }
     _output = status->output;
     _perfdata = status->perf_data;
     _state_hard = static_cast<kpi_service::state>(status->last_hard_state);
@@ -221,11 +225,12 @@ void kpi_service::service_update(
   if (ack && ack->host_id == _host_id && ack->service_id == _service_id) {
     // Log message.
     log_v2::bam()->debug(
-        "BAM: KPI {} is getting an acknowledgement event for service ({}, {})",
-        _id, _host_id, _service_id);
+        "BAM: KPI {} is getting an acknowledgement event for service ({}, {}) "
+        "entry_time {} ; deletion_time {}",
+        _id, _host_id, _service_id, ack->entry_time, ack->deletion_time);
 
     // Update information.
-    _acknowledged = (ack->deletion_time != -1);
+    _acknowledged = ack->deletion_time.is_null();
 
     // Generate status event.
     visit(visitor);
@@ -244,13 +249,16 @@ void kpi_service::service_update(
 void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
                                  io::stream* visitor) {
   if (dt && dt->host_id == _host_id && dt->service_id == _service_id) {
+    // Update information.
+    _downtimed = dt->was_started && dt->actual_end_time.is_null();
+    if (!_event || _event->in_downtime != _downtimed)
+      _last_check = _downtimed ? dt->actual_start_time : dt->actual_end_time;
+
     // Log message.
     log_v2::bam()->debug(
-        "BAM: KPI {} is getting a downtime event for service ({}, {})", _id,
-        _host_id, _service_id);
-
-    // Update information.
-    _downtimed = (dt->was_started && dt->actual_end_time.is_null());
+        "BAM: KPI {} is getting a downtime event for service ({}, {}), in "
+        "downtime: {} at {}",
+        _id, _host_id, _service_id, _downtimed, _last_check);
 
     // Generate status event.
     visit(visitor);
@@ -352,17 +360,16 @@ void kpi_service::visit(io::stream* visitor) {
     {
       // If no event was cached, create one.
       if (!_event) {
-        if ((_last_check.get_time_t() != (time_t)-1) &&
-            (_last_check.get_time_t() != (time_t)0))
+        if (!_last_check.is_null()) {
           _open_new_event(visitor, hard_values);
+        }
       }
       // If state changed, close event and open a new one.
-      else if ((_last_check > _event->start_time) &&
-               ((_downtimed != _event->in_downtime) ||
-                (_state_hard != _event->status))) {
+      else if (_last_check >= _event->start_time &&
+               (_downtimed != _event->in_downtime ||
+                _state_hard != _event->status)) {
         _event->end_time = _last_check;
         visitor->write(std::static_pointer_cast<io::data>(_event));
-        _event.reset();
         _open_new_event(visitor, hard_values);
       }
     }
@@ -371,7 +378,7 @@ void kpi_service::visit(io::stream* visitor) {
     {
       log_v2::bam()->debug("Generating kpi status {} for service", _id);
       std::shared_ptr<kpi_status> status{std::make_shared<kpi_status>(_id)};
-      status->in_downtime = this->in_downtime();
+      status->in_downtime = in_downtime();
       status->level_acknowledgement_hard = hard_values.get_acknowledgement();
       status->level_acknowledgement_soft = soft_values.get_acknowledgement();
       status->level_downtime_hard = hard_values.get_downtime();
@@ -383,7 +390,10 @@ void kpi_service::visit(io::stream* visitor) {
       status->last_state_change = get_last_state_change();
       status->last_impact =
           _downtimed ? hard_values.get_downtime() : hard_values.get_nominal();
-      visitor->write(std::static_pointer_cast<io::data>(status));
+      log_v2::bam()->trace(
+          "Writing kpi status {}: in downtime: {} ; last state changed: {}",
+          _id, status->in_downtime, status->last_state_change);
+      visitor->write(status);
     }
   }
 }
@@ -413,18 +423,21 @@ void kpi_service::_fill_impact(impact_values& impact,
  */
 void kpi_service::_open_new_event(io::stream* visitor,
                                   impact_values const& impacts) {
-  _event.reset(new kpi_event);
-  _event->kpi_id = _id;
-  _event->ba_id = _ba_id;
+  _event = std::make_shared<kpi_event>(_id, _ba_id);
   _event->impact_level =
-      _event->in_downtime ? impacts.get_downtime() : impacts.get_nominal();
+      _downtimed ? impacts.get_downtime() : impacts.get_nominal();
   _event->in_downtime = _downtimed;
   _event->output = _output;
   _event->perfdata = _perfdata;
   _event->start_time = _last_check;
   _event->status = _state_hard;
+  log_v2::bam()->trace(
+      "BAM: New BI event for kpi {}, ba {}, in downtime {} since {}", _id,
+      _ba_id, _downtimed, _last_check);
   if (visitor) {
-    std::shared_ptr<io::data> ke(new kpi_event(*_event));
+    /* We make a real copy because the writing into the DB is asynchronous and
+     * so the event could have changed... */
+    std::shared_ptr<io::data> ke{std::make_shared<kpi_event>(*_event)};
     visitor->write(ke);
   }
 }

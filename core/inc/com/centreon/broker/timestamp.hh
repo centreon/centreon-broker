@@ -1,5 +1,5 @@
 /*
-** Copyright 2012,2015-2016 Centreon
+** Copyright 2012,2015-2016, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -33,6 +33,9 @@ CCB_BEGIN()
  *  Holds the time.
  */
 struct timestamp {
+  // Data.
+  std::time_t _sec;
+
  public:
   /**
    *  Default constructor.
@@ -53,12 +56,12 @@ struct timestamp {
    *
    *  @param[in] right Object to copy.
    */
-  timestamp(timestamp const& right) : _sec(right._sec) {}
+  timestamp(const timestamp& right) : _sec(right._sec) {}
 
   /**
    *  Destructor.
    */
-  ~timestamp() {}
+  ~timestamp() noexcept = default;
 
   /**
    *  Assignment operator.
@@ -67,10 +70,42 @@ struct timestamp {
    *
    *  @return This object.
    */
-  timestamp& operator=(timestamp const& right) {
+  timestamp& operator=(const timestamp& right) {
     if (this != &right)
       _sec = right._sec;
-    return (*this);
+    return *this;
+  }
+
+  /**
+   *  Comparison function.
+   *
+   *  @param[in] other  The right object.
+   *
+   *  @return           True if this object is less than the other.
+   */
+  bool operator<(const timestamp& other) const noexcept {
+    if (is_null() && !other.is_null())
+      return false;
+    else if (!is_null() && other.is_null())
+      return true;
+    else
+      return _sec < other._sec;
+  }
+
+  /**
+   *  Comparison function.
+   *
+   *  @param[in] other  The right object.
+   *
+   *  @return           True if this object is greater than the other.
+   */
+  bool operator>(const timestamp& other) const noexcept {
+    if (is_null() && !other.is_null())
+      return true;
+    else if (!is_null() && other.is_null())
+      return false;
+    else
+      return _sec > other._sec;
   }
 
   /**
@@ -78,21 +113,21 @@ struct timestamp {
    *
    *  @return Timestamp as time_t.
    */
-  operator std::time_t() const { return (_sec); }
+  operator std::time_t() const { return _sec; }
 
   /**
    *  Get timestamp as time_t.
    *
    *  @return Timestamp as time_t.
    */
-  std::time_t get_time_t() const { return (_sec); }
+  inline std::time_t get_time_t() const { return _sec; }
 
   /**
    *  Is this a null timestamp ?
    *
    *  @return  True if this is a null timestamp.
    */
-  bool is_null() const { return ((_sec == (time_t)-1) || (_sec == (time_t)0)); }
+  bool is_null() const { return _sec == (time_t)-1 || _sec == (time_t)0; }
 
   /**
    *  Clear the timestamp.
@@ -100,28 +135,11 @@ struct timestamp {
   void clear() { _sec = (time_t)-1; }
 
   /**
-   *  Comparison function.
-   *
-   *  @param[in] left   The left object.
-   *  @param[in] right  The right object.
-   *
-   *  @return           True if this object is less than the other.
-   */
-  static bool less(timestamp const& left, timestamp const& right) {
-    if (left.is_null() && !right.is_null())
-      return (false);
-    else if (!left.is_null() && right.is_null())
-      return (true);
-    else
-      return (left._sec < right._sec);
-  }
-
-  /**
    *  Return a timestamp from now.
    *
    *  @return  A timestamp set to present time, present day.
    */
-  static timestamp now() { return (::time(NULL)); }
+  static timestamp now() { return ::time(nullptr); }
 
   /**
    *  Return the upper time limit.
@@ -129,11 +147,8 @@ struct timestamp {
    *  @return A timestamp set in a very far future.
    */
   static timestamp max() {
-    return (timestamp(std::numeric_limits<time_t>::max()));
+    return timestamp(std::numeric_limits<time_t>::max());
   }
-
-  // Data.
-  std::time_t _sec;
 };
 
 /**

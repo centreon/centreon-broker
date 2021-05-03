@@ -78,8 +78,8 @@ class stream : public io::stream {
          std::vector<column> const& metric_cols,
          std::shared_ptr<persistent_cache> const& cache);
   ~stream();
-  int flush();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  int flush() override;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void statistics(json11::Json::object& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;
   int32_t stop() override;

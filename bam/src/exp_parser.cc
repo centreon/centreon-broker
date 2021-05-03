@@ -24,6 +24,7 @@
 
 #include "com/centreon/broker/bam/exp_tokenizer.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -56,6 +57,8 @@ exp_parser::exp_parser(std::string const& expression) : _exp(expression) {
   _precedence["%"] = 5;
   _precedence["-u"] = 6;
   _precedence["!"] = 6;
+
+  log_v2::bam()->trace("exp_parser constructor '{}'", expression);
 }
 
 /**

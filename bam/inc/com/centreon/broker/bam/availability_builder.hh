@@ -37,13 +37,26 @@ namespace bam {
  *  @brief Availability builder.
  *
  *  Build availabilities based on events.
+ *
+ *  The goal of the builder is to fill the mod_bam_reporting_ba_availabilities
+ *  table.
+ *  Each row is indiced by a pair (ba_id, time_id) where time_id is the
+ *  beginning of the day at 00:00AM.
+ *
+ *  Columns available, degraded, unavailable and unknown contain durations in
+ *  seconds. The `available` column contains the duration the ba was available.
+ *
+ *  There are also the columns alert_unavailable_opened, alert_degraded_opened,
+ *  alert_unknown_opened that are counters. Each one contain a number of
+ *  events during the day, for example alert_unavailable_opened contains the
+ *  number of `unavailable` events received during the day.
  */
 class availability_builder {
  public:
   availability_builder(time_t ending_point, time_t starting_point = 0);
   ~availability_builder();
-  availability_builder(availability_builder const& other);
-  availability_builder& operator=(availability_builder const& other) = delete;
+  availability_builder(const availability_builder&) = delete;
+  availability_builder& operator=(const availability_builder&) = delete;
 
   void add_event(short status,
                  time_t start,

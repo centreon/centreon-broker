@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 #include <ctime>
 
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -37,7 +37,7 @@ availability_builder::availability_builder(time_t ending_point,
                                            time_t starting_point /* = 0 */)
     : _start(starting_point),
       _end(ending_point),
-      _available(0),
+      _available{0},
       _unavailable(0),
       _degraded(0),
       _unknown(0),
@@ -54,25 +54,6 @@ availability_builder::availability_builder(time_t ending_point,
 availability_builder::~availability_builder() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  The object to copy.
- */
-availability_builder::availability_builder(const availability_builder& other)
-    : _start(other._start),
-      _end(other._end),
-      _available(other._available),
-      _unavailable(other._unavailable),
-      _degraded(other._degraded),
-      _unknown(other._unknown),
-      _downtime(other._downtime),
-      _alert_unavailable_opened(other._alert_unavailable_opened),
-      _alert_degraded_opened(other._alert_degraded_opened),
-      _alert_unknown_opened(other._alert_unknown_opened),
-      _nb_downtime(other._nb_downtime),
-      _timeperiods_is_default(other._timeperiods_is_default) {}
-
-/**
  *  Add an event to the builder.
  *
  *  @param[in] status           The status of the event.
@@ -86,6 +67,10 @@ void availability_builder::add_event(short status,
                                      time_t end,
                                      bool was_in_downtime,
                                      time::timeperiod::ptr const& tp) {
+  log_v2::bam()->trace(
+      "availability_builder::add_event (status: {}, start: {}, end: {}, was in "
+      "downtime: {}",
+      status, start, end, was_in_downtime);
   // Check that the event was closed.
   if (end == 0)
     end = _end;
@@ -94,7 +79,7 @@ void availability_builder::add_event(short status,
   if (end < _start)
     return;
   // Check if event was opened "today".
-  bool opened_today((start >= _start) && (start < _end));
+  bool opened_today(start >= _start && start < _end);
   // Check that the event times are within the computed day.
   if (start < _start)
     start = _start;
@@ -112,20 +97,25 @@ void availability_builder::add_event(short status,
     if (opened_today)
       ++_nb_downtime;
   } else {
-    if (status == 0)
-      _available += sla_duration;
-    else if (status == 1) {
-      _degraded += sla_duration;
-      if (opened_today)
-        ++_alert_degraded_opened;
-    } else if (status == 2) {
-      _unavailable += sla_duration;
-      if (opened_today)
-        ++_alert_unavailable_opened;
-    } else {
-      _unknown += sla_duration;
-      if (opened_today)
-        ++_alert_unknown_opened;
+    switch (status) {
+      case 0:
+        _available += sla_duration;
+        break;
+      case 1:
+        _degraded += sla_duration;
+        if (opened_today)
+          ++_alert_degraded_opened;
+        break;
+      case 2:
+        _unavailable += sla_duration;
+        if (opened_today)
+          ++_alert_unavailable_opened;
+        break;
+      default:
+        _unknown += sla_duration;
+        if (opened_today)
+          ++_alert_unknown_opened;
+        break;
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,23 +40,24 @@ class metric_listener;
  *  @class metric_book metric_book.hh "com/centreon/broker/bam/metric_book.hh"
  *  @brief Propagate metric updates.
  *
- *  Propagate updates of metrics to metric listeners.
+ *  Stores metrics listeners. The key is a metric id.
+ *
+ *  The book role is to update listeners each time a metric changes.
  */
 class metric_book {
+  typedef std::multimap<uint32_t, metric_listener*> multimap;
+
+  multimap _book;
+
  public:
-  metric_book();
-  metric_book(metric_book const& other);
-  ~metric_book();
-  metric_book& operator=(metric_book const& other);
+  metric_book() = default;
+  ~metric_book() noexcept = default;
+  metric_book(const metric_book&) = delete;
+  metric_book& operator=(const metric_book&) = delete;
   void listen(uint32_t metric_id, metric_listener* listnr);
   void unlisten(uint32_t metric_id, metric_listener* listnr);
   void update(std::shared_ptr<storage::metric> const& m,
               io::stream* visitor = NULL);
-
- private:
-  typedef std::multimap<uint32_t, metric_listener*> multimap;
-
-  multimap _book;
 };
 }  // namespace bam
 
