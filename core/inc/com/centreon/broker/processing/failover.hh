@@ -87,7 +87,7 @@ class failover : public endpoint {
   std::string const& _get_read_filters() const override;
   std::string const& _get_write_filters() const override;
   uint32_t _get_queued_events() const override;
-  virtual void _forward_statistic(json11::Json::object& tree) override;
+  virtual void _forward_statistic(nlohmann::json& tree) override;
 
  private:
   void _launch_failover();

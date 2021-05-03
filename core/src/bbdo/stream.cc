@@ -1125,7 +1125,7 @@ void stream::set_timeout(int timeout) {
  *
  *  @param[out] tree Output tree.
  */
-void stream::statistics(json11::Json::object& tree) const {
+void stream::statistics(nlohmann::json& tree) const {
   tree["bbdo_input_ack_limit"] = static_cast<double>(_ack_limit);
   tree["bbdo_unacknowledged_events"] =
       static_cast<double>(_events_received_since_last_ack);

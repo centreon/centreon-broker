@@ -101,9 +101,8 @@ void acceptor::remove_child(std::string const& child) {
  *
  *  @param[out] tree Buffer in which statistics will be written.
  */
-void acceptor::stats(json11::Json::object& tree) {
+void acceptor::stats(nlohmann::json& tree) {
   std::lock_guard<std::mutex> children_lock(_childrenm);
-  std::string out(
-      fmt::format("{}: {}", _children.size(), fmt::join(_children, ", ")));
-  tree["peers"] = out;
+  tree["peers"] =
+      fmt::format("{}: {}", _children.size(), fmt::join(_children, ", "));
 }

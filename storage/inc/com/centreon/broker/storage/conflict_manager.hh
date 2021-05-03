@@ -339,7 +339,7 @@ class conflict_manager {
                            uint32_t max_pending_queries);
   static conflict_manager& instance();
   int32_t unload(stream_type type);
-  json11::Json::object get_statistics();
+  nlohmann::json get_statistics();
 
   int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);

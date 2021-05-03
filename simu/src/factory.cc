@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/simu/factory.hh"
 #include <cstring>
-#include <json11.hpp>
 #include <nlohmann/json.hpp>
 #include <memory>
 #include "com/centreon/broker/misc/variant.hh"
@@ -28,7 +27,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::simu;
-using namespace json11;
 using namespace nlohmann;
 
 /**

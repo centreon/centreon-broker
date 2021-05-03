@@ -160,14 +160,14 @@ std::string const& acceptor::_get_write_filters() const {
  *
  *  @param[in] tree  The tree.
  */
-void acceptor::_forward_statistic(json11::Json::object& tree) {
+void acceptor::_forward_statistic(nlohmann::json& tree) {
   // Get statistic of acceptor.
   _endp->stats(tree);
   // Get statistics of feeders
   for (auto it = _feeders.begin(), end = _feeders.end(); it != end; ++it) {
-    json11::Json::object subtree;
+    nlohmann::json subtree;
     (*it)->stats(subtree);
-    tree[(*it)->get_name()] = subtree;
+    tree[(*it)->get_name()] = std::move(subtree);
   }
 }
 

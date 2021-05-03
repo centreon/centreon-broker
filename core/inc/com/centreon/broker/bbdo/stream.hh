@@ -145,7 +145,7 @@ class stream : public io::stream {
                      const std::pair<std::string, std::string>& extensions =
                          std::make_pair("", ""));
   void set_timeout(int timeout);
-  void statistics(json11::Json::object& tree) const override;
+  void statistics(nlohmann::json& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;
   void acknowledge_events(uint32_t events);
   void send_event_acknowledgement();

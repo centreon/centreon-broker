@@ -81,7 +81,7 @@ bool endpoint::is_connector() const noexcept {
  *
  *  @param[out] tree Properties tree.
  */
-void endpoint::stats(json11::Json::object& tree) {
+void endpoint::stats(nlohmann::json& tree) {
   if (_from)
     _from->stats(tree);
 }
