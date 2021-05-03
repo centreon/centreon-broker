@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/lua/factory.hh"
 #include <cstring>
-#include <json11.hpp>
 #include <nlohmann/json.hpp>
 #include <memory>
 #include "com/centreon/broker/lua/connector.hh"
@@ -27,7 +26,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::lua;
-using namespace json11;
 using namespace nlohmann;
 
 /**

@@ -109,7 +109,7 @@ bool reporting_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @param[out] tree Output tree.
  */
-void reporting_stream::statistics(json11::Json::object& tree) const {
+void reporting_stream::statistics(nlohmann::json& tree) const {
   std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree["status"] = _status;

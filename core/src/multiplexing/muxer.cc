@@ -322,7 +322,7 @@ void muxer::nack_events() {
  *
  *  @param[out] buffer Output buffer.
  */
-void muxer::statistics(json11::Json::object& tree) const {
+void muxer::statistics(nlohmann::json& tree) const {
   // Lock object.
   std::lock_guard<std::mutex> lock(_mutex);
 
@@ -330,7 +330,7 @@ void muxer::statistics(json11::Json::object& tree) const {
   bool queue_file_enabled(_file.get());
   tree["queue_file_enabled"] = queue_file_enabled == true;
   if (queue_file_enabled) {
-    json11::Json::object queue_file;
+    nlohmann::json queue_file;
     _file->statistics(queue_file);
     tree["queue_file"] = queue_file;
   }

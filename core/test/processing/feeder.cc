@@ -78,7 +78,7 @@ TEST_F(TestFeeder, ImmediateStartExit) {
 TEST_F(TestFeeder, isFinished) {
   // It began
   ASSERT_FALSE(_feeder->is_finished());
-  json11::Json::object tree;
+  nlohmann::json tree;
   _feeder->stats(tree);
-  ASSERT_EQ(tree["state"].string_value(), "connected");
+  ASSERT_EQ(tree["state"].get<std::string>(), "connected");
 }

@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/influxdb/factory.hh"
 #include <cstring>
-#include <json11.hpp>
 #include <nlohmann/json.hpp>
 #include <memory>
 #include <sstream>
@@ -30,15 +29,8 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
-using namespace json11;
 using namespace nlohmann;
 using namespace com::centreon::exceptions;
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 /**
  *  Find a parameter in configuration.
@@ -55,12 +47,6 @@ static std::string find_param(config::endpoint const& cfg,
     throw msg_fmt("influxdb: no '{}' defined for endpoint '{}'", key, cfg.name);
   return it->second;
 }
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Check if a configuration match the storage layer.

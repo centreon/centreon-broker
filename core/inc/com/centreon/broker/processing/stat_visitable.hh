@@ -20,7 +20,7 @@
 #define CCB_PROCESSING_STAT_VISITABLE_HH
 
 #include <atomic>
-#include <json11.hpp>
+#include <nlohmann/json.hpp>
 #include <mutex>
 #include <string>
 #include <unordered_set>
@@ -51,11 +51,11 @@ class stat_visitable {
   virtual uint32_t _get_queued_events() const = 0;
   virtual std::string const& _get_read_filters() const = 0;
   virtual std::string const& _get_write_filters() const = 0;
-  virtual void _forward_statistic(json11::Json::object& tree);
+  virtual void _forward_statistic(nlohmann::json& tree);
 
  public:
   stat_visitable(std::string const& name = std::string());
-  virtual ~stat_visitable() = default;
+  virtual ~stat_visitable() noexcept = default;
   stat_visitable(stat_visitable const& other) = delete;
   stat_visitable& operator=(stat_visitable const& other) = delete;
 
@@ -63,7 +63,7 @@ class stat_visitable {
   void set_last_error(std::string const& last_error);
   void set_state(char const* state);
   void set_queued_events(uint32_t);
-  virtual void stats(json11::Json::object& tree);
+  virtual void stats(nlohmann::json& tree);
   void set_last_connection_attempt(timestamp last_connection_attempt);
   void set_last_connection_success(timestamp last_connection_success);
   void tick(uint32_t events = 1);

@@ -119,7 +119,7 @@ std::unique_ptr<io::stream> acceptor::open() {
  *
  *  @param[out] tree Properties tree.
  */
-void acceptor::stats(json11::Json::object& tree) {
+void acceptor::stats(nlohmann::json& tree) {
   tree["one_peer_retention_mode"] = _one_peer_retention_mode;
   if (_from)
     _from->stats(tree);

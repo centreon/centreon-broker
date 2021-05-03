@@ -514,7 +514,7 @@ const std::string& failover::_get_write_filters() const {
  *
  *  @param[in] tree  The tree.
  */
-void failover::_forward_statistic(json11::Json::object& tree) {
+void failover::_forward_statistic(nlohmann::json& tree) {
   {
     std::lock_guard<std::mutex> lock(_status_m);
     tree["status"] = _status;
@@ -528,10 +528,10 @@ void failover::_forward_statistic(json11::Json::object& tree) {
       tree["status"] = "busy";
   }
   _subscriber->get_muxer().statistics(tree);
-  json11::Json::object subtree;
+  nlohmann::json subtree;
   if (_failover)
     _failover->stats(subtree);
-  tree["failover"] = subtree;
+  tree["failover"] = std::move(subtree);
 }
 
 /**

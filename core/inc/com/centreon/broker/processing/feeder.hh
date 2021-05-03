@@ -66,7 +66,7 @@ class feeder : public stat_visitable {
  protected:
   const std::string& _get_read_filters() const override;
   const std::string& _get_write_filters() const override;
-  void _forward_statistic(json11::Json::object& tree) override;
+  void _forward_statistic(nlohmann::json& tree) override;
   uint32_t _get_queued_events() const override;
 
  public:

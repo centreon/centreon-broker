@@ -19,7 +19,6 @@
 #ifndef CCB_CONFIG_PARSER_HH
 #define CCB_CONFIG_PARSER_HH
 
-#include <json11.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 #include "com/centreon/broker/config/state.hh"
