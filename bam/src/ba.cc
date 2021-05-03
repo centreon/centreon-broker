@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 
-#include <sstream>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
@@ -54,20 +54,17 @@ auto _num_kpi_in_dt =
   return num;
 };
 
-auto _every_kpi_in_dt = [](std::unordered_map<kpi*, bam::ba::impact_info>& imp,
-                           bool look_for_state = true) -> bool {
+static bool _every_kpi_in_dt(std::unordered_map<kpi*, bam::ba::impact_info>& imp) {
   if (imp.empty())
     return false;
 
   for (auto it = imp.begin(), end = imp.end(); it != end; ++it) {
-    if ((look_for_state && it->first->ok_state()) ||
-        !it->first->in_downtime()) {
+    if (!it->first->in_downtime())
       return false;
-    }
   }
 
   return true;
-};
+}
 
 /**
  *  Constructor.
@@ -283,11 +280,8 @@ std::string const& ba::get_name() const {
  *  @return Service output.
  */
 std::string ba::get_output() const {
-  std::ostringstream oss;
-  oss << "BA : " << _name
-      << " - current_level = " << static_cast<int>(normalize(_level_hard))
-      << "%";
-  return (oss.str());
+  return fmt::format("BA : {} - current_level = {}%", _name,
+                     static_cast<int>(normalize(_level_hard)));
 }
 
 /**
@@ -296,12 +290,11 @@ std::string ba::get_output() const {
  *  @return Performance data.
  */
 std::string ba::get_perfdata() const {
-  std::ostringstream oss;
-  oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
-      << static_cast<int>(_level_warning) << ";"
-      << static_cast<int>(_level_critical) << ";0;100 "
-      << "BA_Downtime=" << static_cast<int>(normalize(_downtime_hard));
-  return (oss.str());
+  return fmt::format("BA_Level={}%;{};{};0;100 BA_Downtime={}",
+                     static_cast<int>(normalize(_level_hard)),
+                     static_cast<int>(_level_warning),
+                     static_cast<int>(_level_critical),
+                     static_cast<int>(normalize(_downtime_hard)));
 }
 
 /**
@@ -333,7 +326,7 @@ ba::state ba::get_state_hard() {
   else if (_state_source == configuration::ba::state_source_best ||
            _state_source == configuration::ba::state_source_worst) {
     if (_dt_behaviour == configuration::ba::dt_ignore_kpi &&
-        _every_kpi_in_dt(_impacts, false))
+        _every_kpi_in_dt(_impacts))
       state = impact_values::state_ok;
     else
       state = _computed_hard_state;
@@ -346,7 +339,7 @@ ba::state ba::get_state_hard() {
   else
     state =
         ba::state::state_unknown;  // unknown _state_source so unknown state...
-  return (state);
+  return state;
 }
 
 /**
@@ -592,21 +585,13 @@ void ba::visit(io::stream* visitor) {
       status->latency = 0.0;
       status->max_check_attempts = 1;
       status->obsess_over = false;
-      {
-        std::ostringstream oss;
-        oss << "BA : Business Activity " << _id
-            << " - current_level = " << static_cast<int>(normalize(_level_hard))
-            << "%";
-        status->output = oss.str();
-      }
+      status->output = fmt::format("BA : Business Activity {} - current_level = {}%",
+          _id, static_cast<int>(normalize(_level_hard)));
       // status->percent_state_chagne = XXX;
-      {
-        std::ostringstream oss;
-        oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
-            << static_cast<int>(_level_warning) << ";"
-            << static_cast<int>(_level_critical) << ";0;100";
-        status->perf_data = oss.str();
-      }
+      status->perf_data = fmt::format("BA_Level={}%;{};{};0;100",
+        static_cast<int>(normalize(_level_hard)),
+            static_cast<int>(_level_warning),
+            static_cast<int>(_level_critical));
       status->retry_interval = 0;
       // status->service_description = XXX;
       status->service_id = _service_id;
@@ -684,32 +669,13 @@ void ba::set_inherited_downtime(inherited_downtime const& dwn) {
 void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
                        ba::impact_info& impact) {
   auto is_state_worse = [&](short current_state, short new_state) -> bool {
-    if (current_state == ba::state::state_ok &&
-        new_state != ba::state::state_ok)  // OK => something elses
-      return true;
-    if (current_state == ba::state::state_warning &&
-        new_state == ba::state::state_critical)  // WARNING => CRITICAL
-      return true;
-    if (current_state == ba::state::state_unknown &&
-        (new_state == ba::state::state_warning ||
-         new_state ==
-             ba::state::state_critical))  // UNKNOWN => WARNING or CRITICAL
-      return true;
-    return false;
+    std::array<short, 4> ord{0, 2, 3, 1};
+    return ord[new_state] > ord[current_state];
   };
 
   auto is_state_better = [&](short current_state, short new_state) -> bool {
-    if (current_state == ba::state::state_critical &&
-        new_state != ba::state::state_critical)  // CRITICAL => something else
-      return true;
-    if (current_state == ba::state::state_unknown &&
-        new_state == ba::state::state_ok)  // UNKNOWN => OK
-      return true;
-    if (current_state == ba::state::state_warning &&
-        (new_state == ba::state::state_ok ||
-         new_state == ba::state::state_unknown))  // WARNING => UNKNOW or OK
-      return true;
-    return false;
+    std::array<short, 4> ord{0, 2, 3, 1};
+    return ord[new_state] < ord[current_state];
   };
 
   // Adjust values.
@@ -884,13 +850,11 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
   else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime) {
+    _inherited_downtime->in_downtime = false;
+    _in_downtime = false;
+
+    if (visitor)
+      visitor->write(std::move(_inherited_downtime));
     _inherited_downtime.reset();
-    if (visitor) {
-      std::shared_ptr<inherited_downtime> dwn(
-          std::make_shared<inherited_downtime>());
-      dwn->ba_id = _id;
-      dwn->in_downtime = false;
-      visitor->write(dwn);
-    }
   }
 }
