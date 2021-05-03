@@ -45,7 +45,7 @@ using namespace com::centreon::broker::bbdo;
  * sent.
  */
 connector::connector(bool negotiate,
-                     const std::pair<std::string, std::string>& extensions,
+                     const std::list<io::extension>& extensions,
                      time_t timeout,
                      bool connector_is_input,
                      bool coarse,

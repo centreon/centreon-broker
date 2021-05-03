@@ -51,9 +51,9 @@ static std::string find_param(config::endpoint const& cfg,
  *
  *  @return true if the endpoint match the configuration.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
-  if (flag)
-    *flag = no;
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
+  if (ext)
+    *ext = io::extension("LUA", false, false);
   bool is_lua{!strncasecmp(cfg.type.c_str(), "lua", 4)};
   if (is_lua) {
     cfg.params["cache"] = "yes";

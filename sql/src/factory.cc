@@ -27,12 +27,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Check if an endpoint match a configuration.
  *
@@ -40,9 +34,9 @@ using namespace com::centreon::broker::sql;
  *
  *  @return True if the endpoint match the configuration.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
-  if (flag)
-    *flag = no;
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
+  if (ext)
+    *ext = io::extension("SQL", false, false);
   bool is_sql{!strncasecmp(cfg.type.c_str(), "sql", 4)};
   return is_sql;
 }

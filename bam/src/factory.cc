@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2016 Centreon
+** Copyright 2014-2016, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,12 +30,6 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Check if a configuration match the BAM layer.
  *
@@ -43,9 +37,9 @@ using namespace com::centreon::broker::bam;
  *
  *  @return True if the configuration matches the BAM layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
-  if (flag)
-    *flag = no;
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
+  if (ext)
+    *ext = io::extension("BAM", false, false);
   bool is_bam{!strncasecmp("bam", cfg.type.c_str(), 4)};
   bool is_bam_bi{!strncasecmp("bam_bi", cfg.type.c_str(), 7)};
   if (is_bam || is_bam_bi)

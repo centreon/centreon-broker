@@ -23,7 +23,7 @@
 #include <list>
 
 #include "com/centreon/broker/io/stream.hh"
-#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/extension.hh"
 
 CCB_BEGIN()
 
@@ -111,11 +111,13 @@ class stream : public io::stream {
 
   bool _is_input;
   bool _coarse;
+
   /**
-   * the first string contains all the supported extensions.
-   * the second one contains the activated extensions.
+   * It is possible to mix bbdo stream with others like tls or compression.
+   * This list of extensions provides a simple access to others ones with
+   * their configuration.
    */
-  std::pair<std::string, std::string> _extensions;
+  std::list<io::extension> _extensions;
   bool _negotiate;
   bool _negotiated;
   int _timeout;
@@ -126,6 +128,7 @@ class stream : public io::stream {
   void _write(std::shared_ptr<io::data> const& d);
   bool _read_any(std::shared_ptr<io::data>& d, time_t deadline);
   void _send_event_stop_and_wait_for_ack();
+  std::string _get_extension_names(bool mandatory) const;
 
  public:
   enum negotiation_type { negotiate_first = 1, negotiate_second, negotiated };
@@ -142,8 +145,7 @@ class stream : public io::stream {
   void set_ack_limit(uint32_t limit);
   void set_coarse(bool coarse);
   void set_negotiate(bool negotiate,
-                     const std::pair<std::string, std::string>& extensions =
-                         std::make_pair("", ""));
+                     const std::list<io::extension>& extensions = {});
   void set_timeout(int timeout);
   void statistics(nlohmann::json& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;

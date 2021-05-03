@@ -20,7 +20,7 @@
 #define CCB_SQL_FACTORY_HH
 
 #include "com/centreon/broker/io/factory.hh"
-#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/extension.hh"
 
 CCB_BEGIN()
 
@@ -37,7 +37,7 @@ class factory : public io::factory {
   factory(factory const& other) = delete;
   ~factory() = default;
   factory& operator=(factory const& other) = delete;
-  bool has_endpoint(config::endpoint& cfg, flag* flag);
+  bool has_endpoint(config::endpoint& cfg, io::extension* ext);
   io::endpoint* new_endpoint(config::endpoint& cfg,
                              bool& is_acceptor,
                              std::shared_ptr<persistent_cache> cache =
