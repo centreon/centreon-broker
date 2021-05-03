@@ -192,48 +192,65 @@ bool timerange::to_time_t(struct tm const& midnight,
   return (true);
 }
 
-static bool _build_time_t(std::string const& time_str, uint64_t& ret) {
-  auto f = [](std::string const& str, uint64_t & data) -> bool {
-      std::istringstream iss(str);
-      return ((iss >> data) && iss.eof());
-  };
+static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
+  const char* endc = time_str.data() + time_str.size();
+  const char* begin_str = time_str.data();
+  char* endptr;
+  char* endptr1;
 
-  std::size_t pos(time_str.find(':'));
-  if (pos == std::string::npos)
-    return (false);
-  uint64_t hours;
-  if (!f(time_str.substr(0, pos), hours))
-    return (false);
-  uint64_t minutes;
-  if (!f(time_str.substr(pos + 1), minutes))
-    return (false);
+  // We assume that a timerange is composed of 10 characters
+  // but here we slipt time in 2 part so it's 5.
+  /*int real_char_found = 0;
+  for (int i = 0; time_str_tmp[i] != *endc; ++i) {
+    if (real_char_found > 5) 
+      return false;
+    if (!(std::isspace(time_str_tmp[i])))
+      real_char_found++;
+  }*/
+
+  // move cursor while we meet blanks
+  while (std::isspace(*begin_str)) { begin_str++; }
+
+  uint64_t hours = strtoull(begin_str, &endptr, 10);
+  
+  if (endptr == time_str.data() || endptr + 2 >= endc || *endptr != ':')
+    return false;
+  uint64_t minutes = strtoull(endptr + 1, &endptr1, 10);
+
+  // move cursor while we meet blanks
+  while (std::isspace(*endptr1)) { endptr1++; }
+
+  if (endptr1 == endptr + 1)
+    return false;
+
+  if (*endptr1 != '-' && *endptr1 != '\0')
+    return false;
+
   ret = hours * 3600 + minutes * 60;
-  return (true);
+  return true;
 }
 
-bool timerange::build_timeranges_from_string(std::string const& line,
+bool timerange::build_timeranges_from_string(const std::string& line,
                                              std::list<timerange>& timeranges) {
-
   if (line.empty())
     return true;
 
-  std::list<std::string> timeranges_str;
-  timeranges_str = misc::string::split(line, ',');
-  for (std::list<std::string>::const_iterator it(timeranges_str.begin()),
-       end(timeranges_str.end());
-       it != end; ++it) {
-    std::size_t pos(it->find('-'));
+  std::list<std::string> timeranges_str{misc::string::split(line, ',')};
+  for (auto& t : timeranges_str) {
+    std::size_t pos(t.find('-'));
     if (pos == std::string::npos)
-      return (false);
+      return false;
     uint64_t start_time;
-    if (!_build_time_t(it->substr(0, pos), start_time))
-      return (false);
+    if (!_build_time_t(fmt::string_view(t.c_str(), pos), start_time))
+      return false;
     uint64_t end_time;
-    if (!_build_time_t(it->substr(pos + 1), end_time))
-      return (false);
-    timeranges.push_front(timerange(start_time, end_time));
+    if (!_build_time_t(
+            fmt::string_view(t.c_str() + pos + 1, t.size() - pos - 1),
+            end_time))
+      return false;
+    timeranges.emplace_front(start_time, end_time);
   }
-  return (true);
+  return true;
 }
 
 std::string timerange::to_string() const {
