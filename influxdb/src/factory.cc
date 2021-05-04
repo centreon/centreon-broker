@@ -18,8 +18,8 @@
 
 #include "com/centreon/broker/influxdb/factory.hh"
 #include <cstring>
-#include <nlohmann/json.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <vector>
 #include "com/centreon/broker/config/parser.hh"

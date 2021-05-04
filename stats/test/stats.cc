@@ -103,10 +103,12 @@ TEST_F(StatsTest, BuilderWithModules) {
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
 
-  ASSERT_EQ(result["module./neb/10-neb.so"]["state"].get<std::string>(), "loaded");
+  ASSERT_EQ(result["module./neb/10-neb.so"]["state"].get<std::string>(),
+            "loaded");
   ASSERT_EQ(result["module./storage/20-storage.so"]["state"].get<std::string>(),
             "loaded");
-  ASSERT_EQ(result["module./lua/70-lua.so"]["state"].get<std::string>(), "loaded");
+  ASSERT_EQ(result["module./lua/70-lua.so"]["state"].get<std::string>(),
+            "loaded");
 }
 
 class st : public io::stream {
