@@ -24,10 +24,10 @@
 using namespace com::centreon::broker::time;
 
 
-TEST(Timerange, parseTimerange) {
+TEST(Timerange, ParseWeirdTimerange) {
   std::unique_ptr<timeperiod> tp;
   
-  // Here we tests weird timeranges but they should not crash
+  // Here we tests weird timeranges but they should not throw 
   // Timerange parser must understands theses
 
   ASSERT_NO_THROW(tp.reset(new timeperiod(2, "test", "alias",
@@ -49,24 +49,16 @@ TEST(Timerange, parseTimerange) {
   auto& v = tp->get_timeranges();
   ASSERT_EQ(v[0].front().start(), 28800);
   ASSERT_EQ(v[0].front().end(), 43200);
+}
 
-  /*ASSERT_NO_THROW(tp.reset(new timeperiod(2, "test", "alias",
-      "08:00-12:00abs",
-
-      "08:00-12:00abs",
-
-      "08:00-12:00abs",
-
-      "08:00-12:00abs",
-
-      "08:00-12:00abs",
-
-      "08:00-12:00abs",
-
-      "08:00-12:00abs")));
-
-  auto& v2 = tp->get_timeranges();
-  ASSERT_EQ(v2[0].front().start(), 28800);
-  ASSERT_EQ(v2[0].front().end(), 43200);
-  */
+TEST(Timerange, ParseWrongTimerange) {
+  timerange t(10, 60);
+  std::list<timerange> l;
+  ASSERT_FALSE(t.build_timeranges_from_string("08:00-12:00abc", l));
+  ASSERT_FALSE(t.build_timeranges_from_string("08:00-12:00 abc", l));
+  ASSERT_FALSE(t.build_timeranges_from_string("08:00abc-12:00", l));
+  ASSERT_FALSE(t.build_timeranges_from_string("08:00 abc-12:00", l));
+  ASSERT_FALSE(t.build_timeranges_from_string("abc08:00-12:00", l));
+  ASSERT_FALSE(t.build_timeranges_from_string("\n   abc08:00-12:00", l));
+  ASSERT_FALSE(t.build_timeranges_from_string("08abcd:00-12:00", l));
 }
