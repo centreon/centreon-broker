@@ -18,8 +18,8 @@
 
 #include "com/centreon/broker/lua/factory.hh"
 #include <cstring>
-#include <nlohmann/json.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include "com/centreon/broker/lua/connector.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -98,7 +98,7 @@ io::endpoint* factory::new_endpoint(
           "lua: couldn't read a configuration field because"
           "' configuration field because its value is empty");
     std::string t((type.get<std::string>().empty()) ? "string"
-                                                : type.get<std::string>());
+                                                    : type.get<std::string>());
     if (t == "string" || t == "password")
       conf_map.insert(
           {name.get<std::string>(), misc::variant(value.get<std::string>())});
@@ -145,8 +145,9 @@ io::endpoint* factory::new_endpoint(
         throw msg_fmt(
             "lua: couldn't read a configuration field because"
             " its value is empty");
-      std::string t((type.get<std::string>().empty()) ? "string"
-                                                  : type.get<std::string>());
+      std::string t((type.get<std::string>().empty())
+                        ? "string"
+                        : type.get<std::string>());
       if (t == "string" || t == "password")
         conf_map.insert(
             {name.get<std::string>(), misc::variant(value.get<std::string>())});

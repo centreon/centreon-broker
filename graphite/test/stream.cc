@@ -250,5 +250,5 @@ TEST_F(graphiteStream, StatsAndConnector) {
 
   nlohmann::json obj;
   con.open()->statistics(obj);
-  ASSERT_TRUE(obj["state"].get<std::string>().empty());
+  ASSERT_TRUE(obj.is_null());
 }

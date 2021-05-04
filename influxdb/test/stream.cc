@@ -266,5 +266,6 @@ TEST_F(InfluxDBStream, StatsAndConnector) {
 
   nlohmann::json obj;
   con.open()->statistics(obj);
-  ASSERT_TRUE(obj["state"].get<std::string>().empty());
+  /* obj is not touched in this configuration */
+  ASSERT_TRUE(obj.is_null());
 }

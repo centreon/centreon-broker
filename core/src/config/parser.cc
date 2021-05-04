@@ -23,8 +23,8 @@
 #include <algorithm>
 #include <cstring>
 #include <fstream>
-#include <streambuf>
 #include <iostream>
+#include <streambuf>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/defines.hh"
@@ -64,7 +64,6 @@ static bool get_conf(std::pair<std::string const, json> const& obj,
           key);
     ;
     return true;
-
   }
   return false;
 }
@@ -74,8 +73,7 @@ static bool get_conf(std::pair<std::string const, json> const& obj,
                      std::string key,
                      U& s,
                      void (U::*set_state)(const std::string&),
-                     bool (json::*is_goodtype)() const
-                     ) {
+                     bool (json::*is_goodtype)() const) {
   if (obj.first == key) {
     json const& value = obj.second;
     if ((value.*is_goodtype)())
@@ -87,7 +85,6 @@ static bool get_conf(std::pair<std::string const, json> const& obj,
           key);
     ;
     return true;
-
   }
   return false;
 }
@@ -108,7 +105,6 @@ state parser::parse(std::string const& file) {
     throw msg_fmt("Config parser: Cannot read file '{}': {}", file,
                   std::strerror(errno));
 
-
   std::string const& json_to_parse{std::istreambuf_iterator<char>(f),
                                    std::istreambuf_iterator<char>()};
   std::string err;
@@ -121,72 +117,63 @@ state parser::parse(std::string const& file) {
   }
 
   if (json_document.is_null())
-    throw msg_fmt("Config parser: Cannot parse file '{}': {}", file,
-                  err);
+    throw msg_fmt("Config parser: Cannot parse file '{}': {}", file, err);
 
-  if (json_document.is_object() && json_document["centreonBroker"].is_object()) {
+  if (json_document.is_object() &&
+      json_document["centreonBroker"].is_object()) {
     for (auto it = json_document["centreonBroker"].begin();
-      it != json_document["centreonBroker"].end(); ++it) {
+         it != json_document["centreonBroker"].end(); ++it) {
       if (it.key() == "command_file" && it.value().is_object())
         ;
       else if (get_conf<int, state>({it.key(), it.value()}, "broker_id", retval,
-                &state::broker_id, &json::is_number, &json::get<int>))
+                                    &state::broker_id, &json::is_number,
+                                    &json::get<int>))
         ;
       else if (it.key() == "grpc" && it.value().is_object()) {
-        if (json_document["centreonBroker"]["grpc"]["rpc_port"].is_number()){
+        if (json_document["centreonBroker"]["grpc"]["rpc_port"].is_number()) {
           retval.rpc_port(static_cast<uint16_t>(
               json_document["centreonBroker"]["grpc"]["rpc_port"].get<int>()));
         }
-      }
-      else if (get_conf<state>(
-                     {it.key(), it.value()}, "broker_name",
-                     retval, &state::broker_name,
-                     &json::is_string))
+      } else if (get_conf<state>({it.key(), it.value()}, "broker_name", retval,
+                                 &state::broker_name, &json::is_string))
         ;
       else if (get_conf<int, state>({it.key(), it.value()}, "poller_id", retval,
                                     &state::poller_id, &json::is_number,
                                     &json::get<int>))
         ;
-      else if (get_conf<bool, state>({it.key(), it.value()},
-                                    "log_thread_id", retval,
-                                     &state::log_thread_id, &json::is_boolean,
-                                     &json::get<bool>))
+      else if (get_conf<bool, state>({it.key(), it.value()}, "log_thread_id",
+                                     retval, &state::log_thread_id,
+                                     &json::is_boolean, &json::get<bool>))
         ;
       else if (get_conf<state>({it.key(), it.value()}, "poller_name", retval,
-                &state::poller_name, &json::is_string))
+                               &state::poller_name, &json::is_string))
         ;
-      else if (get_conf<state>(
-                   {it.key(), it.value()}, "module_directory", retval,
-                   &state::module_directory,
-                   &json::is_string))
+      else if (get_conf<state>({it.key(), it.value()}, "module_directory",
+                               retval, &state::module_directory,
+                               &json::is_string))
         ;
-      else if (get_conf<state>(
-                   {it.key(), it.value()}, "cache_directory",
-                   retval, &state::cache_directory,
-                   &json::is_string))
+      else if (get_conf<state>({it.key(), it.value()}, "cache_directory",
+                               retval, &state::cache_directory,
+                               &json::is_string))
         ;
       else if (get_conf<int, state>({it.key(), it.value()}, "pool_size", retval,
                                     &state::pool_size, &json::is_number,
                                     &json::get<int>))
         ;
-      else if (get_conf<state>(
-                   {it.key(), it.value()}, "command_file", retval,
-                   &state::command_file,
-                   &json::is_string))
+      else if (get_conf<state>({it.key(), it.value()}, "command_file", retval,
+                               &state::command_file, &json::is_string))
         ;
-      else if (get_conf<int, state>({it.key(), it.value()}, "event_queue_max_size",
-                                    retval,
+      else if (get_conf<int, state>({it.key(), it.value()},
+                                    "event_queue_max_size", retval,
                                     &state::event_queue_max_size,
                                     &json::is_number, &json::get<int>))
         ;
-      else if (get_conf<bool, state>({it.key(), it.value()},
-                                     "log_thread_id", retval,
-                                     &state::log_thread_id, &json::is_boolean,
-                                     &json::get<bool>))
+      else if (get_conf<bool, state>({it.key(), it.value()}, "log_thread_id",
+                                     retval, &state::log_thread_id,
+                                     &json::is_boolean, &json::get<bool>))
         ;
       else if (get_conf<bool, state>({it.key(), it.value()},
-                                     "log_human_readable_timestamp",
-                                     retval,
+                                     "log_human_readable_timestamp", retval,
                                      &state::log_human_readable_timestamp,
                                      &json::is_boolean, &json::get<bool>))
         ;
@@ -199,15 +186,13 @@ state parser::parse(std::string const& file) {
             _parse_endpoint(node, out);
             retval.endpoints().push_back(out);
           }
-        }
-        else if (it.value().is_object()) {
+        } else if (it.value().is_object()) {
           endpoint out(endpoint::io_type::output);
           out.read_filters.insert("all");
           out.write_filters.insert("all");
           _parse_endpoint(it.value(), out);
           retval.endpoints().push_back(out);
-        }
-        else
+        } else
           throw msg_fmt(
               "config parser: cannot parse key '"
               "'output':  value type must be an object");
@@ -221,14 +206,12 @@ state parser::parse(std::string const& file) {
             _parse_endpoint(node, in);
             retval.endpoints().push_back(in);
           }
-        }
-        else if (it.value().is_object()) {
+        } else if (it.value().is_object()) {
           endpoint in(endpoint::io_type::input);
           in.read_filters.insert("all");
           _parse_endpoint(it.value(), in);
           retval.endpoints().push_back(in);
-        }
-        else
+        } else
           throw msg_fmt(
               "config parser: cannot parse key '"
               "'input':  value type must be an object");
@@ -245,11 +228,11 @@ state parser::parse(std::string const& file) {
         if (!conf_js.is_object())
           throw msg_fmt("the log configuration should be a json object");
 
-
         auto& conf = retval.log_conf();
         if (conf_js.contains("directory") && conf_js["directory"].is_string())
           conf.directory = conf_js["directory"].get<std::string>();
-        else if (conf_js.contains("directory") && !conf_js["directory"].is_null())
+        else if (conf_js.contains("directory") &&
+                 !conf_js["directory"].is_null())
           throw msg_fmt(
               "'directory' key in the log configuration must contain a "
               "directory name");
@@ -264,8 +247,8 @@ state parser::parse(std::string const& file) {
             throw msg_fmt(
                 "'filename' must only contain a filename without directory");
 
-        }
-        else if (conf_js.contains("filename") && !conf_js["filename"].is_null())
+        } else if (conf_js.contains("filename") &&
+                   !conf_js["filename"].is_null())
           throw msg_fmt(
               "'filename' key in the log configuration must contain the log "
               "file name");
@@ -280,16 +263,16 @@ state parser::parse(std::string const& file) {
                 "'max_size' key in the log configuration must contain a size "
                 "in bytes");
           }
-        }
-        else if (conf_js.contains("max_size") && conf_js["max_size"].is_number()) {
+        } else if (conf_js.contains("max_size") &&
+                   conf_js["max_size"].is_number()) {
           int64_t tmp = conf_js["max_size"].get<int>();
           if (tmp < 0)
             throw msg_fmt(
                 "'max_size' key in the log configuration must contain a "
                 "positive number.");
           conf.max_size = tmp;
-        }
-        else if (conf_js.contains("max_size") && !conf_js["max_size"].is_null())
+        } else if (conf_js.contains("max_size") &&
+                   !conf_js["max_size"].is_null())
           throw msg_fmt(
               "'max_size' key in the log configuration must contain a size in "
               "bytes (as number or string)");
@@ -297,8 +280,7 @@ state parser::parse(std::string const& file) {
         if (conf_js.contains("loggers") && conf_js["loggers"].is_object()) {
           conf.loggers.clear();
           for (auto it = conf_js["loggers"].begin();
-              it != conf_js["loggers"].end(); ++it) {
-
+               it != conf_js["loggers"].end(); ++it) {
             const auto& loggers = log_v2::loggers;
             const auto levels = log_v2::levels();
             if (std::find(loggers.begin(), loggers.end(), it.key()) ==
@@ -324,19 +306,16 @@ state parser::parse(std::string const& file) {
             _parse_logger(node, logr);
             retval.loggers().push_back(logr);
           }
-        }
-        else if (it.value().is_object()) {
+        } else if (it.value().is_object()) {
           logger logr;
           _parse_logger(it.value(), logr);
           retval.loggers().push_back(logr);
-        }
-        else {
+        } else {
           throw msg_fmt(
               "config parser: cannot parse key "
               "'logger':  value type must be an object");
         }
-      }
-      else
+      } else
         retval.params()[it.key()] = it.value().dump();
     }
   }
@@ -346,7 +325,6 @@ state parser::parse(std::string const& file) {
   if (conf.filename.empty())
     conf.filename = fmt::format("{}.log", retval.broker_name());
   return retval;
-
 }
 
 /**
@@ -387,11 +365,11 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
     else if (it.key() == "retry_interval") {
       try {
         e.retry_interval =
-          static_cast<uint32_t>(std::stoul(it.value().get<std::string>()));
+            static_cast<uint32_t>(std::stoul(it.value().get<std::string>()));
       } catch (const std::exception& e) {
         throw msg_fmt(
-          "config parser: cannot parse key "
-          "'retry_interval': value must be an integer");
+            "config parser: cannot parse key "
+            "'retry_interval': value must be an integer");
       }
     }
 
@@ -405,28 +383,25 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
       if (it.value().is_object() && it.value()["category"].is_array())
         for (auto& cat : it.value()["category"])
           (e.*member).insert(cat.get<std::string>());
-      else if (it.value().is_object() &&
-               it.value()["category"].is_string())
+      else if (it.value().is_object() && it.value()["category"].is_string())
         (e.*member).insert(it.value()["category"].get<std::string>());
-      else if (it.value().is_string() &&
-               it.value().get<std::string>() == "all")
+      else if (it.value().is_string() && it.value().get<std::string>() == "all")
         (e.*member).insert("all");
       else
         throw msg_fmt(
             "config parser: cannot parse key "
             "'filters':  value is invalid");
-    } 
-    else if (it.key() == "cache")
+    } else if (it.key() == "cache")
       e.cache_enabled = parse_boolean(it.value().get<std::string>());
     else if (it.key() == "type")
       e.type = it.value().get<std::string>();
     if (it.value().is_string())
       e.params[it.key()] = it.value().get<std::string>();
-    else 
-      std::cout << "for key: " << it.key() << " value is not a string." << std::endl;
+    else
+      std::cout << "for key: " << it.key() << " value is not a string."
+                << std::endl;
   }
 }
-
 
 /**
  *  Parse the configuration of a logging object.
@@ -457,25 +432,25 @@ void parser::_parse_logger(json const& elem, logger& l) {
         l.config(true);
       else
         l.config(false);
-    } else if (get_conf<bool, logger>({it.key(), it.value()}, "config",
-                                          l, &logger::config,
-                                      &json::is_boolean, &json::get<bool>))
+    } else if (get_conf<bool, logger>({it.key(), it.value()}, "config", l,
+                                      &logger::config, &json::is_boolean,
+                                      &json::get<bool>))
       ;
-    else if (get_conf<bool, logger>({it.key(), it.value()}, "debug", l, 
-                                    &logger::debug,
-                                    &json::is_boolean, &json::get<bool>))
+    else if (get_conf<bool, logger>({it.key(), it.value()}, "debug", l,
+                                    &logger::debug, &json::is_boolean,
+                                    &json::get<bool>))
       ;
     else if (get_conf<bool, logger>({it.key(), it.value()}, "error", l,
-                                    &logger::error,
-                                    &json::is_boolean, &json::get<bool>))
+                                    &logger::error, &json::is_boolean,
+                                    &json::get<bool>))
       ;
-    else if (get_conf<bool, logger>({it.key(), it.value()}, "info", l, 
-                                    &logger::info,
-                                    &json::is_boolean, &json::get<bool>))
+    else if (get_conf<bool, logger>({it.key(), it.value()}, "info", l,
+                                    &logger::info, &json::is_boolean,
+                                    &json::get<bool>))
       ;
     else if (get_conf<bool, logger>({it.key(), it.value()}, "perf", l,
-                                    &logger::perf,
-                                    &json::is_boolean, &json::get<bool>))
+                                    &logger::perf, &json::is_boolean,
+                                    &json::get<bool>))
       ;
     else if (it.key() == "facility") {
       std::string const& val{it.value().get<std::string>()};

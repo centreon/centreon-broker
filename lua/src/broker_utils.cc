@@ -331,8 +331,7 @@ static void broker_json_decode_array(lua_State* L, const json& it) {
 static void broker_json_decode_object(lua_State* L, const json& it) {
   size_t size{it.size()};
   lua_createtable(L, 0, size);
-  for (auto cit = it.begin(); cit != it.end();
-       ++cit) {
+  for (auto cit = it.begin(); cit != it.end(); ++cit) {
     lua_pushlstring(L, cit.key().c_str(), cit.key().size());
     broker_json_decode(L, cit.value());
     lua_settable(L, -3);
@@ -373,6 +372,9 @@ static void broker_json_decode(lua_State* L, const json& it) {
       }
       lua_pushlstring(L, str.c_str(), str.size());
     } break;
+    case json::value_t::number_unsigned:
+      lua_pushinteger(L, it.get<uint32_t>());
+      break;
     case json::value_t::number_integer:
       lua_pushinteger(L, it.get<int32_t>());
       break;

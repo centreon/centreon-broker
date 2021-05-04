@@ -20,8 +20,8 @@
 #define CCB_IO_STREAM_HH
 
 #include <ctime>
-#include <nlohmann/json.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "com/centreon/broker/io/data.hh"

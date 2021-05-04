@@ -17,8 +17,8 @@
  *
  */
 
-#include <nlohmann/json.hpp>
 #include "com/centreon/broker/stats/parser.hh"
+#include <nlohmann/json.hpp>
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -56,8 +56,7 @@ void parser::parse(std::vector<std::string>& cfg, std::string const& content) {
     nlohmann::json const& field{js["json_fifo"]};
     json_fifo(field);
   } else if (js.is_array()) {
-    for (auto it = js.begin(), end = js.end();
-         it != end; ++it) {
+    for (auto it = js.begin(), end = js.end(); it != end; ++it) {
       nlohmann::json const& field{(*it)["json_fifo"]};
       json_fifo(field);
     }

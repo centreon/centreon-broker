@@ -43,9 +43,9 @@ void com::centreon::broker::stats::get_generic_stats(
   object["pid"] = getpid();
   object["now"] = fmt::format("{}", ::time(nullptr));
 
-  object["asio_version"] = fmt::format("{}.{}.{}", ASIO_VERSION / 100000,
-                                       ASIO_VERSION / 100 % 1000,
-                                       ASIO_VERSION % 100);
+  object["asio_version"] =
+      fmt::format("{}.{}.{}", ASIO_VERSION / 100000, ASIO_VERSION / 100 % 1000,
+                  ASIO_VERSION % 100);
 
   nlohmann::json pool;
   pool["size"] = static_cast<int32_t>(pool::instance().get_pool_size());
@@ -79,7 +79,8 @@ void com::centreon::broker::stats::get_loaded_module_stats(
     nlohmann::json subtree;
     subtree["name"] = it->first;
     subtree["state"] = "loaded";
-    subtree["size"] = fmt::format("{}B", misc::filesystem::file_size(it->first));
+    subtree["size"] =
+        fmt::format("{}B", misc::filesystem::file_size(it->first));
     object.emplace_back(subtree);
   }
 }

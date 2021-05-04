@@ -18,8 +18,8 @@
 
 #include "com/centreon/broker/simu/factory.hh"
 #include <cstring>
-#include <nlohmann/json.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include "com/centreon/broker/misc/variant.hh"
 #include "com/centreon/broker/simu/connector.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -100,7 +100,7 @@ io::endpoint* factory::new_endpoint(config::endpoint& cfg,
           "simu: couldn't read a configuration field because"
           "' configuration field because its value is empty");
     std::string t((type.get<std::string>().empty()) ? "string"
-                                                : type.get<std::string>());
+                                                    : type.get<std::string>());
     if (t == "string" || t == "password")
       conf_map.insert(
           {name.get<std::string>(), misc::variant(value.get<std::string>())});
@@ -149,8 +149,9 @@ io::endpoint* factory::new_endpoint(config::endpoint& cfg,
         throw msg_fmt(
             "simu: couldn't read a configuration field because"
             "' configuration field because its value is empty");
-      std::string t((type.get<std::string>().empty()) ? "string"
-                                                  : type.get<std::string>());
+      std::string t((type.get<std::string>().empty())
+                        ? "string"
+                        : type.get<std::string>());
       if (t == "string" || t == "password")
         conf_map.insert(
             {name.get<std::string>(), misc::variant(value.get<std::string>())});

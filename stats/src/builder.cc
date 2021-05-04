@@ -94,13 +94,15 @@ void builder::build() {
   std::vector<nlohmann::json> modules_objects;
   stats::get_loaded_module_stats(modules_objects);
   for (auto& obj : modules_objects) {
-    object["module" + obj["name"].get<std::string>()] = std::move(obj);
+    std::string key{fmt::format("module{}", obj["name"].get<std::string>())};
+    object[key] = std::move(obj);
   }
 
   std::vector<nlohmann::json> endpoint_objects;
   stats::get_endpoint_stats(endpoint_objects);
   for (auto& obj : endpoint_objects) {
-    object["endpoint " + obj["name"].get<std::string>()] = std::move(obj);
+    std::string key{fmt::format("endpoint {}", obj["name"].get<std::string>())};
+    object[key] = std::move(obj);
   }
 
   _root = std::move(object);
