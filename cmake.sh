@@ -64,11 +64,12 @@ if [ -r /etc/centos-release ] ; then
 
   good=$(gcc --version | awk '/gcc/ && ($3+0)>5.0{print 1}')
 
-  if [ $good -ne 1 ] ; then
-    yum install centos-release-scl
+  if [ ! $good ] ; then
+    yum -y install centos-release-scl
     yum-config-manager --enable rhel-server-rhscl-7-rpms
-    yum install devtoolset-7
-    source scl_source enable devtoolset-9
+    yum -y install devtoolset-9
+    ln -s /usr/bin/cmake3 /usr/bin/cmake
+    source /opt/rh/devtoolset-9/enable
   fi
 
   if [ $maj = "centos7" ] ; then
@@ -88,6 +89,7 @@ if [ -r /etc/centos-release ] ; then
     rrdtool-devel
     gnutls-devel
     lua-devel
+    perl-Thread-Queue
   )
   for i in "${pkgs[@]}"; do
     if ! rpm -q $i ; then
@@ -222,6 +224,7 @@ if [ "$force" = "1" ] ; then
 fi
 cd build
 if [ $maj = "centos7" ] ; then
+    rm -rf ~/.conan/profiles/default
     $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
 else
     $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
