@@ -205,16 +205,16 @@ static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
   uint64_t hours = strtoull(begin_str, &endptr, 10);
   
   if (endptr == begin_str || endptr + 2 >= endc || *endptr != ':') {
-    log_v2::core()->error("parser timeranges: error while reading hours '{}'",
-                          time_str);
+    log_v2::core()->error("parser timeranges: error while reading hours '{}' at '{}'.",
+                          time_str, endptr - begin_str);
     return false;
   }
 
   uint64_t minutes = strtoull(endptr + 1, &endptr1, 10);
 
   if (endptr1 == endptr + 1) {
-    log_v2::core()->error("parser timeranges: error while reading minutes '{}'",
-                          endptr);
+    log_v2::core()->error("parser timeranges: error while reading minutes '{}' at '{}'.",
+                          endptr1 - begin_str);
     return false;
   }
 
@@ -223,7 +223,7 @@ static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
 
   if (endptr1 != endc) {
     log_v2::core()->error("parser timeranges: error while reading end "
-                          "of your timerange .");
+                          "of your timerange '{}' at '{}'.", endptr1 - begin_str);
     return false;
   }
 
