@@ -62,8 +62,13 @@ if [ -r /etc/centos-release ] ; then
     echo "pip3 already installed"
   fi
 
-  if ! rpm -q gcc-c++ ; then
-    yum -y install gcc-c++
+  good=$(gcc --version | awk '/gcc/ && ($3+0)>5.0{print 1}')
+
+  if [ $good -ne 1 ] ; then
+    yum install centos-release-scl
+    yum-config-manager --enable rhel-server-rhscl-7-rpms
+    yum install devtoolset-7
+    source scl_source enable devtoolset-9
   fi
 
   if [ $maj = "centos7" ] ; then
@@ -148,7 +153,6 @@ elif [ -r /etc/issue ] ; then
         fi
       fi
     done
-  fi
   elif [ $maj = "Raspbian" ] ; then
     pkgs=(
       gcc
@@ -193,7 +197,7 @@ elif [ -r /etc/issue ] ; then
   else
     echo "pip3 already installed"
   fi
-
+fi
 
 pip3 install conan --upgrade
 
@@ -202,11 +206,9 @@ if [ $my_id -eq 0 ] ; then
 else
   conan="$HOME/.local/bin/conan"
 fi
-if ! $conan remote list | grep ^centreon ; then
-  $conan remote add centreon https://api.bintray.com/conan/centreon/centreon
-fi
 
-good=$(gcc --version | awk '/gcc/ && ($3+0)>5.0{print 1}')
+
+
 
 if [ ! -d build ] ; then
   mkdir build
@@ -219,11 +221,10 @@ if [ "$force" = "1" ] ; then
   mkdir build
 fi
 cd build
-
-if [ $good -eq 1 ] ; then
-  $conan install .. --remote centreon -s compiler.libcxx=libstdc++11
+if [ $maj = "centos7" ] ; then
+    $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
 else
-  $conan install .. --remote centreon -s compiler.libcxx=libstdc++
+    $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
 fi
 
 if [ $maj = "Raspbian" ] ; then
