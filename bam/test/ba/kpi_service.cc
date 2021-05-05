@@ -335,9 +335,11 @@ TEST_F(BamBA, KpiServiceWorstState) {
       ASSERT_EQ(it->end_time, -1);
       ASSERT_EQ(it->status, 2);
       ASSERT_FALSE(it->in_downtime);
-      do {
+      while (it != events.end()) {
         ++it;
-      } while (it->typ != test_visitor::test_event::kpi);
+        if (it->typ == test_visitor::test_event::kpi)
+          break;
+      }
     }
   }
 }
