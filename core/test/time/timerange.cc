@@ -31,19 +31,12 @@ TEST(Timerange, ParseWeirdTimerange) {
   // Timerange parser must understands theses
 
   ASSERT_NO_THROW(tp.reset(new timeperiod(2, "test", "alias",
-
       "\r \r08:00\r-12:00\r",
-
       "\n\n08:00 - 12:00\r",
-
       "08:00 -12:00\r",
-
       "08:00 - \n12:00\r",
-
       "08:00\t-\t12:00\r",
-
       "08:00-12:00\n",
-
       "08:00-12:00")));
 
   auto& v = tp->get_timeranges();
@@ -61,4 +54,5 @@ TEST(Timerange, ParseWrongTimerange) {
   ASSERT_FALSE(t.build_timeranges_from_string("abc08:00-12:00", l));
   ASSERT_FALSE(t.build_timeranges_from_string("\n   abc08:00-12:00", l));
   ASSERT_FALSE(t.build_timeranges_from_string("08abcd:00-12:00", l));
+  ASSERT_FALSE(t.build_timeranges_from_string("  :00-12:00", l));
 }

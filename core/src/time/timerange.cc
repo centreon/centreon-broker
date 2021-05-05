@@ -204,15 +204,17 @@ static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
 
   uint64_t hours = strtoull(begin_str, &endptr, 10);
   
-  if (endptr == time_str.data() || endptr + 2 >= endc || *endptr != ':') {
-    log_v2::core()->info("parser timeranges: error while parsing timerange.");
+  if (endptr == begin_str || endptr + 2 >= endc || *endptr != ':') {
+    log_v2::core()->error("parser timeranges: error while reading hours '{}'",
+                          time_str);
     return false;
   }
 
   uint64_t minutes = strtoull(endptr + 1, &endptr1, 10);
 
   if (endptr1 == endptr + 1) {
-    log_v2::core()->info("parser timeranges: error while parsing timerange.");
+    log_v2::core()->error("parser timeranges: error while reading minutes '{}'",
+                          endptr);
     return false;
   }
 
@@ -220,7 +222,8 @@ static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
   while (endptr1 < endc && std::isspace(*endptr1)) { endptr1++; }
 
   if (endptr1 != endc) {
-    log_v2::core()->info("parser timeranges: error while parsing timerange.");
+    log_v2::core()->error("parser timeranges: error while reading end "
+                          "of your timerange .");
     return false;
   }
 
@@ -233,17 +236,17 @@ bool timerange::build_timeranges_from_string(const std::string& line,
   if (line.empty())
     return true;
 
-  std::list<std::string> timeranges_str{misc::string::split(line, ',')};
+  std::list<fmt::string_view> timeranges_str{misc::string::split_sv(line, ',')};
   for (auto& t : timeranges_str) {
-    std::size_t pos(t.find('-'));
-    if (pos == std::string::npos)
+    const char* ret = strchr(t.data(), '-');
+    if (ret == NULL)
       return false;
     uint64_t start_time;
-    if (!_build_time_t(fmt::string_view(t.c_str(), pos), start_time))
+    if (!_build_time_t(fmt::string_view(t.data(), ret - t.data()), start_time))
       return false;
     uint64_t end_time;
     if (!_build_time_t(
-            fmt::string_view(t.c_str() + pos + 1, t.size() - pos - 1),
+            fmt::string_view(ret + 1, t.size() - (ret - t.data()) - 1),
             end_time))
       return false;
     timeranges.emplace_front(start_time, end_time);
