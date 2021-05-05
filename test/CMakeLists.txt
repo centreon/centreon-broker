@@ -94,12 +94,14 @@ add_executable(ut
   ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
   ${TESTS_DIR}/processing/acceptor.cc
   ${TESTS_DIR}/processing/feeder.cc
+  ${TESTS_DIR}/time/timerange.cc
   ${TESTS_DIR}/rpc/brokerrpc.cc
   ${TESTS_DIR}/exceptions.cc
   ${TESTS_DIR}/io.cc
   ${TESTS_DIR}/logging.cc
   ${TESTS_DIR}/main.cc
   ${TESTS_DIR}/test_server.cc
+
   # Module sources.
   ${TESTS_SOURCES}
   )
