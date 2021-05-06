@@ -72,6 +72,8 @@ add_library("${RRD}" SHARED
   "${INC_DIR}/com/centreon/broker/rrd/lib.hh"
   "${INC_DIR}/com/centreon/broker/rrd/output.hh"
   )
+add_dependencies("${RRD}" json11_lib)
+
 set_target_properties("${RRD}" PROPERTIES PREFIX "")
 
 # Compile with librrd flags.

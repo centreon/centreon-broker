@@ -17,8 +17,8 @@
 ##
 
 find_package(GTest REQUIRED)
-include_directories(${gtest_INCLUDE_DIRS})
-link_directories(${gtest_LIB_DIRS})
+include_directories(${GTest_INCLUDE_DIRS})
+link_directories(${GTest_LIB_DIRS})
 
 # Tests directory.
 set(TESTS_DIR ${PROJECT_SOURCE_DIR}/core/test)
@@ -55,7 +55,7 @@ endif (WITH_SQL_TESTS)
 add_definitions(-DBROKERRPC_TESTS_PATH="${TESTS_DIR}/rpc")
 
 add_executable(rpc_client ${TESTS_DIR}/rpc/client.cc)
-target_link_libraries(rpc_client berpc ${gRPC_LIBS} ${absl_LIBS} ${OpenSSL_LIBS} ${c-ares_LIBS} ${ZLIB_LIBS} dl)
+target_link_libraries(rpc_client berpc ${gRPC_LIBS} ${absl_LIBS} ${OpenSSL_LIBS} ${c-ares_LIBS} ${ZLIB_LIBS} dl pthread)
 
 add_executable(ut
   # Core sources.

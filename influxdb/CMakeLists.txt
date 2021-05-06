@@ -48,6 +48,8 @@ add_library("${INFLUXDB}" SHARED
   "${INC_DIR}/macro_cache.hh"
   "${INC_DIR}/stream.hh"
 )
+add_dependencies("${INFLUXDB}" json11_lib)
+
 set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")
 
 # Testing.

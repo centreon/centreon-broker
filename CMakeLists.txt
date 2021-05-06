@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2020 Centreon
+## Copyright 2009-2021 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
-include(ExternalProject)
 
 add_custom_command(
   DEPENDS ${SRC_DIR}/database/table_max_size.py "${PROJECT_SOURCE_DIR}/simu/docker/installBroker.sql" "${PROJECT_SOURCE_DIR}/simu/docker/partitioning-logs.xml" "${PROJECT_SOURCE_DIR}/simu/docker/bam.sql" "${PROJECT_SOURCE_DIR}/simu/docker/createTablesCentstorage.sql"
@@ -96,9 +95,8 @@ set(PROTOBUF_PREFIX "${protobuf_LIB_DIRS}/..")
 message(STATUS "${PROTOBUF_PREFIX}/bin/protoc")
 set(GRPC_PREFIX "${gRPC_LIB_DIRS}/..")
 
-option(BUILD_OFFLINE "Build offline" OFF)
-
 include(ExternalProject)
+option(BUILD_OFFLINE "Build offline" OFF)
 
 if (${BUILD_OFFLINE})
   ExternalProject_Add(json11_lib
@@ -121,10 +119,10 @@ endif ()
 
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)
-
-link_directories(${binary_dir})
-include_directories(${source_dir})
-
+set(json11_INCLUDE_DIRS ${source_dir})
+set(json11_LIBS ${binary_dir})
+link_directories(${json11_LIBS})
+include_directories(${json11_INCLUDE_DIRS})
 
 add_custom_command(
   DEPENDS ${SRC_DIR}/broker.proto
@@ -639,10 +637,12 @@ add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
 target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection)
+add_dependencies(roker json11_lib)
 
 # Standalone binary.
 set(DAEMON cbd)
 add_executable(${DAEMON} ${SRC_DIR}/main.cc)
+add_dependencies(${DAEMON} json11_lib)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
