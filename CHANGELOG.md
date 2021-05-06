@@ -2,10 +2,16 @@
 
 ## 20.04.14
 
+### Enhancements
+
 ### Build
 
 Since the closure of bintray, cbd could not be compiled. Dependencies have been
 moved to conan-center and cbd compilation is back.
+
+*Timeranges*
+
+Allowing parser \r or \n for the parser of timeranges.
 
 ### Bam
 
