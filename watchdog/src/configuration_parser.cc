@@ -69,7 +69,7 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
   std::string err;
 
   try {
-  _json_document = json::parse(json_to_parse);
+    _json_document = json::parse(json_to_parse);
   } catch (const json::parse_error& e) {
     err = e.what();
   }
@@ -92,16 +92,16 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
  */
 void configuration_parser::_check_json_document() {
   for (auto it = _json_document["centreonBroker"].begin();
-      it != _json_document["centreonBroker"].end(); ++it) {
+       it != _json_document["centreonBroker"].end(); ++it) {
     if (it.key() == "log")
       _log_path = it.value().get<std::string>();
     else if (it.key() == "cbd") {
-      json sec{it.value()};
-      if (sec.is_array())
-        for (auto itt = sec.begin(); itt != sec.end(); ++itt)
+      if (it.value().is_array())
+        for (auto itt : it.value().items()) {
           _parse_centreon_broker_element(itt.value());
-      else if (sec.is_object())
-        _parse_centreon_broker_element(sec);
+        }
+      else if (it.value().is_object())
+        _parse_centreon_broker_element(it.value());
       else
         throw msg_fmt("error in watchdog config syntax 'cbd' must be an array");
     } else
@@ -115,14 +115,33 @@ void configuration_parser::_check_json_document() {
  *
  *  @param[in] element  The element.
  */
-void configuration_parser::_parse_centreon_broker_element(
-    const json& element) {
+void configuration_parser::_parse_centreon_broker_element(json element) {
   // The default are sane.
-  const json& instance_executable{element["executable"]};
-  const json& instance_name{element["name"]};
-  const json& instance_config{element["configuration_file"]};
-  const json& run{element["run"]};
-  const json& reload{element["reload"]};
+  std::string executable;
+  json instance_name;
+  json instance_config;
+  json run;
+  json reload;
+
+  auto it = element.find("executable");
+  if (it != element.end())
+    executable = it.value();
+
+  it = element.find("name");
+  if (it != element.end())
+    instance_name = it.value();
+
+  it = element.find("configuration_file");
+  if (it != element.end())
+    instance_config = it.value();
+
+  it = element.find("run");
+  if (it != element.end())
+    run = it.value();
+
+  it = element.find("reload");
+  if (it != element.end())
+    reload = it.value();
 
   if (!instance_name.is_string())
     throw msg_fmt("name field not provided for cbd instance");
@@ -137,7 +156,6 @@ void configuration_parser::_parse_centreon_broker_element(
   if (instance_name.get<std::string>().empty())
     throw msg_fmt("missing instance name");
 
-  std::string executable{instance_executable.get<std::string>()};
   if (executable.empty())
     executable = std::string(PREFIX_BIN "/cbd");
 
