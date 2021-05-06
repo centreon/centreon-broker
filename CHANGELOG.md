@@ -9,6 +9,12 @@
 Connections can fail when many pollers establish connection to cbd. This should
 be fixed with this new version.
 
+### Enhancements
+
+*Timeranges*
+
+Allowing parsing \r or \n for the parser of timeranges.
+
 ## 21.04.1
 
 `Date of the release`
