@@ -98,7 +98,7 @@ set(NEB_SOURCES
 
 # Static library.
 add_library(nebbase STATIC ${NEB_SOURCES})
-add_dependencies(nebbase table_max_size)
+add_dependencies(nebbase table_max_size json11_lib)
 set(NEBBASE_CXXFLAGS "${NEBBASE_CXXFLAGS} -fPIC")
 set_property(TARGET nebbase PROPERTY COMPILE_FLAGS ${NEBBASE_CXXFLAGS})
 
@@ -225,9 +225,9 @@ set_property(TARGET "${CBMOD}"
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # Flags needed to include all symbols in shared library.
   target_link_libraries("${CBMOD}"
-    "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
+    "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive" ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
 else ()
-  target_link_libraries("${CBMOD}" "nebbase" "rokerbase" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
+  target_link_libraries("${CBMOD}" "nebbase" "rokerbase" ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
 endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 

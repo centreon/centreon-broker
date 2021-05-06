@@ -38,7 +38,7 @@ add_executable("${WATCHDOG}"
   "${INC_DIR}/instance.hh"
   "${INC_DIR}/instance_configuration.hh"
 )
-target_link_libraries("${WATCHDOG}" "roker" ${json11_LIBS})
+target_link_libraries("${WATCHDOG}" "roker" json11)
 
 if (WITH_WATCHDOG_TESTS)
   # Testing.
