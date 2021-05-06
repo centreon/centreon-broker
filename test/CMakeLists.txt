@@ -16,7 +16,7 @@
 ## For more information : contact@centreon.com
 ##
 
-find_package(gtest REQUIRED)
+find_package(GTest REQUIRED)
 include_directories(${gtest_INCLUDE_DIRS})
 link_directories(${gtest_LIB_DIRS})
 
@@ -107,8 +107,8 @@ add_executable(ut
 
 #set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
-target_link_libraries(ut rokerbase roker ${TESTS_LIBRARIES} conflictmgr
-	${json11_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gtest_LIBS} ${mariadb-connector-c_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+target_link_libraries(ut rokerbase roker ${TESTS_LIBRARIES} conflictmgr 
+  ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${GTest_LIBS} ${mariadb-connector-c_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 add_test(NAME tests COMMAND ut)
 
