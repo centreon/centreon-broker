@@ -586,7 +586,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${nlohmann_json_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${nlohmann_json_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} pthread)
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdog." ON)
