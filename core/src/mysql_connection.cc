@@ -497,9 +497,11 @@ void mysql_connection::_run() {
   } else {
     uint32_t timeout = 10;
     mysql_options(_conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+    const char* host = _host == "localhost" ? "127.0.0.1" : _host.c_str();
+
     while (config::applier::mode != config::applier::finished &&
-           !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
-                               _pwd.c_str(), _name.c_str(), _port, nullptr,
+           !mysql_real_connect(_conn, host, _user.c_str(), _pwd.c_str(),
+                               _name.c_str(), _port, nullptr,
                                CLIENT_FOUND_ROWS)) {
       set_error_message(fmt::format(
           "mysql_connection: The mysql/mariadb database seems not started. "
