@@ -119,7 +119,6 @@ else ()
       LOG_BUILD ON)
 endif ()
 
-
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)
 set(json11_INCLUDE_DIRS ${source_dir})
