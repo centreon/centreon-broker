@@ -23,10 +23,10 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
-#include <nlohmann/json.hpp>
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -135,7 +135,7 @@ TEST(parser, endpoint) {
   ASSERT_EQ(output1.failovers.front(), "CentreonRetention");
   ASSERT_EQ(output1.buffering_timeout, 10);
   ASSERT_EQ(output1.read_timeout, 5);
-  ASSERT_EQ(output1.retry_interval, 300);
+  ASSERT_EQ(output1.retry_interval, 300u);
   ASSERT_EQ(output1.params["db_type"], "mysql");
   ASSERT_EQ(output1.params["db_host"], "localhost");
   ASSERT_EQ(output1.params["db_port"], "3306");
@@ -229,7 +229,7 @@ TEST(parser, logger) {
 
   // Check against expected result.
   ASSERT_EQ(s.loggers().size(), 2u);
-  
+
   // Check logger #1.
   std::list<config::logger>::iterator it(s.loggers().begin());
   config::logger l1(*(it++));

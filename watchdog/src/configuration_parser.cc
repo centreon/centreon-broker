@@ -79,20 +79,29 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
                   err);
 
   if (!_json_document.is_object() ||
+      _json_document.find("centreonBroker") == _json_document.end() ||
       !_json_document["centreonBroker"].is_object())
     throw msg_fmt(
         "Config parser: Cannot parse file '{}': it must contain a "
-        "centreonBroker object",
+        "'centreonBroker' object",
         config_filename);
-  _check_json_document();
+
+  try {
+    _check_json_document();
+  } catch (const json::parse_error& e) {
+    throw msg_fmt(
+        "Config parser: Cannot parse file '{}': it contains an error: {}",
+        e.what());
+  }
 }
 
 /**
  *  Parse the xml document.
  */
 void configuration_parser::_check_json_document() {
-  for (auto it = _json_document["centreonBroker"].begin();
-       it != _json_document["centreonBroker"].end(); ++it) {
+  for (auto it = _json_document["centreonBroker"].begin(),
+            end = _json_document["centreonBroker"].end();
+       it != end; ++it) {
     if (it.key() == "log")
       _log_path = it.value().get<std::string>();
     else if (it.key() == "cbd") {
@@ -115,7 +124,7 @@ void configuration_parser::_check_json_document() {
  *
  *  @param[in] element  The element.
  */
-void configuration_parser::_parse_centreon_broker_element(json element) {
+void configuration_parser::_parse_centreon_broker_element(const json& element) {
   // The default are sane.
   std::string executable;
   json instance_name;

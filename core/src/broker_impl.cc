@@ -38,8 +38,10 @@ using namespace com::centreon::broker::version;
  *
  * @return Status::OK
  */
-grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
-                                     const ::google::protobuf::Empty* request,
+grpc::Status broker_impl::GetVersion(grpc::ServerContext* context
+                                     __attribute__((unused)),
+                                     const ::google::protobuf::Empty* request
+                                     __attribute__((unused)),
                                      Version* response) {
   response->set_major(major);
   response->set_minor(minor);
@@ -47,7 +49,8 @@ grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetNumModules(grpc::ServerContext* context,
+grpc::Status broker_impl::GetNumModules(grpc::ServerContext* context
+                                        __attribute__((unused)),
                                         const ::google::protobuf::Empty*,
                                         GenericSize* response) {
   auto& mod_applier(config::applier::state::instance().get_modules());
@@ -58,7 +61,8 @@ grpc::Status broker_impl::GetNumModules(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context,
+grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context
+                                         __attribute__((unused)),
                                          const ::google::protobuf::Empty*,
                                          GenericSize* response) {
   // Endpoint applier.
@@ -72,7 +76,8 @@ grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
+grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context
+                                          __attribute__((unused)),
                                           const GenericNameOrIndex* request,
                                           GenericString* response) {
   std::vector<nlohmann::json> value;
@@ -120,7 +125,8 @@ grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context,
+grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context
+                                           __attribute__((unused)),
                                            const GenericNameOrIndex* request,
                                            GenericString* response) {
   std::vector<nlohmann::json> value;
@@ -173,8 +179,8 @@ grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context,
 }
 
 grpc::Status broker_impl::GetGenericStats(
-    grpc::ServerContext* context,
-    const ::google::protobuf::Empty* request,
+    grpc::ServerContext* context __attribute__((unused)),
+    const ::google::protobuf::Empty* request __attribute__((unused)),
     GenericString* response) {
   nlohmann::json object;
   stats::get_generic_stats(object);
@@ -183,8 +189,10 @@ grpc::Status broker_impl::GetGenericStats(
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetSqlStats(grpc::ServerContext* context,
-                                      const ::google::protobuf::Empty* request,
+grpc::Status broker_impl::GetSqlStats(grpc::ServerContext* context
+                                      __attribute__((unused)),
+                                      const ::google::protobuf::Empty* request
+                                      __attribute__((unused)),
                                       GenericString* response) {
   nlohmann::json object;
   stats::get_mysql_stats(object);

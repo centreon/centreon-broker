@@ -44,7 +44,7 @@ class configuration_parser {
 
   void _parse_file(std::string const& config_filename);
   void _check_json_document();
-  void _parse_centreon_broker_element(nlohmann::json element);
+  void _parse_centreon_broker_element(const nlohmann::json& element);
 
  public:
   configuration_parser();

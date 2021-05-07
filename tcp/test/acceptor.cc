@@ -55,7 +55,7 @@ static auto try_connect =
     } catch (...) {
     }
   }
-  return std::move(u);
+  return u;
 };
 
 TEST_F(TcpAcceptor, BadPort) {

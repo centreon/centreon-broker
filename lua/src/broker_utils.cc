@@ -284,9 +284,8 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
       if (ptr) {
         auto event = static_cast<std::shared_ptr<io::data>*>(ptr);
         broker_json_encode_broker_event(*event, oss);
-        break;
       }
-    }
+    } break;
     default:
       luaL_error(L, "json_encode: type not implemented");
   }
@@ -316,7 +315,7 @@ static void broker_json_decode_array(lua_State* L, const json& it) {
   size_t size{it.size()};
   lua_createtable(L, size, 0);
   auto cit = it.begin();
-  for (int i = 1; i <= size; ++i, ++cit) {
+  for (uint32_t i = 1; i <= size; ++i, ++cit) {
     broker_json_decode(L, *cit);
     lua_rawseti(L, -2, i);
   }

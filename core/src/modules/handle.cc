@@ -142,8 +142,9 @@ void handle::update(void const* arg) {
  */
 void handle::_check_version() {
   // Find version symbol.
-  log_v2::core()->debug("modules: checking module version (symbol {}) in '{}'",
-                        versionning, _filename);
+  log_v2::core()->debug(
+      "modules: checking module version (symbol '{}') in '{}'", versionning,
+      _filename);
 
   char const** version = (char const**)dlsym(_handle, versionning);
 
