@@ -9,6 +9,7 @@ This program build Centreon-broker
     -h|--help     : help
 EOF
 }
+
 BUILD_TYPE="Debug"
 for i in "$@"
 do
@@ -75,20 +76,28 @@ if [ -r /etc/centos-release ] ; then
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm
     yum install -y MariaDB*.rpm
+    pkgs=(
+      devtool-9
+      ninja-build
+      rrdtool-devel
+      gnutls-devel
+      lua-devel
+      perl-Thread-Queue
+    )
   else
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-shared-10.5.8-1.el8.x86_64.rpm --output MariaDB-shared-10.5.8-1.el8.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-common-10.5.8-1.el8.x86_64.rpm --output MariaDB-common-10.5.8-1.el8.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-compat-10.5.8-1.el8.x86_64.rpm --output MariaDB-compat-10.5.8-1.el8.x86_64.rpm
     dnf install -y MariaDB-*.rpm
+    pkgs=(
+      ninja-build
+      rrdtool-devel
+      gnutls-devel
+      lua-devel
+      perl-Thread-Queue
+    )
   fi
 
-  pkgs=(
-    ninja-build
-    rrdtool-devel
-    gnutls-devel
-    lua-devel
-    perl-Thread-Queue
-  )
   for i in "${pkgs[@]}"; do
     if ! rpm -q $i ; then
       if [ $maj = 'centos7' ] ; then
@@ -206,9 +215,6 @@ if [ $my_id -eq 0 ] ; then
 else
   conan="$HOME/.local/bin/conan"
 fi
-
-
-
 
 if [ ! -d build ] ; then
   mkdir build
