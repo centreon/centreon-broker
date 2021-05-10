@@ -41,6 +41,8 @@ set(CONFLICTMGR "conflictmgr" PARENT_SCOPE)
 set_target_properties(conflictmgr PROPERTIES
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
 
+add_dependencies(conflictmgr json11_lib)
+
 # Storage module.
 set(STORAGE "20-storage")
 set(STORAGE "${STORAGE}" PARENT_SCOPE)
@@ -77,6 +79,7 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/status.hh"
   "${INC_DIR}/stream.hh"
 )
+add_dependencies("${STORAGE}" json11_lib)
 set_target_properties("${STORAGE}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")

@@ -44,6 +44,8 @@ set_target_properties("${STATS}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
+add_dependencies("${STATS}" json11_lib)
+
 # Testing.
 if (WITH_TESTING)
   set(

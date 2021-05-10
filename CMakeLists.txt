@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2020 Centreon
+## Copyright 2009-2021 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_ID STREQ
   message(FATAL_ERROR "You can build broker with g++ or clang++. CMake will exit.")
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-add_definitions("-D_GLIBCXX_USE_CXX11_ABI=0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+add_definitions("-D_GLIBCXX_USE_CXX11_ABI=1")
 
 # With ASIO DEBUGGING ENABLED
 option(WITH_DEBUG_ASIO "Add the Asio debugging flags." OFF)
@@ -64,12 +64,10 @@ add_custom_target(table_max_size DEPENDS ${INC_DIR}/database/table_max_size.hh)
 set_source_files_properties(${INC_DIR}/database/table_max_size.hh PROPERTIES GENERATED TRUE)
 
 set(protobuf_MODULE_COMPATIBLE True)
-find_package(json11 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(asio REQUIRED)
-find_package(protobuf REQUIRED)
-find_package(protoc_installer REQUIRED)
+find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
@@ -77,15 +75,14 @@ find_package(ZLIB REQUIRED)
 
 add_definitions(${spdlog_DEFINITIONS})
 
-include_directories(${json11_INCLUDE_DIRS})
 include_directories(${fmt_INCLUDE_DIRS})
 include_directories(${spdlog_INCLUDE_DIRS})
 include_directories(${asio_INCLUDE_DIRS})
 include_directories(${protobuf_INCLUDE_DIRS})
+include_directories(${absl_INCLUDE_DIRS})
 include_directories(${gRPC_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
 
-link_directories(${json11_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
 link_directories(${spdlog_LIB_DIRS})
 link_directories(${protobuf_LIB_DIRS})
@@ -94,10 +91,38 @@ link_directories(${c-ares_LIB_DIRS})
 link_directories(${OpenSSL_LIB_DIRS})
 link_directories(${ZLIB_LIB_DIRS})
 
-message(STATUS "Using protobuf ${gRPC_VERSION}")
-set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
+set(PROTOBUF_PREFIX "${protobuf_LIB_DIRS}/..")
 message(STATUS "${PROTOBUF_PREFIX}/bin/protoc")
 set(GRPC_PREFIX "${gRPC_LIB_DIRS}/..")
+
+include(ExternalProject)
+option(BUILD_OFFLINE "Build offline" OFF)
+
+if (${BUILD_OFFLINE})
+  ExternalProject_Add(json11_lib
+      SOURCE_DIR ${CMAKE_BINARY_DIR}/json11_lib-prefix/src/json11_lib
+      TIMEOUT 10
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON
+      LOG_CONFIGURE ON
+      LOG_BUILD ON)
+else ()
+  ExternalProject_Add(json11_lib
+      GIT_REPOSITORY https://github.com/dropbox/json11/
+      TIMEOUT 10
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON
+      LOG_CONFIGURE ON
+      LOG_BUILD ON)
+endif ()
+
+
+ExternalProject_Get_Property(json11_lib source_dir)
+ExternalProject_Get_Property(json11_lib binary_dir)
+set(json11_INCLUDE_DIRS ${source_dir})
+set(json11_LIBS "${binary_dir}")
+link_directories(${json11_LIBS})
+include_directories(${json11_INCLUDE_DIRS})
 
 add_custom_command(
   DEPENDS ${SRC_DIR}/broker.proto
@@ -604,6 +629,7 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
+add_dependencies(rokerbase json11_lib)
 set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
 target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${MYSQL_LIBS}  pthread dl berpc)
 
@@ -611,17 +637,19 @@ add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
 target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection)
+add_dependencies(roker json11_lib)
 
 # Standalone binary.
 set(DAEMON cbd)
 add_executable(${DAEMON} ${SRC_DIR}/main.cc)
+add_dependencies(${DAEMON} json11_lib)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-  "-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+  "-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" json11 ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 # Centreon Broker Watchdog
-option(WITH_CBWD "Build centreon broker watchdong." ON)
+option(WITH_CBWD "Build centreon broker watchdog." ON)
 if (WITH_CBWD)
   add_subdirectory(watchdog)
 endif ()
