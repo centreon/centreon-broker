@@ -31,6 +31,7 @@ unset(QT_WRAPPED_SOURCES)
 # Correlation module.
 set(CORRELATION "30-correlation")
 set(CORRELATION "${CORRELATION}" PARENT_SCOPE)
+
 add_library("${CORRELATION}" SHARED
   # Sources.
   "${SRC_DIR}/connector.cc"
@@ -58,6 +59,7 @@ add_library("${CORRELATION}" SHARED
   # Qt-processed files.
   ${QT_WRAPPED_SOURCES}
 )
+add_dependencies("${CORRELATION}" json11_lib)
 
 set_target_properties(${CORRELATION} PROPERTIES PREFIX "")
 

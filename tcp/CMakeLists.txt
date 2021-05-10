@@ -48,6 +48,7 @@ add_library("${TCP}" SHARED
   ${SOURCES}
   ${HEADERS}
 )
+add_dependencies("${TCP}" json11_lib)
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
 
 # Testing.

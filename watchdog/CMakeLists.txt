@@ -22,6 +22,7 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/watchdog/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/watchdog/test")
 include_directories(${PROJECT_SOURCE_DIR}/watchdog/inc/
                     ${PROJECT_SOURCE_DIR}/neb/inc/
+                    ${json11_INCLUDE_DIRS}
 )
 
 # Watchdog binary.
@@ -40,8 +41,9 @@ add_executable("${WATCHDOG}"
   ${INC_DIR}/instance.hh
   ${INC_DIR}/instance_configuration.hh
 )
+add_dependencies("${WATCHDOG}" json11_lib)
 
-target_link_libraries(${WATCHDOG} pthread ${fmt_LIBS} ${spdlog_LIBS} ${json11_LIBS})
+target_link_libraries(${WATCHDOG} pthread ${fmt_LIBS} ${spdlog_LIBS} json11)
 
 if (WITH_WATCHDOG_TESTS)
   # Testing.

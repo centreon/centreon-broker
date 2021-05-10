@@ -43,6 +43,8 @@ add_library("${STATS}" SHARED
 set_target_properties("${STATS}" PROPERTIES
     PREFIX "")
 
+add_dependencies("${STATS}" json11_lib)
+
 # Testing.
 if (WITH_TESTING)
   set(

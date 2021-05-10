@@ -6,6 +6,11 @@
 
 ### Enhancement
 
+*Build*
+
+cbd could not build anymore since the bintray closure. cbd dependencies have
+been moved to the conan-center. The build is back.
+
 *Bam*
 
 *ba worst/best states computation*
