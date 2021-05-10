@@ -19,8 +19,8 @@
 #ifndef CCB_FILE_FACTORY_HH
 #define CCB_FILE_FACTORY_HH
 
+#include "com/centreon/broker/io/extension.hh"
 #include "com/centreon/broker/io/factory.hh"
-#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -38,7 +38,7 @@ class factory : public io::factory {
   ~factory() = default;
   factory& operator=(factory const& other) = delete;
   io::factory* clone() const;
-  bool has_endpoint(config::endpoint& cfg, flag* flag) override;
+  bool has_endpoint(config::endpoint& cfg, io::extension* ext) override;
   io::endpoint* new_endpoint(
       config::endpoint& cfg,
       bool& is_acceptor,

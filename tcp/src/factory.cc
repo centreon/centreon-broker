@@ -40,9 +40,9 @@ using namespace com::centreon::exceptions;
  *
  *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
-  if (flag)
-    *flag = no;
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
+  if (ext)
+    *ext = io::extension("TCP", false, false);
   return cfg.type == "ip" || cfg.type == "tcp" || cfg.type == "ipv4" ||
          cfg.type == "ipv6";
 }

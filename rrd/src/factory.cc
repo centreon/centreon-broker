@@ -59,12 +59,6 @@ static std::string find_param(config::endpoint const& cfg,
   return it->second;
 }
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Check if a configuration match the RRD layer.
  *
@@ -72,9 +66,9 @@ static std::string find_param(config::endpoint const& cfg,
  *
  *  @return True if the configuration matches the RRD layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
-  if (flag)
-    *flag = no;
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
+  if (ext)
+    *ext = io::extension("RRD", false, false);
   return cfg.type == "rrd";
 }
 
