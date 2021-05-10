@@ -6,6 +6,12 @@
 
 ### Bug fixes
 
+*Factories*
+
+If we want two outputs configured with tls but with different configurations,
+this was impossible to configure, because the factory can only store one
+configuration. This is fixed now.
+
 *Build*
 
 Since the bintray closure, we could not build cbd. Dependencies have been moved
