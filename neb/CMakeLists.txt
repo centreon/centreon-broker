@@ -225,9 +225,9 @@ set_property(TARGET "${CBMOD}"
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # Flags needed to include all symbols in shared library.
   target_link_libraries("${CBMOD}"
-    "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive" ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
+    "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive" ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS} json11)
 else ()
-  target_link_libraries("${CBMOD}" "nebbase" "rokerbase" ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
+  target_link_libraries("${CBMOD}" "nebbase" "rokerbase" ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS} json11)
 endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 

@@ -27,8 +27,8 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_ID STREQ
   message(FATAL_ERROR "You can build broker with g++ or clang++. CMake will exit.")
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-add_definitions("-D_GLIBCXX_USE_CXX11_ABI=0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+add_definitions("-D_GLIBCXX_USE_CXX11_ABI=1")
 
 # With ASIO DEBUGGING ENABLED
 option(WITH_DEBUG_ASIO "Add the Asio debugging flags." OFF)
@@ -120,7 +120,7 @@ endif ()
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)
 set(json11_INCLUDE_DIRS ${source_dir})
-set(json11_LIBS ${binary_dir})
+set(json11_LIBS "${binary_dir}")
 link_directories(${json11_LIBS})
 include_directories(${json11_INCLUDE_DIRS})
 

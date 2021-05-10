@@ -48,6 +48,7 @@ add_library("${SIMU}" SHARED
   "${INC_DIR}/luabinding.hh"
   "${INC_DIR}/stream.hh"
 )
+add_dependencies("${SIMU}" json11_lib)
 target_link_libraries("${SIMU}" ${LUA_LIBRARIES})
 set_target_properties("${SIMU}" PROPERTIES PREFIX "")
 

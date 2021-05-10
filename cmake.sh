@@ -1,11 +1,5 @@
 #!/bin/bash
 
-<<<<<<< HEAD
-if [ "$1" = "-f" ] ; then
-  force=1
-  shift
-fi
-=======
 show_help() {
 cat << EOF
 Usage: ${0##*/} -n=[yes|no] -v
@@ -35,7 +29,6 @@ do
     ;;
   esac
 done
->>>>>>> 8d39bab... wip using conan
 
 # Am I root?
 my_id=$(id -u)
@@ -137,8 +130,6 @@ elif [ -r /etc/issue ] ; then
     echo "Bad version of cmake..."
     exit 1
   fi
-<<<<<<< HEAD
-=======
 
   if [ $maj = "Debian" ] ; then
     pkgs=(
@@ -187,7 +178,7 @@ elif [ -r /etc/issue ] ; then
       fi
     done
   fi
->>>>>>> 8d39bab... wip using conan
+
   if [[ ! -x /usr/bin/python3 ]] ; then
     if [ $my_id -eq 0 ] ; then
       apt install -y python3
