@@ -22,7 +22,7 @@
 #include <fmt/format.h>
 #include <gtest/gtest.h>
 
-#include <json11.hpp>
+#include <nlohmann/json.hpp>
 
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/pool.hh"
@@ -55,7 +55,7 @@ static auto try_connect =
     } catch (...) {
     }
   }
-  return std::move(u);
+  return u;
 };
 
 TEST_F(TcpAcceptor, BadPort) {
@@ -919,10 +919,9 @@ TEST_F(TcpAcceptor, ChildsAndStats) {
   acc.add_child("child3");
   acc.remove_child("child2");
 
-  json11::Json::object obj;
+  nlohmann::json obj;
   acc.stats(obj);
-  json11::Json js{obj};
-  ASSERT_EQ(js.dump(), "{\"peers\": \"2: child1, child3\"}");
+  ASSERT_EQ(obj.dump(), "{\"peers\":\"2: child1, child3\"}");
 }
 
 TEST_F(TcpAcceptor, QuestionAnswerMultiple) {

@@ -23,7 +23,7 @@
 #include <com/centreon/broker/stats/worker.hh>
 #include <com/centreon/broker/stats/worker_pool.hh>
 #include <fstream>
-#include <json11.hpp>
+#include <nlohmann/json.hpp>
 #include <thread>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/state.hh"
@@ -72,10 +72,8 @@ TEST_F(StatsTest, Builder) {
 
   build.build();
 
-  std::string err;
-  json11::Json const& result{json11::Json::parse(build.data(), err)};
+  nlohmann::json const& result{nlohmann::json::parse(build.data())};
 
-  ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
   ASSERT_EQ(result["version"], CENTREON_BROKER_VERSION);
   ASSERT_EQ(result["pid"], getpid());
@@ -94,10 +92,9 @@ TEST_F(StatsTest, BuilderWithModules) {
 
   build.build();
 
-  std::string err;
-  json11::Json const& result{json11::Json::parse(build.data(), err)};
+  nlohmann::json result;
+  ASSERT_NO_THROW(result = nlohmann::json::parse(build.data()));
 
-  ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
   ASSERT_EQ(result["version"], CENTREON_BROKER_VERSION);
   ASSERT_EQ(result["pid"], getpid());
@@ -106,10 +103,12 @@ TEST_F(StatsTest, BuilderWithModules) {
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
 
-  ASSERT_EQ(result["module./neb/10-neb.so"]["state"].string_value(), "loaded");
-  ASSERT_EQ(result["module./storage/20-storage.so"]["state"].string_value(),
+  ASSERT_EQ(result["module./neb/10-neb.so"]["state"].get<std::string>(),
             "loaded");
-  ASSERT_EQ(result["module./lua/70-lua.so"]["state"].string_value(), "loaded");
+  ASSERT_EQ(result["module./storage/20-storage.so"]["state"].get<std::string>(),
+            "loaded");
+  ASSERT_EQ(result["module./lua/70-lua.so"]["state"].get<std::string>(),
+            "loaded");
 }
 
 class st : public io::stream {
@@ -233,7 +232,8 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
 
   // Parse.
   config::parser p;
-  config::state s{p.parse(config_file)};
+  config::state s;
+  ASSERT_NO_THROW(s = p.parse(config_file));
 
   auto test = std::make_shared<fact>();
   io::protocols::instance().reg("CentreonInput", test, 1, 7);
@@ -248,18 +248,16 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
 
   build.build();
 
-  std::string err;
-  json11::Json const& result{json11::Json::parse(build.data(), err)};
+  nlohmann::json const& result{nlohmann::json::parse(build.data())};
 
-  ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
-  ASSERT_EQ(result["pid"].number_value(), getpid());
+  ASSERT_EQ(result["version"].get<std::string>(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].get<uint32_t>(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
-  ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() ==
+  ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].get<std::string>() ==
               "listening");
 }
 
@@ -271,12 +269,12 @@ TEST_F(StatsTest, CopyCtor) {
   stats::builder build2{build};
 
   std::string err;
-  json11::Json const& result{build2.root()};
+  nlohmann::json const& result{build2.root()};
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
-  ASSERT_EQ(result["pid"].number_value(), getpid());
+  ASSERT_EQ(result["version"].get<std::string>(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].get<int32_t>(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
@@ -312,17 +310,14 @@ TEST_F(StatsTest, Worker) {
   std::string js((std::istreambuf_iterator<char>(f)),
                  std::istreambuf_iterator<char>());
 
-  std::string err;
-
   f.close();
   work.reset();
 
-  json11::Json const& result{json11::Json::parse(js, err)};
+  nlohmann::json const& result{nlohmann::json::parse(js)};
 
-  ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
-  ASSERT_EQ(result["pid"].number_value(), getpid());
+  ASSERT_EQ(result["version"].get<std::string>(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].get<int32_t>(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
@@ -356,17 +351,14 @@ TEST_F(StatsTest, WorkerPool) {
   std::string js((std::istreambuf_iterator<char>(f)),
                  std::istreambuf_iterator<char>());
 
-  std::string err;
-
   f.close();
   work.reset();
 
-  json11::Json const& result{json11::Json::parse(js, err)};
+  nlohmann::json const& result{nlohmann::json::parse(js)};
 
-  ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
-  ASSERT_EQ(result["pid"].number_value(), getpid());
+  ASSERT_EQ(result["version"].get<std::string>(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].get<int32_t>(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());

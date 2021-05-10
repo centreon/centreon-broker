@@ -21,13 +21,16 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
+using namespace nlohmann;
 
 /**
  *  Check that 'input' and 'output' are properly parsed by the
@@ -72,7 +75,8 @@ TEST(parser, endpoint) {
       "        ],\n"
       "        \"buffering_timeout\": \"10\",\n"
       "        \"read_timeout\": \"5\",\n"
-      "        \"retry_interval\": \"300\"\n"
+      "        \"retry_interval\": \"300\",\n"
+      "        \"f\": \"1\"\n"
       "      },\n"
       "      {\n"
       "        \"name\": \"CentreonRetention\",\n"
@@ -131,7 +135,7 @@ TEST(parser, endpoint) {
   ASSERT_EQ(output1.failovers.front(), "CentreonRetention");
   ASSERT_EQ(output1.buffering_timeout, 10);
   ASSERT_EQ(output1.read_timeout, 5);
-  ASSERT_EQ(output1.retry_interval, 300);
+  ASSERT_EQ(output1.retry_interval, 300u);
   ASSERT_EQ(output1.params["db_type"], "mysql");
   ASSERT_EQ(output1.params["db_host"], "localhost");
   ASSERT_EQ(output1.params["db_port"], "3306");
@@ -209,6 +213,12 @@ TEST(parser, logger) {
 
   // Close file.
   fclose(file_stream);
+
+  std::ifstream f(config_file);
+  std::string const& json_to_parse{std::istreambuf_iterator<char>(f),
+                                   std::istreambuf_iterator<char>()};
+
+  json doc = json::parse(json_to_parse);
 
   // Parse.
   config::parser p;

@@ -20,8 +20,8 @@
 #define CCB_IO_STREAM_HH
 
 #include <ctime>
-#include <json11.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "com/centreon/broker/io/data.hh"
@@ -72,7 +72,7 @@ class stream {
                     time_t deadline = (time_t)-1) = 0;
   virtual void set_substream(std::shared_ptr<stream> substream);
   std::shared_ptr<stream> get_substream();
-  virtual void statistics(json11::Json::object& tree) const;
+  virtual void statistics(nlohmann::json& tree) const;
   virtual void update();
   bool validate(std::shared_ptr<io::data> const& d, std::string const& error);
   virtual int write(std::shared_ptr<data> const& d) = 0;

@@ -18,8 +18,8 @@
 
 #include "com/centreon/broker/influxdb/factory.hh"
 #include <cstring>
-#include <json11.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <vector>
 #include "com/centreon/broker/config/parser.hh"
@@ -29,14 +29,8 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
-using namespace json11;
+using namespace nlohmann;
 using namespace com::centreon::exceptions;
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 /**
  *  Find a parameter in configuration.
@@ -53,12 +47,6 @@ static std::string find_param(config::endpoint const& cfg,
     throw msg_fmt("influxdb: no '{}' defined for endpoint '{}'", key, cfg.name);
   return it->second;
 }
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Check if a configuration match the storage layer.
@@ -130,12 +118,12 @@ io::endpoint* factory::new_endpoint(
       queries_per_transaction = 1000;
   }
 
-  auto chk_str = [](Json const& js) -> std::string {
-    if (!js.is_string() || js.string_value().empty()) {
+  auto chk_str = [](json const& js) -> std::string {
+    if (!js.is_string() || js.get<std::string>().empty()) {
       throw msg_fmt(
           "influxdb: couldn't get the configuration of a metric column name");
     }
-    return js.string_value();
+    return js.get<std::string>();
   };
   auto chk_bool = [](std::string const& boolean) -> bool {
     if (boolean == "yes" || boolean == "true")
@@ -146,14 +134,14 @@ io::endpoint* factory::new_endpoint(
   // Get status query.
   std::string status_timeseries{find_param(cfg, "status_timeseries")};
   std::vector<column> status_column_list;
-  Json const& status_columns = cfg.cfg["status_column"];
+  json const& status_columns = cfg.cfg["status_column"];
   if (status_columns.is_object())
     status_column_list.push_back(column(
         chk_str(status_columns["name"]), chk_str(status_columns["value"]),
         chk_bool(chk_str(status_columns["is_tag"])),
         column::parse_type(chk_str(status_columns["type"]))));
   else if (status_columns.is_array())
-    for (Json const& object : status_columns.array_items())
+    for (json const& object : status_columns)
       status_column_list.push_back(
           column(chk_str(object["name"]), chk_str(object["value"]),
                  chk_bool(chk_str(object["is_tag"])),
@@ -162,14 +150,14 @@ io::endpoint* factory::new_endpoint(
   // Get metric query.*/
   std::string metric_timeseries(find_param(cfg, "metrics_timeseries"));
   std::vector<column> metric_column_list;
-  Json const& metric_columns = cfg.cfg["metrics_column"];
+  json const& metric_columns = cfg.cfg["metrics_column"];
   if (metric_columns.is_object())
     metric_column_list.push_back(column(
         chk_str(metric_columns["name"]), chk_str(metric_columns["value"]),
         chk_bool(chk_str(metric_columns["is_tag"])),
         column::parse_type(chk_str(metric_columns["type"]))));
   else if (metric_columns.is_array())
-    for (Json const& object : metric_columns.array_items())
+    for (json const& object : metric_columns)
       metric_column_list.push_back(
           column(chk_str(object["name"]), chk_str(object["value"]),
                  chk_bool(chk_str(object["is_tag"])),

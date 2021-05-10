@@ -57,7 +57,7 @@ add_library("${LUA}" SHARED
   "${INC_DIR}/macro_cache.hh"
   "${INC_DIR}/stream.hh"
 )
-target_link_libraries("${LUA}" ${LUA_LIBRARIES})
+target_link_libraries("${LUA}" ${LUA_LIBRARIES} ${OpenSSL_LIBS})
 set_target_properties("${LUA}" PROPERTIES PREFIX "")
 
 # Testing.

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #define CCB_IO_ENDPOINT_HH
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <set>
 #include <string>
 
@@ -56,7 +57,7 @@ class endpoint {
   bool is_connector() const noexcept;
   virtual std::unique_ptr<stream> open() = 0;
   virtual bool is_ready() const;
-  virtual void stats(json11::Json::object& tree);
+  virtual void stats(nlohmann::json& tree);
   void set_filter(std::set<uint32_t> const& filter);
 };
 }  // namespace io

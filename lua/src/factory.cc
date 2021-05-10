@@ -18,15 +18,15 @@
 
 #include "com/centreon/broker/lua/factory.hh"
 #include <cstring>
-#include <json11.hpp>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include "com/centreon/broker/lua/connector.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::lua;
-using namespace json11;
+using namespace nlohmann;
 
 /**
  *  Find a parameter in configuration.
@@ -79,37 +79,37 @@ io::endpoint* factory::new_endpoint(
   std::string err;
 
   std::string filename(find_param(cfg, "path"));
-  Json const& js{cfg.cfg["lua_parameter"]};
+  json const& js{cfg.cfg["lua_parameter"]};
 
   if (!err.empty())
     throw msg_fmt("lua: couldn't read a configuration json");
 
   if (js.is_object()) {
-    Json const& name{js["name"]};
-    Json const& type{js["type"]};
-    Json const& value{js["value"]};
+    json const& name{js["name"]};
+    json const& type{js["type"]};
+    json const& value{js["value"]};
 
-    if (name.string_value().empty())
+    if (name.get<std::string>().empty())
       throw msg_fmt(
           "lua: couldn't read a configuration field because"
           " its name is empty");
-    if (value.string_value().empty())
+    if (value.get<std::string>().empty())
       throw msg_fmt(
           "lua: couldn't read a configuration field because"
           "' configuration field because its value is empty");
-    std::string t((type.string_value().empty()) ? "string"
-                                                : type.string_value());
+    std::string t((type.get<std::string>().empty()) ? "string"
+                                                    : type.get<std::string>());
     if (t == "string" || t == "password")
       conf_map.insert(
-          {name.string_value(), misc::variant(value.string_value())});
+          {name.get<std::string>(), misc::variant(value.get<std::string>())});
     else if (t == "number") {
       bool ko = false;
       size_t pos;
-      std::string const& v(value.string_value());
+      std::string const& v(value.get<std::string>());
       try {
         int val = std::stol(v, &pos);
         if (pos == v.size())  // All the string is read
-          conf_map.insert({name.string_value(), misc::variant(val)});
+          conf_map.insert({name.get<std::string>(), misc::variant(val)});
         else
           ko = true;
       } catch (std::exception const& e) {
@@ -120,7 +120,7 @@ io::endpoint* factory::new_endpoint(
         try {
           double val = std::stod(v, &pos);
           if (pos == v.size())  // All the string is read
-            conf_map.insert({name.string_value(), misc::variant(val)});
+            conf_map.insert({name.get<std::string>(), misc::variant(val)});
           else
             ko = true;
         } catch (std::exception const& e) {
@@ -129,34 +129,35 @@ io::endpoint* factory::new_endpoint(
       }
       if (ko)
         throw msg_fmt("lua: unable to read '{}' content ({}) as a number",
-                      name.string_value(), value.string_value());
+                      name.get<std::string>(), value.get<std::string>());
     }
   } else if (js.is_array()) {
-    for (Json const& obj : js.array_items()) {
-      Json const& name{obj["name"]};
-      Json const& type{obj["type"]};
-      Json const& value{obj["value"]};
+    for (json const& obj : js) {
+      json const& name{obj["name"]};
+      json const& type{obj["type"]};
+      json const& value{obj["value"]};
 
-      if (name.string_value().empty())
+      if (name.get<std::string>().empty())
         throw msg_fmt(
             "lua: couldn't read a configuration field because"
             " its name is empty");
-      if (value.string_value().empty())
+      if (value.get<std::string>().empty())
         throw msg_fmt(
             "lua: couldn't read a configuration field because"
             " its value is empty");
-      std::string t((type.string_value().empty()) ? "string"
-                                                  : type.string_value());
+      std::string t((type.get<std::string>().empty())
+                        ? "string"
+                        : type.get<std::string>());
       if (t == "string" || t == "password")
         conf_map.insert(
-            {name.string_value(), misc::variant(value.string_value())});
+            {name.get<std::string>(), misc::variant(value.get<std::string>())});
       else if (t == "number") {
         try {
-          int val = std::stol(value.string_value());
-          conf_map.insert({name.string_value(), misc::variant(val)});
+          int val = std::stol(value.get<std::string>());
+          conf_map.insert({name.get<std::string>(), misc::variant(val)});
         } catch (std::exception const& e) {
           throw msg_fmt("lua: unable to read '{}' content ({}) as a number",
-                        name.string_value(), value.string_value());
+                        name.get<std::string>(), value.get<std::string>());
         }
       }
     }

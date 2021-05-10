@@ -23,7 +23,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <deque>
-#include <json11.hpp>
+#include <nlohmann/json.hpp>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -103,7 +103,7 @@ class stream : public io::stream {
   int32_t flush() override;
   int32_t stop() override;
   bool stats_mean_square(double& a, double& b) const noexcept;
-  void statistics(json11::Json::object& tree) const override;
+  void statistics(nlohmann::json& tree) const override;
 };
 }  // namespace lua
 

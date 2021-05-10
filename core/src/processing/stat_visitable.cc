@@ -41,7 +41,7 @@ stat_visitable::stat_visitable(std::string const& name)
  *
  *  @param[in] tree  Tree of information.
  */
-void stat_visitable::stats(json11::Json::object& tree) {
+void stat_visitable::stats(nlohmann::json& tree) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   tree["state"] = std::string(_state);
   tree["read_filters"] = _get_read_filters();
@@ -116,7 +116,7 @@ void stat_visitable::tick(uint32_t events) {
  *
  *  @param[in] tree  The tree gathering the stats.
  */
-void stat_visitable::_forward_statistic(json11::Json::object& tree) {
+void stat_visitable::_forward_statistic(nlohmann::json& tree) {
   (void)tree;
 }
 

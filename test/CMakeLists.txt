@@ -16,9 +16,9 @@
 ## For more information : contact@centreon.com
 ##
 
-find_package(gtest REQUIRED)
-include_directories(${gtest_INCLUDE_DIRS})
-link_directories(${gtest_LIB_DIRS})
+find_package(GTest REQUIRED)
+include_directories(${GTest_INCLUDE_DIRS})
+link_directories(${GTest_LIB_DIRS})
 
 # Tests directory.
 set(TESTS_DIR ${PROJECT_SOURCE_DIR}/core/test)
@@ -56,7 +56,7 @@ endif (WITH_SQL_TESTS)
 add_definitions(-DBROKERRPC_TESTS_PATH="${TESTS_DIR}/rpc")
 
 add_executable(rpc_client ${TESTS_DIR}/rpc/client.cc)
-target_link_libraries(rpc_client berpc ${gRPC_LIBS} ${absl_LIBS} ${OpenSSL_LIBS} ${c-ares_LIBS} ${ZLIB_LIBS} dl)
+target_link_libraries(rpc_client berpc ${gRPC_LIBS} ${absl_LIBS} ${OpenSSL_LIBS} ${c-ares_LIBS} ${ZLIB_LIBS} dl pthread)
 
 add_executable(ut
   # Core sources.
@@ -107,7 +107,7 @@ add_executable(ut
 #set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 target_link_libraries(ut rokerbase roker ${TESTS_LIBRARIES} conflictmgr
-	${json11_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gtest_LIBS} ${mariadb-connector-c_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+	${json11_LIBS} ${nlohmann_json_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${GTest_LIBS} ${mariadb-connector-c_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 add_test(NAME tests COMMAND ut)
 

@@ -184,9 +184,10 @@ TEST_F(BamBA, KpiServiceImpactState) {
       ASSERT_EQ(it->end_time, -1);
       ASSERT_EQ(it->status, 2);
       ASSERT_FALSE(it->in_downtime);
-      do {
-        ++it;
-      } while (it->typ != test_visitor::test_event::kpi);
+      while (++it != events.end()) {
+        if (it->typ == test_visitor::test_event::kpi)
+          break;
+      }
     }
   }
 }
@@ -335,9 +336,10 @@ TEST_F(BamBA, KpiServiceWorstState) {
       ASSERT_EQ(it->end_time, -1);
       ASSERT_EQ(it->status, 2);
       ASSERT_FALSE(it->in_downtime);
-      do {
-        ++it;
-      } while (it->typ != test_visitor::test_event::kpi);
+      while (++it != events.end()) {
+        if (it->typ == test_visitor::test_event::kpi)
+          break;
+      }
     }
   }
 }

@@ -38,8 +38,10 @@ using namespace com::centreon::broker::version;
  *
  * @return Status::OK
  */
-grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
-                                     const ::google::protobuf::Empty* request,
+grpc::Status broker_impl::GetVersion(grpc::ServerContext* context
+                                     __attribute__((unused)),
+                                     const ::google::protobuf::Empty* request
+                                     __attribute__((unused)),
                                      Version* response) {
   response->set_major(major);
   response->set_minor(minor);
@@ -47,7 +49,8 @@ grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetNumModules(grpc::ServerContext* context,
+grpc::Status broker_impl::GetNumModules(grpc::ServerContext* context
+                                        __attribute__((unused)),
                                         const ::google::protobuf::Empty*,
                                         GenericSize* response) {
   auto& mod_applier(config::applier::state::instance().get_modules());
@@ -58,7 +61,8 @@ grpc::Status broker_impl::GetNumModules(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context,
+grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context
+                                         __attribute__((unused)),
                                          const ::google::protobuf::Empty*,
                                          GenericSize* response) {
   // Endpoint applier.
@@ -72,30 +76,28 @@ grpc::Status broker_impl::GetNumEndpoint(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
+grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context
+                                          __attribute__((unused)),
                                           const GenericNameOrIndex* request,
                                           GenericString* response) {
-  std::vector<json11::Json::object> value;
+  std::vector<nlohmann::json> value;
   stats::get_loaded_module_stats(value);
 
   bool found{false};
-  json11::Json val;
-  json11::Json::object object;
+  nlohmann::json object;
   switch (request->nameOrIndex_case()) {
     case GenericNameOrIndex::NAMEORINDEX_NOT_SET:
       for (auto& obj : value) {
-        object["module" + obj["name"].string_value()] = obj;
+        object["module" + obj["name"].get<std::string>()] = obj;
       }
-      val = object;
-      response->set_str_arg(std::move(val.dump()));
+      response->set_str_arg(std::move(object.dump()));
       break;
 
     case GenericNameOrIndex::kStr:
       for (auto& obj : value) {
-        if (obj["name"].string_value() == request->str()) {
+        if (obj["name"].get<std::string>() == request->str()) {
           found = true;
-          val = obj;
-          response->set_str_arg(std::move(val.dump()));
+          response->set_str_arg(std::move(object.dump()));
           break;
         }
       }
@@ -111,8 +113,8 @@ grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
         return grpc::Status(grpc::INVALID_ARGUMENT,
                             grpc::string("idx too big"));
 
-      val = value[request->idx()];
-      response->set_str_arg(std::move(val.dump()));
+      object = value[request->idx()];
+      response->set_str_arg(object.dump());
       break;
 
     default:
@@ -123,10 +125,11 @@ grpc::Status broker_impl::GetModulesStats(grpc::ServerContext* context,
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context,
+grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context
+                                           __attribute__((unused)),
                                            const GenericNameOrIndex* request,
                                            GenericString* response) {
-  std::vector<json11::Json::object> value;
+  std::vector<nlohmann::json> value;
   try {
     if (!stats::get_endpoint_stats(value))
       return grpc::Status(grpc::UNAVAILABLE, grpc::string("endpoint locked"));
@@ -135,24 +138,21 @@ grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context,
   }
 
   bool found{false};
-  json11::Json val;
-  json11::Json::object object;
+  nlohmann::json object;
 
   switch (request->nameOrIndex_case()) {
     case GenericNameOrIndex::NAMEORINDEX_NOT_SET:
       for (auto& obj : value) {
-        object["module" + obj["name"].string_value()] = obj;
+        object["module" + obj["name"].get<std::string>()] = obj;
       }
-      val = object;
-      response->set_str_arg(std::move(val.dump()));
+      response->set_str_arg(std::move(object.dump()));
       break;
 
     case GenericNameOrIndex::kStr:
       for (auto& obj : value) {
-        if (obj["name"].string_value() == request->str()) {
+        if (obj["name"].get<std::string>() == request->str()) {
           found = true;
-          val = obj;
-          response->set_str_arg(std::move(val.dump()));
+          response->set_str_arg(std::move(obj.dump()));
           break;
         }
       }
@@ -167,8 +167,8 @@ grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context,
         return grpc::Status(grpc::INVALID_ARGUMENT,
                             grpc::string("idx too big"));
 
-      val = value[request->idx()];
-      response->set_str_arg(std::move(val.dump()));
+      object = value[request->idx()];
+      response->set_str_arg(std::move(object.dump()));
       break;
 
     default:
@@ -179,26 +179,23 @@ grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context,
 }
 
 grpc::Status broker_impl::GetGenericStats(
-    grpc::ServerContext* context,
-    const ::google::protobuf::Empty* request,
+    grpc::ServerContext* context __attribute__((unused)),
+    const ::google::protobuf::Empty* request __attribute__((unused)),
     GenericString* response) {
-  json11::Json::object object;
+  nlohmann::json object;
   stats::get_generic_stats(object);
 
-  json11::Json val;
-  val = object;
-  response->set_str_arg(std::move(val.dump()));
+  response->set_str_arg(std::move(object.dump()));
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetSqlStats(grpc::ServerContext* context,
-                                      const ::google::protobuf::Empty* request,
+grpc::Status broker_impl::GetSqlStats(grpc::ServerContext* context
+                                      __attribute__((unused)),
+                                      const ::google::protobuf::Empty* request
+                                      __attribute__((unused)),
                                       GenericString* response) {
-  json11::Json::object object;
+  nlohmann::json object;
   stats::get_mysql_stats(object);
-
-  json11::Json val;
-  val = object;
-  response->set_str_arg(std::move(val.dump()));
+  response->set_str_arg(object.dump());
   return grpc::Status::OK;
 }

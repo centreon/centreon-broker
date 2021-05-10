@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@
  */
 
 #include "com/centreon/broker/stats/parser.hh"
-#include <json11.hpp>
+#include <nlohmann/json.hpp>
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::stats;
-using namespace json11;
 
 /**
  *  Default constructor.
@@ -42,23 +41,23 @@ parser::~parser() noexcept {}
  *  @param[in]  content XML content.
  */
 void parser::parse(std::vector<std::string>& cfg, std::string const& content) {
-  std::string err;
-  auto json_fifo = [&cfg](Json const& js) -> void {
-    if (js.is_string() && !js.string_value().empty())
-      cfg.push_back(js.string_value());
+  auto json_fifo = [&cfg](nlohmann::json const& js) -> void {
+    if (js.is_string() && !js.get<std::string>().empty())
+      cfg.push_back(js.get<std::string>());
   };
 
-  Json const& js{Json::parse(content, err)};
-  if (!err.empty())
-    throw msg_fmt("stats: invalid json file");
-
+  nlohmann::json js;
+  try {
+    js = nlohmann::json::parse(content);
+  } catch (const nlohmann::json::parse_error& e) {
+    throw msg_fmt("stats: invalid json file: {}", e.what());
+  }
   if (js.is_object()) {
-    Json const& field{js["json_fifo"]};
+    nlohmann::json const& field{js["json_fifo"]};
     json_fifo(field);
   } else if (js.is_array()) {
-    for (auto it = js.array_items().begin(), end = js.array_items().end();
-         it != end; ++it) {
-      Json const& field{(*it)["json_fifo"]};
+    for (auto it = js.begin(), end = js.end(); it != end; ++it) {
+      nlohmann::json const& field{(*it)["json_fifo"]};
       json_fifo(field);
     }
   }

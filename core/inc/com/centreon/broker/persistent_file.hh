@@ -44,7 +44,7 @@ class persistent_file : public io::stream {
   bool read(std::shared_ptr<io::data>& d,
             time_t deadline = (time_t)-1) override;
   void remove_all_files();
-  void statistics(json11::Json::object& tree) const override;
+  void statistics(nlohmann::json& tree) const override;
   int32_t write(const std::shared_ptr<io::data>& d) override;
   int32_t stop() override;
 };

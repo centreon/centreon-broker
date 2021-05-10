@@ -1602,7 +1602,9 @@ TEST_F(LuaTest, JsonDecodeError) {
   std::string result(ReadFile("/tmp/log"));
 
   ASSERT_NE(result.find("dec=nil"), std::string::npos);
-  ASSERT_NE(result.find("err=expected value, got '}' (125)"),
+  ASSERT_NE(result.find("err=[json.exception.parse_error.101] parse error at "
+                        "line 8, column 1: syntax error while parsing value - "
+                        "unexpected '}'; expected '[', '{', or a literal"),
             std::string::npos);
   RemoveFile(filename);
   // RemoveFile("/tmp/log");

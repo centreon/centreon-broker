@@ -112,7 +112,7 @@ std::string const& feeder::_get_write_filters() const {
  *
  *  @param[in] tree  The statistic tree.
  */
-void feeder::_forward_statistic(json11::Json::object& tree) {
+void feeder::_forward_statistic(nlohmann::json& tree) {
   if (_client_m.try_lock_shared_for(300)) {
     if (_client)
       _client->statistics(tree);

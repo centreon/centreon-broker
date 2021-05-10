@@ -167,9 +167,8 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
  *
  *  @param[out] tree Output tree.
  */
-void stream::statistics(json11::Json::object& tree) const {
-  json11::Json::object obj{
-      storage::conflict_manager::instance().get_statistics()};
+void stream::statistics(nlohmann::json& tree) const {
+  nlohmann::json obj{storage::conflict_manager::instance().get_statistics()};
   tree["sql pending events"] = _pending_events;
   tree["conflict_manager"] = obj;
 }

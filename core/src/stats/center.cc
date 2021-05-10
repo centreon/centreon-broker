@@ -74,7 +74,18 @@ center::center() : _strand(pool::instance().io_context()) {
   pool::instance().start_stats(_stats.mutable_pool_stats());
 }
 
+/**
+ * @brief The destructor.
+ */
 center::~center() {
+  /* Before destroying the strand, we have to wait it is really empty. We post
+   * a last action and wait it is over. */
+  std::promise<bool> p;
+  std::future<bool> f{p.get_future()};
+  _strand.post([&p] {
+      p.set_value(true);
+      });
+  f.get();
   pool::instance().stop_stats();
 }
 
