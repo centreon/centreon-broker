@@ -93,12 +93,6 @@ class name_match_failover {
   std::string _name;
 };
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Destructor.
  */
@@ -166,8 +160,8 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
     assert(!_discarding);
     // Check that output is not a failover.
     if (ep.name.empty() ||
-        (std::find_if(endp_to_create.begin(), endp_to_create.end(),
-                      name_match_failover(ep.name)) == endp_to_create.end())) {
+        std::find_if(endp_to_create.begin(), endp_to_create.end(),
+                     name_match_failover(ep.name)) == endp_to_create.end()) {
       log_v2::core()->debug("creating endpoint {}", ep.name);
       // Create subscriber and endpoint.
       std::shared_ptr<multiplexing::subscriber> s(_create_subscriber(ep));
@@ -434,10 +428,8 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
     }
   }
   if (!endp)
-    throw msg_fmt(
-        "endpoint applier: no matching "
-        "type found for endpoint '{}'",
-        cfg.name);
+    throw msg_fmt("endpoint applier: no matching type found for endpoint '{}'",
+                  cfg.name);
 
   // Create remaining objects.
   while (level <= 7) {

@@ -37,7 +37,7 @@ class factory : public io::factory {
   factory(factory const& other) = delete;
   ~factory() = default;
   factory& operator=(factory const& other) = delete;
-  bool has_endpoint(config::endpoint& cfg, io::factory::flag* flag) override;
+  bool has_endpoint(config::endpoint& cfg, io::extension* ext) override;
   io::endpoint* new_endpoint(
       config::endpoint& cfg,
       bool& is_acceptor,
@@ -46,7 +46,7 @@ class factory : public io::factory {
   std::shared_ptr<io::stream> new_stream(
       std::shared_ptr<io::stream> to,
       bool is_acceptor,
-      std::string const& proto_name) override;
+      const std::unordered_map<std::string, std::string>& options) override;
 };
 }  // namespace compression
 

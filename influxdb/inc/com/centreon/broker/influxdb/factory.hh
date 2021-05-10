@@ -37,10 +37,11 @@ class factory : public io::factory {
   factory(factory const&) = delete;
   ~factory() = default;
   factory& operator=(factory const& other) = delete;
-  bool has_endpoint(config::endpoint& cfg, flag* flag);
-  io::endpoint* new_endpoint(config::endpoint& cfg,
-                             bool& is_acceptor,
-                             std::shared_ptr<persistent_cache> cache) const;
+  bool has_endpoint(config::endpoint& cfg, io::extension* ext) override;
+  io::endpoint* new_endpoint(
+      config::endpoint& cfg,
+      bool& is_acceptor,
+      std::shared_ptr<persistent_cache> cache) const override;
 };
 }  // namespace influxdb
 

@@ -46,15 +46,15 @@ using namespace com::centreon::broker::compression;
  *  is running. We will be able to add this endpoint later, following the flag
  *  value.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
-  if (flag) {
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
+  if (ext) {
     auto it = cfg.params.find("compression");
     if (it == cfg.params.end() || strncasecmp(it->second.c_str(), "no", 3) == 0)
-      *flag = no;
+      *ext = io::extension("COMPRESSION", false, false);
     else if (strncasecmp(it->second.c_str(), "auto", 5) == 0)
-      *flag = maybe;
+      *ext = io::extension("COMPRESSION", true, false);
     else if (strncasecmp(it->second.c_str(), "yes", 4) == 0)
-      *flag = yes;
+      *ext = io::extension("COMPRESSION", false, true);
   }
   return false;
 }
@@ -104,11 +104,12 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New compression stream.
  */
-std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
-                                                bool is_acceptor,
-                                                std::string const& proto_name) {
+std::shared_ptr<io::stream> factory::new_stream(
+    std::shared_ptr<io::stream> to,
+    bool is_acceptor,
+    const std::unordered_map<std::string, std::string>& options) {
   (void)is_acceptor;
-  (void)proto_name;
+  (void)options;
   std::shared_ptr<io::stream> s{std::make_shared<stream>()};
   s->set_substream(to);
   return s;

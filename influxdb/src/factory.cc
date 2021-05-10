@@ -55,10 +55,10 @@ static std::string find_param(config::endpoint const& cfg,
  *
  *  @return True if the configuration matches the storage layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
   bool is_ifdb{!strncasecmp(cfg.type.c_str(), "influxdb", 9)};
-  if (flag)
-    *flag = no;
+  if (ext)
+    *ext = io::extension("INFLUXDB", false, false);
   if (is_ifdb) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;

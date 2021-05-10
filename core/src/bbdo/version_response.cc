@@ -21,12 +21,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  * @brief The default constructor
  */
@@ -47,23 +41,6 @@ version_response::version_response(const std::string& extensions)
       bbdo_minor(BBDO_VERSION_MINOR),
       bbdo_patch(BBDO_VERSION_PATCH),
       extensions(extensions) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-version_response::version_response(version_response const& other)
-    : io::data(other),
-      bbdo_major(other.bbdo_major),
-      bbdo_minor(other.bbdo_minor),
-      bbdo_patch(other.bbdo_patch),
-      extensions(other.extensions) {}
-
-/**
- *  Destructor.
- */
-version_response::~version_response() {}
 
 // Mapping.
 mapping::entry const version_response::entries[] = {

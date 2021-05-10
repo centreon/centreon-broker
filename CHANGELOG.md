@@ -4,14 +4,14 @@
 
 `Date of the release`
 
-### Build
+### Bug fixes
+
+*Build*
 
 Since the bintray closure, we could not build cbd. Dependencies have been moved
 to the conan-center and the build is back.
 
-### Bam
-
-*meta-services*
+*Bam*
 
 Meta-services are removed from broker. This code was not used and could produce
 
