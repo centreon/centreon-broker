@@ -2,6 +2,11 @@
 
 ## 20.04.14
 
+### Build
+
+Since the closure of bintray, cbd could not be compiled. Dependencies have been
+moved to conan-center and cbd compilation is back.
+
 ### Bam
 
 *meta-services*
