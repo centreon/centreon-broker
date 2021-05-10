@@ -35,27 +35,26 @@ namespace bbdo {
  *  Initiate direct BBDO protocol connections.
  */
 class connector : public io::endpoint {
- public:
-  connector(bool negotiate,
-            const std::list<io::extension>& extensions,
-            time_t timeout,
-            bool connector_is_input,
-            bool coarse = false,
-            uint32_t ack_limit = 1000);
-  ~connector() noexcept = default;
-  connector(const connector&) = delete;
-  connector& operator=(const connector&) = delete;
-  std::unique_ptr<io::stream> open() override;
-
- private:
   std::unique_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
 
   bool _is_input;
   bool _coarse;
-  std::list<io::extension> _extensions;
   bool _negotiate;
   time_t _timeout;
   uint32_t _ack_limit;
+  std::list<std::shared_ptr<io::extension>> _extensions;
+
+ public:
+  connector(bool negotiate,
+            time_t timeout,
+            bool connector_is_input,
+            bool coarse = false,
+            uint32_t ack_limit = 1000,
+            std::list<std::shared_ptr<io::extension>>&& extensions = {});
+  ~connector() noexcept = default;
+  connector(const connector&) = delete;
+  connector& operator=(const connector&) = delete;
+  std::unique_ptr<io::stream> open() override;
 };
 }  // namespace bbdo
 

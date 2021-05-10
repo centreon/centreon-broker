@@ -119,7 +119,7 @@ void persistent_cache::transaction() {
   opnr.set_auto_delete(false);
   opnr.set_max_size(0);
   std::shared_ptr<io::stream> fs(opnr.open());
-  std::shared_ptr<bbdo::stream> bs(new bbdo::stream(true));
+  std::shared_ptr<bbdo::stream> bs{std::make_shared<bbdo::stream>(true)};
   bs->set_substream(fs);
   bs->set_coarse(true);
   _write_file = std::static_pointer_cast<io::stream>(bs);

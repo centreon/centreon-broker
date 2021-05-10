@@ -22,8 +22,8 @@
 #include <deque>
 #include <list>
 
-#include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/io/extension.hh"
+#include "com/centreon/broker/io/stream.hh"
 
 CCB_BEGIN()
 
@@ -111,19 +111,18 @@ class stream : public io::stream {
 
   bool _is_input;
   bool _coarse;
-
-  /**
-   * It is possible to mix bbdo stream with others like tls or compression.
-   * This list of extensions provides a simple access to others ones with
-   * their configuration.
-   */
-  std::list<io::extension> _extensions;
   bool _negotiate;
   bool _negotiated;
   int _timeout;
   uint32_t _acknowledged_events;
   uint32_t _ack_limit;
   uint32_t _events_received_since_last_ack;
+  /**
+   * It is possible to mix bbdo stream with others like tls or compression.
+   * This list of extensions provides a simple access to others ones with
+   * their configuration.
+   */
+  std::list<std::shared_ptr<io::extension>> _extensions;
 
   void _write(std::shared_ptr<io::data> const& d);
   bool _read_any(std::shared_ptr<io::data>& d, time_t deadline);
@@ -133,7 +132,8 @@ class stream : public io::stream {
  public:
   enum negotiation_type { negotiate_first = 1, negotiate_second, negotiated };
 
-  stream(bool is_input);
+  stream(bool is_input,
+         const std::list<std::shared_ptr<io::extension>>& extensions = {});
   ~stream() noexcept = default;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
@@ -144,8 +144,7 @@ class stream : public io::stream {
             time_t deadline = (time_t)-1) override;
   void set_ack_limit(uint32_t limit);
   void set_coarse(bool coarse);
-  void set_negotiate(bool negotiate,
-                     const std::list<io::extension>& extensions = {});
+  void set_negotiate(bool negotiate);
   void set_timeout(int timeout);
   void statistics(nlohmann::json& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;
