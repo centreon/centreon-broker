@@ -19,7 +19,6 @@
 #include "com/centreon/broker/stats/helper.hh"
 
 #include <asio.hpp>
-#include <json11.hpp>
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/state.hh"
@@ -39,17 +38,16 @@ using namespace com::centreon::broker::stats;
  * @param object
  */
 void com::centreon::broker::stats::get_generic_stats(
-    json11::Json::object& object) noexcept {
+    nlohmann::json& object) noexcept {
   object["version"] = CENTREON_BROKER_VERSION;
   object["pid"] = getpid();
-  object["now"] = std::to_string(::time(nullptr));
+  object["now"] = fmt::format("{}", ::time(nullptr));
 
-  std::string asio_version(fmt::format("{}.{}.{}", ASIO_VERSION / 100000,
-                                       ASIO_VERSION / 100 % 1000,
-                                       ASIO_VERSION % 100));
+  object["asio_version"] =
+      fmt::format("{}.{}.{}", ASIO_VERSION / 100000, ASIO_VERSION / 100 % 1000,
+                  ASIO_VERSION % 100);
 
-  object["asio_version"] = asio_version;
-  json11::Json::object pool;
+  nlohmann::json pool;
   pool["size"] = static_cast<int32_t>(pool::instance().get_pool_size());
   pool["latency"] = "";
   object["thread_pool"] = pool;
@@ -61,7 +59,7 @@ void com::centreon::broker::stats::get_generic_stats(
  * @param object The json object to fill
  */
 void com::centreon::broker::stats::get_mysql_stats(
-    json11::Json::object& object) noexcept {
+    nlohmann::json& object) noexcept {
   std::map<std::string, std::string> stats(
       mysql_manager::instance().get_stats());
   for (auto it = stats.begin(), end = stats.end(); it != end; ++it)
@@ -69,7 +67,7 @@ void com::centreon::broker::stats::get_mysql_stats(
 }
 
 void com::centreon::broker::stats::get_loaded_module_stats(
-    std::vector<json11::Json::object>& object) noexcept {
+    std::vector<nlohmann::json>& object) noexcept {
   config::applier::modules& mod_applier(
       config::applier::state::instance().get_modules());
 
@@ -78,11 +76,11 @@ void com::centreon::broker::stats::get_loaded_module_stats(
   for (config::applier::modules::iterator it = mod_applier.begin(),
                                           end = mod_applier.end();
        it != end; ++it) {
-    json11::Json::object subtree;
+    nlohmann::json subtree;
     subtree["name"] = it->first;
     subtree["state"] = "loaded";
     subtree["size"] =
-        std::to_string(misc::filesystem::file_size(it->first)) + "B";
+        fmt::format("{}B", misc::filesystem::file_size(it->first));
     object.emplace_back(subtree);
   }
 }
@@ -94,7 +92,7 @@ void com::centreon::broker::stats::get_loaded_module_stats(
  *
  * @return A boolean telling the mutex could be locked to get informations.
  */
-bool stats::get_endpoint_stats(std::vector<json11::Json::object>& object) {
+bool stats::get_endpoint_stats(std::vector<nlohmann::json>& object) {
   // Endpoint applier.
   if (!config::applier::endpoint::loaded())
     return true;
@@ -111,7 +109,7 @@ bool stats::get_endpoint_stats(std::vector<json11::Json::object>& object) {
         for (auto it(endp_applier.endpoints_begin()),
              end(endp_applier.endpoints_end());
              it != end; ++it) {
-          json11::Json::object subtree;
+          nlohmann::json subtree;
           subtree["name"] = it->second->get_name();
           subtree["queue_file_path"] =
               com::centreon::broker::multiplexing::muxer::queue_file(

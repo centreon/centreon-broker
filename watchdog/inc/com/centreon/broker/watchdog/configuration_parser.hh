@@ -19,8 +19,8 @@
 #ifndef CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 #define CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 
-#include <json11.hpp>
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "com/centreon/broker/namespace.hh"
@@ -38,22 +38,21 @@ namespace watchdog {
  *  Parse watchdog configuration.
  */
 class configuration_parser {
+  nlohmann::json _json_document;
+  std::string _log_path;
+  configuration::instance_map _instances_configuration;
+
+  void _parse_file(std::string const& config_filename);
+  void _check_json_document();
+  void _parse_centreon_broker_element(const nlohmann::json& element);
+
  public:
   configuration_parser();
   ~configuration_parser();
-  configuration_parser& operator=(configuration_parser const& other) = delete;
-  configuration_parser(configuration_parser const& other) = delete;
+  configuration_parser& operator=(const configuration_parser&) = delete;
+  configuration_parser(const configuration_parser&) = delete;
 
   configuration parse(std::string const& config_filename);
-
- private:
-  void _parse_file(std::string const& config_filename);
-  void _check_json_document();
-  void _parse_centreon_broker_element(json11::Json const& element);
-
-  json11::Json _json_document;
-  std::string _log_path;
-  configuration::instance_map _instances_configuration;
 };
 }  // namespace watchdog
 

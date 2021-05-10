@@ -25,7 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <json11.hpp>
+#include <nlohmann/json.hpp>
 #include <sstream>
 
 #include "com/centreon/broker/io/data.hh"
@@ -38,9 +38,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
 using namespace com::centreon::exceptions;
+using namespace nlohmann;
 
 static void broker_json_encode(lua_State* L, std::ostringstream& oss);
-static void broker_json_decode(lua_State* L, json11::Json const& it);
+static void broker_json_decode(lua_State* L, const json& it);
 
 /**
  *  The json_encode function for Lua tables
@@ -283,9 +284,8 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
       if (ptr) {
         auto event = static_cast<std::shared_ptr<io::data>*>(ptr);
         broker_json_encode_broker_event(*event, oss);
-        break;
       }
-    }
+    } break;
     default:
       luaL_error(L, "json_encode: type not implemented");
   }
@@ -311,11 +311,11 @@ static int l_broker_json_encode(lua_State* L) {
  *  @param L The Lua interpreter
  *  @param it The current json_iterator
  */
-static void broker_json_decode_array(lua_State* L, json11::Json const& it) {
-  int size(it.array_items().size());
-  auto cit(it.array_items().begin());
+static void broker_json_decode_array(lua_State* L, const json& it) {
+  size_t size{it.size()};
   lua_createtable(L, size, 0);
-  for (int i(1); i <= size; ++i, ++cit) {
+  auto cit = it.begin();
+  for (uint32_t i = 1; i <= size; ++i, ++cit) {
     broker_json_decode(L, *cit);
     lua_rawseti(L, -2, i);
   }
@@ -327,13 +327,12 @@ static void broker_json_decode_array(lua_State* L, json11::Json const& it) {
  *  @param L The Lua interpreter
  *  @param it The current json_iterator
  */
-static void broker_json_decode_object(lua_State* L, json11::Json const& it) {
-  int size(it.object_items().size());
+static void broker_json_decode_object(lua_State* L, const json& it) {
+  size_t size{it.size()};
   lua_createtable(L, 0, size);
-  for (auto cit(it.object_items().begin()); cit != it.object_items().end();
-       ++cit) {
-    lua_pushstring(L, cit->first.c_str());
-    broker_json_decode(L, cit->second);
+  for (auto cit = it.begin(); cit != it.end(); ++cit) {
+    lua_pushlstring(L, cit.key().c_str(), cit.key().size());
+    broker_json_decode(L, cit.value());
     lua_settable(L, -3);
   }
 }
@@ -344,10 +343,10 @@ static void broker_json_decode_object(lua_State* L, json11::Json const& it) {
  *  @param L The Lua interpreter
  *  @param it The current json_iterator
  */
-static void broker_json_decode(lua_State* L, json11::Json const& it) {
+static void broker_json_decode(lua_State* L, const json& it) {
   switch (it.type()) {
-    case json11::Json::STRING: {
-      std::string str(it.string_value());
+    case json::value_t::string: {
+      std::string str(it.get<std::string>());
       size_t pos(str.find_first_of("\\"));
       while (pos != std::string::npos) {
         switch (str[pos + 1]) {
@@ -370,26 +369,27 @@ static void broker_json_decode(lua_State* L, json11::Json const& it) {
         ++pos;
         pos = str.find_first_of("\\", pos);
       }
-      lua_pushstring(L, str.c_str());
+      lua_pushlstring(L, str.c_str(), str.size());
     } break;
-    case json11::Json::NUMBER: {
-      double value(it.number_value());
-      int intvalue(it.int_value());
-      if (value == intvalue)
-        lua_pushinteger(L, intvalue);
-      else
-        lua_pushnumber(L, value);
-    } break;
-    case json11::Json::BOOL:
-      lua_pushboolean(L, it.bool_value() ? 1 : 0);
+    case json::value_t::number_unsigned:
+      lua_pushinteger(L, it.get<uint32_t>());
       break;
-    case json11::Json::ARRAY:
+    case json::value_t::number_integer:
+      lua_pushinteger(L, it.get<int32_t>());
+      break;
+    case json::value_t::number_float:
+      lua_pushnumber(L, it.get<double>());
+      break;
+    case json::value_t::boolean:
+      lua_pushboolean(L, it.get<bool>() ? 1 : 0);
+      break;
+    case json::value_t::array:
       broker_json_decode_array(L, it);
       break;
-    case json11::Json::OBJECT:
+    case json::value_t::object:
       broker_json_decode_object(L, it);
       break;
-    case json11::Json::NUL:
+    case json::value_t::null:
       break;
     default:
       luaL_error(L, "Unrecognized type in json content");
@@ -403,17 +403,18 @@ static void broker_json_decode(lua_State* L, json11::Json const& it) {
  */
 static int l_broker_json_decode(lua_State* L) {
   char const* content(luaL_checkstring(L, -1));
-  std::string err;
 
-  json11::Json const& it{json11::Json::parse(content, err)};
-  if (err.empty()) {
-    broker_json_decode(L, it);
-    return 1;
-  } else {
+  json it;
+  try {
+    it = json::parse(content);
+  } catch (const json::parse_error& e) {
+    std::string err{e.what()};
     lua_pushnil(L);
     lua_pushlstring(L, err.c_str(), err.size());
     return 2;
   }
+  broker_json_decode(L, it);
+  return 1;
 }
 
 /**

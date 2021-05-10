@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::watchdog;
-using namespace json11;
+using namespace nlohmann;
 
 /**
  *  Default constructor.
@@ -57,7 +57,7 @@ configuration configuration_parser::parse(std::string const& config_filename) {
  *  @param[in] config_filename  The config file name.
  */
 void configuration_parser::_parse_file(std::string const& config_filename) {
-  // Parse Json file
+  // Parse json file
   std::ifstream f(config_filename);
 
   if (f.fail())
@@ -68,41 +68,54 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
                                    std::istreambuf_iterator<char>()};
   std::string err;
 
-  _json_document = Json::parse(json_to_parse, err);
+  try {
+    _json_document = json::parse(json_to_parse);
+  } catch (const json::parse_error& e) {
+    err = e.what();
+  }
 
   if (_json_document.is_null())
     throw msg_fmt("Config parser: Cannot parse file '{}': {}", config_filename,
                   err);
 
   if (!_json_document.is_object() ||
+      _json_document.find("centreonBroker") == _json_document.end() ||
       !_json_document["centreonBroker"].is_object())
     throw msg_fmt(
         "Config parser: Cannot parse file '{}': it must contain a "
-        "centreonBroker object",
+        "'centreonBroker' object",
         config_filename);
-  _check_json_document();
+
+  try {
+    _check_json_document();
+  } catch (const json::parse_error& e) {
+    throw msg_fmt(
+        "Config parser: Cannot parse file '{}': it contains an error: {}",
+        e.what());
+  }
 }
 
 /**
  *  Parse the xml document.
  */
 void configuration_parser::_check_json_document() {
-  for (std::pair<std::string const, Json> const& object :
-       _json_document["centreonBroker"].object_items()) {
-    if (object.first == "log")
-      _log_path = object.second.string_value();
-    else if (object.first == "cbd") {
-      Json sec{object.second};
-      if (sec.is_array())
-        for (Json const& entry : sec.array_items())
-          _parse_centreon_broker_element(entry);
-      else if (sec.is_object())
-        _parse_centreon_broker_element(sec);
+  for (auto it = _json_document["centreonBroker"].begin(),
+            end = _json_document["centreonBroker"].end();
+       it != end; ++it) {
+    if (it.key() == "log")
+      _log_path = it.value().get<std::string>();
+    else if (it.key() == "cbd") {
+      if (it.value().is_array())
+        for (auto itt : it.value().items()) {
+          _parse_centreon_broker_element(itt.value());
+        }
+      else if (it.value().is_object())
+        _parse_centreon_broker_element(it.value());
       else
         throw msg_fmt("error in watchdog config syntax 'cbd' must be an array");
     } else
       throw msg_fmt("error in watchdog config '{}' key is not recognized",
-                    object.first);
+                    it.key());
   }
 }
 
@@ -111,43 +124,59 @@ void configuration_parser::_check_json_document() {
  *
  *  @param[in] element  The element.
  */
-void configuration_parser::_parse_centreon_broker_element(
-    json11::Json const& element) {
+void configuration_parser::_parse_centreon_broker_element(const json& element) {
   // The default are sane.
-  Json const& instance_executable{element["executable"]};
-  Json const& instance_name{element["name"]};
-  Json const& instance_config{element["configuration_file"]};
-  Json const& run{element["run"]};
-  Json const& reload{element["reload"]};
+  std::string executable;
+  json instance_name;
+  json instance_config;
+  json run;
+  json reload;
+
+  auto it = element.find("executable");
+  if (it != element.end())
+    executable = it.value();
+
+  it = element.find("name");
+  if (it != element.end())
+    instance_name = it.value();
+
+  it = element.find("configuration_file");
+  if (it != element.end())
+    instance_config = it.value();
+
+  it = element.find("run");
+  if (it != element.end())
+    run = it.value();
+
+  it = element.find("reload");
+  if (it != element.end())
+    reload = it.value();
 
   if (!instance_name.is_string())
     throw msg_fmt("name field not provided for cbd instance");
   if (!instance_config.is_string())
     throw msg_fmt("instance_config field not provided for cbd instance");
-  if (!run.is_bool())
+  if (!run.is_boolean())
     throw msg_fmt("run field not provided for cbd instance");
 
-  if (!reload.is_bool())
+  if (!reload.is_boolean())
     throw msg_fmt("reload field not provided for cbd instance");
 
-  if (instance_name.string_value().empty())
+  if (instance_name.get<std::string>().empty())
     throw msg_fmt("missing instance name");
 
-  std::string executable;
-  if (instance_executable.string_value().empty())
+  if (executable.empty())
     executable = std::string(PREFIX_BIN "/cbd");
-  else
-    executable = instance_executable.string_value();
 
   if (!_instances_configuration
-           .insert({instance_name.string_value(),
+           .insert({instance_name.get<std::string>(),
                     instance_configuration(
-                        instance_name.string_value(), executable,
-                        instance_config.string_value(), run.bool_value(),
-                        reload.bool_value(), 0)})
+                        instance_name.get<std::string>(), executable,
+                        instance_config.get<std::string>(), run.get<bool>(),
+                        reload.get<bool>(), 0)})
            .second) {
     std::string str(fmt::format("instance '{}' already exists",
-                                instance_name.string_value()));
+                                instance_name.get<std::string>()));
     throw msg_fmt(str);
   }
 }

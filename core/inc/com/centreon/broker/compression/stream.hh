@@ -45,7 +45,7 @@ class stream : public io::stream {
   int32_t stop() override;
   bool read(std::shared_ptr<io::data>& d,
             time_t deadline = (time_t)-1) override;
-  void statistics(json11::Json::object& tree) const override;
+  void statistics(nlohmann::json& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;
 
  private:

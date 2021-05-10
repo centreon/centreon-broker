@@ -94,7 +94,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @param[out] buffer Output buffer.
  */
-void stream::statistics(json11::Json::object& tree) const {
+void stream::statistics(nlohmann::json& tree) const {
   // Get base properties.
   long max_file_size(_file->get_max_file_size());
   int rid(_file->get_rid());

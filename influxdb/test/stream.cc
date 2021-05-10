@@ -264,7 +264,8 @@ TEST_F(InfluxDBStream, StatsAndConnector) {
   con.connect_to("centreon", "pass", "localhost", 4242, "centreon", 3,
                  "host_status", scolumns, "host_metrics", mcolumns, cache);
 
-  json11::Json::object obj;
+  nlohmann::json obj;
   con.open()->statistics(obj);
-  ASSERT_TRUE(obj["state"].string_value().empty());
+  /* obj is not touched in this configuration */
+  ASSERT_TRUE(obj.is_null());
 }

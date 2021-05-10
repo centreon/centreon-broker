@@ -27,7 +27,7 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_ID STREQ
   message(FATAL_ERROR "You can build broker with g++ or clang++. CMake will exit.")
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 add_definitions("-D_GLIBCXX_USE_CXX11_ABI=1")
 
 # With ASIO DEBUGGING ENABLED
@@ -65,12 +65,11 @@ add_custom_target(table_max_size DEPENDS ${INC_DIR}/database/table_max_size.hh)
 set_source_files_properties(${INC_DIR}/database/table_max_size.hh PROPERTIES GENERATED TRUE)
 
 set(protobuf_MODULE_COMPATIBLE True)
-find_package(json11 REQUIRED)
+find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(asio REQUIRED)
-find_package(protobuf REQUIRED)
-find_package(protoc_installer REQUIRED)
+find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
@@ -79,16 +78,17 @@ find_package(mariadb-connector-c REQUIRED)
 
 add_definitions(${spdlog_DEFINITIONS} ${mariadb-connector-c_DEFINITIONS})
 
-include_directories(${json11_INCLUDE_DIRS})
+include_directories(${nlohmann_json_INCLUDE_DIRS})
 include_directories(${fmt_INCLUDE_DIRS})
 include_directories(${spdlog_INCLUDE_DIRS})
 include_directories(${asio_INCLUDE_DIRS})
 include_directories(${protobuf_INCLUDE_DIRS})
+include_directories(${absl_INCLUDE_DIRS})
 include_directories(${gRPC_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
-include_directories(${mariadb-connector-c_INCLUDE_DIRS}/mysql)
+include_directories(${mariadb-connector-c_INCLUDE_DIRS})
 
-link_directories(${json11_LIB_DIRS})
+link_directories(${nlohmann_json_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
 link_directories(${spdlog_LIB_DIRS})
 link_directories(${protobuf_LIB_DIRS})
@@ -98,8 +98,7 @@ link_directories(${OpenSSL_LIB_DIRS})
 link_directories(${ZLIB_LIB_DIRS})
 link_directories(${mariadb-connector-c_LIB_DIRS})
 
-message(STATUS "Using protobuf ${gRPC_VERSION}")
-set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
+set(PROTOBUF_PREFIX "${protobuf_LIB_DIRS}/..")
 message(STATUS "${PROTOBUF_PREFIX}/bin/protoc")
 set(GRPC_PREFIX "${gRPC_LIB_DIRS}/..")
 
@@ -574,12 +573,12 @@ set(LIBROKER_SOURCES
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
 set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "-fPIC")
-target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${mariadb-connector-c_LIBS} pthread dl berpc)
+target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} ${mariadb-connector-c_LIBS} pthread dl berpc)
 
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection)
+target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection pthread)
 
 # Standalone binary.
 set(DAEMON cbd)
@@ -587,10 +586,10 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${nlohmann_json_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 # Centreon Broker Watchdog
-option(WITH_CBWD "Build centreon broker watchdong." ON)
+option(WITH_CBWD "Build centreon broker watchdog." ON)
 if (WITH_CBWD)
   add_subdirectory(watchdog)
 endif ()

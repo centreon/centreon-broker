@@ -77,7 +77,7 @@ std::shared_ptr<stream> stream::get_substream() {
  *
  *  @param[out] tree Output tree.
  */
-void stream::statistics(json11::Json::object& tree) const {
+void stream::statistics(nlohmann::json& tree) const {
   (void)tree;
 }
 

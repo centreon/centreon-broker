@@ -722,10 +722,10 @@ void conflict_manager::__exit() {
  * @brief Returns statistics about the conflict_manager. Those statistics
  * are stored directly in a json tree.
  *
- * @return A json11::Json::object with the statistics.
+ * @return A nlohmann::json with the statistics.
  */
-json11::Json::object conflict_manager::get_statistics() {
-  json11::Json::object retval;
+nlohmann::json conflict_manager::get_statistics() {
+  nlohmann::json retval;
   retval["max pending events"] = static_cast<int32_t>(_max_pending_queries);
   retval["max perfdata events"] = static_cast<int32_t>(_max_perfdata_queries);
   retval["loop timeout"] = static_cast<int32_t>(_loop_timeout);

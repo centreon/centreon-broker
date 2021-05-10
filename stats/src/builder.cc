@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ builder::builder(builder const& right) {
 /**
  *  Destructor.
  */
-builder::~builder() throw() {}
+builder::~builder() noexcept {}
 
 /**
  *  Copy operator.
@@ -84,28 +84,29 @@ builder& builder::operator=(builder const& right) {
 void builder::build() {
   // Cleanup.
   _data.clear();
-  json11::Json::object object;
+  nlohmann::json object;
   stats::get_generic_stats(object);
 
-  json11::Json::object mysql_object;
+  nlohmann::json mysql_object;
   stats::get_mysql_stats(mysql_object);
   object["mysql manager"] = mysql_object;
 
-  std::vector<json11::Json::object> modules_objects;
+  std::vector<nlohmann::json> modules_objects;
   stats::get_loaded_module_stats(modules_objects);
   for (auto& obj : modules_objects) {
-    object["module" + obj["name"].string_value()] = obj;
+    std::string key{fmt::format("module{}", obj["name"].get<std::string>())};
+    object[key] = std::move(obj);
   }
 
-  std::vector<json11::Json::object> endpoint_objects;
+  std::vector<nlohmann::json> endpoint_objects;
   stats::get_endpoint_stats(endpoint_objects);
   for (auto& obj : endpoint_objects) {
-    object["endpoint " + obj["name"].string_value()] = obj;
+    std::string key{fmt::format("endpoint {}", obj["name"].get<std::string>())};
+    object[key] = std::move(obj);
   }
 
-  _root = object;
-  std::string buffer;
-  _root.dump(buffer);
+  _root = std::move(object);
+  std::string buffer{_root.dump()};
   _data.insert(0, buffer);
 }
 
@@ -114,8 +115,8 @@ void builder::build() {
  *
  *  @return The statistics buffer.
  */
-std::string const& builder::data() const throw() {
-  return (_data);
+std::string const& builder::data() const noexcept {
+  return _data;
 }
 
 /**
@@ -123,6 +124,6 @@ std::string const& builder::data() const throw() {
  *
  *  @return The statistics tree.
  */
-json11::Json const& builder::root() const throw() {
-  return (_root);
+const nlohmann::json& builder::root() const noexcept {
+  return _root;
 }

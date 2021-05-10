@@ -102,7 +102,7 @@ class stream : public io::stream {
   int32_t flush() override;
   int32_t stop() override;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
-  void statistics(json11::Json::object& tree) const override;
+  void statistics(nlohmann::json& tree) const override;
   int32_t write(std::shared_ptr<io::data> const& d) override;
 };
 }  // namespace graphite

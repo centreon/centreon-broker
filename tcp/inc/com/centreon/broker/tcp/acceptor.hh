@@ -55,7 +55,7 @@ class acceptor : public io::endpoint {
   void listen();
   std::unique_ptr<io::stream> open() override;
   void remove_child(std::string const& child);
-  void stats(json11::Json::object& tree) override;
+  void stats(nlohmann::json& tree) override;
   bool is_ready() const override;
 };
 }  // namespace tcp

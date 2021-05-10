@@ -248,7 +248,7 @@ TEST_F(graphiteStream, StatsAndConnector) {
   con.connect_to("metric_name", "status_name", "a", "user", "pass", "localhost",
                  4242, 3, cache);
 
-  json11::Json::object obj;
+  nlohmann::json obj;
   con.open()->statistics(obj);
-  ASSERT_TRUE(obj["state"].string_value().empty());
+  ASSERT_TRUE(obj.is_null());
 }

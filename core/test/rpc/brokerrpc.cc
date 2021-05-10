@@ -23,7 +23,6 @@
 
 #include <cstdio>
 #include <fstream>
-#include <json11.hpp>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/version.hh"
