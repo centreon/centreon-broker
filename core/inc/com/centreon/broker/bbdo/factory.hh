@@ -19,8 +19,8 @@
 #ifndef CCB_BBDO_FACTORY_HH
 #define CCB_BBDO_FACTORY_HH
 
-#include "com/centreon/broker/io/factory.hh"
 #include "com/centreon/broker/io/extension.hh"
+#include "com/centreon/broker/io/factory.hh"
 
 CCB_BEGIN()
 
@@ -32,7 +32,8 @@ namespace bbdo {
  *  Build BBDO (Broker Binary Data Objects) objects.
  */
 class factory : public io::factory {
-  std::list<io::extension> _extensions(config::endpoint& cfg) const;
+  std::list<std::shared_ptr<io::extension>> _extensions(
+      config::endpoint& cfg) const;
 
  public:
   factory() = default;

@@ -22,9 +22,9 @@
 #include <memory>
 
 #include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
-#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
@@ -48,7 +48,7 @@ bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
       *ext = io::extension("TLS", false, false);
     else {
       log_v2::tls()->info("Configuration of TLS for endpoint '{}'",
-          cfg.params["name"]);
+                          cfg.params["name"]);
       if (strncasecmp(it->second.c_str(), "auto", 5) == 0)
         *ext = io::extension("TLS", true, false);
       else if (strncasecmp(it->second.c_str(), "yes", 4) == 0)
@@ -95,10 +95,10 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find TLS parameters (optional).
-  bool tls(false);
-  std::string ca_cert;
+  bool tls{false};
   std::string private_key;
   std::string public_cert;
+  std::string ca_cert;
   std::string tls_hostname;
   {
     // Is TLS enabled ?
@@ -149,9 +149,10 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New stream.
  */
-std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
-                                                bool is_acceptor,
-                                                const std::unordered_map<std::string, std::string>& options) {
+std::shared_ptr<io::stream> factory::new_stream(
+    std::shared_ptr<io::stream> to,
+    bool is_acceptor,
+    const std::unordered_map<std::string, std::string>& options) {
   std::string public_cert;
   std::string private_key;
   std::string ca_cert;

@@ -528,7 +528,8 @@ static io::raw* serialize(const io::data& e) {
 /**
  *  Default constructor.
  */
-stream::stream(bool is_input)
+stream::stream(bool is_input,
+               const std::list<std::shared_ptr<io::extension>>& extensions)
     : io::stream("BBDO"),
       _skipped(0),
       _is_input{is_input},
@@ -538,7 +539,8 @@ stream::stream(bool is_input)
       _timeout(5),
       _acknowledged_events(0),
       _ack_limit(1000),
-      _events_received_since_last_ack(0) {}
+      _events_received_since_last_ack(0),
+      _extensions{extensions} {}
 
 /**
  * @brief All the mecanism behind this stream is stopped once this method is
@@ -630,19 +632,19 @@ std::string stream::_get_extension_names(bool mandatory) const {
   std::string retval;
   if (mandatory)
     for (auto& e : _extensions) {
-      if (e.is_mandatory()) {
+      if (e->is_mandatory()) {
         if (!retval.empty())
           retval.append(" ");
       }
-      retval.append(e.name());
+      retval.append(e->name());
     }
   else
     for (auto& e : _extensions) {
-      if (e.is_optional()) {
+      if (e->is_optional()) {
         if (!retval.empty())
           retval.append(" ");
       }
-      retval.append(e.name());
+      retval.append(e->name());
     }
   return retval;
 }
@@ -713,8 +715,8 @@ void stream::negotiate(stream::negotiation_type neg) {
         BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
   }
   log_v2::bbdo()->info(
-      "BBDO: peer is using protocol version {0}.{1}.{2}, we're using version "
-      "{3}.{4}.{5}",
+      "BBDO: peer is using protocol version {}.{}.{}, we're using version "
+      "{}.{}.{}",
       v->bbdo_major, v->bbdo_minor, v->bbdo_patch, BBDO_VERSION_MAJOR,
       BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
 
@@ -740,48 +742,46 @@ void stream::negotiate(stream::negotiation_type neg) {
   for (auto& ext : _extensions) {
     // Find matching extension in peer extension list.
     std::list<std::string>::const_iterator peer_it{
-        std::find(peer_ext.begin(), peer_ext.end(), ext.name())};
+        std::find(peer_ext.begin(), peer_ext.end(), ext->name())};
     // Apply extension if found.
     if (peer_it != peer_ext.end()) {
-      if (std::find(running_config.begin(), running_config.end(), ext.name()) ==
-          running_config.end()) {
-        log_v2::bbdo()->info("BBDO: applying extension '{}'", ext.name());
+      if (std::find(running_config.begin(), running_config.end(),
+                    ext->name()) == running_config.end()) {
+        log_v2::bbdo()->info("BBDO: applying extension '{}'", ext->name());
         for (std::map<std::string, io::protocols::protocol>::const_iterator
                  proto_it{io::protocols::instance().begin()},
              proto_end{io::protocols::instance().end()};
              proto_it != proto_end; ++proto_it)
-          if (proto_it->first == ext.name()) {
+          if (proto_it->first == ext->name()) {
             std::shared_ptr<io::stream> s{
                 proto_it->second.endpntfactry->new_stream(
-                    _substream, neg == negotiate_second, ext.options())};
+                    _substream, neg == negotiate_second, ext->options())};
             set_substream(s);
             break;
           }
       } else
-        log_v2::bbdo()->info("BBDO: extension '{}' already configured", ext.name());
+        log_v2::bbdo()->info("BBDO: extension '{}' already configured",
+                             ext->name());
     } else {
-      if (ext.is_mandatory()) {
+      if (ext->is_mandatory()) {
         log_v2::bbdo()->error(
             "BBDO: extension '{}' is set to 'yes' in the configuration but "
             "cannot be activated because of peer configuration.",
-            ext.name());
-        logging::error(logging::medium)
-            << "BBDO: extension '" << ext.name()
-            << "' is set to 'yes' in the configuration but cannot be activated "
-               "because of peer configuration.";
+            ext->name());
       }
-      if (std::find(running_config.begin(), running_config.end(), ext.name()) !=
-          running_config.end()) {
-        log_v2::bbdo()->info("BBDO: extension '{}' no more needed", ext.name());
+      if (std::find(running_config.begin(), running_config.end(),
+                    ext->name()) != running_config.end()) {
+        log_v2::bbdo()->info("BBDO: extension '{}' no more needed",
+                             ext->name());
         auto substream = get_substream();
-        if (substream->get_name() == ext.name()) {
+        if (substream->get_name() == ext->name()) {
           auto subsubstream = substream->get_substream();
           set_substream(subsubstream);
         } else {
           while (substream) {
             auto parent = substream;
             substream = substream->get_substream();
-            if (substream->get_name() == ext.name()) {
+            if (substream->get_name() == ext->name()) {
               parent->set_substream(substream->get_substream());
               break;
             }
@@ -1007,7 +1007,7 @@ bool stream::_read_any(std::shared_ptr<io::data>& d, time_t deadline) {
         packet_size = content.size();
         d.reset(unserialize(event_id, source_id, dest_id, pack, packet_size));
         if (d) {
-          log_v2::bbdo()->debug("unserialized {} bytes for event of type {}",
+          log_v2::bbdo()->trace("unserialized {} bytes for event of type {}",
                                 BBDO_HEADER_SIZE + packet_size, event_id);
         } else {
           log_v2::bbdo()->error("unknown event type {} event cannot be decoded",
@@ -1120,11 +1120,8 @@ void stream::set_coarse(bool coarse) {
  *  @param[in] negotiate   True if the stream should negotiate features.
  *  @param[in] extensions  Extensions supported by this stream.
  */
-void stream::set_negotiate(
-    bool negotiate,
-    const std::list<io::extension>& extensions) {
+void stream::set_negotiate(bool negotiate) {
   _negotiate = negotiate;
-  _extensions = extensions;
 }
 
 /**
@@ -1156,7 +1153,7 @@ void stream::_write(std::shared_ptr<io::data> const& d) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*d));
   if (serialized) {
-    log_v2::bbdo()->debug("BBDO: serialized event of type {} to {} bytes",
+    log_v2::bbdo()->trace("BBDO: serialized event of type {} to {} bytes",
                           d->type(), serialized->size());
     _substream->write(serialized);
   }
