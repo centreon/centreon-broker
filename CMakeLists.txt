@@ -629,6 +629,8 @@ add_dependencies(${DAEMON} json11_lib)
 target_link_libraries("${DAEMON}"
 	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" json11 ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
+add_subdirectory(examples)
+
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdog." ON)
 if (WITH_CBWD)
