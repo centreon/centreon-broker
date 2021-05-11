@@ -95,7 +95,6 @@ tcp_connection::pointer tcp_async::get_connection(
     });
     auto retval = f.get();
     if (retval)
-
       return retval;
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   } while (std::chrono::system_clock::now() < end);
