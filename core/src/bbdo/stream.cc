@@ -31,7 +31,6 @@
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -301,9 +300,6 @@ static io::data* unserialize(uint32_t event_type,
         "BBDO: cannot unserialize event of ID {}: event was not registered and "
         "will therefore be ignored",
         event_type);
-    logging::info(logging::high)
-        << "BBDO: cannot unserialize event of ID " << event_type
-        << ": event was not registered and will therefore be ignored";
   }
 
   return nullptr;
@@ -517,9 +513,6 @@ static io::raw* serialize(const io::data& e) {
         "BBDO: cannot serialize event of ID {}: event was not registered and "
         "will therefore be ignored",
         e.type());
-    logging::info(logging::high)
-        << "BBDO: cannot serialize event of ID " << e.type()
-        << ": event was not registered and will therefore be ignored";
   }
 
   return nullptr;
@@ -534,8 +527,8 @@ stream::stream(bool is_input,
       _skipped(0),
       _is_input{is_input},
       _coarse(false),
-      _negotiate(true),
-      _negotiated(false),
+      _negotiate{true},
+      _negotiated{false},
       _timeout(5),
       _acknowledged_events(0),
       _ack_limit(1000),
@@ -635,16 +628,16 @@ std::string stream::_get_extension_names(bool mandatory) const {
       if (e->is_mandatory()) {
         if (!retval.empty())
           retval.append(" ");
+        retval.append(e->name());
       }
-      retval.append(e->name());
     }
   else
     for (auto& e : _extensions) {
-      if (e->is_optional()) {
+      if (e->is_optional() || e->is_mandatory()) {
         if (!retval.empty())
           retval.append(" ");
+        retval.append(e->name());
       }
-      retval.append(e->name());
     }
   return retval;
 }
@@ -749,8 +742,8 @@ void stream::negotiate(stream::negotiation_type neg) {
                     ext->name()) == running_config.end()) {
         log_v2::bbdo()->info("BBDO: applying extension '{}'", ext->name());
         for (std::map<std::string, io::protocols::protocol>::const_iterator
-                 proto_it{io::protocols::instance().begin()},
-             proto_end{io::protocols::instance().end()};
+                 proto_it = io::protocols::instance().begin(),
+                 proto_end = io::protocols::instance().end();
              proto_it != proto_end; ++proto_it)
           if (proto_it->first == ext->name()) {
             std::shared_ptr<io::stream> s{
@@ -846,11 +839,6 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
           "{}.{}.{}",
           version->bbdo_major, version->bbdo_minor, version->bbdo_patch,
           BBDO_VERSION_MAJOR, BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
-      logging::info(logging::medium)
-          << "BBDO: peer is using protocol version " << version->bbdo_major
-          << "." << version->bbdo_minor << "." << version->bbdo_patch
-          << ", we're using version " << BBDO_VERSION_MAJOR << "."
-          << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
     } else if ((event_id & 0xffff) == 2) {
       log_v2::bbdo()->info(
           "BBDO: received acknowledgement for {} events",
@@ -867,9 +855,6 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
         "BBDO: event with ID {} was a control message, launching recursive "
         "read",
         event_id);
-    logging::debug(logging::medium)
-        << "BBDO: event with ID " << event_id
-        << " was a control message, launching recursive read";
     timed_out = !_read_any(d, deadline);
     event_id = !d ? 0 : d->type();
   }

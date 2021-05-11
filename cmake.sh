@@ -8,12 +8,22 @@ This program build Centreon-broker
 
     -f|--force    : force rebuild
     -r|--release  : Build on release mode
-    -ncr|--no-conan-rebuild : rebuild conan data
+    -fcr|--force-conan-rebuild : rebuild conan data
     -h|--help     : help
 EOF
 }
 BUILD_TYPE="Debug"
-CONAN_REBUILD="1"
+CONAN_REBUILD="0"
+for i in $(cat conanfile.txt) ; do
+  if [[ $i =~ / ]] ; then
+    if [ ! -d ~/.conan/data/$i ] ; then
+      echo "The package '$i' is missing"
+      CONAN_REBUILD="1"
+      break
+    fi
+  fi
+done
+
 for i in "$@"
 do
   case $i in
@@ -23,9 +33,10 @@ do
       ;;
     -r|--release)
       BUILD_TYPE="Release"
+      shift
       ;;
-    -ncr|--no-conan-rebuild)
-      CONAN_REBUILD="0"
+    -fcr|--force-conan-rebuild)
+      CONAN_REBUILD="1"
       ;;
     -h|--help)
       show_help
@@ -213,9 +224,6 @@ if [ $my_id -eq 0 ] ; then
 else
   conan="$HOME/.local/bin/conan"
 fi
-
-
-
 
 if [ ! -d build ] ; then
   mkdir build
