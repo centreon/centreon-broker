@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -521,9 +521,11 @@ void mysql_connection::_run() {
   } else {
     uint32_t timeout = 10;
     mysql_options(_conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+    const char* socket = _host == "localhost" ? "/var/lib/mysql/mysql.sock" : nullptr;
+
     while (config::applier::state != config::applier::finished &&
            !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
-                               _pwd.c_str(), _name.c_str(), _port, nullptr,
+                               _pwd.c_str(), _name.c_str(), _port, socket,
                                CLIENT_FOUND_ROWS)) {
       set_error_message(fmt::format(
           "mysql_connection: The mysql/mariadb database seems not started. "
