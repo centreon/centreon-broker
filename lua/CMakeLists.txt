@@ -58,7 +58,7 @@ add_library("${LUA}" SHARED
   "${INC_DIR}/stream.hh"
 )
 add_dependencies("${LUA}" json11_lib)
-target_link_libraries("${LUA}" ${LUA_LIBRARIES})
+target_link_libraries("${LUA}" ${LUA_LIBRARIES} ${OpenSSL_LIBS})
 set_target_properties("${LUA}" PROPERTIES PREFIX "")
 
 # Testing.
