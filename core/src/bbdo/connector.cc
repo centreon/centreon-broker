@@ -27,7 +27,7 @@
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -52,8 +52,20 @@ connector::connector(bool negotiate,
       _extensions{extensions},
       _negotiate{negotiate},
       // FIXME DBR: why this trick?
-      _timeout(timeout == -1 || timeout == 0 ? 3 : timeout),
-      _ack_limit{ack_limit} {}
+      _ack_limit{ack_limit} {
+  char* env = getenv("READ_TIMEOUT");
+  uint32_t tt = 3;
+  if (env) {
+    uint32_t ttt = strtoul(env, nullptr, 10);
+    if (ttt != 0)
+      tt = ttt;
+  }
+  log_v2::bbdo()->info(
+      "BBDO: read timeout set to {}s (possibility to change "
+      "it through environment variable READ_TIMEOUT)",
+      tt);
+  _timeout = timeout == -1 || timeout == 0 ? tt : timeout;
+}
 
 /**
  *  Open the connector.
