@@ -43,7 +43,7 @@ class CompressionStreamRead : public ::testing::Test {
 
   std::shared_ptr<io::raw> predefined_data() {
     std::shared_ptr<io::raw> r(new io::raw);
-    for (int i(0); i < 1000; ++i)
+    for (int i = 0; i < 1000; ++i)
       std::copy(reinterpret_cast<char*>(&i),
                 reinterpret_cast<char*>(&i) + sizeof(i),
                 std::back_inserter(r->get_buffer()));

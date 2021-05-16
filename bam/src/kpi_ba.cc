@@ -129,15 +129,6 @@ void kpi_ba::set_impact_unknown(double impact) {
 }
 
 /**
- *  Set impact if BA is UNKNOWN.
- *
- *  @param[in] impact Impact if BA is UNKNOWN.
- */
-void kpi_ba::set_impact_unknown(double impact) {
-  _impact_unknown = impact;
-}
-
-/**
  *  Unlink from BA.
  */
 void kpi_ba::unlink_ba() {
