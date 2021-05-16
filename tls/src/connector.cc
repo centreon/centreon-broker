@@ -82,23 +82,26 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     p.set_tls_hostname(_tls_hostname);
     p.load();
 
-    gnutls_session_t* session(new gnutls_session_t);
+    SSL* ssl = SSL_new(tls::ctx);
+
+    //gnutls_session_t* session(new gnutls_session_t);
     try {
       // Initialize the TLS session
       log_v2::tls()->debug("TLS: initializing session");
-#ifdef GNUTLS_NONBLOCK
-      ret = gnutls_init(session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
-#else
-      ret = gnutls_init(session, GNUTLS_CLIENT);
-#endif  // GNUTLS_NONBLOCK
-      if (ret != GNUTLS_E_SUCCESS) {
-        log_v2::tls()->error("TLS: cannot initialize session: {}",
-                             gnutls_strerror(ret));
-        throw msg_fmt("TLS: cannot initialize session: {} ",
-                      gnutls_strerror(ret));
-      }
+//#ifdef GNUTLS_NONBLOCK
+//      ret = gnutls_init(session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
+//#else
+//      ret = gnutls_init(session, GNUTLS_CLIENT);
+//#endif  // GNUTLS_NONBLOCK
+//      if (ret != GNUTLS_E_SUCCESS) {
+//        log_v2::tls()->error("TLS: cannot initialize session: {}",
+//                             gnutls_strerror(ret));
+//        throw msg_fmt("TLS: cannot initialize session: {} ",
+//                      gnutls_strerror(ret));
+//      }
 
       // Apply TLS parameters to the current session.
+      p.apply(ssl);
       p.apply(*session);
 
       // Create stream object.

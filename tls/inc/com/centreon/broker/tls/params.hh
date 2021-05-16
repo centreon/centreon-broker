@@ -62,6 +62,7 @@ class params {
   params(params const& p) = delete;
   params& operator=(params const& p) = delete;
   virtual ~params();
+  void apply(SSL* ssl);
   void apply(gnutls_session_t session);
   void load();
   void reset();

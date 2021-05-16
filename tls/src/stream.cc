@@ -33,12 +33,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 using namespace com::centreon::exceptions;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  @brief Constructor.
  *

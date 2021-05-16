@@ -20,12 +20,14 @@
 #define CCB_TLS_INTERNAL_HH
 
 #include <gnutls/gnutls.h>
+#include <openssl/ssl.h>
 #include <sys/types.h>
 
 CCB_BEGIN()
 
 namespace tls {
 // Data.
+extern SSL_CTX* ctx;
 extern unsigned char const dh_params_2048[];
 extern gnutls_dh_params_t dh_params;
 

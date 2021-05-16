@@ -17,6 +17,7 @@
 */
 
 #include <gnutls/gnutls.h>
+#include <openssl/err.h>
 
 #include <cstring>
 #if GNUTLS_VERSION_NUMBER < 0x030000
@@ -40,6 +41,8 @@ using namespace com::centreon::exceptions;
  *           Global Objects            *
  *                                     *
  **************************************/
+
+SSL_CTX* tls::ctx = nullptr;
 
 /**
  *  Those 2048-bits wide Diffie-Hellman parameters were generated the
@@ -70,6 +73,8 @@ void tls::destroy() {
 
   // Unload GNU TLS library
   gnutls_global_deinit();
+
+  SSL_CTX_free(ctx);
 }
 
 /**
@@ -78,6 +83,15 @@ void tls::destroy() {
  *  Prepare all necessary ressources for TLS use.
  */
 void tls::initialize() {
+  SSL_load_error_strings();
+  ERR_load_crypto_strings();
+  OpenSSL_add_ssl_algorithms();
+
+  ctx = SSL_CTX_new(TLS_method());
+
+  if (!ctx)
+    throw msg_fmt("TLS: Error during SSL context initialization.");
+
   gnutls_datum_t const dhp = {const_cast<unsigned char*>(dh_params_2048),
                               sizeof(dh_params_2048)};
   int ret;

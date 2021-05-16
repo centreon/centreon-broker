@@ -47,6 +47,45 @@ params::~params() {
   _clean();
 }
 
+void params::apply(SSL* ssl) {
+  SSL_CTX_set_ecdh_auto(tls::ctx, 1);
+
+  std::string err;
+
+  // Set anonymous credentials...
+  if (_cert.empty() || _key.empty()) {
+    if (CLIENT == _type) {
+      log_v2::tls()->info("TLS: using anonymous client credentials");
+      ret = SSL_set_cypher_list(ssl, "aNULL");
+      if (!ret)
+        throw msg_fmt("TLS: unable to find cypher for anonymous session");
+    } else {
+      log_v2::tls()->info("TLS: using anonymous server credentials");
+      ret = SSL_set_cypher_list(ssl, "aNULL");
+      if (!ret)
+        throw msg_fmt("TLS: unable to find cypher for anonymous session");
+    }
+  }
+  else {
+    if (SSL_use_certificate_file(ssl, _cert.c_str(),
+                                      SSL_FILETYPE_PEM) <= 0) {
+      ERR_print_errors_cb([&err](const char* str, size_t len, void* u) {
+        err = std::string(str, len);
+      });
+      throw msg_fmt("TLS: unable to load certificate '{}': {}",
+          _cert, err);
+    }
+    if (SSL_use_PrivateKey_file(ssl, _key.c_str(),
+                                      SSL_FILETYPE_PEM) <= 0) {
+      ERR_print_errors_cb([&err](const char* str, size_t len, void* u) {
+        err = std::string(str, len);
+      });
+      throw msg_fmt("TLS: unable to load private key '{}': {}",
+          _key, err);
+    }
+  }
+}
+
 /**
  *  Apply parameters to a GNU TLS session object.
  *
