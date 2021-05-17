@@ -477,8 +477,8 @@ void availability_thread::_open_database() {
     _mysql.reset(new mysql(_db_cfg));
   } catch (const std::exception& e) {
     throw msg_fmt(
-        "BAM-BI: availability thread could not connect to "
-        "reporting database '{}'",
+        "BAM-BI: availability thread could not connect to reporting database "
+        "'{}'",
         e.what());
   }
 }

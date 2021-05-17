@@ -145,11 +145,13 @@ int32_t reporting_stream::stop() {
  *  @return Number of events acknowledged.
  */
 int reporting_stream::write(std::shared_ptr<io::data> const& data) {
-  log_v2::bam()->trace("BAM: reporting stream write");
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "BAM-BI"))
     return 0;
+
+  log_v2::bam()->trace("BAM: reporting stream write - event of type {:x}",
+                       data->type());
 
   switch (data->type()) {
     case io::events::data_type<io::events::bam, bam::de_kpi_event>::value:
@@ -188,11 +190,13 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
       _process_rebuild(data);
       break;
     default:
+      log_v2::bam()->trace("BAM: nothing to do with event of type {:x}",
+          data->type());
       break;
   }
 
   // Event acknowledgement.
-  int retval(_ack_events);
+  int retval{_ack_events};
   _ack_events = 0;
   return retval;
 }
