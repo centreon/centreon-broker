@@ -19,7 +19,7 @@
 #ifndef CCB_TLS_STREAM_HH
 #define CCB_TLS_STREAM_HH
 
-#include <gnutls/gnutls.h>
+#include <openssl/ssl.h>
 
 #include <vector>
 
@@ -41,18 +41,18 @@ namespace tls {
 class stream : public io::stream {
   std::vector<char> _buffer;
   time_t _deadline;
-  gnutls_session_t* _session;
+  SSL* _ssl;
 
  public:
-  stream(gnutls_session_t* session);
-  ~stream();
+  stream(SSL* ssl);
+  ~stream() noexcept;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
-  long long read_encrypted(void* buffer, long long size);
+  //long long read_encrypted(void* buffer, long long size);
   int32_t write(std::shared_ptr<io::data> const& d) override;
   int32_t stop() override { return 0; }
-  long long write_encrypted(void const* buffer, long long size);
+  //long long write_encrypted(void const* buffer, long long size);
 };
 }  // namespace tls
 

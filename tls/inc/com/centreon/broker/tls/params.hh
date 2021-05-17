@@ -20,6 +20,7 @@
 #define CCB_TLS_PARAMS_HH
 
 #include <gnutls/gnutls.h>
+#include <openssl/ssl.h>
 
 #include <string>
 

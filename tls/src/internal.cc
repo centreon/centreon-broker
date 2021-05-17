@@ -64,6 +64,16 @@ gnutls_dh_params_t tls::dh_params;
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #endif  // GNU TLS < 3.0.0
 
+std::string tls::err_as_string() {
+  BIO* bio = BIO_new(BIO_s_mem());
+  ERR_print_errors(bio);
+  char* buf = nullptr;
+  size_t len = BIO_get_mem_data(bio, &buf);
+  std::string retval{buf, len};
+  BIO_free(bio);
+  return retval;
+}
+
 /**
  *  Deinit the TLS library.
  */
@@ -150,16 +160,16 @@ void tls::initialize() {
  *  The following static function is used to receive data from the lower
  *  layer and give it to TLS for decoding.
  */
-ssize_t tls::pull_helper(gnutls_transport_ptr_t ptr, void* data, size_t size) {
-  return static_cast<tls::stream*>(ptr)->read_encrypted(data, size);
-}
+//ssize_t tls::pull_helper(gnutls_transport_ptr_t ptr, void* data, size_t size) {
+//  return static_cast<tls::stream*>(ptr)->read_encrypted(data, size);
+//}
 
 /**
  *  The following static function is used to send data from TLS to the lower
  *  layer.
  */
-ssize_t tls::push_helper(gnutls_transport_ptr_t ptr,
-                         void const* data,
-                         size_t size) {
-  return static_cast<tls::stream*>(ptr)->write_encrypted(data, size);
-}
+//ssize_t tls::push_helper(gnutls_transport_ptr_t ptr,
+//                         void const* data,
+//                         size_t size) {
+//  return static_cast<tls::stream*>(ptr)->write_encrypted(data, size);
+//}

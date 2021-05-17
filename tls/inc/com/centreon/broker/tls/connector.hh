@@ -20,6 +20,7 @@
 #define CCB_TLS_CONNECTOR_HH
 
 #include <string>
+#include <openssl/bio.h>
 
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -38,6 +39,8 @@ class connector : public io::endpoint {
   std::string _cert;
   std::string _key;
   std::string _tls_hostname;
+  BIO* _rbio;
+  BIO* _wbio;
 
  public:
   connector(std::string const& cert = std::string(),

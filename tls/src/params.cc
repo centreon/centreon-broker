@@ -51,6 +51,7 @@ void params::apply(SSL* ssl) {
   SSL_CTX_set_ecdh_auto(tls::ctx, 1);
 
   std::string err;
+  int ret;
 
   // Set anonymous credentials...
   if (_cert.empty() || _key.empty()) {
@@ -86,59 +87,59 @@ void params::apply(SSL* ssl) {
   }
 }
 
-/**
- *  Apply parameters to a GNU TLS session object.
- *
- *  @param[out] session Object on which parameters will be applied.
- */
-void params::apply(gnutls_session_t session) {
-  // Set the encryption method (normal ciphers with anonymous
-  // Diffie-Hellman and optionnally compression).
-  int ret;
-  ret = gnutls_priority_set_direct(
-      session,
-      (_compress
-           ? "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
-             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
-             "VERS-DTLS1.2:-VERS-SSL3.0:-"
-             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
-           : "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
-             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
-             "VERS-DTLS1.2:-VERS-SSL3.0:-"
-             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:+COMP-"
-             "DEFLATE:%COMPAT"),
-      nullptr);
-
-  if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error("TLS: encryption parameter application failed: {}",
-                         gnutls_strerror(ret));
-    throw msg_fmt("TLS: encryption parameter application failed: {}",
-                  gnutls_strerror(ret));
-  }
-
-  // Set anonymous credentials...
-  if (_cert.empty() || _key.empty()) {
-    if (CLIENT == _type) {
-      log_v2::tls()->info("TLS: using anonymous client credentials");
-      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.client);
-    } else {
-      log_v2::tls()->info("TLS: using anonymous server credentials");
-      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.server);
-    }
-  }
-  // ... or certificate credentials.
-  else {
-    log_v2::tls()->info("TLS: using certificates as credentials");
-    ret = gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, _cred.cert);
-    if (SERVER == _type)
-      gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
-  }
-  if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error("TLS: could not set credentials: {}",
-                         gnutls_strerror(ret));
-    throw msg_fmt("TLS: could not set credentials: {}", gnutls_strerror(ret));
-  }
-}
+///**
+// *  Apply parameters to a GNU TLS session object.
+// *
+// *  @param[out] session Object on which parameters will be applied.
+// */
+//void params::apply(gnutls_session_t session) {
+//  // Set the encryption method (normal ciphers with anonymous
+//  // Diffie-Hellman and optionnally compression).
+//  int ret;
+//  ret = gnutls_priority_set_direct(
+//      session,
+//      (_compress
+//           ? "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
+//             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
+//             "VERS-DTLS1.2:-VERS-SSL3.0:-"
+//             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
+//           : "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
+//             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
+//             "VERS-DTLS1.2:-VERS-SSL3.0:-"
+//             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:+COMP-"
+//             "DEFLATE:%COMPAT"),
+//      nullptr);
+//
+//  if (ret != GNUTLS_E_SUCCESS) {
+//    log_v2::tls()->error("TLS: encryption parameter application failed: {}",
+//                         gnutls_strerror(ret));
+//    throw msg_fmt("TLS: encryption parameter application failed: {}",
+//                  gnutls_strerror(ret));
+//  }
+//
+//  // Set anonymous credentials...
+//  if (_cert.empty() || _key.empty()) {
+//    if (CLIENT == _type) {
+//      log_v2::tls()->info("TLS: using anonymous client credentials");
+//      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.client);
+//    } else {
+//      log_v2::tls()->info("TLS: using anonymous server credentials");
+//      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.server);
+//    }
+//  }
+//  // ... or certificate credentials.
+//  else {
+//    log_v2::tls()->info("TLS: using certificates as credentials");
+//    ret = gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, _cred.cert);
+//    if (SERVER == _type)
+//      gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
+//  }
+//  if (ret != GNUTLS_E_SUCCESS) {
+//    log_v2::tls()->error("TLS: could not set credentials: {}",
+//                         gnutls_strerror(ret));
+//    throw msg_fmt("TLS: could not set credentials: {}", gnutls_strerror(ret));
+//  }
+//}
 
 /**
  *  Load TLS parameters.
