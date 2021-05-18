@@ -247,12 +247,6 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   return 1;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Flush data accumulated in write buffer.
  */
