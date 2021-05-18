@@ -19,8 +19,8 @@
 #ifndef CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 #define CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 
-#include <nlohmann/json.hpp>
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "com/centreon/broker/namespace.hh"
