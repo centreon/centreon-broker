@@ -605,30 +605,26 @@ void ba::visit(io::stream* visitor) {
 void ba::service_update(const std::shared_ptr<neb::downtime>& dt,
                         io::stream* visitor) {
   (void)visitor;
-  if ((dt->host_id == _host_id) && (dt->service_id == _service_id)) {
-    // Log message.
-    log_v2::bam()->debug(
-        "BAM: BA {} '{}' is getting notified of a downtime on its service ({}, "
-        "{})",
-        _id, _name, _host_id, _service_id);
-
-    // Check if there was a change.
-    bool in_downtime(dt->was_started && dt->actual_end_time.is_null());
-    if (_in_downtime != in_downtime) {
-      _in_downtime = in_downtime;
-
-      // Generate status event.
-      visit(visitor);
-
-      // Propagate change.
-      propagate_update(visitor);
-    }
-  } else
-    log_v2::bam()->debug(
-        "BAM: BA {} '{}' has got an invalid downtime event. This should never "
-        "happen. Check your database: got (host {}, service {}) expected ({}, "
-        "{})",
-        _id, _name, dt->host_id, dt->service_id, _host_id, _service_id);
+  //  assert(dt->host_id == _host_id && dt->service_id == _service_id);
+  //  // Log message.
+  //  log_v2::bam()->debug(
+  //      "BAM: BA {} '{}' is getting notified of a downtime on its service ({},
+  //      "
+  //      "{})",
+  //      _id, _name, _host_id, _service_id);
+  //
+  //  // Check if there was a change.
+  //  bool in_downtime(dt->was_started && dt->actual_end_time.is_null());
+  //  if (_in_downtime != in_downtime) {
+  //    _in_downtime = in_downtime;
+  //    //assert(!_in_downtime);
+  //
+  //    // Generate status event.
+  //    visit(visitor);
+  //
+  //    // Propagate change.
+  //    propagate_update(visitor);
+  //  }
 }
 
 /**
