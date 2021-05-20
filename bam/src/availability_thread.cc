@@ -346,7 +346,6 @@ void availability_thread::_build_daily_availabilities(int thread_id,
   log_v2::bam()->trace("availability_thread: query: {}", query);
 
   promise = std::promise<database::mysql_result>();
-  log_v2::bam()->trace("availability_thread: query: {}", query);
   _mysql->run_query_and_get_result(query, &promise, thread_id);
 
   try {
