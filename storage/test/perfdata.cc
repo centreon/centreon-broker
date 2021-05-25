@@ -394,7 +394,7 @@ TEST_F(StorageParserParsePerfdata, Incorrect1) {
 
   // Attempt to parse perfdata.
   p.parse_perfdata(0, 0, "metric1= 10 metric2=42", list);
-  ASSERT_EQ(list.size(), 1);
+  ASSERT_EQ(list.size(), 1u);
   ASSERT_EQ(list.back().name(), "metric2");
   ASSERT_EQ(list.back().value(), 42);
 }
