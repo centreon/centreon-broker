@@ -1,6 +1,16 @@
 # Changelog
 
+## 20.04.15
+
+### Fixes
+
+*Timeranges*
+
+Allowing parser \r or \n for the parser of timeranges.
+
 ## 20.04.14
+
+### Enhancements
 
 ### Build
 
