@@ -1140,7 +1140,7 @@ void stream::_write(std::shared_ptr<io::data> const& d) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*d));
   if (serialized) {
-    log_v2::bbdo()->debug("BBDO: serialized event of type {} to {} bytes",
+    log_v2::bbdo()->trace("BBDO: serialized event of type {} to {} bytes",
                           d->type(), serialized->size());
     _substream->write(serialized);
   }
