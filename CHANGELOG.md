@@ -1,5 +1,14 @@
 # Changelog
 
+## 21.04.2
+
+### Bug fix
+
+*tcp*
+
+Connections can fail when many pollers establish connection to cbd. This should
+be fixed with this new version.
+
 ## 21.04.1
 
 `Date of the release`
