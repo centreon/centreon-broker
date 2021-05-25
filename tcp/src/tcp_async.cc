@@ -114,32 +114,40 @@ std::shared_ptr<asio::ip::tcp::acceptor> tcp_async::create_acceptor(
   return retval;
 }
 
+/**
+ * @brief this function works
+ *
+ * @param ec
+ */
 void tcp_async::_clear_available_con(asio::error_code ec) {
-  log_v2::core()->info("Clearing old connections");
   if (ec)
-    log_v2::core()->info(
-        "The clear mechanism for available connections encountered an error: "
-        "{}",
-        ec.message());
+    log_v2::core()->info("Available connections cleaning: {}", ec.message());
   else {
+    log_v2::core()->info("Available connections cleaning");
     std::lock_guard<std::mutex> lck(_acceptor_con_m);
     std::time_t now = std::time(nullptr);
     for (auto it = _acceptor_available_con.begin();
          it != _acceptor_available_con.end();) {
-      if (now >= it->second.second + 4) {
-        log_v2::tcp()->info("Destroying too old/not used connection '{}'",
+      if (now >= it->second.second + 10) {
+        log_v2::tcp()->info("Destroying connection to '{}'",
                             it->second.first->peer());
         it = _acceptor_available_con.erase(it);
       } else
         ++it;
     }
+    if (!_acceptor_available_con.empty()) {
+      _timer->expires_after(std::chrono::seconds(10));
+      _timer->async_wait(std::bind(&tcp_async::_clear_available_con, this,
+                                   std::placeholders::_1));
+    } else
+      _clear_available_con_running = false;
   }
-  _clear_available_con_running = false;
 }
 
 /**
  * @brief Starts the acceptor given in parameter. To accept the acceptor needs
- * the IO Context to be running.
+ * the IO Context to be running. A timer is started/restarted so that in 10s
+ * not used connections will be erased.
  *
  * @param acceptor The acceptor that you want it to accept.
  */
@@ -149,10 +157,11 @@ void tcp_async::start_acceptor(
     _clear_available_con_running = true;
     if (!_timer)
       _timer.reset(new asio::steady_timer(pool::instance().io_context()));
-    _timer->expires_after(std::chrono::seconds(10));
-    _timer->async_wait(std::bind(&tcp_async::_clear_available_con, this,
-                                 std::placeholders::_1));
   }
+  log_v2::tcp()->info("Reschedule available connections cleaning in 10s");
+  _timer->expires_after(std::chrono::seconds(10));
+  _timer->async_wait(
+      std::bind(&tcp_async::_clear_available_con, this, std::placeholders::_1));
 
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
