@@ -18,8 +18,9 @@
 
 #include "com/centreon/broker/time/timerange.hh"
 #include <cstring>
-#include <sstream>
+#include <fmt/format.h>
 #include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::time;
@@ -191,65 +192,77 @@ bool timerange::to_time_t(struct tm const& midnight,
   return (true);
 }
 
-static bool _build_time_t(std::string const& time_str, uint64_t& ret) {
-  auto f = [](std::string const& str, uint64_t& data) -> bool {
-    std::istringstream iss(str);
-    return ((iss >> data) && iss.eof());
-  };
+static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
+  const char* endc = time_str.data() + time_str.size();
+  const char* begin_str = time_str.data();
+  char* endptr;
+  char* endptr1;
 
-  std::size_t pos(time_str.find(':'));
-  if (pos == std::string::npos)
-    return (false);
-  uint64_t hours;
-  if (!f(time_str.substr(0, pos), hours))
-    return (false);
-  uint64_t minutes;
-  if (!f(time_str.substr(pos + 1), minutes))
-    return (false);
+  // move cursor while we meet blanks
+  while (std::isspace(*begin_str)) { begin_str++; }
+
+  uint64_t hours = strtoull(begin_str, &endptr, 10);
+  
+  if (endptr == begin_str || endptr + 2 >= endc || *endptr != ':') {
+    log_v2::core()->error("parser timeranges: error while reading hours '{}' at {}.",
+                          begin_str, endptr - begin_str);
+    return false;
+  }
+
+  uint64_t minutes = strtoull(endptr + 1, &endptr1, 10);
+
+  if (endptr1 == endptr + 1) {
+    log_v2::core()->error("parser timeranges: error while reading minutes '{}' at {}.",
+                          begin_str, endptr1 - begin_str);
+    return false;
+  }
+
+  // move cursor while we meet blanks
+  while (endptr1 < endc && std::isspace(*endptr1)) { endptr1++; }
+
+  if (endptr1 != endc) {
+    log_v2::core()->error("parser timeranges: error while reading end "
+                          "of your timerange '{}' at {}.", begin_str,
+                          endptr1 - begin_str);
+    return false;
+  }
+
   ret = hours * 3600 + minutes * 60;
-  return (true);
+  return true;
 }
 
-bool timerange::build_timeranges_from_string(std::string const& line,
+bool timerange::build_timeranges_from_string(const std::string& line,
                                              std::list<timerange>& timeranges) {
   if (line.empty())
     return true;
 
-  std::list<std::string> timeranges_str;
-  timeranges_str = misc::string::split(line, ',');
-  for (std::list<std::string>::const_iterator it(timeranges_str.begin()),
-       end(timeranges_str.end());
-       it != end; ++it) {
-    std::size_t pos(it->find('-'));
-    if (pos == std::string::npos)
-      return (false);
+  std::list<fmt::string_view> timeranges_str{misc::string::split_sv(line, ',')};
+  for (auto& t : timeranges_str) {
+    const char* ret = strchr(t.data(), '-');
+    if (ret == NULL)
+      return false;
     uint64_t start_time;
-    if (!_build_time_t(it->substr(0, pos), start_time))
-      return (false);
+    if (!_build_time_t(fmt::string_view(t.data(), ret - t.data()), start_time))
+      return false;
     uint64_t end_time;
-    if (!_build_time_t(it->substr(pos + 1), end_time))
-      return (false);
-    timeranges.push_front(timerange(start_time, end_time));
+    if (!_build_time_t(
+            fmt::string_view(ret + 1, t.size() - (ret - t.data()) - 1),
+            end_time))
+      return false;
+    timeranges.emplace_front(start_time, end_time);
   }
-  return (true);
+  return true;
 }
 
 std::string timerange::to_string() const {
-  std::ostringstream oss;
-  oss << (_start / 3600) << ":" << (_start % 3600) / 60 << "-" << (_end / 3600)
-      << ":" << (_end % 3600) / 60;
-  return (oss.str());
+  return fmt::format("{:02d}:{:02d}-{:02d}:{:02d}", _start / 3600,
+                     (_start % 3600) / 60, _end / 3600, (_end % 3600) / 60);
 }
 
 std::string timerange::build_string_from_timeranges(
     std::list<timerange> const& timeranges) {
-  std::ostringstream oss;
-  for (std::list<time::timerange>::const_iterator it = timeranges.begin(),
-                                                  end = timeranges.end();
-       it != end; ++it) {
-    if (!oss.str().empty())
-      oss << ",";
-    oss << it->to_string();
-  }
-  return (oss.str());
+  std::vector<std::string> v;
+  for (auto it = timeranges.rbegin(); it != timeranges.rend(); ++it)
+    v.emplace_back(it->to_string());
+  return fmt::format("{}", fmt::join(v, ", "));
 }

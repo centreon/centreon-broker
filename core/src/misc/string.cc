@@ -64,6 +64,25 @@ std::list<std::string> string::split(std::string const& str, char sep) {
   return retval;
 }
 
+std::list<fmt::string_view> string::split_sv(std::string const& str, char sep) {
+  std::list<fmt::string_view> retval;
+  size_t pos = 0, new_pos;
+
+  while (pos != std::string::npos) {
+    new_pos = str.find(sep, pos);
+    if (new_pos != std::string::npos) {
+      retval.emplace_back(str.data() + pos, new_pos - pos);
+      pos = new_pos + 1;
+    } else {
+      retval.emplace_back(str.data() + pos, str.size() - pos);
+      pos = new_pos;
+    }
+  }
+
+  return retval;
+}
+
+
 std::string string::base64_encode(const std::string& str) {
   static const std::string b =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
