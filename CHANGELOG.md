@@ -1,5 +1,14 @@
 # Changelog
 
+## 20.10.6
+
+### Bug fix
+
+*tcp*
+
+Connections can fail when many pollers establish connection to cbd. This should
+be fixed with this new version.
+
 ## 20.10.5
 
 `Release date to be defined`
