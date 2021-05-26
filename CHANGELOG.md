@@ -4,6 +4,10 @@
 
 ### Bug fix
 
+*BBDO serialized events*
+
+Converts theses events into trace.
+
 *tcp*
 
 Connections can fail when many pollers establish connection to cbd. This should

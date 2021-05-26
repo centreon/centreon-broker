@@ -991,7 +991,7 @@ bool stream::_read_any(std::shared_ptr<io::data>& d, time_t deadline) {
         packet_size = content.size();
         d.reset(unserialize(event_id, source_id, dest_id, pack, packet_size));
         if (d) {
-          log_v2::bbdo()->debug("unserialized {} bytes for event of type {}",
+          log_v2::bbdo()->trace("unserialized {} bytes for event of type {}",
                                 BBDO_HEADER_SIZE + packet_size, event_id);
         } else {
           log_v2::bbdo()->error("unknown event type {} event cannot be decoded",
@@ -1140,7 +1140,7 @@ void stream::_write(std::shared_ptr<io::data> const& d) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*d));
   if (serialized) {
-    log_v2::bbdo()->debug("BBDO: serialized event of type {} to {} bytes",
+    log_v2::bbdo()->trace("BBDO: serialized event of type {} to {} bytes",
                           d->type(), serialized->size());
     _substream->write(serialized);
   }
