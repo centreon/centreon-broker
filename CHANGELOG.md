@@ -12,6 +12,10 @@ Allowing parser \r or \n for the parser of timeranges.
 
 ### Enhancements
 
+*BBDO serialize events*
+
+Move BBDO serialized events logs from debug to trace.
+
 ### Build
 
 Since the closure of bintray, cbd could not be compiled. Dependencies have been
