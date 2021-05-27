@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015,2017 Centreon
+** Copyright 2013,2015,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@
 #define CCB_BBDO_CONNECTOR_HH
 
 #include <ctime>
+#include <list>
 
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/extension.hh"
 
 CCB_BEGIN()
 
@@ -34,27 +35,26 @@ namespace bbdo {
  *  Initiate direct BBDO protocol connections.
  */
 class connector : public io::endpoint {
+  bool _is_input;
+  bool _coarse;
+  bool _negotiate;
+  time_t _timeout;
+  uint32_t _ack_limit;
+  std::list<std::shared_ptr<io::extension>> _extensions;
+
+  std::unique_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
+
  public:
   connector(bool negotiate,
-            const std::pair<std::string, std::string>& extensions,
             time_t timeout,
             bool connector_is_input,
             bool coarse = false,
-            uint32_t ack_limit = 1000);
+            uint32_t ack_limit = 1000,
+            std::list<std::shared_ptr<io::extension>>&& extensions = {});
   ~connector() noexcept = default;
   connector(const connector&) = delete;
   connector& operator=(const connector&) = delete;
   std::unique_ptr<io::stream> open() override;
-
- private:
-  std::unique_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
-
-  bool _is_input;
-  bool _coarse;
-  std::pair<std::string, std::string> _extensions;
-  bool _negotiate;
-  time_t _timeout;
-  uint32_t _ack_limit;
 };
 }  // namespace bbdo
 

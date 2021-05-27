@@ -8,10 +8,22 @@ This program build Centreon-broker
 
     -f|--force    : force rebuild
     -r|--release  : Build on release mode
+    -fcr|--force-conan-rebuild : rebuild conan data
     -h|--help     : help
 EOF
 }
 BUILD_TYPE="Debug"
+CONAN_REBUILD="0"
+for i in $(cat conanfile.txt) ; do
+  if [[ $i =~ / ]] ; then
+    if [ ! -d ~/.conan/data/$i ] ; then
+      echo "The package '$i' is missing"
+      CONAN_REBUILD="1"
+      break
+    fi
+  fi
+done
+
 for i in "$@"
 do
   case $i in
@@ -21,6 +33,10 @@ do
       ;;
     -r|--release)
       BUILD_TYPE="Release"
+      shift
+      ;;
+    -fcr|--force-conan-rebuild)
+      CONAN_REBUILD="1"
       ;;
     -h|--help)
       show_help
@@ -62,8 +78,14 @@ if [ -r /etc/centos-release ] ; then
     echo "pip3 already installed"
   fi
 
-  if ! rpm -q gcc-c++ ; then
-    yum -y install gcc-c++
+  good=$(gcc --version | awk '/gcc/ && ($3+0)>5.0{print 1}')
+
+  if [ ! $good ] ; then
+    yum -y install centos-release-scl
+    yum-config-manager --enable rhel-server-rhscl-7-rpms
+    yum -y install devtoolset-9
+    ln -s /usr/bin/cmake3 /usr/bin/cmake
+    source /opt/rh/devtoolset-9/enable
   fi
 
   if [ $maj = "centos7" ] ; then
@@ -83,6 +105,7 @@ if [ -r /etc/centos-release ] ; then
     rrdtool-devel
     gnutls-devel
     lua-devel
+    perl-Thread-Queue
   )
   for i in "${pkgs[@]}"; do
     if ! rpm -q $i ; then
@@ -193,7 +216,7 @@ elif [ -r /etc/issue ] ; then
   else
     echo "pip3 already installed"
   fi
-
+fi
 
 pip3 install conan --upgrade
 
@@ -202,11 +225,6 @@ if [ $my_id -eq 0 ] ; then
 else
   conan="$HOME/.local/bin/conan"
 fi
-if ! $conan remote list | grep ^centreon ; then
-  $conan remote add centreon https://api.bintray.com/conan/centreon/centreon
-fi
-
-good=$(gcc --version | awk '/gcc/ && ($3+0)>5.0{print 1}')
 
 if [ ! -d build ] ; then
   mkdir build
@@ -219,11 +237,15 @@ if [ "$force" = "1" ] ; then
   mkdir build
 fi
 cd build
-
-if [ $good -eq 1 ] ; then
-  $conan install .. --remote centreon -s compiler.libcxx=libstdc++11
+if [ $maj = "centos7" ] ; then
+    rm -rf ~/.conan/profiles/default
+    if [ "$CONAN_REBUILD" = "1" ] ; then
+      $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
+    else
+      $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+    fi
 else
-  $conan install .. --remote centreon -s compiler.libcxx=libstdc++
+    $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
 fi
 
 if [ $maj = "Raspbian" ] ; then

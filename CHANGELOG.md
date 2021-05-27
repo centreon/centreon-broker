@@ -23,14 +23,20 @@ Allowing parsing \r or \n for the parser of timeranges.
 
 `Date of the release`
 
-### Build
+### Bug fixes
+
+*Factories*
+
+If we want two outputs configured with tls but with different configurations,
+this was impossible to configure, because the factory can only store one
+configuration. This is fixed now.
+
+*Build*
 
 Since the bintray closure, we could not build cbd. Dependencies have been moved
 to the conan-center and the build is back.
 
-### Bam
-
-*meta-services*
+*Bam*
 
 Meta-services are removed from broker. This code was not used and could produce
 

@@ -52,19 +52,19 @@ using namespace com::centreon::broker::bbdo;
  */
 acceptor::acceptor(std::string const& name,
                    bool negotiate,
-                   std::pair<std::string, std::string> const& extensions,
                    time_t timeout,
                    bool one_peer_retention_mode,
                    bool coarse,
-                   uint32_t ack_limit)
+                   uint32_t ack_limit,
+                   std::list<std::shared_ptr<io::extension>>&& extensions)
     : io::endpoint(!one_peer_retention_mode),
       _coarse(coarse),
-      _extensions(extensions),
       _name(name),
       _negotiate(negotiate),
       _one_peer_retention_mode(one_peer_retention_mode),
       _timeout(timeout),
-      _ack_limit(ack_limit) {
+      _ack_limit(ack_limit),
+      _extensions{extensions} {
   if (_timeout == (time_t)-1 || _timeout == 0)
     _timeout = 3;
 }
@@ -94,20 +94,20 @@ std::unique_ptr<io::stream> acceptor::open() {
     if (u) {
       assert(!_coarse);
       // if _one_peer_retention_mode, the stream is an output
-      bbdo::stream* my_bbdo = new bbdo::stream(!_one_peer_retention_mode);
+      auto my_bbdo = std::make_unique<bbdo::stream>(!_one_peer_retention_mode,
+                                                    _extensions);
       my_bbdo->set_substream(std::move(u));
       my_bbdo->set_coarse(_coarse);
-      my_bbdo->set_negotiate(_negotiate, _extensions);
+      my_bbdo->set_negotiate(_negotiate);
       my_bbdo->set_timeout(_timeout);
       my_bbdo->set_ack_limit(_ack_limit);
       try {
         my_bbdo->negotiate(bbdo::stream::negotiate_second);
       } catch (const std::exception& e) {
-        delete my_bbdo;
         throw;
       }
 
-      return std::unique_ptr<io::stream>(my_bbdo);
+      return my_bbdo;
     }
   }
 

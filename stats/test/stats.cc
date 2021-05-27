@@ -146,9 +146,9 @@ class fact : public io::factory {
   fact() {}
 
   bool has_endpoint(config::endpoint& cfg __attribute__((__unused__)),
-                    flag* flag) override {
-    if (flag)
-      *flag = no;
+                    io::extension* ext) override {
+    if (ext)
+      *ext = io::extension("FACT", false, false);
     return true;
   }
 

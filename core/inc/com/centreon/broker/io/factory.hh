@@ -20,9 +20,10 @@
 #define CCB_IO_FACTORY_HH
 
 #include <memory>
+#include <unordered_map>
 #include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/extension.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
@@ -36,11 +37,6 @@ namespace io {
  */
 class factory {
  public:
-  enum flag {
-    no,
-    maybe,
-    yes,
-  };
   factory() = default;
   virtual ~factory() = default;
   factory(factory const& other) = delete;
@@ -49,23 +45,26 @@ class factory {
    * @brief This method has two roles:
    *   * The first one is to know if this endpoint has to be set on cbd startup.
    *     This is known with the return value.
-   *   * There is also a flag output value that tells if after negociation, this
-   *     stream should be added to the configuration, surely, maybe or not.
+   *   * There is also an extension output value that tells if after
+   * negociation, this stream should be added to the configuration, surely,
+   * maybe or not, and this extension provides options for the stream
+   * configuration.
    *
    * @param[in] cfg
-   * @param[out] flag
+   * @param[out] ext
    *
    * @return a boolean
    */
-  virtual bool has_endpoint(config::endpoint& cfg, flag* flag) = 0;
+  virtual bool has_endpoint(config::endpoint& cfg, io::extension* ext) = 0;
   virtual endpoint* new_endpoint(
       config::endpoint& cfg,
       bool& is_acceptor,
       std::shared_ptr<persistent_cache> cache =
           std::shared_ptr<persistent_cache>()) const = 0;
-  virtual std::shared_ptr<stream> new_stream(std::shared_ptr<stream> substream,
-                                             bool is_acceptor,
-                                             std::string const& proto_name);
+  virtual std::shared_ptr<stream> new_stream(
+      std::shared_ptr<stream> substream,
+      bool is_acceptor,
+      const std::unordered_map<std::string, std::string>& options);
 };
 }  // namespace io
 

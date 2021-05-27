@@ -123,8 +123,8 @@ void params::load() {
     ret = gnutls_certificate_set_x509_key_file(
         _cred.cert, _cert.c_str(), _key.c_str(), GNUTLS_X509_FMT_PEM);
     if (ret != GNUTLS_E_SUCCESS) {
-      log_v2::tls()->error("TLS: could not load certificate: {}",
-                           gnutls_strerror(ret));
+      log_v2::tls()->error("TLS: could not load certificate ({}, {}): {}",
+                           _cert, _key, gnutls_strerror(ret));
       throw msg_fmt("TLS: could not load certificate: {}",
                     gnutls_strerror(ret));
     }
@@ -135,9 +135,9 @@ void params::load() {
                                                    GNUTLS_X509_FMT_PEM);
       if (ret <= 0) {
         log_v2::tls()->error(
-            "TLS: could not load trusted Certificate Authority's certificate: "
-            "{}",
-            gnutls_strerror(ret));
+            "TLS: could not load trusted Certificate Authority's certificate "
+            "'{}': {}",
+            _ca, gnutls_strerror(ret));
         throw msg_fmt(
             "TLS: could not load trusted Certificate Authority's certificate: "
             "{}",

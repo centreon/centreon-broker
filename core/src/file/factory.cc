@@ -21,17 +21,12 @@
 #include <memory>
 
 #include "com/centreon/broker/file/opener.hh"
+#include "com/centreon/broker/io/extension.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Check if a configuration match the file layer.
@@ -40,16 +35,16 @@ using namespace com::centreon::broker::file;
  *
  *  @return True if configuration matches the file layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
   bool retval;
-  if (flag)
-    *flag = no;
+  if (ext)
+    *ext = io::extension("FILE", false, false);
   if (cfg.type == "file") {
     cfg.params["coarse"] = "yes";  // File won't respond to any salutation.
     retval = true;
   } else
     retval = false;
-  return (retval);
+  return retval;
 }
 
 /**
