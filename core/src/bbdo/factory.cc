@@ -23,16 +23,9 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  @brief Check if a configuration supports this protocol.
@@ -43,11 +36,12 @@ using namespace com::centreon::broker::bbdo;
  *
  *  @return True if the configuration has this protocol.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
   std::map<std::string, std::string>::const_iterator it{
       cfg.params.find("protocol")};
-  if (flag)
-    *flag = no;
+  if (ext)
+    *ext = io::extension("BBDO", false, false);
+
   return it != cfg.params.end() && it->second == "bbdo";
 }
 
@@ -79,7 +73,7 @@ io::endpoint* factory::new_endpoint(
 
   // Negotiation allowed ?
   bool negotiate = false;
-  std::pair<std::string, std::string> extensions;
+  std::list<std::shared_ptr<io::extension>> extensions;
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("negotiation"));
@@ -97,8 +91,8 @@ io::endpoint* factory::new_endpoint(
       try {
         ack_limit = std::stoul(it->second);
       } catch (const std::exception& e) {
-        logging::config(logging::high)
-            << "BBDO: Bad value for ack_limit, it must be an integer.";
+        log_v2::bbdo()->error(
+            "BBDO: Bad value for ack_limit, it must be an integer.");
       }
   }
 
@@ -127,16 +121,17 @@ io::endpoint* factory::new_endpoint(
           "BBDO: Configuration error, the one peer retention mode should be "
           "set only when the connection is reversed");
 
-    retval =
-        new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
-                           acceptor_is_output, coarse, ack_limit);
+    retval = new bbdo::acceptor(cfg.name, negotiate, cfg.read_timeout,
+                                acceptor_is_output, coarse, ack_limit,
+                                std::move(extensions));
     if (acceptor_is_output && keep_retention)
       is_acceptor = false;
     log_v2::bbdo()->debug("BBDO: new acceptor {}", cfg.name);
   } else {
     bool connector_is_input = cfg.get_io_type() == config::endpoint::input;
-    retval = new bbdo::connector(negotiate, extensions, cfg.read_timeout,
-                                 connector_is_input, coarse, ack_limit);
+    retval =
+        new bbdo::connector(negotiate, cfg.read_timeout, connector_is_input,
+                            coarse, ack_limit, std::move(extensions));
     log_v2::bbdo()->debug("BBDO: new connector {}", cfg.name);
   }
   return retval;
@@ -152,27 +147,20 @@ io::endpoint* factory::new_endpoint(
  *
  *  return a pair of two strings, extensions and mandatories.
  */
-std::pair<std::string, std::string> factory::_extensions(
+std::list<std::shared_ptr<io::extension>> factory::_extensions(
     config::endpoint& cfg) const {
-  std::string extensions;
-  std::string mandatory;
+  std::list<std::shared_ptr<io::extension>> retval;
+
   for (std::map<std::string, io::protocols::protocol>::const_iterator
            it{io::protocols::instance().begin()},
        end{io::protocols::instance().end()};
        it != end; ++it) {
-    flag flag;
-    bool has = it->second.endpntfactry->has_endpoint(cfg, &flag);
+    std::shared_ptr<io::extension> ext = std::make_shared<io::extension>();
+    bool has = it->second.endpntfactry->has_endpoint(cfg, &*ext);
     if (it->second.osi_from > 1 && it->second.osi_to < 7 &&
-        (has || flag != io::factory::flag::no)) {
-      if (!extensions.empty())
-        extensions.append(" ");
-      extensions.append(it->first);
-      if (flag == yes) {
-        if (!mandatory.empty())
-          mandatory.append(" ");
-        mandatory.append(it->first);
-      }
+        (has || ext->is_mandatory() || ext->is_optional())) {
+      retval.push_back(ext);
     }
   }
-  return std::make_pair(extensions, mandatory);
+  return retval;
 }

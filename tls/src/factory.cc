@@ -22,6 +22,7 @@
 #include <memory>
 
 #include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
 
@@ -32,44 +33,46 @@ using namespace com::centreon::broker::tls;
  *  Check if an endpoint configuration match the TLS layer.
  *
  *  @param[in] cfg  Configuration object.
- *  @param[out] flag Returns no, maybe or yes, corresponding to the no, auto,
- *                   yes configured in the configuration file.
+ *  @param[out] extension Returns no, maybe or yes with options to give the
+ *              tls configuration.
  *
  *  @return False everytime because the TLS layer must not be set at
  *  the broker configuration. This avoids the TLS while the negotiation
- *  is running. We will be able to add this endpoint later, following the flag
+ *  is running. We will be able to add this endpoint later, following the ext
  *  value.
  */
-bool factory::has_endpoint(config::endpoint& cfg, flag* flag) {
-  if (flag) {
+bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
+  if (ext) {
     auto it = cfg.params.find("tls");
     if (it == cfg.params.end() || strncasecmp(it->second.c_str(), "no", 3) == 0)
-      *flag = no;
+      *ext = io::extension("TLS", false, false);
     else {
+      log_v2::tls()->info("Configuration of TLS for endpoint '{}'",
+                          cfg.params["name"]);
       if (strncasecmp(it->second.c_str(), "auto", 5) == 0)
-        *flag = maybe;
+        *ext = io::extension("TLS", true, false);
       else if (strncasecmp(it->second.c_str(), "yes", 4) == 0)
-        *flag = yes;
+        *ext = io::extension("TLS", false, true);
 
       // CA certificate.
       it = cfg.params.find("ca_certificate");
       if (it != cfg.params.end())
-        _ca_cert = it->second;
+        ext->mutable_options()["ca_cert"] = it->second;
 
       // Private key.
       it = cfg.params.find("private_key");
       if (it != cfg.params.end())
-        _private_key = it->second;
+        ext->mutable_options()["private_key"] = it->second;
 
       // Public certificate.
       it = cfg.params.find("public_cert");
       if (it != cfg.params.end())
-        _public_cert = it->second;
+        ext->mutable_options()["public_cert"] = it->second;
 
       // tls hostname.
       it = cfg.params.find("tls_hostname");
       if (it != cfg.params.end())
-        _tls_hostname = it->second;
+        ext->mutable_options()["tls_hostname"] = it->second;
     }
   }
   return false;
@@ -92,10 +95,10 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find TLS parameters (optional).
-  bool tls(false);
-  std::string ca_cert;
+  bool tls{false};
   std::string private_key;
   std::string public_cert;
+  std::string ca_cert;
   std::string tls_hostname;
   {
     // Is TLS enabled ?
@@ -146,13 +149,34 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New stream.
  */
-std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
-                                                bool is_acceptor,
-                                                std::string const& proto_name) {
-  (void)proto_name;
+std::shared_ptr<io::stream> factory::new_stream(
+    std::shared_ptr<io::stream> to,
+    bool is_acceptor,
+    const std::unordered_map<std::string, std::string>& options) {
+  std::string public_cert;
+  std::string private_key;
+  std::string ca_cert;
+  std::string tls_hostname;
+
+  auto found = options.find("public_cert");
+  if (found != options.end())
+    public_cert = found->second;
+
+  found = options.find("private_key");
+  if (found != options.end())
+    private_key = found->second;
+
+  found = options.find("ca_cert");
+  if (found != options.end())
+    ca_cert = found->second;
+
+  found = options.find("tls_hostname");
+  if (found != options.end())
+    tls_hostname = found->second;
+
   return is_acceptor
-             ? acceptor(_public_cert, _private_key, _ca_cert, _tls_hostname)
+             ? acceptor(public_cert, private_key, ca_cert, tls_hostname)
                    .open(to)
-             : connector(_public_cert, _private_key, _ca_cert, _tls_hostname)
+             : connector(public_cert, private_key, ca_cert, tls_hostname)
                    .open(to);
 }

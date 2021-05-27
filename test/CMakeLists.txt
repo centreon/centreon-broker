@@ -109,7 +109,7 @@ add_executable(ut
 #set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 target_link_libraries(ut rokerbase roker ${TESTS_LIBRARIES} conflictmgr
-	${json11_LIBS} ${nlohmann_json_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${GTest_LIBS} ${mariadb-connector-c_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+	${nlohmann_json_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${GTest_LIBS} ${mariadb-connector-c_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 add_test(NAME tests COMMAND ut)
 

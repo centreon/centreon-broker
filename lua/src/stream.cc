@@ -34,12 +34,6 @@ using namespace com::centreon::broker::misc;
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker::lua;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *

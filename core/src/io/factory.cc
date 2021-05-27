@@ -35,12 +35,14 @@ using namespace com::centreon::broker::io;
  *
  *  @return New stream.
  */
-std::shared_ptr<stream> factory::new_stream(std::shared_ptr<stream> to,
-                                            bool is_acceptor,
-                                            std::string const& proto_name) {
+std::shared_ptr<stream> factory::new_stream(
+    std::shared_ptr<stream> to,
+    bool is_acceptor,
+    const std::unordered_map<std::string, std::string>& options) {
   (void)to;
   (void)is_acceptor;
-  throw msg_fmt("{}: protocol does not support feature negotiation",
-                proto_name);
-  return std::shared_ptr<stream>();
+  throw msg_fmt(
+      "This is probably a bug, this protocol does not support feature "
+      "negotiation");
+  return nullptr;
 }

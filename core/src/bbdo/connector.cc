@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2015,2017 Centreon
+** Copyright 2013-2015,2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,19 +45,19 @@ using namespace com::centreon::broker::bbdo;
  * sent.
  */
 connector::connector(bool negotiate,
-                     const std::pair<std::string, std::string>& extensions,
                      time_t timeout,
                      bool connector_is_input,
                      bool coarse,
-                     uint32_t ack_limit)
+                     uint32_t ack_limit,
+                     std::list<std::shared_ptr<io::extension>>&& extensions)
     : io::endpoint{false},
       _is_input{connector_is_input},
       _coarse{coarse},
-      _extensions{extensions},
       _negotiate{negotiate},
       // FIXME DBR: why this trick?
       _timeout(timeout == -1 || timeout == 0 ? 3 : timeout),
-      _ack_limit{ack_limit} {}
+      _ack_limit{ack_limit},
+      _extensions{extensions} {}
 
 /**
  *  Open the connector.
@@ -83,21 +83,20 @@ std::unique_ptr<io::stream> connector::open() {
  */
 std::unique_ptr<io::stream> connector::_open(
     std::shared_ptr<io::stream> stream) {
-  bbdo::stream* bbdo_stream = nullptr;
+  std::unique_ptr<bbdo::stream> bbdo_stream;
   if (stream) {
     // if _is_input, the stream is an input
-    bbdo_stream = new bbdo::stream(_is_input);
+    bbdo_stream = std::make_unique<bbdo::stream>(_is_input, _extensions);
     bbdo_stream->set_substream(stream);
     bbdo_stream->set_coarse(_coarse);
-    bbdo_stream->set_negotiate(_negotiate, _extensions);
+    bbdo_stream->set_negotiate(_negotiate);
     bbdo_stream->set_timeout(_timeout);
     try {
       bbdo_stream->negotiate(bbdo::stream::negotiate_first);
     } catch (std::exception& e) {
-      delete bbdo_stream;
       throw;
     }
     bbdo_stream->set_ack_limit(_ack_limit);
   }
-  return std::unique_ptr<io::stream>(bbdo_stream);
+  return bbdo_stream;
 }
