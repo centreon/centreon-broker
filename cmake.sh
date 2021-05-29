@@ -106,6 +106,7 @@ if [ -r /etc/centos-release ] ; then
     gnutls-devel
     lua-devel
     perl-Thread-Queue
+    mariadb-devel
   )
   for i in "${pkgs[@]}"; do
     if ! rpm -q $i ; then
@@ -160,6 +161,7 @@ elif [ -r /etc/issue ] ; then
       liblua5.3-dev
       python3
       python3-pip
+      libmariadb-dev
     )
     for i in "${pkgs[@]}"; do
       if ! $dpkg -l $i | grep "^ii" ; then
@@ -183,6 +185,7 @@ elif [ -r /etc/issue ] ; then
       liblua5.3-dev
       python3
       python3-pip
+      libmariadb-dev
     )
     for i in "${pkgs[@]}"; do
       if ! $dpkg -l $i | grep "^ii" ; then
