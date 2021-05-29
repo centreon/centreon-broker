@@ -171,7 +171,6 @@ elif [ -r /etc/issue ] ; then
         fi
       fi
     done
-  fi
   elif [ $maj = "Raspbian" ] ; then
     pkgs=(
       gcc
