@@ -721,11 +721,11 @@ TEST_F(LoggingManager, Concurrent) {
 
   // launch threads.
   std::vector<std::thread> pool;
-  for (uint32_t i = 0; i < 50; ++i)
+  for (uint32_t i = 0; i < 5; ++i)
     pool.push_back(std::thread(log_messages));
 
   // Wait for tasks to finish.
-  for (uint32_t i = 0; i < 50; ++i)
+  for (uint32_t i = 0; i < 5; ++i)
     pool[i].join();
 
   // Remove backend from logging.
