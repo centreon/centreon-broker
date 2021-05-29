@@ -3,14 +3,27 @@
 show_help() {
 cat << EOF
 Usage: ${0##*/} -n=[yes|no] -v
+
 This program build Centreon-broker
+
     -f|--force    : force rebuild
     -r|--release  : Build on release mode
+    -fcr|--force-conan-rebuild : rebuild conan data
     -h|--help     : help
 EOF
 }
-
 BUILD_TYPE="Debug"
+CONAN_REBUILD="0"
+for i in $(cat conanfile.txt) ; do
+  if [[ $i =~ / ]] ; then
+    if [ ! -d ~/.conan/data/$i ] ; then
+      echo "The package '$i' is missing"
+      CONAN_REBUILD="1"
+      break
+    fi
+  fi
+done
+
 for i in "$@"
 do
   case $i in
@@ -20,6 +33,10 @@ do
       ;;
     -r|--release)
       BUILD_TYPE="Release"
+      shift
+      ;;
+    -fcr|--force-conan-rebuild)
+      CONAN_REBUILD="1"
       ;;
     -h|--help)
       show_help
@@ -76,28 +93,20 @@ if [ -r /etc/centos-release ] ; then
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm
     yum install -y MariaDB*.rpm
-    pkgs=(
-      devtool-9
-      ninja-build
-      rrdtool-devel
-      gnutls-devel
-      lua-devel
-      perl-Thread-Queue
-    )
   else
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-shared-10.5.8-1.el8.x86_64.rpm --output MariaDB-shared-10.5.8-1.el8.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-common-10.5.8-1.el8.x86_64.rpm --output MariaDB-common-10.5.8-1.el8.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos8-amd64/rpms/MariaDB-compat-10.5.8-1.el8.x86_64.rpm --output MariaDB-compat-10.5.8-1.el8.x86_64.rpm
     dnf install -y MariaDB-*.rpm
-    pkgs=(
-      ninja-build
-      rrdtool-devel
-      gnutls-devel
-      lua-devel
-      perl-Thread-Queue
-    )
   fi
 
+  pkgs=(
+    ninja-build
+    rrdtool-devel
+    gnutls-devel
+    lua-devel
+    perl-Thread-Queue
+  )
   for i in "${pkgs[@]}"; do
     if ! rpm -q $i ; then
       if [ $maj = 'centos7' ] ; then
@@ -229,7 +238,11 @@ fi
 cd build
 if [ $maj = "centos7" ] ; then
     rm -rf ~/.conan/profiles/default
-    $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+    if [ "$CONAN_REBUILD" = "1" ] ; then
+      $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
+    else
+      $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+    fi
 else
     $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
 fi
