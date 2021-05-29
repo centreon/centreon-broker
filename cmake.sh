@@ -3,13 +3,27 @@
 show_help() {
 cat << EOF
 Usage: ${0##*/} -n=[yes|no] -v
+
 This program build Centreon-broker
+
     -f|--force    : force rebuild
     -r|--release  : Build on release mode
+    -fcr|--force-conan-rebuild : rebuild conan data
     -h|--help     : help
 EOF
 }
 BUILD_TYPE="Debug"
+CONAN_REBUILD="0"
+for i in $(cat conanfile.txt) ; do
+  if [[ $i =~ / ]] ; then
+    if [ ! -d ~/.conan/data/$i ] ; then
+      echo "The package '$i' is missing"
+      CONAN_REBUILD="1"
+      break
+    fi
+  fi
+done
+
 for i in "$@"
 do
   case $i in
@@ -19,6 +33,10 @@ do
       ;;
     -r|--release)
       BUILD_TYPE="Release"
+      shift
+      ;;
+    -fcr|--force-conan-rebuild)
+      CONAN_REBUILD="1"
       ;;
     -h|--help)
       show_help
@@ -117,14 +135,13 @@ elif [ -r /etc/issue ] ; then
       echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
       cmake='cmake'
     fi
-    count=$(dpkg --no-pager -l gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev | grep "^ii" | wc -l)
-    if [ $count -lt 6 ] ; then
-      if [ $my_id -eq 0 ] ; then
-        apt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev
-      else
-        echo -e "One or packages among these ones, gcc, cmake, librrd-dev, libgnutls28-dev, ninja-build, liblua5.3-dev, are not installed. You could enter, as root:\n\tapt install -y gcc cmake librrd-dev libgnutls28-dev ninja-build liblua5.3-dev\n\n"
-        exit 1
-      fi
+  elif [ $maj = "Raspbian" ] ; then
+    if $dpkg -l cmake ; then
+      echo "Bad version of cmake..."
+      exit 1
+    else
+      echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
+      cmake='cmake'
     fi
   else
     echo "Bad version of cmake..."
@@ -178,7 +195,6 @@ elif [ -r /etc/issue ] ; then
       fi
     done
   fi
-
   if [[ ! -x /usr/bin/python3 ]] ; then
     if [ $my_id -eq 0 ] ; then
       apt install -y python3
@@ -209,9 +225,6 @@ else
   conan="$HOME/.local/bin/conan"
 fi
 
-
-
-
 if [ ! -d build ] ; then
   mkdir build
 else
@@ -225,9 +238,19 @@ fi
 cd build
 if [ $maj = "centos7" ] ; then
     rm -rf ~/.conan/profiles/default
-    $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+    if [ "$CONAN_REBUILD" = "1" ] ; then
+      $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
+    else
+      $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+    fi
 else
     $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
 fi
 
-CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
+if [ $maj = "Raspbian" ] ; then
+  CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
+elif [ $maj = "Debian" ] ; then
+  CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
+else
+  CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
+fi
