@@ -106,7 +106,7 @@ if [ -r /etc/centos-release ] ; then
     gnutls-devel
     lua-devel
     perl-Thread-Queue
-    mariadb-devel
+    MariaDB-devel
   )
   for i in "${pkgs[@]}"; do
     if ! rpm -q $i ; then
