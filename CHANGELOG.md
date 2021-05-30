@@ -13,6 +13,10 @@ Converts theses events into trace.
 Connections can fail when many pollers establish connection to cbd. This should
 be fixed with this new version.
 
+### Build
+
+repair the compilation for Raspberry PI
+
 ### Enhancements
 
 *Timeranges*
