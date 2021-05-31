@@ -71,7 +71,7 @@ if (WITH_TESTING)
   set(
     TESTS_SOURCES
     ${TESTS_SOURCES}
-    "${TEST_DIR}/read.cc"
+    "${TEST_DIR}/acceptor.cc"
     PARENT_SCOPE
   )
   set(

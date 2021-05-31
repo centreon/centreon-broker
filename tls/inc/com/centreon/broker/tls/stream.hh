@@ -42,9 +42,12 @@ class stream : public io::stream {
   std::vector<char> _buffer;
   time_t _deadline;
   SSL* _ssl;
+  const bool _is_acceptor;
+  BIO* _inbio;
+  BIO* _outbio;
 
  public:
-  stream(SSL* ssl);
+  stream(SSL* ssl, bool is_acceptor);
   ~stream() noexcept;
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
@@ -52,7 +55,8 @@ class stream : public io::stream {
   //long long read_encrypted(void* buffer, long long size);
   int32_t write(std::shared_ptr<io::data> const& d) override;
   int32_t stop() override { return 0; }
-  //long long write_encrypted(void const* buffer, long long size);
+  long write_encrypted(const char* buffer, long size);
+  int handshake();
 };
 }  // namespace tls
 

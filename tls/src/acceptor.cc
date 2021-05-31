@@ -91,7 +91,7 @@ std::unique_ptr<io::stream> acceptor::open() {
  *  @return Encrypted stream.
  */
 std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
-  std::unique_ptr<io::stream> u;
+  std::unique_ptr<tls::stream> u;
   if (lower) {
     int ret;
 
@@ -105,6 +105,7 @@ std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     SSL* ssl = SSL_new(tls::ctx);
 
     SSL_CTX_set_ecdh_auto(tls::ctx, 1);
+    //SSL_set_accept_state(ssl);
 
     std::string err;
 
@@ -150,7 +151,7 @@ std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
       }
 
       // Create stream object.
-      u.reset(new stream(ssl));
+      u = std::make_unique<stream>(ssl, true);
     } catch (...) {
       SSL_free(ssl);
       throw;
@@ -166,28 +167,20 @@ std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     //    gnutls_transport_set_ptr(*session, u.get());
 
     // Perform the TLS handshake.
-    log_v2::tls()->debug("TLS: performing handshake");
-    if (SSL_accept(ssl) <= 0) {
-      throw msg_fmt("TLS: handshake failed: {}", err_as_string());
-    }
-    //    do {
-    //      ret = gnutls_handshake(*session);
-    //    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-    //    if (ret != GNUTLS_E_SUCCESS) {
-    //      log_v2::tls()->error("TLS: handshake failed: {}",
-    //      gnutls_strerror(ret)); throw msg_fmt("TLS: handshake failed: {} ",
-    //      gnutls_strerror(ret));
-    //    }
+    do {
+      ret = u->handshake();
+    } while (ret == -1);
+    if (ret == -2)
+      throw msg_fmt("TLS: handshake failed");
+
     log_v2::tls()->debug("TLS: successful handshake");
-    //    gnutls_protocol_t prot = gnutls_protocol_get_version(*session);
-    //    gnutls_cipher_algorithm_t ciph = gnutls_cipher_get(*session);
     SSL_SESSION* session = SSL_get_session(ssl);
     const char* version = SSL_get_version(ssl);
     const SSL_CIPHER* cipher = SSL_SESSION_get0_cipher(session);
 
-    log_v2::tls()->info("TLS: protocol '{}' and cipher '{}' used",
-                         version,
-                         cipher ? SSL_CIPHER_get_name(cipher) : "unknown cipher");
+    log_v2::tls()->info(
+        "TLS: protocol '{}' and cipher '{}' used", version,
+        cipher ? SSL_CIPHER_get_name(cipher) : "unknown cipher");
 
     // Check certificate.
     //    p.validate_cert(*session);

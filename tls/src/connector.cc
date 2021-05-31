@@ -28,6 +28,24 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 using namespace com::centreon::exceptions;
 
+static void info_cb(const SSL* ssl, int where, int ret) {
+  if (ret = 0) {
+    log_v2::tls()->debug("TLS: error occured.");
+    return;
+  }
+
+  const char* t;
+  if (where & SSL_CB_LOOP) {
+    t = "LOOP";
+  } else if (where & SSL_CB_HANDSHAKE_START) {
+    t = "HANDSHAKE START";
+  } else if (where & SSL_CB_HANDSHAKE_DONE) {
+    t = "HANDSHAKE DONE";
+  }
+
+  log_v2::tls()->debug("TLS: Connector - {} - {} - {}", t, SSL_state_string_long(ssl), SSL_state_string(ssl));
+}
+
 /**
  *  Default constructor
  *
@@ -66,7 +84,7 @@ std::unique_ptr<io::stream> connector::open() {
  *  @return Encrypted stream.
  */
 std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
-  std::unique_ptr<io::stream> u;
+  std::unique_ptr<tls::stream> u;
   if (lower) {
     int ret;
     // Load parameters.
@@ -77,6 +95,10 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     //    p.load();
 
     SSL* ssl = SSL_new(tls::ctx);
+    if (!ssl)
+      throw msg_fmt("TLS: cannot create connector SSL");
+
+    SSL_set_info_callback(ssl, info_cb);
 
     SSL_CTX_set_ecdh_auto(tls::ctx, 1);
 
@@ -124,7 +146,7 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
       //      p.apply(*session);
 
       // Create stream object.
-      u.reset(new stream(ssl));
+      u = std::make_unique<stream>(ssl, false);
     } catch (...) {
       SSL_free(ssl);
       //      gnutls_deinit(*session);
@@ -133,16 +155,13 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     }
     u->set_substream(lower);
 
-    _rbio = BIO_new(BIO_s_mem());
-    _wbio = BIO_new(BIO_s_mem());
-    SSL_set_bio(ssl, _rbio, _wbio);
-
     // Perform the TLS handshake.
-    log_v2::tls()->debug("TLS: performing handshake");
-    ret = BIO_do_handshake(_wbio);
-    if (!ret) {
+    do {
+      ret = u->handshake();
+    } while (ret == -1);
+    if (ret < 0)
       throw msg_fmt("TLS: handshake failed: {}", err_as_string());
-    }
+
     //    // Bind the TLS session with the stream from the lower layer.
     //#if GNUTLS_VERSION_NUMBER < 0x020C00
     //    gnutls_transport_set_lowat(*session, 0);

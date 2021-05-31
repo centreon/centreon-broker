@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <thread>
 
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -34,6 +35,21 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 using namespace com::centreon::exceptions;
 
+static long write_cb(BIO *b, int oper, const char *argp,
+                        int argi, long argl, long retvalue) {
+  stream* s = reinterpret_cast<stream*>(BIO_get_callback_arg(b));
+  if (oper == BIO_CB_WRITE) {
+    log_v2::tls()->info("before write");
+  }
+  if (oper == BIO_CB_WRITE | BIO_CB_RETURN) {
+    if (argp) {
+      log_v2::tls()->info("TLS: sending data to substream, length {}", argi);
+      s->write_encrypted(argp, argi);
+    }
+  }
+  return retvalue;
+}
+
 /**
  *  @brief Constructor.
  *
@@ -43,8 +59,50 @@ using namespace com::centreon::exceptions;
  *  @param[in] sess  TLS session, providing informations on the
  *                   encryption that should be used.
  */
-stream::stream(SSL* ssl)
-    : io::stream("TLS"), _deadline((time_t)-1), _ssl(ssl) {}
+stream::stream(SSL* ssl, bool is_acceptor)
+    : io::stream("TLS"),
+      _deadline((time_t)-1),
+      _ssl(ssl),
+      _is_acceptor{is_acceptor},
+  /* BIO initializations */
+  _inbio{BIO_new(BIO_s_mem())},
+  _outbio{BIO_new(BIO_s_mem())} {
+  SSL_set_bio(_ssl, _inbio, _outbio);
+  BIO_set_callback(_outbio, write_cb);
+  BIO_set_callback_arg(_outbio, reinterpret_cast<char*>(this));
+}
+
+/**
+ * @brief Perform the TLS handshake.
+ *
+ * @return 0 on success, -1 in case of no data are already there and so this
+ * function needs another call, -2 on error.
+ */
+int stream::handshake() {
+  log_v2::tls()->debug("TLS: performing handshake");
+  if (_is_acceptor) {
+    int ret = SSL_accept(_ssl);
+    if (ret < 0) {
+      int err = SSL_get_error(_ssl, ret);
+      if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
+        return -1;
+      else
+        return -2;
+    }
+    return ret;
+  }
+  else {
+    int ret = SSL_connect(_ssl);
+    if (ret < 0) {
+      int err = SSL_get_error(_ssl, ret);
+      if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
+        return -1;
+      else
+        return -2;
+    }
+    return 0;
+  }
+}
 
 /**
  *  @brief Destructor.
@@ -82,10 +140,9 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   char* pp;
   long size = BIO_get_mem_data(SSL_get_rbio(_ssl), &pp);
   std::shared_ptr<io::raw> buffer{std::make_shared<io::raw>(pp, pp + size)};
-  if (size == 0) {
-    log_v2::tls()->error("TLS session is terminated");
-    throw msg_fmt("TLS session is terminated");
-  }
+  if (size == 0)
+    return false;
+
   d = buffer;
   return true;
 }
@@ -178,14 +235,14 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  *
  *  @return Number of bytes written.
  */
-//long long stream::write_encrypted(void const* buffer, long long size) {
-//  std::shared_ptr<io::raw> r(new io::raw);
-//  std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(buffer)),
-//                        const_cast<char*>(static_cast<char const*>(buffer)) +
-//                            static_cast<std::size_t>(size));
-//  logging::error(logging::low) << "tls write enc: " << size;
-//  r->get_buffer() = std::move(tmp);
-//  _substream->write(r);
-//  _substream->flush();
-//  return size;
-//}
+long stream::write_encrypted(const char* buffer, long size) {
+  std::shared_ptr<io::raw> r(new io::raw);
+  std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(buffer)),
+                        const_cast<char*>(static_cast<char const*>(buffer)) +
+                            static_cast<std::size_t>(size));
+  logging::error(logging::low) << "tls write enc: " << size;
+  r->get_buffer() = std::move(tmp);
+  _substream->write(r);
+  _substream->flush();
+  return size;
+}

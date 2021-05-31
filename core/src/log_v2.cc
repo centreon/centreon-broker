@@ -22,6 +22,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <fstream>
 
 #include "com/centreon/broker/logging/logging.hh"
@@ -48,10 +49,11 @@ log_v2& log_v2::instance() {
 
 log_v2::log_v2() {
   auto null_sink = std::make_shared<sinks::null_sink_mt>();
-  _tls_log = std::make_shared<logger>("tls", null_sink);
+  auto stdout_sink = std::make_shared<sinks::stdout_color_sink_mt>();
+  _tls_log = std::make_shared<logger>("tls", stdout_sink);
   _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
   _tcp_log = std::make_shared<logger>("tcp", null_sink);
-  _core_log = std::make_shared<logger>("core", null_sink);
+  _core_log = std::make_shared<logger>("core", stdout_sink);
   _config_log = std::make_shared<logger>("config", null_sink);
   _sql_log = std::make_shared<logger>("sql", null_sink);
   _perfdata_log = std::make_shared<logger>("perfdata", null_sink);

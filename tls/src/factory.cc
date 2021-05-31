@@ -130,10 +130,10 @@ io::endpoint* factory::new_endpoint(
   // Acceptor.
   std::unique_ptr<io::endpoint> endp;
   if (is_acceptor)
-    endp.reset(new acceptor(public_cert, private_key, ca_cert, tls_hostname));
+    endp = std::make_unique<acceptor>(public_cert, private_key, ca_cert, tls_hostname);
   // Connector.
   else
-    endp.reset(new connector(public_cert, private_key, ca_cert, tls_hostname));
+    endp = std::make_unique<connector>(public_cert, private_key, ca_cert, tls_hostname);
   return endp.release();
 }
 

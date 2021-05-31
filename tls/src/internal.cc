@@ -18,6 +18,7 @@
 
 #include <gnutls/gnutls.h>
 #include <openssl/err.h>
+#include <openssl/bio.h>
 
 #include <cstring>
 #if GNUTLS_VERSION_NUMBER < 0x030000
@@ -93,67 +94,68 @@ void tls::destroy() {
  *  Prepare all necessary ressources for TLS use.
  */
 void tls::initialize() {
+  SSL_library_init();
   SSL_load_error_strings();
-  ERR_load_crypto_strings();
-  OpenSSL_add_ssl_algorithms();
+  ERR_load_BIO_strings();
+  OpenSSL_add_all_algorithms();
 
   ctx = SSL_CTX_new(TLS_method());
 
   if (!ctx)
     throw msg_fmt("TLS: Error during SSL context initialization.");
 
-  gnutls_datum_t const dhp = {const_cast<unsigned char*>(dh_params_2048),
-                              sizeof(dh_params_2048)};
-  int ret;
-
-  // Eventually initialize libgcrypt.
-#if GNUTLS_VERSION_NUMBER < 0x030000
-  log_v2::tls()->info("TLS: initializing libgcrypt (GNU TLS <= 2.11.0)");
-  gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
-#endif  // GNU TLS < 3.0.0
-
-  // Initialize GNU TLS library.
-  if (gnutls_global_init() != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error("TLS: GNU TLS library initialization failed");
-    throw msg_fmt("TLS: GNU TLS library initialization failed");
-  }
-
-  // Log GNU TLS version.
-  {
-    log_v2::tls()->info("TLS: compiled with GNU TLS version {}",
-                        GNUTLS_VERSION);
-    char const* v(gnutls_check_version(GNUTLS_VERSION));
-    if (!v) {
-      log_v2::tls()->error(
-          "TLS: GNU TLS run-time version is incompatible with the compile-time "
-          "version ({}): please update your GNU TLS library",
-          GNUTLS_VERSION);
-      throw msg_fmt(
-          "TLS: GNU TLS run-time version is incompatible with the compile-time "
-          "version ({}): please update your GNU TLS library",
-          GNUTLS_VERSION);
-    }
-    log_v2::tls()->info("TLS: loading GNU TLS version {}", v);
-    // gnutls_global_set_log_function(log_gnutls_message);
-    // gnutls_global_set_log_level(11);
-  }
-
-  // Load Diffie-Hellman parameters.
-  ret = gnutls_dh_params_init(&dh_params);
-  if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error(
-        "TLS: could not load TLS Diffie-Hellman parameters: {}",
-        gnutls_strerror(ret));
-    throw msg_fmt("TLS: could not load TLS Diffie-Hellman parameters: {}",
-                  gnutls_strerror(ret));
-  }
-  ret = gnutls_dh_params_import_pkcs3(dh_params, &dhp, GNUTLS_X509_FMT_PEM);
-  if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error("TLS: could not import PKCS #3 parameters: ",
-                         gnutls_strerror(ret));
-    throw msg_fmt("TLS: could not import PKCS #3 parameters: {}",
-                  gnutls_strerror(ret));
-  }
+//  gnutls_datum_t const dhp = {const_cast<unsigned char*>(dh_params_2048),
+//                              sizeof(dh_params_2048)};
+//  int ret;
+//
+//  // Eventually initialize libgcrypt.
+//#if GNUTLS_VERSION_NUMBER < 0x030000
+//  log_v2::tls()->info("TLS: initializing libgcrypt (GNU TLS <= 2.11.0)");
+//  gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+//#endif  // GNU TLS < 3.0.0
+//
+//  // Initialize GNU TLS library.
+//  if (gnutls_global_init() != GNUTLS_E_SUCCESS) {
+//    log_v2::tls()->error("TLS: GNU TLS library initialization failed");
+//    throw msg_fmt("TLS: GNU TLS library initialization failed");
+//  }
+//
+//  // Log GNU TLS version.
+//  {
+//    log_v2::tls()->info("TLS: compiled with GNU TLS version {}",
+//                        GNUTLS_VERSION);
+//    char const* v(gnutls_check_version(GNUTLS_VERSION));
+//    if (!v) {
+//      log_v2::tls()->error(
+//          "TLS: GNU TLS run-time version is incompatible with the compile-time "
+//          "version ({}): please update your GNU TLS library",
+//          GNUTLS_VERSION);
+//      throw msg_fmt(
+//          "TLS: GNU TLS run-time version is incompatible with the compile-time "
+//          "version ({}): please update your GNU TLS library",
+//          GNUTLS_VERSION);
+//    }
+//    log_v2::tls()->info("TLS: loading GNU TLS version {}", v);
+//    // gnutls_global_set_log_function(log_gnutls_message);
+//    // gnutls_global_set_log_level(11);
+//  }
+//
+//  // Load Diffie-Hellman parameters.
+//  ret = gnutls_dh_params_init(&dh_params);
+//  if (ret != GNUTLS_E_SUCCESS) {
+//    log_v2::tls()->error(
+//        "TLS: could not load TLS Diffie-Hellman parameters: {}",
+//        gnutls_strerror(ret));
+//    throw msg_fmt("TLS: could not load TLS Diffie-Hellman parameters: {}",
+//                  gnutls_strerror(ret));
+//  }
+//  ret = gnutls_dh_params_import_pkcs3(dh_params, &dhp, GNUTLS_X509_FMT_PEM);
+//  if (ret != GNUTLS_E_SUCCESS) {
+//    log_v2::tls()->error("TLS: could not import PKCS #3 parameters: ",
+//                         gnutls_strerror(ret));
+//    throw msg_fmt("TLS: could not import PKCS #3 parameters: {}",
+//                  gnutls_strerror(ret));
+//  }
 }
 
 /**
