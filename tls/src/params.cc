@@ -57,10 +57,11 @@ void params::apply(gnutls_session_t session) {
   int ret;
   ret = gnutls_priority_set_direct(
       session,
-      (_compress
-           ? "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
-           : "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:+COMP-"
-             "DEFLATE:%COMPAT"),
+      (_compress ? "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1."
+                   "0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
+                 : "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1."
+                   "0:-VERS-TLS1.1:+ANON-DH:+COMP-"
+                   "DEFLATE:%COMPAT"),
       nullptr);
 
   if (ret != GNUTLS_E_SUCCESS) {
