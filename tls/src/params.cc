@@ -58,14 +58,8 @@ void params::apply(gnutls_session_t session) {
   ret = gnutls_priority_set_direct(
       session,
       (_compress
-           ? "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
-             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
-             "VERS-DTLS1.2:-VERS-SSL3.0:-"
-             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
-           : "NORMAL:-CIPHER-ALL:+AES-256-CBC:+AES-128-CBC:+AES-128-GCM:+AES-"
-             "256-GCM:+AES-128-PGP-CFB:+AES-256-PGP-CFB:-VERS-DTLS1.0:-"
-             "VERS-DTLS1.2:-VERS-SSL3.0:-"
-             "VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:+COMP-"
+           ? "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
+           : "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1.0:-VERS-TLS1.1:+ANON-DH:+COMP-"
              "DEFLATE:%COMPAT"),
       nullptr);
 
