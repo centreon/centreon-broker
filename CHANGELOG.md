@@ -4,6 +4,10 @@
 
 ### Fixes
 
+TLS*
+
+GnuTLS query was not understood on RedHat 8 and Centos8.
+
 *Timeranges*
 
 Allowing parser \r or \n for the parser of timeranges.
