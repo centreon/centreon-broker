@@ -4,6 +4,10 @@
 
 ### Bug fix
 
+*TLS*
+
+GnuTLS query was not understood on RedHat 8 and Centos8.
+
 *BBDO serialized events*
 
 Converts theses events into trace.
