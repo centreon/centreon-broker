@@ -42,7 +42,7 @@ tcp_connection::tcp_connection(asio::io_context& io_context,
       _strand(io_context),
       _write_queue_has_events(false),
       _writing(false),
-      _acks(0),
+      _acks{0},
       _reading(false),
       _closing(false),
       _closed(false),
@@ -235,6 +235,7 @@ void tcp_connection::handle_write(const asio::error_code& ec) {
     std::lock_guard<std::mutex> lck(_error_m);
     _current_error = ec;
     _writing = false;
+    _closed = true;
   } else {
     ++_acks;
     _write_queue.pop();
@@ -293,7 +294,7 @@ void tcp_connection::handle_read(const asio::error_code& ec,
 void tcp_connection::close() {
   log_v2::tcp()->trace("closing tcp connection");
   if (!_closed) {
-    while (_writing || _write_queue_has_events) {
+    while (!_closed && (_writing || _write_queue_has_events)) {
       log_v2::tcp()->debug(
           "Finishing to write data before closing the connection");
       if (!_writing) {
