@@ -21,6 +21,9 @@ be fixed with this new version.
 
 fix Index_id of metrics tables are now in unsigned int64_t.
 
+### Build
+
+repair the compilation for Raspberry PI
 
 ## 20.10.5
 
