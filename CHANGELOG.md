@@ -31,6 +31,12 @@ bugs. For example, services/hosts with host\_id=0.
 We optimize queries by removing useless join. A join with hosts table is not
 necessary in certain queries.
 
+### Bug fix
+
+*bbdo*
+
+fix Index_id of metrics tables are now in unsigned int64_t.
+
 ## 20.10.4
 
 `Release date to be defined`
