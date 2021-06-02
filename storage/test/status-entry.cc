@@ -36,20 +36,20 @@
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/storage/factory.hh"
-#include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/storage/remove_graph.hh"
-#include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
+#include "com/centreon/broker/storage/rebuild.hh"
+#include "com/centreon/broker/storage/remove_graph.hh"
+#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 
 class into_memory : public io::stream {
  public:
-   into_memory() : io::stream("into_memory"), _memory() {}
-   ~into_memory() override {}
-   bool read(std::shared_ptr<io::data>& d,
-             time_t deadline = (time_t)-1) override {
+  into_memory() : io::stream("into_memory"), _memory() {}
+  ~into_memory() override {}
+  bool read(std::shared_ptr<io::data>& d,
+            time_t deadline = (time_t)-1) override {
     (void)deadline;
     if (_memory.empty())
       return false;
@@ -58,7 +58,7 @@ class into_memory : public io::stream {
     _memory.clear();
     d = raw;
     return true;
-   }
+  }
 
   int write(std::shared_ptr<io::data> const& d) override {
     _memory = std::static_pointer_cast<io::raw>(d)->get_buffer();
@@ -73,24 +73,24 @@ class into_memory : public io::stream {
 };
 
 class StatusEntryTest : public ::testing::Test {
-  public:
-    void SetUp() override {
-      io::data::broker_id = 0;
-      try {
-        config::applier::init();
-      } catch (std::exception const& e) {
-        (void)e;
-      }
-      std::shared_ptr<persistent_cache> pcache(
-          std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
+ public:
+  void SetUp() override {
+    io::data::broker_id = 0;
+    try {
+      config::applier::init();
+    } catch (std::exception const& e) {
+      (void)e;
     }
+    std::shared_ptr<persistent_cache> pcache(
+        std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
+  }
 
-    void TearDown() override {
+  void TearDown() override {
     // The cache must be destroyed before the applier deinit() call.
-      config::applier::deinit();
-      ::remove("/tmp/broker_test_cache");
-      ::remove(log_v2::instance().log_name().c_str());
-    }
+    config::applier::deinit();
+    ::remove("/tmp/broker_test_cache");
+    ::remove(log_v2::instance().log_name().c_str());
+  }
 };
 
 TEST_F(StatusEntryTest, OldStatus) {
@@ -108,8 +108,8 @@ TEST_F(StatusEntryTest, OldStatus) {
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::status> st{std::make_shared<storage::status>(
-        12345, 54321, 34567, false, 789789, 2)};
+  std::shared_ptr<storage::status> st{
+      std::make_shared<storage::status>(12345, 54321, 34567, false, 789789, 2)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -138,7 +138,7 @@ TEST_F(StatusEntryTest, OldStatus) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::status> new_st =
-        std::static_pointer_cast<storage::status>(ev);
+      std::static_pointer_cast<storage::status>(ev);
   ASSERT_EQ(st->ctime, new_st->ctime);
   ASSERT_EQ(st->index_id, new_st->index_id);
   ASSERT_EQ(st->state, new_st->state);
@@ -162,8 +162,8 @@ TEST_F(StatusEntryTest, OldRebuild) {
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::rebuild> st{std::make_shared<storage::rebuild>(
-        true, 56789, false)};
+  std::shared_ptr<storage::rebuild> st{
+      std::make_shared<storage::rebuild>(true, 56789, false)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -171,7 +171,7 @@ TEST_F(StatusEntryTest, OldRebuild) {
   stm.set_coarse(false);
   stm.set_negotiate(false);
   stm.negotiate(bbdo::stream::negotiate_first);
-  //stm.write(st);
+  // stm.write(st);
 
   /* An old rebuild message with index_id in int32. */
   std::vector<char> v{
@@ -188,7 +188,7 @@ TEST_F(StatusEntryTest, OldRebuild) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::rebuild> new_st =
-        std::static_pointer_cast<storage::rebuild>(ev);
+      std::static_pointer_cast<storage::rebuild>(ev);
   ASSERT_EQ(st->end, new_st->end);
   ASSERT_EQ(st->id, new_st->id);
   ASSERT_EQ(st->is_index, new_st->is_index);
@@ -205,15 +205,16 @@ TEST_F(StatusEntryTest, OldIndexMapping) {
   ASSERT_TRUE(storage_category == io::events::storage);
 
   // Register event index_mapping.
-  e.register_event(io::events::storage, storage::de_index_mapping, "index_mapping",
-                   &storage::index_mapping::operations, storage::index_mapping::entries);
+  e.register_event(io::events::storage, storage::de_index_mapping,
+                   "index_mapping", &storage::index_mapping::operations,
+                   storage::index_mapping::entries);
 
   // Register storage layer.
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::index_mapping> st{std::make_shared<storage::index_mapping>(
-        true, 56789, false)};
+  std::shared_ptr<storage::index_mapping> st{
+      std::make_shared<storage::index_mapping>(true, 56789, false)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -221,11 +222,15 @@ TEST_F(StatusEntryTest, OldIndexMapping) {
   stm.set_coarse(false);
   stm.set_negotiate(false);
   stm.negotiate(bbdo::stream::negotiate_first);
-  //stm.write(st);
+  // stm.write(st);
 
   /* An old index_mapping message with index_id in int32. */
   std::vector<char> v{
-    (char)0x1e, (char)0x1d, (char)0x00, (char)0x0c, (char)0x00, (char)0x03, (char)0x00, (char)0x05, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x01, (char)0x00, (char)0x00, (char)0xdd, (char)0xd5, (char)0x00, (char)0x00, (char)0x00, (char)0x00};
+      (char)0x1e, (char)0x1d, (char)0x00, (char)0x0c, (char)0x00, (char)0x03,
+      (char)0x00, (char)0x05, (char)0x00, (char)0x00, (char)0x00, (char)0x00,
+      (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00,
+      (char)0x00, (char)0x01, (char)0x00, (char)0x00, (char)0xdd, (char)0xd5,
+      (char)0x00, (char)0x00, (char)0x00, (char)0x00};
   memory_stream->get_mutable_memory() = std::move(v);
 
   for (auto& c : memory_stream->get_memory())
@@ -235,7 +240,7 @@ TEST_F(StatusEntryTest, OldIndexMapping) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::index_mapping> new_st =
-        std::static_pointer_cast<storage::index_mapping>(ev);
+      std::static_pointer_cast<storage::index_mapping>(ev);
   ASSERT_EQ(st->index_id, new_st->index_id);
   ASSERT_EQ(st->host_id, new_st->host_id);
   ASSERT_EQ(st->service_id, new_st->service_id);
@@ -252,15 +257,16 @@ TEST_F(StatusEntryTest, OldRemoveGraph) {
   ASSERT_TRUE(storage_category == io::events::storage);
 
   // Register event remove_graph.
-  e.register_event(io::events::storage, storage::de_remove_graph, "remove_graph",
-                   &storage::remove_graph::operations, storage::remove_graph::entries);
+  e.register_event(io::events::storage, storage::de_remove_graph,
+                   "remove_graph", &storage::remove_graph::operations,
+                   storage::remove_graph::entries);
 
   // Register storage layer.
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::remove_graph> st{std::make_shared<storage::remove_graph>(
-        54321, true)};
+  std::shared_ptr<storage::remove_graph> st{
+      std::make_shared<storage::remove_graph>(54321, true)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -268,7 +274,7 @@ TEST_F(StatusEntryTest, OldRemoveGraph) {
   stm.set_coarse(false);
   stm.set_negotiate(false);
   stm.negotiate(bbdo::stream::negotiate_first);
-  //stm.write(st);
+  // stm.write(st);
 
   /* An old remove_graph message with index_id in int32. */
   std::vector<char> v{
@@ -285,7 +291,7 @@ TEST_F(StatusEntryTest, OldRemoveGraph) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::remove_graph> new_st =
-        std::static_pointer_cast<storage::remove_graph>(ev);
+      std::static_pointer_cast<storage::remove_graph>(ev);
   ASSERT_EQ(st->id, new_st->id);
   ASSERT_EQ(st->is_index, new_st->is_index);
 
@@ -308,8 +314,8 @@ TEST_F(StatusEntryTest, NewStatus) {
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::status> st{std::make_shared<storage::status>(
-        12345, 54321, 34567, false, 789789, 2)};
+  std::shared_ptr<storage::status> st{
+      std::make_shared<storage::status>(12345, 54321, 34567, false, 789789, 2)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -326,7 +332,7 @@ TEST_F(StatusEntryTest, NewStatus) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::status> new_st =
-        std::static_pointer_cast<storage::status>(ev);
+      std::static_pointer_cast<storage::status>(ev);
   ASSERT_EQ(st->ctime, new_st->ctime);
   ASSERT_EQ(st->index_id, new_st->index_id);
   ASSERT_EQ(st->state, new_st->state);
@@ -350,8 +356,8 @@ TEST_F(StatusEntryTest, NewRebuild) {
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::rebuild> st{std::make_shared<storage::rebuild>(
-        true, 56789, false)};
+  std::shared_ptr<storage::rebuild> st{
+      std::make_shared<storage::rebuild>(true, 56789, false)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -368,7 +374,7 @@ TEST_F(StatusEntryTest, NewRebuild) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::rebuild> new_st =
-        std::static_pointer_cast<storage::rebuild>(ev);
+      std::static_pointer_cast<storage::rebuild>(ev);
   ASSERT_EQ(st->end, new_st->end);
   ASSERT_EQ(st->id, new_st->id);
   ASSERT_EQ(st->is_index, new_st->is_index);
@@ -385,15 +391,16 @@ TEST_F(StatusEntryTest, NewIndexMapping) {
   ASSERT_TRUE(storage_category == io::events::storage);
 
   // Register event index_mapping.
-  e.register_event(io::events::storage, storage::de_index_mapping, "index_mapping",
-                   &storage::index_mapping::operations, storage::index_mapping::entries);
+  e.register_event(io::events::storage, storage::de_index_mapping,
+                   "index_mapping", &storage::index_mapping::operations,
+                   storage::index_mapping::entries);
 
   // Register storage layer.
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::index_mapping> st{std::make_shared<storage::index_mapping>(
-        true, 56789, false)};
+  std::shared_ptr<storage::index_mapping> st{
+      std::make_shared<storage::index_mapping>(true, 56789, false)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -410,7 +417,7 @@ TEST_F(StatusEntryTest, NewIndexMapping) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::index_mapping> new_st =
-        std::static_pointer_cast<storage::index_mapping>(ev);
+      std::static_pointer_cast<storage::index_mapping>(ev);
   ASSERT_EQ(st->index_id, new_st->index_id);
   ASSERT_EQ(st->host_id, new_st->host_id);
   ASSERT_EQ(st->service_id, new_st->service_id);
@@ -427,15 +434,16 @@ TEST_F(StatusEntryTest, NewRemoveGraph) {
   ASSERT_TRUE(storage_category == io::events::storage);
 
   // Register event remove_graph.
-  e.register_event(io::events::storage, storage::de_remove_graph, "remove_graph",
-                   &storage::remove_graph::operations, storage::remove_graph::entries);
+  e.register_event(io::events::storage, storage::de_remove_graph,
+                   "remove_graph", &storage::remove_graph::operations,
+                   storage::remove_graph::entries);
 
   // Register storage layer.
   io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
                                 1, 7);
 
-  std::shared_ptr<storage::remove_graph> st{std::make_shared<storage::remove_graph>(
-        54321, true)};
+  std::shared_ptr<storage::remove_graph> st{
+      std::make_shared<storage::remove_graph>(54321, true)};
 
   std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
   bbdo::stream stm;
@@ -452,9 +460,59 @@ TEST_F(StatusEntryTest, NewRemoveGraph) {
   std::shared_ptr<io::data> ev;
   stm.read(ev, time(nullptr) + 1000);
   std::shared_ptr<storage::remove_graph> new_st =
-        std::static_pointer_cast<storage::remove_graph>(ev);
+      std::static_pointer_cast<storage::remove_graph>(ev);
   ASSERT_EQ(st->id, new_st->id);
   ASSERT_EQ(st->is_index, new_st->is_index);
+
+  io::events::instance().unregister_category(io::events::storage);
+  io::protocols::instance().unreg("storage");
+}
+
+TEST_F(StatusEntryTest, OldMetricMapping) {
+  io::events& e(io::events::instance());
+
+  // Register category.
+  int storage_category(e.register_category("storage", io::events::storage));
+  ASSERT_TRUE(storage_category == io::events::storage);
+
+  // Register event metric_mapping.
+  e.register_event(io::events::storage, storage::de_metric_mapping,
+                   "metric_mapping", &storage::metric_mapping::operations,
+                   storage::metric_mapping::entries);
+
+  // Register storage layer.
+  io::protocols::instance().reg("storage", std::make_shared<storage::factory>(),
+                                1, 7);
+
+  std::shared_ptr<storage::metric_mapping> st{
+      std::make_shared<storage::metric_mapping>(2218, 1740)};
+
+  std::shared_ptr<into_memory> memory_stream(std::make_shared<into_memory>());
+  bbdo::stream stm;
+  stm.set_substream(memory_stream);
+  stm.set_coarse(false);
+  stm.set_negotiate(false);
+  stm.negotiate(bbdo::stream::negotiate_first);
+  // stm.write(st);
+
+  /* An old index_mapping message with index_id in int32. */
+  std::vector<char> v{
+      (char)0xd5, (char)0xea, (char)0x00, (char)0x08, (char)0x00, (char)0x03,
+      (char)0x00, (char)0x06, (char)0x00, (char)0x00, (char)0x00, (char)0x01,
+      (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00,
+      (char)0x08, (char)0xaa, (char)0x00, (char)0x00, (char)0x06, (char)0xcc};
+  memory_stream->get_mutable_memory() = std::move(v);
+
+  for (auto& c : memory_stream->get_memory())
+    printf(" %02x", c);
+  std::cout << std::endl;
+
+  std::shared_ptr<io::data> ev;
+  stm.read(ev, time(nullptr) + 1000);
+  std::shared_ptr<storage::metric_mapping> new_st =
+      std::static_pointer_cast<storage::metric_mapping>(ev);
+  ASSERT_EQ(st->index_id, new_st->index_id);
+  ASSERT_EQ(st->metric_id, new_st->metric_id);
 
   io::events::instance().unregister_category(io::events::storage);
   io::protocols::instance().unreg("storage");
