@@ -4,6 +4,10 @@
 
 ### Bug fix
 
+*TLS*
+
+GnuTLS query was not understood on RedHat 8 and Centos8.
+
 *BBDO serialized events*
 
 Converts theses events into trace.
@@ -12,6 +16,10 @@ Converts theses events into trace.
 
 Connections can fail when many pollers establish connection to cbd. This should
 be fixed with this new version.
+
+*bbdo*
+
+fix Index_id of metrics tables are now in unsigned int64_t.
 
 ### Build
 

@@ -223,7 +223,8 @@ static io::data* unserialize(uint32_t event_type,
                              uint32_t source_id,
                              uint32_t destination_id,
                              char const* buffer,
-                             uint32_t size, bool old_format) {
+                             uint32_t size,
+                             bool old_format) {
   // Get event info (operations and mapping).
   io::event_info const* info(io::events::instance().get_event_info(event_type));
   if (info) {
@@ -392,7 +393,8 @@ static void get_uint(io::data const& t,
 /**
  *  Get an uint64_teger from an object.
  */
-static void get_ulong(io::data const& t, mapping::entry const& member,
+static void get_ulong(io::data const& t,
+                      mapping::entry const& member,
                       std::vector<char>& buffer) {
   uint64_t value{member.get_ulong(t)};
   uint32_t high{htonl(value >> 32)};
@@ -922,7 +924,9 @@ bool stream::_read_any(std::shared_ptr<io::data>& d, time_t deadline) {
               (event_id == 196611 && packet_size == 5)  // storage::remove_graph
               || (event_id == 196612 && packet_size == 27)  // storage::status
               || (event_id == 196613 &&
-                  packet_size == 12))  // storage::index_mapping
+                  packet_size == 12)  // storage::index_mapping
+              || (event_id == 196614 &&
+                  packet_size == 8))  // storage::metric_mapping
             old_format = true;
         }
         d.reset(unserialize(event_id, source_id, dest_id, pack, packet_size,
@@ -1005,8 +1009,7 @@ void stream::_read_packet(size_t size, time_t deadline) {
         if (_packet.size() == 0) {
           _packet = std::move(new_v);
           new_v.clear();
-        }
-        else
+        } else
           _packet.insert(_packet.end(), new_v.begin(), new_v.end());
       }
     }
