@@ -110,27 +110,13 @@ pip3 install conan
 > you want to use a dependency from your package manager instead of conan,
 > you need to remove it from conanfile.txt.
 
-Then you have to add a remote conan repository, for that enter the command:
-
-```shell
-conan remote add centreon https://api.bintray.com/conan/centreon/centreon
-```
-
-Now, the list command should list two repositories:
-
-```shell
-conan remote list
-conan-center: https://conan.bintray.com [Verify SSL: True]
-centreon: https://api.bintray.com/conan/centreon/centreon [Verify SSL: True]
-```
-
 You can now prepare the compilation environment:
 
 ```shell
 git clone https://github.com/centreon/centreon-broker
 mkdir -p centreon-broker/build
 cd centreon-broker/build
-conan install --remote centreon --build missing ..
+conan install --build missing ..
 cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios ..
 ```
 

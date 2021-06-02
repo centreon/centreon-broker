@@ -19,6 +19,10 @@ be fixed with this new version.
 
 When cbd is stopped, sometimes centengine cannot reconnect. This is fixed now.
 
+### Build
+
+repair the compilation for Raspberry PI
+
 ### Enhancements
 
 *Timeranges*
