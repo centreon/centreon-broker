@@ -8,6 +8,10 @@
 
 Allowing parser \r or \n for the parser of timeranges.
 
+### Build
+
+repair the compilation for Raspberry PI
+
 ## 20.04.14
 
 ### Enhancements
