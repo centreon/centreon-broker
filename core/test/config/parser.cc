@@ -595,3 +595,48 @@ TEST(parser, logBadLogger) {
   // Remove temporary file.
   ::remove(config_file.c_str());
 }
+
+TEST(parser, logWithNullLoggers) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false,\n"
+      "     \"log\": {\n"
+      "       \"loggers\": null\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  ASSERT_NO_THROW(p.parse(config_file));
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+}

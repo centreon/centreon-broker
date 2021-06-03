@@ -25,6 +25,11 @@ repair the compilation for Raspberry PI
 
 ### Enhancements
 
+*Parser*
+
+Add unit test for the parser, while it is reading configuration file with loggers at null
+value.
+
 *Timeranges*
 
 Allowing parsing \r or \n for the parser of timeranges.
