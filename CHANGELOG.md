@@ -17,10 +17,6 @@ Converts theses events into trace.
 Connections can fail when many pollers establish connection to cbd. This should
 be fixed with this new version.
 
-*bbdo*
-
-fix Index_id of metrics tables are now in unsigned int64_t.
-
 ### Build
 
 repair the compilation for Raspberry PI
@@ -55,6 +51,12 @@ bugs. For example, services/hosts with host\_id=0.
 
 We optimize queries by removing useless join. A join with hosts table is not
 necessary in certain queries.
+
+### Bug fix
+
+*bbdo*
+
+fix Index_id of metrics tables are now in unsigned int64_t.
 
 ## 20.10.4
 
