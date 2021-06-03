@@ -23,15 +23,15 @@
 
 using namespace com::centreon::broker;
 
-brokerrpc::brokerrpc(const std::string& address, uint16_t port, std::string const& broker_name) {
-  broker_impl* service = new broker_impl;
-  service->set_broker_name(broker_name);
-  std::ostringstream oss;
-  oss << address << ":" << port;
-  std::string server_address{oss.str()};
+brokerrpc::brokerrpc(const std::string& address,
+                     uint16_t port,
+                     std::string const& broker_name) {
+  //broker_impl* service = new broker_impl;
+  _service.set_broker_name(broker_name);
+  std::string server_address{fmt::format("{}:{}", address, port)};
   grpc::ServerBuilder builder;
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-  builder.RegisterService(service);
+  builder.RegisterService(&_service);
   _server = builder.BuildAndStart();
 }
 

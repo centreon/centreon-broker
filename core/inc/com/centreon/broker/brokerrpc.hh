@@ -29,6 +29,7 @@
 
 CCB_BEGIN()
 class brokerrpc final {
+  broker_impl _service;
   std::unique_ptr<grpc::Server> _server;
  public:
   brokerrpc(const std::string& address, uint16_t port, std::string const& broker_name);
