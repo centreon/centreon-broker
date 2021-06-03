@@ -12,10 +12,13 @@ GnuTLS query was not understood on RedHat 8 and Centos8.
 
 Converts theses events into trace.
 
-*tcp*
+*TCP*
 
 Connections can fail when many pollers establish connection to cbd. This should
 be fixed with this new version.
+
+The calls to get remote endpoints from a socket were not protected and could
+fail ; this made cbd/centengine to stop.
 
 ### Build
 
