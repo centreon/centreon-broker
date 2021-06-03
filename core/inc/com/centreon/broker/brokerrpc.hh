@@ -28,6 +28,7 @@
 
 CCB_BEGIN()
 class brokerrpc final {
+  broker_impl _service;
   std::unique_ptr<grpc::Server> _server;
 
  public:
