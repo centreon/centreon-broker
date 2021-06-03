@@ -23,7 +23,7 @@ When cbd is stopped, sometimes centengine cannot reconnect. This is fixed now.
 
 *Parser*
 
-Add unit test for the parser, while he is reading configuration file with loggers at null
+Add unit test for the parser, while it is reading configuration file with loggers at null
 value.
 
 *Timeranges*

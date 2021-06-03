@@ -408,7 +408,7 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
     if (it.value().is_string())
       e.params[it.key()] = it.value().get<std::string>();
     else
-      log_v2::config()->debug("config parser (while reading configuration file): j"
+      log_v2::config()->debug("config parser (while reading configuration file): "
                               "for key: '{}' value is not a string.", it.key());
   }
 }
