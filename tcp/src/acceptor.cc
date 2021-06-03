@@ -73,10 +73,10 @@ std::unique_ptr<io::stream> acceptor::open() {
   const uint32_t timeout_s = 3;
   auto conn = tcp_async::instance().get_connection(_acceptor, timeout_s);
   if (conn) {
-    log_v2::tcp()->debug("acceptor gets a new connection from {}:{}",
-                         conn->socket().remote_endpoint().address().to_string(),
-                         conn->socket().remote_endpoint().port());
-    return std::unique_ptr<stream>(new stream(conn, -1));
+    assert(conn->port());
+    log_v2::tcp()->debug("acceptor gets a new connection from {}",
+                         conn->peer());
+    return std::make_unique<stream>(conn, -1);
   }
   return nullptr;
 }

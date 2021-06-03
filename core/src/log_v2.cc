@@ -48,30 +48,32 @@ log_v2& log_v2::instance() {
 
 log_v2::log_v2() {
   auto null_sink = std::make_shared<sinks::null_sink_mt>();
-  _tls_log = std::make_shared<logger>("tls", null_sink);
-  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
-  _tcp_log = std::make_shared<logger>("tcp", null_sink);
-  _core_log = std::make_shared<logger>("core", null_sink);
-  _config_log = std::make_shared<logger>("config", null_sink);
-  _sql_log = std::make_shared<logger>("sql", null_sink);
-  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
-  _lua_log = std::make_shared<logger>("lua", null_sink);
-  _processing_log = std::make_shared<logger>("processing", null_sink);
   _bam_log = std::make_shared<logger>("bam", null_sink);
+  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
+  _config_log = std::make_shared<logger>("config", null_sink);
+  _core_log = std::make_shared<logger>("core", null_sink);
+  _influxdb_log = std::make_shared<logger>("influxdb", null_sink);
+  _lua_log = std::make_shared<logger>("lua", null_sink);
+  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
+  _processing_log = std::make_shared<logger>("processing", null_sink);
+  _sql_log = std::make_shared<logger>("sql", null_sink);
+  _tcp_log = std::make_shared<logger>("tcp", null_sink);
+  _tls_log = std::make_shared<logger>("tls", null_sink);
 }
 
 log_v2::~log_v2() {
   _core_log->info("log finished");
-  _tls_log->flush();
-  _bbdo_log->flush();
-  _tcp_log->flush();
-  _core_log->flush();
-  _config_log->flush();
-  _sql_log->flush();
-  _perfdata_log->flush();
-  _lua_log->flush();
-  _processing_log->flush();
   _bam_log->flush();
+  _bbdo_log->flush();
+  _config_log->flush();
+  _core_log->flush();
+  _influxdb_log->flush();
+  _lua_log->flush();
+  _perfdata_log->flush();
+  _processing_log->flush();
+  _sql_log->flush();
+  _tcp_log->flush();
+  _tls_log->flush();
 }
 
 void log_v2::apply(const config::state& conf) {
@@ -95,15 +97,16 @@ void log_v2::apply(const config::state& conf) {
   _core_log->flush_on(level::info);
   _core_log->info("{} : log started", _log_name);
 
-  _config_log = std::make_shared<logger>("config", null_sink);
-  _tls_log = std::make_shared<logger>("tls", null_sink);
-  _tcp_log = std::make_shared<logger>("tcp", null_sink);
-  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
-  _sql_log = std::make_shared<logger>("sql", null_sink);
-  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
-  _lua_log = std::make_shared<logger>("lua", null_sink);
-  _processing_log = std::make_shared<logger>("processing", null_sink);
   _bam_log = std::make_shared<logger>("bam", null_sink);
+  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
+  _config_log = std::make_shared<logger>("config", null_sink);
+  _influxdb_log = std::make_shared<logger>("influxdb", null_sink);
+  _lua_log = std::make_shared<logger>("lua", null_sink);
+  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
+  _processing_log = std::make_shared<logger>("processing", null_sink);
+  _sql_log = std::make_shared<logger>("sql", null_sink);
+  _tcp_log = std::make_shared<logger>("tcp", null_sink);
+  _tls_log = std::make_shared<logger>("tls", null_sink);
 
   for (auto it = log.loggers.begin(), end = log.loggers.end(); it != end;
        ++it) {
@@ -128,6 +131,8 @@ void log_v2::apply(const config::state& conf) {
       l = &_processing_log;
     else if (it->first == "bam")
       l = &_bam_log;
+    else if (it->first == "influxdb")
+      l = &_influxdb_log;
     else
       continue;
 
@@ -137,44 +142,48 @@ void log_v2::apply(const config::state& conf) {
   }
 }
 
-std::shared_ptr<spdlog::logger> log_v2::core() {
-  return instance()._core_log;
-}
-
-std::shared_ptr<spdlog::logger> log_v2::config() {
-  return instance()._config_log;
-}
-
-std::shared_ptr<spdlog::logger> log_v2::tls() {
-  return instance()._tls_log;
+std::shared_ptr<spdlog::logger> log_v2::bam() {
+  return instance()._bam_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::bbdo() {
   return instance()._bbdo_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::tcp() {
-  return instance()._tcp_log;
+std::shared_ptr<spdlog::logger> log_v2::config() {
+  return instance()._config_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::sql() {
-  return instance()._sql_log;
+std::shared_ptr<spdlog::logger> log_v2::core() {
+  return instance()._core_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::perfdata() {
-  return instance()._perfdata_log;
+std::shared_ptr<spdlog::logger> log_v2::influxdb() {
+  return instance()._influxdb_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::lua() {
   return instance()._lua_log;
 }
 
+std::shared_ptr<spdlog::logger> log_v2::perfdata() {
+  return instance()._perfdata_log;
+}
+
 std::shared_ptr<spdlog::logger> log_v2::processing() {
   return instance()._processing_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::bam() {
-  return instance()._bam_log;
+std::shared_ptr<spdlog::logger> log_v2::sql() {
+  return instance()._sql_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::tcp() {
+  return instance()._tcp_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::tls() {
+  return instance()._tls_log;
 }
 
 const std::string& log_v2::log_name() const {
