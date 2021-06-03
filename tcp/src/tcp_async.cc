@@ -202,12 +202,19 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
                               const asio::error_code& ec) {
   /* If we got a connection, we store it */
   if (!ec) {
-    new_connection->update_peer();
-    std::lock_guard<std::mutex> lck(_acceptor_con_m);
-    std::time_t now = std::time(nullptr);
-    _acceptor_available_con.insert(
-        std::make_pair(acceptor.get(), std::make_pair(new_connection, now)));
-    _acceptor_con_cv.notify_one();
+    asio::error_code ecc;
+    new_connection->update_peer(ecc);
+    if (ecc)
+      log_v2::tcp()->error(
+          "tcp acceptor handling connection: unable to get peer endpoint: {}",
+          ecc.message());
+    else {
+      std::lock_guard<std::mutex> lck(_acceptor_con_m);
+      std::time_t now = std::time(nullptr);
+      _acceptor_available_con.insert(
+          std::make_pair(acceptor.get(), std::make_pair(new_connection, now)));
+      _acceptor_con_cv.notify_one();
+    }
     start_acceptor(acceptor);
   } else
     log_v2::tcp()->info("TCP acceptor interrupted: {}", ec.message());

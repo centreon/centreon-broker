@@ -46,13 +46,14 @@ tcp_connection::tcp_connection(asio::io_context& io_context,
       _reading(false),
       _closing(false),
       _closed(false),
-      _peer(fmt::format("{}:{}", host, port)) {}
+      _address(host),
+      _port(port) {}
 
 /**
  * @brief Destructor
  */
 tcp_connection::~tcp_connection() noexcept {
-  log_v2::tcp()->trace("Connection to {} destroyed.", _peer);
+  log_v2::tcp()->trace("Connection to {}:{} destroyed.", _address, _port);
   close();
 }
 
@@ -361,7 +362,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
               lck, [this] { return !_read_queue.empty() || _closing; });
           if (_read_queue.empty())
             throw msg_fmt(
-                "Attempt to read data from peer {} on a closing socket", _peer);
+                "Attempt to read data from peer {}:{} on a closing socket",
+                _address, _port);
           /* Timeout on wait */
         } else {
           time_t now;
@@ -374,8 +376,8 @@ std::vector<char> tcp_connection::read(time_t timeout_time, bool* timeout) {
               })) {
             if (_read_queue.empty())
               throw msg_fmt(
-                  "Attempt to read data from peer {} on a closing socket",
-                  _peer);
+                  "Attempt to read data from peer {}:{} on a closing socket",
+                  _address, _port);
           } else {
             log_v2::tcp()->trace("Timeout during read ; timeout time = {}",
                                  timeout_time);
@@ -402,14 +404,31 @@ bool tcp_connection::is_closed() const {
   return _closed;
 }
 
-const std::string& tcp_connection::peer() const {
-  return _peer;
+const std::string& tcp_connection::address() const {
+  return _address;
 }
 
-void tcp_connection::update_peer() {
+uint16_t tcp_connection::port() const {
+  return _port;
+}
+
+const std::string tcp_connection::peer() const {
+  return fmt::format("{}:{}", _address, _port);
+}
+
+/**
+ * @brief When connection is initialized on the acceptor side, address and port
+ * are respectively "" and 0. So once the initialization done, this method is
+ * called to set the good values.
+ *
+ * @param ec In case of error this param is filled with the error message.
+ */
+void tcp_connection::update_peer(asio::error_code& ec) {
   if (_socket.is_open()) {
-    _peer =
-        fmt::format("{}:{}", _socket.remote_endpoint().address().to_string(),
-                    _socket.remote_endpoint().port());
+    auto re{_socket.remote_endpoint(ec)};
+    if (!ec) {
+      _address = re.address().to_string();
+      _port = re.port();
+    }
   }
 }

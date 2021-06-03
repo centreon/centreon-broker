@@ -82,7 +82,9 @@ class influxdb12 : public influxdb::influxdb {
   macro_cache const& _cache;
 
   void _connect_socket();
-  bool _check_answer_string(std::string const& ans);
+  bool _check_answer_string(std::string const& ans,
+                            const std::string& addr,
+                            uint16_t port);
   void _create_queries(std::string const& user,
                        std::string const& passwd,
                        std::string const& db,
