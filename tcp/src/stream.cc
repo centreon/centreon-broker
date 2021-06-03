@@ -59,6 +59,7 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
       _connection(tcp_async::instance().create_connection(host, port)),
       _parent(nullptr) {
   _total_tcp_count++;
+  log_v2::tcp()->trace("New stream to {}:{}", _host, _port);
   log_v2::tcp()->info(
       "{} TCP streams are configured on a thread pool of {} threads",
       _total_tcp_count, pool::instance().get_pool_size());
@@ -73,12 +74,13 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
  */
 stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
     : io::stream("TCP"),
-      _host(conn->socket().remote_endpoint().address().to_string()),
-      _port(conn->socket().remote_endpoint().port()),
+      _host{conn->address()},
+      _port{conn->port()},
       _read_timeout(read_timeout),
       _connection(conn),
       _parent(nullptr) {
   _total_tcp_count++;
+  log_v2::tcp()->info("New stream to {}:{}", _host, _port);
   log_v2::tcp()->info(
       "{} TCP streams are configured on a thread pool of {} threads",
       _total_tcp_count, pool::instance().get_pool_size());
@@ -138,7 +140,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   bool timeout = false;
   d.reset(new io::raw(_connection->read(deadline, &timeout)));
   std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
-  log_v2::tcp()->debug("TCP Read done : {} bytes", data->get_buffer().size());
+  log_v2::tcp()->trace("TCP Read done : {} bytes", data->get_buffer().size());
   return !timeout;
 }
 
@@ -176,7 +178,7 @@ int32_t stream::write(std::shared_ptr<io::data> const& d) {
 
   if (d->type() == io::raw::static_type()) {
     std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
-    log_v2::tcp()->debug("TCP: write request of {} bytes to peer '{}:{}'",
+    log_v2::tcp()->trace("TCP: write request of {} bytes to peer '{}:{}'",
                          r->size(), _host, _port);
     log_v2::tcp()->trace("write {} bytes", r->size());
     std::error_code err;
