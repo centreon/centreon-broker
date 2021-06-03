@@ -54,6 +54,7 @@ database_config::database_config()
  */
 database_config::database_config(std::string const& type,
                                  std::string const& host,
+                                 std::string const& socket,
                                  unsigned short port,
                                  std::string const& user,
                                  std::string const& password,
@@ -63,6 +64,7 @@ database_config::database_config(std::string const& type,
                                  int connections_count)
     : _type(type),
       _host(host),
+      _socket(socket),
       _port(port),
       _user(user),
       _password(password),
@@ -94,6 +96,16 @@ database_config::database_config(config::endpoint const& cfg) {
     _host = it->second;
   else
     _host = "localhost";
+
+  // db_socket
+  if (_host == "localhost") {
+    it = cfg.params.find("db_socket");
+    if (it != end)
+      _socket = it->second;
+    else
+      _socket = "/var/lib/mysql/mysql.sock";
+  } else
+    _socket = nullptr;
 
   // db_port
   it = cfg.params.find("db_port");
@@ -195,8 +207,9 @@ database_config& database_config::operator=(database_config const& other) {
 bool database_config::operator==(database_config const& other) {
   if (this != &other)
     return _type == other._type && _host == other._host &&
-           _port == other._port && _user == other._user &&
-           _password == other._password && _name == other._name &&
+           _socket == other._socket && _port == other._port &&
+           _user == other._user && _password == other._password &&
+           _name == other._name &&
            _queries_per_transaction == other._queries_per_transaction &&
            _check_replication == other._check_replication &&
            _connections_count == other._connections_count;
@@ -220,6 +233,15 @@ std::string const& database_config::get_type() const {
  */
 std::string const& database_config::get_host() const {
   return _host;
+}
+
+/**
+ *  Get the DB socket.
+ *
+ *  @return The DB socket
+ */
+std::string const& database_config::get_socket() const {
+  return _socket;
 }
 
 /**
@@ -304,6 +326,15 @@ void database_config::set_host(std::string const& host) {
 }
 
 /**
+ *  Set socket.
+ *
+ *  @param[in] socket  The socket.
+ */
+void database_config::set_socket(std::string const& socket) {
+  _socket = socket;
+}
+
+/**
  *  Set port.
  *
  *  @param[in] port  Set the port number of the database server.
@@ -374,6 +405,7 @@ void database_config::set_check_replication(bool check_replication) {
 void database_config::_internal_copy(database_config const& other) {
   _type = other._type;
   _host = other._host;
+  _socket = other._socket;
   _port = other._port;
   _user = other._user;
   _password = other._password;

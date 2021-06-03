@@ -497,12 +497,11 @@ void mysql_connection::_run() {
   } else {
     uint32_t timeout = 10;
     mysql_options(_conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
-    const char* socket =
-        _host == "localhost" ? "/var/lib/mysql/mysql.sock" : nullptr;
 
     while (config::applier::mode != config::applier::finished &&
            !mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
-                               _pwd.c_str(), _name.c_str(), _port, socket,
+                               _pwd.c_str(), _name.c_str(), _port,
+                               (_socket == "" ? nullptr : _socket.c_str()),
                                CLIENT_FOUND_ROWS)) {
       set_error_message(fmt::format(
           "mysql_connection: The mysql/mariadb database seems not started. "
@@ -571,6 +570,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
       _tasks_count(0),
       _need_commit(false),
       _host(db_cfg.get_host()),
+      _socket(db_cfg.get_socket()),
       _user(db_cfg.get_user()),
       _pwd(db_cfg.get_password()),
       _name(db_cfg.get_name()),
@@ -678,9 +678,9 @@ bool mysql_connection::fetch_row(mysql_result& result) {
 
 bool mysql_connection::match_config(database_config const& db_cfg) const {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
-  return db_cfg.get_host() == _host && db_cfg.get_user() == _user &&
-         db_cfg.get_password() == _pwd && db_cfg.get_name() == _name &&
-         db_cfg.get_port() == _port &&
+  return db_cfg.get_host() == _host && db_cfg.get_socket() == _socket &&
+         db_cfg.get_user() == _user && db_cfg.get_password() == _pwd &&
+         db_cfg.get_name() == _name && db_cfg.get_port() == _port &&
          db_cfg.get_queries_per_transaction() == _qps;
 }
 
