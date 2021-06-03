@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2017 Centreon
+** Copyright 2011-2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include "com/centreon/broker/influxdb/influxdb12.hh"
 #include <iterator>
 #include <vector>
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -44,8 +44,7 @@ influxdb12::influxdb12(std::string const& user,
                        macro_cache const& cache)
     : _socket{_io_context}, _host(addr), _port(port), _cache(cache) {
   // Try to connect to the server.
-  logging::debug(logging::medium)
-      << "influxdb: connecting using 1.2 Line Protocol";
+  log_v2::influxdb()->debug("influxdb: connecting using 1.2 Line Protocol");
   _connect_socket();
   _create_queries(user, passwd, db, status_ts, status_cols, metric_ts,
                   metric_cols);
@@ -102,6 +101,13 @@ void influxdb12::commit() {
       .append(query_footer);
 
   _connect_socket();
+  asio::error_code ec;
+  auto re{_socket.remote_endpoint(ec)};
+  if (ec)
+    throw msg_fmt("influxdb: unable to get remote endpoint from socket: {}",
+                  ec.message());
+  std::string addr{re.address().to_string()};
+  uint16_t port = re.port();
 
   std::error_code err;
 
@@ -110,8 +116,7 @@ void influxdb12::commit() {
     throw msg_fmt(
         "influxdb: couldn't commit data to InfluxDB with address '{}"
         "' and port '{}': {}",
-        _socket.remote_endpoint().address().to_string(),
-        _socket.remote_endpoint().port(), err.message());
+        addr, port, err.message());
   // Receive the server answer.
 
   std::string answer;
@@ -131,10 +136,9 @@ void influxdb12::commit() {
       throw msg_fmt(
           "influxdb: couldn't receive InfluxDB answer with address '{}"
           "' and port '{}': {}",
-          _socket.remote_endpoint().address().to_string(),
-          _socket.remote_endpoint().port(), err.message());
+          addr, port, err.message());
 
-  } while (!_check_answer_string(answer));
+  } while (!_check_answer_string(answer, addr, port));
   _socket.shutdown(ip::tcp::socket::shutdown_both);
   _socket.close();
   _query.clear();
@@ -186,19 +190,21 @@ void influxdb12::_connect_socket() {
  *  Check the server's answer.
  *
  *  @param[in] ans  The server's answer.
+ *  @param[in] addr The server's address as std::string.
+ *  @param[in] port  The server's port.
  *
  *  @return         True of the answer was complete, false otherwise.
  */
-bool influxdb12::_check_answer_string(std::string const& ans) {
+bool influxdb12::_check_answer_string(std::string const& ans,
+                                      const std::string& addr,
+                                      uint16_t port) {
   size_t first_line = ans.find_first_of('\n');
   if (first_line == std::string::npos)
     return false;
   std::string first_line_str = ans.substr(0, first_line);
 
-  logging::debug(logging::medium)
-      << "influxdb: received an answer from "
-      << _socket.remote_endpoint().address().to_string() << "' and port '"
-      << _socket.remote_endpoint().port() << "': '" << ans << "'";
+  log_v2::influxdb()->debug("influxdb: received an anwser from {}:{}: {}", addr,
+                            port, ans);
 
   // Split the first line using the power of std.
   std::istringstream iss(first_line_str);
@@ -210,22 +216,21 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
     throw msg_fmt(
         "influxdb: unrecognizable HTTP header for '{}' and port '{}'"
         ": got '{}'",
-        _socket.remote_endpoint().address().to_string(),
-        _socket.remote_endpoint().port(), first_line_str);
+        addr, port, first_line_str);
 
   if (split[0] == "HTTP/1.0" && split[1] == "204" && split[2] == "No" &&
       split[3] == "Content")
     return true;
   else if (ans.find("partial write: points beyond retention policy dropped") !=
            std::string::npos) {
-    logging::info(logging::medium) << "influxdb: sending points beyond "
-                                      "Influxdb database configured "
-                                      "retention policy";
+    log_v2::influxdb()->info(
+        "influxdb: sending points beyond "
+        "Influxdb database configured "
+        "retention policy");
     return true;
   } else
-    throw msg_fmt("influxdb: got an error from '{}' and port '{}': '{}'",
-                  _socket.remote_endpoint().address().to_string(),
-                  _socket.remote_endpoint().port(), ans);
+    throw msg_fmt("influxdb: got an error from '{}' and port '{}': '{}'", addr,
+                  port, ans);
 }
 
 /**

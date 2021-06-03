@@ -64,9 +64,9 @@ std::unique_ptr<io::stream> connector::open() {
   log_v2::tcp()->info("TCP: connecting to {}:{}", _host, _port);
   try {
     std::unique_ptr<stream> retval =
-        std::unique_ptr<stream>(new stream(_host, _port, _read_timeout));
+        std::make_unique<stream>(_host, _port, _read_timeout);
     _is_ready_count = 0;
-    return std::move(retval);
+    return retval;
   } catch (const std::exception& e) {
     if (_is_ready_count < 30)
       _is_ready_count++;
