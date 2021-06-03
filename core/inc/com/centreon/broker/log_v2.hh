@@ -30,16 +30,17 @@ CCB_BEGIN()
 
 class log_v2 {
   std::string _log_name;
-  std::shared_ptr<spdlog::logger> _core_log;
-  std::shared_ptr<spdlog::logger> _config_log;
-  std::shared_ptr<spdlog::logger> _tcp_log;
-  std::shared_ptr<spdlog::logger> _bbdo_log;
-  std::shared_ptr<spdlog::logger> _tls_log;
-  std::shared_ptr<spdlog::logger> _sql_log;
-  std::shared_ptr<spdlog::logger> _perfdata_log;
-  std::shared_ptr<spdlog::logger> _lua_log;
-  std::shared_ptr<spdlog::logger> _processing_log;
   std::shared_ptr<spdlog::logger> _bam_log;
+  std::shared_ptr<spdlog::logger> _bbdo_log;
+  std::shared_ptr<spdlog::logger> _config_log;
+  std::shared_ptr<spdlog::logger> _core_log;
+  std::shared_ptr<spdlog::logger> _influxdb_log;
+  std::shared_ptr<spdlog::logger> _lua_log;
+  std::shared_ptr<spdlog::logger> _perfdata_log;
+  std::shared_ptr<spdlog::logger> _processing_log;
+  std::shared_ptr<spdlog::logger> _sql_log;
+  std::shared_ptr<spdlog::logger> _tcp_log;
+  std::shared_ptr<spdlog::logger> _tls_log;
   std::mutex _load_m;
 
   log_v2();
@@ -50,16 +51,17 @@ class log_v2 {
   bool load(const char* file, std::string const& broker_name, std::string& err);
   const std::string& log_name() const;
 
-  static std::shared_ptr<spdlog::logger> core();
-  static std::shared_ptr<spdlog::logger> config();
-  static std::shared_ptr<spdlog::logger> tls();
-  static std::shared_ptr<spdlog::logger> bbdo();
-  static std::shared_ptr<spdlog::logger> tcp();
-  static std::shared_ptr<spdlog::logger> sql();
-  static std::shared_ptr<spdlog::logger> perfdata();
-  static std::shared_ptr<spdlog::logger> lua();
-  static std::shared_ptr<spdlog::logger> processing();
   static std::shared_ptr<spdlog::logger> bam();
+  static std::shared_ptr<spdlog::logger> bbdo();
+  static std::shared_ptr<spdlog::logger> config();
+  static std::shared_ptr<spdlog::logger> core();
+  static std::shared_ptr<spdlog::logger> influxdb();
+  static std::shared_ptr<spdlog::logger> lua();
+  static std::shared_ptr<spdlog::logger> perfdata();
+  static std::shared_ptr<spdlog::logger> processing();
+  static std::shared_ptr<spdlog::logger> sql();
+  static std::shared_ptr<spdlog::logger> tcp();
+  static std::shared_ptr<spdlog::logger> tls();
 };
 
 CCB_END();

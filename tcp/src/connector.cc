@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,9 +71,10 @@ std::shared_ptr<io::stream> connector::open() {
   } catch (const std::exception& e) {
     if (_is_ready_count < 30)
       _is_ready_count++;
-    log_v2::tcp()->debug("Unable to establish the connection to {}:{} (attempt {}): {}",
-                         _host, _port, _is_ready_count, e.what());
-    return std::shared_ptr<stream>();
+    log_v2::tcp()->debug(
+        "Unable to establish the connection to {}:{} (attempt {}): {}", _host,
+        _port, _is_ready_count, e.what());
+    return nullptr;
   }
 }
 

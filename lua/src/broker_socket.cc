@@ -17,8 +17,8 @@
 */
 
 #include "com/centreon/broker/lua/broker_socket.hh"
+#include <fmt/format.h>
 #include <asio.hpp>
-#include <sstream>
 
 #if ASIO_VERSION < 101200
 namespace asio {
@@ -111,19 +111,19 @@ static int l_broker_socket_connect(lua_State* L) {
 
     if (err) {
       socket_state = unconnected;
-      std::ostringstream ss;
-      ss << "broker_socket::connect: Couldn't connect to " << addr << ":"
-         << port << ": " << err.message();
-      luaL_error(L, ss.str().c_str());
+      luaL_error(L, fmt::format(
+                        "broker_socket::connect: Couldn't connect to {}:{}: {}",
+                        addr, port, err.message())
+                        .c_str());
     } else {
       socket_state = connected;
     }
   } catch (std::system_error const& se) {
     socket_state = unconnected;
-    std::ostringstream ss;
-    ss << "broker_socket::connect: Couldn't connect to " << addr << ":" << port
-       << ": " << se.what();
-    luaL_error(L, ss.str().c_str());
+    luaL_error(
+        L, fmt::format("broker_socket::connect: Couldn't connect to {}:{}: {}",
+                       addr, port, se.what())
+               .c_str());
   }
   return 0;
 }
@@ -160,11 +160,18 @@ static int l_broker_socket_write(lua_State* L) {
   asio::write(*socket, asio::buffer(content, len), asio::transfer_all(), err);
 
   if (err) {
-    std::ostringstream ss;
-    ss << "broker_socket::write: Couldn't write to "
-       << socket->remote_endpoint().address().to_string() << ":"
-       << socket->remote_endpoint().port() << ": " << err.message();
-    luaL_error(L, ss.str().c_str());
+    asio::error_code ec;
+    auto re{socket->remote_endpoint(ec)};
+    if (ec)
+      luaL_error(L, fmt::format("broker_socket::write: Unable to get remote "
+                                "endpoint from socket object: {}",
+                                ec.message())
+                        .c_str());
+    else
+      luaL_error(
+          L, fmt::format("broker_socket::write: Couldn't write to {}:{}: {}",
+                         re.address().to_string(), re.port(), err.message())
+                 .c_str());
   }
 
   return 0;
@@ -187,14 +194,21 @@ static int l_broker_socket_read(lua_State* L) {
   size_t len = socket->read_some(asio::buffer(buff, 1024), err);
 
   if (err && err != asio::error::eof) {
-    std::ostringstream ss;
-    ss << "broker_socket::read: Couldn't read data from "
-       << socket->remote_endpoint().address().to_string() << ":"
-       << socket->remote_endpoint().port() << ": " << err.message();
-    luaL_error(L, ss.str().c_str());
-  } else if (!err) {
+    asio::error_code ec;
+    auto re{socket->remote_endpoint(ec)};
+    if (ec)
+      luaL_error(L, fmt::format("broker_socket::read: Unable to get remote "
+                                "endpoint from the socket: {}",
+                                ec.message())
+                        .c_str());
+    else
+      luaL_error(
+          L,
+          fmt::format("broker_socket::read: Couldn't read data from {}:{}: {}",
+                      re.address().to_string(), re.port(), err.message())
+              .c_str());
+  } else if (!err)
     lua_pushlstring(L, buff, len);
-  }
 
   delete[] buff;
   return 1;

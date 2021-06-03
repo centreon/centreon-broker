@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,30 +45,32 @@ log_v2& log_v2::instance() {
 
 log_v2::log_v2() {
   auto null_sink = std::make_shared<sinks::null_sink_mt>();
-  _tls_log = std::make_shared<logger>("tls", null_sink);
-  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
-  _tcp_log = std::make_shared<logger>("tcp", null_sink);
-  _core_log = std::make_shared<logger>("core", null_sink);
-  _config_log = std::make_shared<logger>("config", null_sink);
-  _sql_log = std::make_shared<logger>("sql", null_sink);
-  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
-  _lua_log = std::make_shared<logger>("lua", null_sink);
-  _processing_log = std::make_shared<logger>("processing", null_sink);
   _bam_log = std::make_shared<logger>("bam", null_sink);
+  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
+  _config_log = std::make_shared<logger>("config", null_sink);
+  _core_log = std::make_shared<logger>("core", null_sink);
+  _influxdb_log = std::make_shared<logger>("influxdb", null_sink);
+  _lua_log = std::make_shared<logger>("lua", null_sink);
+  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
+  _processing_log = std::make_shared<logger>("processing", null_sink);
+  _sql_log = std::make_shared<logger>("sql", null_sink);
+  _tcp_log = std::make_shared<logger>("tcp", null_sink);
+  _tls_log = std::make_shared<logger>("tls", null_sink);
 }
 
 log_v2::~log_v2() {
   _core_log->info("log finished");
-  _tls_log->flush();
-  _bbdo_log->flush();
-  _tcp_log->flush();
-  _core_log->flush();
-  _config_log->flush();
-  _sql_log->flush();
-  _perfdata_log->flush();
-  _lua_log->flush();
-  _processing_log->flush();
   _bam_log->flush();
+  _bbdo_log->flush();
+  _config_log->flush();
+  _core_log->flush();
+  _influxdb_log->flush();
+  _lua_log->flush();
+  _perfdata_log->flush();
+  _processing_log->flush();
+  _sql_log->flush();
+  _tcp_log->flush();
+  _tls_log->flush();
 }
 
 static auto json_validate = [](Json const& js) -> bool {
@@ -131,6 +133,8 @@ bool log_v2::load(const char* file,
         std::shared_ptr<logger>* l;
         if (entry["name"].string_value() == "core")
           l = &_core_log;
+        else if (entry["name"].string_value() == "influxdb")
+          l = &_influxdb_log;
         else if (entry["name"].string_value() == "config")
           l = &_config_log;
         else if (entry["name"].string_value() == "tls")
@@ -169,44 +173,48 @@ bool log_v2::load(const char* file,
   return false;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::core() {
-  return instance()._core_log;
-}
-
-std::shared_ptr<spdlog::logger> log_v2::config() {
-  return instance()._config_log;
-}
-
-std::shared_ptr<spdlog::logger> log_v2::tls() {
-  return instance()._tls_log;
+std::shared_ptr<spdlog::logger> log_v2::bam() {
+  return instance()._bam_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::bbdo() {
   return instance()._bbdo_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::tcp() {
-  return instance()._tcp_log;
+std::shared_ptr<spdlog::logger> log_v2::config() {
+  return instance()._config_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::sql() {
-  return instance()._sql_log;
+std::shared_ptr<spdlog::logger> log_v2::core() {
+  return instance()._core_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::perfdata() {
-  return instance()._perfdata_log;
+std::shared_ptr<spdlog::logger> log_v2::influxdb() {
+  return instance()._influxdb_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::lua() {
   return instance()._lua_log;
 }
 
+std::shared_ptr<spdlog::logger> log_v2::perfdata() {
+  return instance()._perfdata_log;
+}
+
 std::shared_ptr<spdlog::logger> log_v2::processing() {
   return instance()._processing_log;
 }
 
-std::shared_ptr<spdlog::logger> log_v2::bam() {
-  return instance()._bam_log;
+std::shared_ptr<spdlog::logger> log_v2::sql() {
+  return instance()._sql_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::tcp() {
+  return instance()._tcp_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::tls() {
+  return instance()._tls_log;
 }
 
 const std::string& log_v2::log_name() const {
