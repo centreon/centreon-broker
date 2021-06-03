@@ -105,7 +105,7 @@ database_config::database_config(config::endpoint const& cfg) {
     else
       _socket = "/var/lib/mysql/mysql.sock";
   } else
-    _socket = nullptr;
+    _socket = "";
 
   // db_port
   it = cfg.params.find("db_port");
