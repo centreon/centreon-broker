@@ -28,8 +28,8 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 
 TEST(StorageFactory, Factory) {
-  database_config dbcfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
-                        "centreon_storage", 5, true, 5);
+  database_config dbcfg("MySQL", "127.0.0.1", "/var/lib/mysql/mysql.sock", 3306,
+                        "centreon", "centreon", "centreon_storage", 5, true, 5);
   std::shared_ptr<persistent_cache> cache;
   config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;
@@ -58,8 +58,8 @@ TEST(StorageFactory, Factory) {
 }
 
 TEST(StorageFactory, FactoryWithFullConf) {
-  database_config dbcfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
-                        "centreon_storage", 5, true, 5);
+  database_config dbcfg("MySQL", "127.0.0.1", "/var/lib/mysql/mysql.sock", 3306,
+                        "centreon", "centreon", "centreon_storage", 5, true, 5);
   std::shared_ptr<persistent_cache> cache;
   config::endpoint cfg(config::endpoint::io_type::output);
   bool is_acceptor;

@@ -84,6 +84,7 @@ class mysql_connection {
   // Mutex to access the configuration
   mutable std::mutex _cfg_mutex;
   std::string _host;
+  std::string _socket;
   std::string _user;
   std::string _pwd;
   std::string _name;

@@ -41,6 +41,7 @@ using namespace com::centreon::broker::sql;
  *
  *  @param[in] db_type           DB type.
  *  @param[in] db_host           DB server host.
+ *  @param[in] db_socket         DB server socket.
  *  @param[in] db_port           DB server port.
  *  @param[in] db_user           DB user.
  *  @param[in] db_password       DB password.
@@ -49,6 +50,7 @@ using namespace com::centreon::broker::sql;
  */
 cleanup::cleanup(std::string const& db_type,
                  std::string const& db_host,
+                 std::string const& db_socket,
                  unsigned short db_port,
                  std::string const& db_user,
                  std::string const& db_password,
@@ -56,6 +58,7 @@ cleanup::cleanup(std::string const& db_type,
                  uint32_t cleanup_interval)
     : _db_type(db_type),
       _db_host(db_host),
+      _db_socket(db_socket),
       _db_port(db_port),
       _db_user(db_user),
       _db_password(db_password),
@@ -115,7 +118,7 @@ void cleanup::start() {
  */
 void cleanup::_run() {
   while (!should_exit() && _interval) {
-    mysql ms(database_config(_db_type, _db_host, _db_port, _db_user,
+    mysql ms(database_config(_db_type, _db_host, _db_socket, _db_port, _db_user,
                              _db_password, _db_name));
 
     ms.run_query(
