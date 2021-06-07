@@ -139,6 +139,7 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
         ++it;
     }
     if (!_acceptor_available_con.empty()) {
+      log_v2::tcp()->info("timer is well defined 1: {}", _timer != nullptr);
       _timer->expires_after(std::chrono::seconds(10));
       _timer->async_wait(std::bind(&tcp_async::_clear_available_con, this,
                                    std::placeholders::_1));
@@ -164,6 +165,7 @@ void tcp_async::start_acceptor(
     _clear_available_con_running = true;
 
   log_v2::tcp()->info("Reschedule available connections cleaning in 10s");
+  log_v2::tcp()->info("timer is well defined 2: {}", _timer != nullptr);
   _timer->expires_after(std::chrono::seconds(10));
   _timer->async_wait(
       std::bind(&tcp_async::_clear_available_con, this, std::placeholders::_1));
