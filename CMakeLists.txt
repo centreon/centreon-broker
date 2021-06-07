@@ -40,7 +40,7 @@ option(WITH_LIBCXX "compiles and link cbd with clang++/libc++")
 if (WITH_LIBCXX)
   set(CMAKE_CXX_COMPILER "clang++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -Werror -O1 -fno-omit-frame-pointer")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -Werror -O1 -fno-omit-frame-pointer")
 endif ()
 
 # With ASIO DEBUGGING ENABLED
