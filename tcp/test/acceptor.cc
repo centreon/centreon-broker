@@ -27,6 +27,7 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/tcp/connector.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -41,6 +42,7 @@ class TcpAcceptor : public ::testing::Test {
   void SetUp() override { pool::load(0); }
 
   void TearDown() override {
+    log_v2::tcp()->info("TCP TearDown");
     tcp::tcp_async::instance().stop_timer();
     pool::unload();
   }
