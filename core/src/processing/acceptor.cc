@@ -54,7 +54,7 @@ acceptor::~acceptor() {
  *  Accept a new incoming connection.
  */
 void acceptor::accept() {
-  static uint32_t connection_id = 0;
+  static std::atomic_uint connection_id{0};
 
   // Try to accept connection.
   std::unique_ptr<io::stream> u = _endp->open();
@@ -63,11 +63,11 @@ void acceptor::accept() {
     // Create feeder thread.
     std::string name(fmt::format("{}-{}", _name, ++connection_id));
     log_v2::core()->info("New incoming connection '{}'", name);
-    std::unique_ptr<processing::feeder> f(
-        new processing::feeder(name, u, _read_filters, _write_filters));
+    auto f{std::make_unique<processing::feeder>(name, u, _read_filters,
+                                                _write_filters)};
 
     std::lock_guard<std::mutex> lock(_stat_mutex);
-    _feeders.emplace_back(f.release());
+    _feeders.push_back(f.release());
     log_v2::core()->trace("Currently {} connections to acceptor '{}'",
                           _feeders.size(), _name);
   } else
@@ -86,10 +86,14 @@ void acceptor::exit() {
     case running:
       _should_exit = true;
       _state_cv.wait(lck, [this] { return _state == acceptor::finished; });
-      _thread.join();
       break;
     case finished:
       break;
+  }
+
+  lck.unlock();
+  if (_thread && _thread->joinable()) {
+    _thread->join();
   }
 
   for (auto it = _feeders.begin(); it != _feeders.end(); ++it) {
@@ -187,7 +191,7 @@ void acceptor::start() {
   std::unique_lock<std::mutex> lock(_state_m);
   if (_state == stopped) {
     _should_exit = false;
-    _thread = std::thread(&acceptor::_callback, this);
+    _thread = std::make_unique<std::thread>(&acceptor::_callback, this);
     _state_cv.wait(lock, [this] { return _state == acceptor::running; });
   }
 }
@@ -231,6 +235,7 @@ void acceptor::_callback() noexcept {
         if ((*it)->is_finished()) {
           log_v2::core()->info("removing '{}' from acceptor '{}'",
                                (*it)->get_name(), _name);
+          delete *it;
           it = _feeders.erase(it);
         } else
           ++it;
