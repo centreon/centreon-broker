@@ -159,9 +159,11 @@ void tcp_async::start_acceptor(
       _timer.reset(new asio::steady_timer(pool::instance().io_context()));
   }
   log_v2::tcp()->info("Reschedule available connections cleaning in 10s");
-  _timer->expires_after(std::chrono::seconds(10));
-  _timer->async_wait(
-      std::bind(&tcp_async::_clear_available_con, this, std::placeholders::_1));
+  if (_timer) {
+    _timer->expires_after(std::chrono::seconds(10));
+    _timer->async_wait(
+        std::bind(&tcp_async::_clear_available_con, this, std::placeholders::_1));
+  }
 
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
