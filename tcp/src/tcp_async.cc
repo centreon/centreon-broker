@@ -81,7 +81,7 @@ tcp_connection::pointer tcp_async::get_connection(
                                 })) {
     auto found = _acceptor_available_con.find(acceptor.get());
     if (found != _acceptor_available_con.end()) {
-      tcp_connection::pointer retval = found->second.first;
+      tcp_connection::pointer retval = std::move(found->second.first);
       _acceptor_available_con.erase(found);
       return retval;
     }

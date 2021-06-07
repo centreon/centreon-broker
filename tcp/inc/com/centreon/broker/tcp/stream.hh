@@ -39,7 +39,7 @@ class acceptor;
  *  TCP stream.
  */
 class stream : public io::stream {
-  static size_t _total_tcp_count;
+  static std::atomic<size_t> _total_tcp_count;
 
   const std::string _host;
   const uint16_t _port;

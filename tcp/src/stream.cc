@@ -22,6 +22,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 
+#include <cassert>
 #include <algorithm>
 #include <atomic>
 #include <sstream>
@@ -40,7 +41,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 using namespace com::centreon::exceptions;
 
-size_t stream::_total_tcp_count{0};
+std::atomic<size_t> stream::_total_tcp_count{0};
 
 /**
  * @brief Stream constructor used by a connector. The stream establishes a
@@ -58,6 +59,7 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
       _read_timeout(read_timeout),
       _connection(tcp_async::instance().create_connection(host, port)),
       _parent(nullptr) {
+  assert(_connection->port());
   _total_tcp_count++;
   log_v2::tcp()->trace("New stream to {}:{}", _host, _port);
   log_v2::tcp()->info(
@@ -79,6 +81,7 @@ stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
       _read_timeout(read_timeout),
       _connection(conn),
       _parent(nullptr) {
+  assert(_connection->port());
   _total_tcp_count++;
   log_v2::tcp()->info("New stream to {}:{}", _host, _port);
   log_v2::tcp()->info(
