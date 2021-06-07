@@ -155,6 +155,7 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
  */
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
+  log_v2::tcp()->info("Start acceptor ? {}", acceptor != nullptr);
   if (!_clear_available_con_running) {
     _clear_available_con_running = true;
     if (!_timer)
@@ -170,6 +171,7 @@ void tcp_async::start_acceptor(
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
 
+  log_v2::tcp()->info("Waiting for a connection");
   acceptor->async_accept(new_connection->socket(),
                          std::bind(&tcp_async::handle_accept, this, acceptor,
                                    new_connection, std::placeholders::_1));
@@ -182,6 +184,7 @@ void tcp_async::start_acceptor(
  */
 void tcp_async::stop_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
+  log_v2::tcp()->info("stop acceptor1");
   std::lock_guard<std::mutex> lck(_acceptor_con_m);
 
   std::error_code ec;
@@ -192,6 +195,7 @@ void tcp_async::stop_acceptor(
   if (ec)
     log_v2::tcp()->warn("Error while closing acceptor: {}", ec.message());
   _acceptor_con_cv.notify_all();
+  log_v2::tcp()->info("stop acceptor: STOPPED");
 }
 
 /**
