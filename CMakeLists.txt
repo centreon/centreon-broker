@@ -36,6 +36,13 @@ endif ()
 
 add_definitions("-D_GLIBCXX_USE_CXX11_ABI=1")
 
+option(WITH_LIBCXX "compiles and link cbd with clang++/libc++")
+if (WITH_LIBCXX)
+  set(CMAKE_CXX_COMPILER "clang++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -Werror -O1 -fno-omit-frame-pointer")
+endif ()
+
 # With ASIO DEBUGGING ENABLED
 option(WITH_DEBUG_ASIO "Add the Asio debugging flags." OFF)
 if (WITH_DEBUG_ASIO)
