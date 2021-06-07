@@ -36,7 +36,7 @@ class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
   }
 
   bool read(std::shared_ptr<com::centreon::broker::io::data>& d,
-            time_t deadline = (time_t)-1) {
+            time_t deadline = (time_t)-1) override {
     using namespace com::centreon::broker;
     (void)deadline;
     d.reset();
@@ -51,7 +51,7 @@ class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
     return true;
   }
 
-  int write(std::shared_ptr<com::centreon::broker::io::data> const& d) {
+  int write(std::shared_ptr<com::centreon::broker::io::data> const& d) override {
     using namespace com::centreon::broker;
     if (!d || d->type() != io::raw::static_type())
       throw com::centreon::exceptions::msg_fmt("invalid data sent to {}",
