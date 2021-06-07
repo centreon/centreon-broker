@@ -102,8 +102,10 @@ stream::~stream() noexcept {
   if (_connection->socket().is_open())
     _connection->close();
 
+  log_v2::tcp()->info("Connection closed");
   if (_parent)
     _parent->remove_child(peer());
+  log_v2::tcp()->info("peers unreferenced");
 }
 
 /**
