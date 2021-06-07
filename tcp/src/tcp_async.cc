@@ -38,10 +38,7 @@ tcp_async& tcp_async::instance() {
 }
 
 tcp_async::tcp_async()
-    : _clear_available_con_running(false),
-      _timer{
-          std::make_unique<asio::steady_timer>(pool::instance().io_context())} {
-}
+    : _clear_available_con_running(false) {}
 
 /**
  * @brief Stop the timer that clears available connections.
@@ -59,6 +56,8 @@ void tcp_async::stop_timer() {
     });
     f.get();
   }
+  if (_timer)
+    _timer.reset();
 }
 
 tcp_async::~tcp_async() noexcept {
@@ -158,9 +157,12 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
   log_v2::tcp()->info("Start acceptor ? {}", acceptor != nullptr);
-  if (!_clear_available_con_running) {
+  if (!_timer)
+      _timer = std::make_unique<asio::steady_timer>(pool::instance().io_context());
+
+  if (!_clear_available_con_running)
     _clear_available_con_running = true;
-  }
+
   log_v2::tcp()->info("Reschedule available connections cleaning in 10s");
   _timer->expires_after(std::chrono::seconds(10));
   _timer->async_wait(
