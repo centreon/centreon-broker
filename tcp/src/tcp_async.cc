@@ -43,10 +43,12 @@ tcp_async::tcp_async() : _clear_available_con_running(false) {}
  * @brief Stop the timer that clears available connections.
  */
 void tcp_async::stop_timer() {
+  log_v2::tcp()->info("tcp_async::stop_timer");
   if (_clear_available_con_running) {
     std::promise<bool> p;
     std::future<bool> f(p.get_future());
     _clear_available_con_running = false;
+    log_v2::tcp()->info("timer is well defined: {}", _timer != nullptr);
     asio::post(_timer->get_executor(), [this, &p] {
       _timer->cancel();
       p.set_value(true);
