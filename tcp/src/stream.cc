@@ -22,9 +22,9 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 
-#include <cassert>
 #include <algorithm>
 #include <atomic>
+#include <cassert>
 #include <sstream>
 #include <system_error>
 #include <thread>
