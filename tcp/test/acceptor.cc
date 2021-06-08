@@ -39,11 +39,13 @@ constexpr static uint16_t test_port(4444);
 
 class TcpAcceptor : public ::testing::Test {
  public:
-  void SetUp() override { pool::load(0); }
+  void SetUp() override { pool::load(0);
+    tcp::tcp_async::load(); }
 
   void TearDown() override {
     log_v2::tcp()->info("TCP TearDown");
     tcp::tcp_async::instance().stop_timer();
+    tcp::tcp_async::unload();
     pool::unload();
   }
 };
@@ -222,7 +224,7 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
 }
 
 TEST_F(TcpAcceptor, MultiNominal) {
-  constexpr size_t nb_poller(10);
+  constexpr size_t nb_poller(1);
   std::mutex cbd_m;
   std::unique_lock<std::mutex> lock(cbd_m);
   std::condition_variable cbd_cv;
@@ -242,8 +244,8 @@ TEST_F(TcpAcceptor, MultiNominal) {
     std::vector<std::string> data(nb_poller);
     {
       std::vector<std::unique_ptr<io::stream>> u_cbd(nb_poller);
-      std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
-      std::unique_ptr<io::endpoint> endp(a.release());
+      std::unique_ptr<io::endpoint> endp{
+          std::make_unique<tcp::acceptor>(4141, -1)};
 
       /* Nominal case, cbd is acceptor and read on the socket */
       bool cont = true;
@@ -710,14 +712,14 @@ TEST_F(TcpAcceptor, Wait2Connect) {
   }};
 
   while (!st) {
-    std::cout << "TRY " << i << "\n";
-    i++;
+    std::cout << "TRY " << i << std::endl;
     try {
       st = acc.open();
     } catch (std::exception const& e) {
       std::cout << std::this_thread::get_id() << "EXCEPTION: " << e.what()
-                << "\n";
+                << std::endl;
     }
+    i++;
   }
   t.join();
   ASSERT_GT(i, 0);
