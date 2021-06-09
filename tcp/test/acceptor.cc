@@ -738,7 +738,7 @@ TEST(TcpAcceptor, Simple) {
         break;
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-    std::shared_ptr<io::raw> data{new io::raw()};
+    std::shared_ptr<io::raw> data{std::make_shared<io::raw>()};
     std::shared_ptr<io::data> data_read;
 
     while (!io->read(data_read, -1)) {
@@ -765,7 +765,7 @@ TEST(TcpAcceptor, Multiple) {
     std::thread t{[] {
       tcp::connector con(test_addr, test_port, -1);
       std::shared_ptr<io::stream> str{try_connect(con)};
-      std::shared_ptr<io::raw> data{new io::raw()};
+      std::shared_ptr<io::raw> data{std::make_shared<io::raw>()};
       std::shared_ptr<io::data> data_read;
       data->append(std::string("TEST\n"));
       str->write(data);
