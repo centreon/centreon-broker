@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015,2017 Centreon
+** Copyright 2011-2013,2015,2017,2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class acceptor;
  *  TCP stream.
  */
 class stream : public io::stream {
-  static size_t _total_tcp_count;
+  static std::atomic<size_t> _total_tcp_count;
 
   const std::string _host;
   const uint16_t _port;

@@ -37,8 +37,8 @@ tcp_async& tcp_async::instance() {
 }
 
 tcp_async::tcp_async()
-      : _timer(pool::instance().io_context()),
-        _clear_available_con_running(false) {}
+    : _timer(pool::instance().io_context()),
+      _clear_available_con_running(false) {}
 
 tcp_async::~tcp_async() noexcept {
   if (_clear_available_con_running) {
@@ -46,9 +46,9 @@ tcp_async::~tcp_async() noexcept {
     std::future<bool> f(p.get_future());
     _clear_available_con_running = false;
     asio::post(_timer.get_executor(), [this, &p] {
-        _timer.cancel();
-        p.set_value(true);
-        });
+      _timer.cancel();
+      p.set_value(true);
+    });
     f.get();
   }
 }
@@ -73,7 +73,7 @@ tcp_connection::pointer tcp_async::get_connection(
                                 })) {
     auto found = _acceptor_available_con.find(acceptor.get());
     if (found != _acceptor_available_con.end()) {
-      tcp_connection::pointer retval = found->second.first;
+      tcp_connection::pointer retval = std::move(found->second.first);
       _acceptor_available_con.erase(found);
       return retval;
     }
@@ -131,7 +131,7 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
     if (!_acceptor_available_con.empty()) {
       _timer.expires_after(std::chrono::seconds(10));
       _timer.async_wait(std::bind(&tcp_async::_clear_available_con, this,
-                                   std::placeholders::_1));
+                                  std::placeholders::_1));
     } else
       _clear_available_con_running = false;
   }
@@ -168,7 +168,6 @@ void tcp_async::start_acceptor(
  */
 void tcp_async::stop_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-
   std::lock_guard<std::mutex> lck(_acceptor_con_m);
 
   std::error_code ec;
