@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <fstream>
 #include <json11.hpp>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/version.hh"
@@ -61,22 +62,16 @@ TEST_F(BrokerRpc, StartStop) {
 }
 
 TEST_F(BrokerRpc, GetVersion) {
-  std::ostringstream oss;
-  oss << "GetVersion: major: " << version::major;
   brokerrpc brpc("0.0.0.0", 40000, "test");
   auto output = execute("GetVersion");
 #if CENTREON_BROKER_PATCH == 0
   ASSERT_EQ(output.size(), 2u);
-  ASSERT_EQ(output.front(), oss.str());
-  oss.str("");
-  oss << "minor: " << version::minor;
-  ASSERT_EQ(output.back(), oss.str());
+  ASSERT_EQ(output.front(), fmt::format("GetVersion: major: {}\n", version::major));
+  ASSERT_EQ(output.back(), fmt::format("minor: {}\n", version::minor));
 #else
   ASSERT_EQ(output.size(), 3u);
-  ASSERT_EQ(output.front(), oss.str());
-  oss.str("");
-  oss << "patch: " << version::patch;
-  ASSERT_EQ(output.back(), oss.str());
+  ASSERT_EQ(output.front(), fmt::format("GetVersion: major: {}\n", version::major));
+  ASSERT_EQ(output.back(), fmt::format("patch: {}\n", version::patch));
 #endif
   brpc.shutdown();
 }
