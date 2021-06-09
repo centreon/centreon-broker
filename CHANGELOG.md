@@ -4,6 +4,10 @@
 
 ### Bug fix
 
+*RPC*
+
+A memory leak has been fixed.
+
 *TLS*
 
 GnuTLS query was not understood on RedHat 8 and Centos8.
