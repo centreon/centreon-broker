@@ -112,10 +112,10 @@ TEST_F(TcpAcceptor, Nominal) {
     std::unique_ptr<io::endpoint> endp(c.release());
 
     /* Nominal case, centengine is connector and write on the socket */
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
     do {
-      s_centengine = endp->open();
-    } while (!s_centengine);
+      u_centengine = endp->open();
+    } while (!u_centengine);
 
     std::shared_ptr<io::raw> data_write{new io::raw()};
     std::string cc("A");
@@ -138,10 +138,12 @@ TEST_F(TcpAcceptor, Nominal) {
 
 TEST_F(TcpAcceptor, QuestionAnswer) {
   constexpr int rep = 100;
+  std::mutex cbd_m;
+  std::condition_variable cbd_cv;
+  bool cbd_finished = false;
 
-  std::thread cbd([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
-    std::unique_ptr<io::endpoint> endp(a.release());
+  std::thread cbd([&cbd_m, &cbd_cv, &cbd_finished] {
+    std::unique_ptr<io::endpoint> endp(std::make_unique<tcp::acceptor>(4141, -1));
 
     /* Nominal case, cbd is acceptor and read on the socket */
     std::unique_ptr<io::stream> u_cbd;
@@ -179,17 +181,19 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
     int retry = 10;
     while (retry-- && u_cbd->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::unique_lock<std::mutex> lock(cbd_m);
+    cbd_cv.wait(lock, [&cbd_finished] { return cbd_finished; });
   });
 
-  std::thread centengine([] {
+  std::thread centengine([&cbd_cv, &cbd_finished] {
     std::unique_ptr<tcp::connector> c(
         new tcp::connector("localhost", 4141, -1));
     std::unique_ptr<io::endpoint> endp(c.release());
 
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
     do {
-      s_centengine = endp->open();
-    } while (!s_centengine);
+      u_centengine = endp->open();
+    } while (!u_centengine);
 
     std::shared_ptr<io::data> data_read;
     std::shared_ptr<io::raw> data_write;
@@ -202,14 +206,14 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
         cc[0] = c;
         data_write->append(cc);
       }
-      s_centengine->write(data_write);
+      u_centengine->write(data_write);
 
       val = false;
       std::string wanted(fmt::format("Answer{}", i));
       while (!val || !data_read ||
              std::static_pointer_cast<io::raw>(data_read)->size() <
                  wanted.size())
-        val = s_centengine->read(data_read, static_cast<time_t>(0));
+        val = u_centengine->read(data_read, static_cast<time_t>(0));
 
       std::vector<char> vec(
           std::static_pointer_cast<io::raw>(data_read)->get_buffer());
@@ -217,6 +221,8 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
 
       ASSERT_EQ(wanted, result);
     }
+    cbd_finished = true;
+    cbd_cv.notify_all();
   });
 
   centengine.join();
@@ -308,10 +314,10 @@ TEST_F(TcpAcceptor, MultiNominal) {
       std::unique_ptr<io::endpoint> endp(c.release());
 
       /* Nominal case, centengine is connector and write on the socket */
-      std::shared_ptr<io::stream> s_centengine;
+      std::unique_ptr<io::stream> u_centengine;
       do {
-        s_centengine = endp->open();
-      } while (!s_centengine);
+        u_centengine = endp->open();
+      } while (!u_centengine);
 
       std::shared_ptr<io::raw> data_write{new io::raw()};
       std::string cc("A");
@@ -322,9 +328,9 @@ TEST_F(TcpAcceptor, MultiNominal) {
           cc = "A";
         }
       }
-      s_centengine->write(data_write);
+      u_centengine->write(data_write);
       int retry = 10;
-      while (retry-- && s_centengine->flush() == 0)
+      while (retry-- && u_centengine->flush() == 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
       std::unique_lock<std::mutex> lock(cbd_m);
       cbd_cv.wait(lock, [&cbd_finished] { return cbd_finished; });
@@ -350,14 +356,14 @@ TEST_F(TcpAcceptor, NominalReversed) {
         new tcp::connector("localhost", 4141, -1));
     std::unique_ptr<io::endpoint> endp(c.release());
 
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
     do {
       try {
-        s_centengine = endp->open();
+        u_centengine = endp->open();
       } catch (const std::exception& e) {
         std::cout << '.';
       }
-    } while (!s_centengine);
+    } while (!u_centengine);
     std::cout << '\n';
 
     std::shared_ptr<io::raw> data_write{new io::raw()};
@@ -369,9 +375,9 @@ TEST_F(TcpAcceptor, NominalReversed) {
         cc = "A";
       }
     }
-    s_centengine->write(data_write);
+    u_centengine->write(data_write);
     int retry = 10;
-    while (retry-- && s_centengine->flush() == 0)
+    while (retry-- && u_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -415,10 +421,10 @@ TEST_F(TcpAcceptor, OnePeer) {
     std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
     std::unique_ptr<io::endpoint> endp(a.release());
 
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
     do {
-      s_centengine = endp->open();
-    } while (!s_centengine);
+      u_centengine = endp->open();
+    } while (!u_centengine);
 
     std::shared_ptr<io::raw> data_write{new io::raw()};
     std::string cc("A");
@@ -429,9 +435,9 @@ TEST_F(TcpAcceptor, OnePeer) {
         cc = "A";
       }
     }
-    s_centengine->write(data_write);
+    u_centengine->write(data_write);
     int retry = 10;
-    while (retry-- && s_centengine->flush() == 0)
+    while (retry-- && u_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -511,10 +517,10 @@ TEST_F(TcpAcceptor, OnePeerReversed) {
     std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
     std::unique_ptr<io::endpoint> endp(a.release());
 
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
     do {
-      s_centengine = endp->open();
-    } while (!s_centengine);
+      u_centengine = endp->open();
+    } while (!u_centengine);
 
     std::shared_ptr<io::raw> data_write{new io::raw()};
     std::string cc("A");
@@ -525,9 +531,9 @@ TEST_F(TcpAcceptor, OnePeerReversed) {
         cc = "A";
       }
     }
-    s_centengine->write(data_write);
+    u_centengine->write(data_write);
     int retry = 10;
-    while (retry-- && s_centengine->flush() == 0)
+    while (retry-- && u_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -542,18 +548,18 @@ TEST_F(TcpAcceptor, MultiOnePeer) {
     std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
     std::unique_ptr<io::endpoint> endp(a.release());
 
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
 
     int i = 0;
     while (i < nb_steps) {
-      if (s_centengine) {
+      if (u_centengine) {
         std::shared_ptr<io::data> data_read;
         while (!data_read ||
                std::static_pointer_cast<io::raw>(data_read)->size() == 0) {
           try {
-            s_centengine->read(data_read, static_cast<time_t>(0));
+            u_centengine->read(data_read, static_cast<time_t>(0));
           } catch (const std::exception& e) {
-            s_centengine.reset();
+            u_centengine.reset();
           }
         }
 
@@ -564,14 +570,14 @@ TEST_F(TcpAcceptor, MultiOnePeer) {
         ASSERT_EQ(result, "Hello1!");
         std::shared_ptr<io::raw> data_write = std::make_shared<io::raw>();
         data_write->append(std::string("Hello2!"));
-        s_centengine->write(data_write);
+        u_centengine->write(data_write);
         int retry = 10;
-        while (retry-- && s_centengine->flush() == 0)
+        while (retry-- && u_centengine->flush() == 0)
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        s_centengine.reset();
+        u_centengine.reset();
         i++;
       } else
-        s_centengine = endp->open();
+        u_centengine = endp->open();
     }
   });
 
@@ -617,12 +623,12 @@ TEST_F(TcpAcceptor, NominalRepeated) {
         new tcp::connector("localhost", 4141, -1));
     std::unique_ptr<io::endpoint> endp(c.release());
 
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
 
     int i = 0;
     do {
-      s_centengine = endp->open();
-    } while (!s_centengine);
+      u_centengine = endp->open();
+    } while (!u_centengine);
 
     while (i < nb_steps) {
       std::cout << "engine 0 " << i << "\n";
@@ -631,11 +637,11 @@ TEST_F(TcpAcceptor, NominalRepeated) {
              std::static_pointer_cast<io::raw>(data_read)->size() == 0) {
         std::cout << "engine 1 " << i << "\n";
         try {
-          s_centengine->read(data_read, static_cast<time_t>(-1));
+          u_centengine->read(data_read, static_cast<time_t>(-1));
         } catch (const std::exception& e) {
           do {
-            s_centengine = endp->open();
-          } while (!s_centengine);
+            u_centengine = endp->open();
+          } while (!u_centengine);
         }
       }
       std::cout << "engine 2 " << i << "\n";
@@ -647,12 +653,12 @@ TEST_F(TcpAcceptor, NominalRepeated) {
       std::cout << "engine 3 " << i << "\n";
       std::shared_ptr<io::raw> data_write = std::make_shared<io::raw>();
       data_write->append(std::string("Hello2!"));
-      s_centengine->write(data_write);
+      u_centengine->write(data_write);
       std::cout << "engine 4 " << i << "\n";
       i++;
     }
     int retry = 10;
-    while (retry-- && s_centengine->flush() == 0)
+    while (retry-- && u_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -981,10 +987,10 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
           new tcp::connector("localhost", 4141 + i, -1));
       std::unique_ptr<io::endpoint> endp(c.release());
 
-      std::shared_ptr<io::stream> s_centengine;
+      std::unique_ptr<io::stream> u_centengine;
       do {
-        s_centengine = endp->open();
-      } while (!s_centengine);
+        u_centengine = endp->open();
+      } while (!u_centengine);
 
       std::shared_ptr<io::data> data_read;
       std::shared_ptr<io::raw> data_write;
@@ -997,14 +1003,14 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
           cc[0] = c;
           data_write->append(cc);
         }
-        s_centengine->write(data_write);
+        u_centengine->write(data_write);
 
         val = false;
         std::string wanted(fmt::format("Answer{}", i));
         while (!val || !data_read ||
                std::static_pointer_cast<io::raw>(data_read)->size() <
                    wanted.size())
-          val = s_centengine->read(data_read, static_cast<time_t>(0));
+          val = u_centengine->read(data_read, static_cast<time_t>(0));
 
         std::vector<char> vec(
             std::static_pointer_cast<io::raw>(data_read)->get_buffer());

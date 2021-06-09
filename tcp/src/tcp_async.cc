@@ -1,5 +1,5 @@
 /*
-** Copyright 2020 Centreon
+** Copyright 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,6 +39,11 @@ tcp_async& tcp_async::instance() {
   return *_instance;
 }
 
+/**
+ * @brief Static function to initialize the tcp_sync object. It must be
+ * executed before using the tcp_sync object and must be started after the
+ * pool initialization.
+ */
 void tcp_async::load() {
   if (_instance == nullptr)
     _instance = new tcp_async();
@@ -46,6 +51,10 @@ void tcp_async::load() {
     log_v2::tcp()->error("tcp_async instance already started.");
 }
 
+/**
+ * @brief This is the way to stop the tcp_sync instance. To call before the
+ * pool unload since tcp_sync is heavily based on it.
+ */
 void tcp_async::unload() {
   if (_instance) {
     delete _instance;
@@ -53,6 +62,11 @@ void tcp_async::unload() {
   }
 }
 
+/**
+ * @brief Default constructor. Don't use it, it is private. Instead, call the
+ * tcp_async::load() function to initialize it and then, use the instance()
+ * method.
+ */
 tcp_async::tcp_async()
     : _clear_available_con_running(false),
       _strand{pool::instance().io_context()} {}
@@ -77,6 +91,10 @@ void tcp_async::stop_timer() {
     _timer.reset();
 }
 
+/**
+ * @brief The destructor of tcp_async. You don't have to use it, instead, use
+ * the unload() function.
+ */
 tcp_async::~tcp_async() noexcept {
   stop_timer();
   /* Before destroying the strand, we have to wait it is really empty. We post
@@ -118,8 +136,7 @@ tcp_connection::pointer tcp_async::get_connection(
     if (retval)
       return retval;
     auto now = std::chrono::system_clock::now();
-    if (end - now > std::chrono::milliseconds(50))
-      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   } while (std::chrono::system_clock::now() < end);
 
   return nullptr;
@@ -257,7 +274,7 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
           ecc.message());
     else {
       std::time_t now = std::time(nullptr);
-      _strand.post([new_connection, now, &acceptor, this] {
+      _strand.post([new_connection, now, acceptor, this] {
         _acceptor_available_con.insert(std::make_pair(
             acceptor.get(), std::make_pair(new_connection, now)));
       });
