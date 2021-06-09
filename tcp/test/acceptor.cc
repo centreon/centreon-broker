@@ -126,9 +126,9 @@ TEST_F(TcpAcceptor, Nominal) {
         cc = "A";
       }
     }
-    s_centengine->write(data_write);
+    u_centengine->write(data_write);
     int retry = 10;
-    while (retry-- && s_centengine->flush() == 0)
+    while (retry-- && u_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
   });
 
@@ -230,13 +230,13 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
 }
 
 TEST_F(TcpAcceptor, MultiNominal) {
-  constexpr size_t nb_poller(1);
+  constexpr size_t nb_poller(10);
   std::mutex cbd_m;
   std::unique_lock<std::mutex> lock(cbd_m);
   std::condition_variable cbd_cv;
   bool cbd_finished = false;
 
-  std::thread cbd([&nb_poller, &cbd_finished, &cbd_m, &cbd_cv] {
+  std::thread cbd([nb_poller, &cbd_finished, &cbd_m, &cbd_cv] {
     char cc = 'A';
     std::string wanted;
     for (int i = 0; i < 10000; i++) {
@@ -309,9 +309,8 @@ TEST_F(TcpAcceptor, MultiNominal) {
 
   for (size_t i = 0; i < nb_poller; i++) {
     pollers.emplace_back([&cbd_finished, &cbd_m, &cbd_cv] {
-      std::unique_ptr<tcp::connector> c(
-          new tcp::connector("localhost", 4141, -1));
-      std::unique_ptr<io::endpoint> endp(c.release());
+      std::unique_ptr<io::endpoint> endp{
+          std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
       /* Nominal case, centengine is connector and write on the socket */
       std::unique_ptr<io::stream> u_centengine;
@@ -351,7 +350,11 @@ TEST_F(TcpAcceptor, MultiNominal) {
 }
 
 TEST_F(TcpAcceptor, NominalReversed) {
-  std::thread centengine([] {
+  std::mutex cbd_m;
+  std::condition_variable cbd_cv;
+  bool cbd_finished = false;
+
+  std::thread centengine([&cbd_m, &cbd_cv, &cbd_finished] {
     std::unique_ptr<tcp::connector> c(
         new tcp::connector("localhost", 4141, -1));
     std::unique_ptr<io::endpoint> endp(c.release());
@@ -379,13 +382,14 @@ TEST_F(TcpAcceptor, NominalReversed) {
     int retry = 10;
     while (retry-- && u_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::unique_lock<std::mutex> lck(cbd_m);
+    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished; });
   });
 
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-  std::thread cbd([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
-    std::unique_ptr<io::endpoint> endp(a.release());
+  std::thread cbd([&cbd_m, &cbd_finished, &cbd_cv] {
+    std::unique_ptr<io::endpoint> endp(std::make_unique<tcp::acceptor>(4141, -1));
 
     std::unique_ptr<io::stream> u_cbd;
     do {
@@ -410,6 +414,9 @@ TEST_F(TcpAcceptor, NominalReversed) {
       }
     }
     ASSERT_EQ(wanted, result);
+    std::lock_guard<std::mutex> lck(cbd_m);
+    cbd_finished = true;
+    cbd_cv.notify_all();
   });
 
   cbd.join();
