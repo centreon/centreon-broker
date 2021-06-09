@@ -48,7 +48,7 @@ namespace processing {
 class feeder : public stat_visitable {
   enum state { stopped, running, finished };
   // Condition variable used when waiting for the thread to finish
-  std::thread _thread;
+  std::unique_ptr<std::thread> _thread;
   state _state;
   mutable std::mutex _state_m;
   std::condition_variable _state_cv;
