@@ -36,6 +36,13 @@ endif ()
 
 add_definitions("-D_GLIBCXX_USE_CXX11_ABI=1")
 
+option(WITH_LIBCXX "compiles and link cbd with clang++/libc++")
+if (WITH_LIBCXX)
+  set(CMAKE_CXX_COMPILER "clang++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -Werror -O1 -fno-omit-frame-pointer")
+endif ()
+
 # With ASIO DEBUGGING ENABLED
 option(WITH_DEBUG_ASIO "Add the Asio debugging flags." OFF)
 if (WITH_DEBUG_ASIO)
@@ -628,8 +635,6 @@ add_dependencies(${DAEMON} json11_lib)
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
 	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" json11 ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
-
-add_subdirectory(examples)
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdog." ON)
