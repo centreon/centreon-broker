@@ -131,7 +131,7 @@ TEST(parser, endpoint) {
   ASSERT_EQ(output1.failovers.front(), "CentreonRetention");
   ASSERT_EQ(output1.buffering_timeout, 10);
   ASSERT_EQ(output1.read_timeout, 5);
-  ASSERT_EQ(output1.retry_interval, 300);
+  ASSERT_EQ(output1.retry_interval, 300u);
   ASSERT_EQ(output1.params["db_type"], "mysql");
   ASSERT_EQ(output1.params["db_host"], "localhost");
   ASSERT_EQ(output1.params["db_port"], "3306");
