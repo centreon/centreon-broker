@@ -36,10 +36,19 @@ tcp_async& tcp_async::instance() {
   return instance;
 }
 
+/**
+ * @brief Default constructor. Don't use it, it is private. Instead, call the
+ * instance() static method to get it.
+ */
 tcp_async::tcp_async()
-    : _timer(pool::instance().io_context()),
+    : _strand{pool::instance().io_context()},
+      _timer(pool::instance().io_context()),
       _clear_available_con_running(false) {}
 
+/**
+ * @brief The destructor of tcp_async. It is called once the instance is
+ * released.
+ */
 tcp_async::~tcp_async() noexcept {
   if (_clear_available_con_running) {
     std::promise<bool> p;
@@ -51,6 +60,13 @@ tcp_async::~tcp_async() noexcept {
     });
     f.get();
   }
+
+  /* Before destroying the strand, we have to wait it is really empty. We post
+   * a last action and wait it is over. */
+  std::promise<bool> p;
+  std::future<bool> f{p.get_future()};
+  _strand.post([&p] { p.set_value(true); });
+  f.get();
 }
 
 /**
@@ -64,28 +80,38 @@ tcp_async::~tcp_async() noexcept {
 tcp_connection::pointer tcp_async::get_connection(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
     uint32_t timeout_s) {
-  std::unique_lock<std::mutex> lck(_acceptor_con_m);
-  if (_acceptor_con_cv.wait_for(lck, std::chrono::seconds(timeout_s),
-                                [this, a = acceptor.get()] {
-                                  return _acceptor_available_con.find(a) !=
-                                             _acceptor_available_con.end() ||
-                                         !a->is_open();
-                                })) {
-    auto found = _acceptor_available_con.find(acceptor.get());
-    if (found != _acceptor_available_con.end()) {
-      tcp_connection::pointer retval = std::move(found->second.first);
-      _acceptor_available_con.erase(found);
+  auto end = std::chrono::system_clock::now() + std::chrono::seconds{timeout_s};
+  do {
+    std::promise<tcp_connection::pointer> p;
+    std::future<tcp_connection::pointer> f{p.get_future()};
+    _strand.post([&p, a = acceptor.get(), this] {
+      auto found = _acceptor_available_con.find(a);
+      if (found != _acceptor_available_con.end()) {
+        tcp_connection::pointer retval = std::move(found->second.first);
+        _acceptor_available_con.erase(found);
+        p.set_value(retval);
+      } else
+        p.set_value(nullptr);
+    });
+    auto retval = f.get();
+    if (retval)
+
       return retval;
-    }
-  }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  } while (std::chrono::system_clock::now() < end);
   return nullptr;
 }
 
 bool tcp_async::contains_available_acceptor_connections(
     asio::ip::tcp::acceptor* acceptor) const {
-  std::lock_guard<std::mutex> lck(_acceptor_con_m);
-  return _acceptor_available_con.find(acceptor) !=
-         _acceptor_available_con.end();
+  std::promise<bool> p;
+  std::future<bool> f{p.get_future()};
+  _strand.post([&p, &acceptor, this] {
+    p.set_value(_acceptor_available_con.find(acceptor) !=
+                _acceptor_available_con.end());
+  });
+
+  return f.get();
 }
 
 /**
@@ -116,24 +142,26 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
   if (ec)
     log_v2::core()->info("Available connections cleaning: {}", ec.message());
   else {
-    log_v2::core()->info("Available connections cleaning");
-    std::lock_guard<std::mutex> lck(_acceptor_con_m);
+    log_v2::core()->debug("Available connections cleaning");
     std::time_t now = std::time(nullptr);
-    for (auto it = _acceptor_available_con.begin();
-         it != _acceptor_available_con.end();) {
-      if (now >= it->second.second + 10) {
-        log_v2::tcp()->info("Destroying connection to '{}'",
-                            it->second.first->peer());
-        it = _acceptor_available_con.erase(it);
+
+    _strand.post([now, this] {
+      for (auto it = _acceptor_available_con.begin();
+           it != _acceptor_available_con.end();) {
+        if (now >= it->second.second + 10) {
+          log_v2::tcp()->debug("Destroying connection to '{}'",
+                               it->second.first->peer());
+          it = _acceptor_available_con.erase(it);
+        } else
+          ++it;
+      }
+      if (!_acceptor_available_con.empty()) {
+        _timer.expires_after(std::chrono::seconds(10));
+        _timer.async_wait(std::bind(&tcp_async::_clear_available_con, this,
+                                    std::placeholders::_1));
       } else
-        ++it;
-    }
-    if (!_acceptor_available_con.empty()) {
-      _timer.expires_after(std::chrono::seconds(10));
-      _timer.async_wait(std::bind(&tcp_async::_clear_available_con, this,
-                                  std::placeholders::_1));
-    } else
-      _clear_available_con_running = false;
+        _clear_available_con_running = false;
+    });
   }
 }
 
@@ -146,6 +174,8 @@ void tcp_async::_clear_available_con(asio::error_code ec) {
  */
 void tcp_async::start_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
+  log_v2::tcp()->trace("Start acceptor");
+
   if (!_clear_available_con_running)
     _clear_available_con_running = true;
   log_v2::tcp()->info("Reschedule available connections cleaning in 10s");
@@ -156,6 +186,7 @@ void tcp_async::start_acceptor(
   tcp_connection::pointer new_connection =
       std::make_shared<tcp_connection>(pool::io_context());
 
+  log_v2::tcp()->debug("Waiting for a connection");
   acceptor->async_accept(new_connection->socket(),
                          std::bind(&tcp_async::handle_accept, this, acceptor,
                                    new_connection, std::placeholders::_1));
@@ -168,8 +199,6 @@ void tcp_async::start_acceptor(
  */
 void tcp_async::stop_acceptor(
     std::shared_ptr<asio::ip::tcp::acceptor> acceptor) {
-  std::lock_guard<std::mutex> lck(_acceptor_con_m);
-
   std::error_code ec;
   acceptor->cancel(ec);
   if (ec)
@@ -177,7 +206,6 @@ void tcp_async::stop_acceptor(
   acceptor->close(ec);
   if (ec)
     log_v2::tcp()->warn("Error while closing acceptor: {}", ec.message());
-  _acceptor_con_cv.notify_all();
 }
 
 /**
@@ -199,13 +227,13 @@ void tcp_async::handle_accept(std::shared_ptr<asio::ip::tcp::acceptor> acceptor,
           "tcp acceptor handling connection: unable to get peer endpoint: {}",
           ecc.message());
     else {
-      std::lock_guard<std::mutex> lck(_acceptor_con_m);
       std::time_t now = std::time(nullptr);
-      _acceptor_available_con.insert(
-          std::make_pair(acceptor.get(), std::make_pair(new_connection, now)));
-      _acceptor_con_cv.notify_one();
+      _strand.post([new_connection, now, acceptor, this] {
+        _acceptor_available_con.insert(std::make_pair(
+            acceptor.get(), std::make_pair(new_connection, now)));
+      });
+      start_acceptor(acceptor);
     }
-    start_acceptor(acceptor);
   } else
     log_v2::tcp()->error("acceptor error: {}", ec.message());
 }
