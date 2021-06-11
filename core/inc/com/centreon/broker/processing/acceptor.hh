@@ -50,7 +50,7 @@ class feeder;
 class acceptor : public endpoint {
   enum state { stopped, running, finished };
 
-  std::thread _thread;
+  std::unique_ptr<std::thread> _thread;
   state _state;
   mutable std::mutex _state_m;
   std::condition_variable _state_cv;

@@ -58,7 +58,7 @@ class temporary_stream : public io::stream {
    *
    *  @return Always return true.
    */
-  bool read(std::shared_ptr<io::data>& d, time_t deadline) {
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override {
     (void)deadline;
     std::lock_guard<std::mutex> lock(_events_m);
     if (_events.empty())
