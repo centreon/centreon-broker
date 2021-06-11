@@ -35,6 +35,11 @@ namespace tcp {
  * This class does several little things in background to establish, shutdown,
  * clear connections.
  *
+ * It is a unique instance. Before using it, we have to initialize it, it is not
+ * done automatically because it depends on the pool. To initialize it, use
+ * tcp_async::load() and to reset it use tcp_async::unload(). Be careful you
+ * have to initialize the pool before!
+ *
  * TCP acceptors do their job here with essentially two methods:
  * * start_acceptor()
  * * stop_acceptor()
@@ -57,12 +62,12 @@ namespace tcp {
  * for more than 4s. In that case, it removes them.
  */
 class tcp_async {
+  static tcp_async* _instance;
   /* The acceptors open by this tcp_async */
   std::list<std::shared_ptr<asio::ip::tcp::acceptor>> _acceptor;
 
   /* Connections opened by acceptors not already got by streams */
-  mutable std::mutex _acceptor_con_m;
-  std::condition_variable _acceptor_con_cv;
+  mutable asio::io_context::strand _strand;
   std::unordered_multimap<asio::ip::tcp::acceptor*,
                           std::pair<tcp_connection::pointer, time_t>>
       _acceptor_available_con;
@@ -76,6 +81,8 @@ class tcp_async {
   void _clear_available_con(asio::error_code ec);
 
  public:
+  static void load();
+  static void unload();
   static tcp_async& instance();
   void stop_timer();
 
