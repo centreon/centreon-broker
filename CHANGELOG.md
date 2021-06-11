@@ -2,6 +2,13 @@
 
 ## 20.04.15
 
+### Conan
+
+*gRPC*
+
+The reflection module has been removed because of new issues around the
+compilation. We will enable it if needed and when the API will be more stable.
+
 ### Fixes
 
 *Timeranges*
