@@ -2,14 +2,19 @@
 
 ## 20.04.15
 
-### Conan
+### Fixes
+
+*SQL*
+
+Broker stores its connections to the database in an array. Once they are
+established, it does not test if they are still valid after a laps of time.
+But we know that MariaDB closes inactive connections. So here, we have added
+a check to verify if a connection is still ok.
 
 *gRPC*
 
 The reflection module has been removed because of new issues around the
 compilation. We will enable it if needed and when the API will be more stable.
-
-### Fixes
 
 *Timeranges*
 
