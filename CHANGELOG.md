@@ -6,7 +6,8 @@
 
 *RPC*
 
-A memory leak has been fixed.
+A memory leak has been fixed. The reflection module is removed because not used
+and also it did not compile anymore since an update on the conan center.
 
 *TLS*
 
