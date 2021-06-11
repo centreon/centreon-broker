@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2017, 2020-2021 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 
 #include <algorithm>
 #include <atomic>
-#include <sstream>
+#include <cassert>
 #include <system_error>
 #include <thread>
 
@@ -39,7 +39,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
-size_t stream::_total_tcp_count{0};
+std::atomic<size_t> stream::_total_tcp_count{0};
 
 /**
  * @brief Stream constructor used by a connector. The stream establishes a
@@ -57,6 +57,7 @@ stream::stream(std::string const& host, uint16_t port, int32_t read_timeout)
       _read_timeout(read_timeout),
       _connection(tcp_async::instance().create_connection(host, port)),
       _parent(nullptr) {
+  assert(_connection->port());
   _total_tcp_count++;
   log_v2::tcp()->trace("New stream to {}:{}", _host, _port);
   log_v2::tcp()->info(
@@ -78,6 +79,7 @@ stream::stream(tcp_connection::pointer conn, int32_t read_timeout)
       _read_timeout(read_timeout),
       _connection(conn),
       _parent(nullptr) {
+  assert(_connection->port());
   _total_tcp_count++;
   log_v2::tcp()->info("New stream to {}:{}", _host, _port);
   log_v2::tcp()->info(

@@ -26,6 +26,7 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tcp/connector.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
 
@@ -61,8 +62,8 @@ TEST(TcpAcceptor, NoConnector) {
 
 TEST(TcpAcceptor, Nominal) {
   std::thread cbd([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
-    std::unique_ptr<io::endpoint> endp(a.release());
+    std::unique_ptr<io::endpoint> endp(
+        std::make_unique<tcp::acceptor>(4141, -1));
 
     /* Nominal case, cbd is acceptor and read on the socket */
     std::shared_ptr<io::stream> s_cbd;
@@ -122,10 +123,13 @@ TEST(TcpAcceptor, Nominal) {
 
 TEST(TcpAcceptor, QuestionAnswer) {
   constexpr int rep = 100;
+  std::mutex cbd_m;
+  std::condition_variable cbd_cv;
+  bool cbd_finished = false;
 
-  std::thread cbd([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
-    std::unique_ptr<io::endpoint> endp(a.release());
+  std::thread cbd([&cbd_m, &cbd_cv, &cbd_finished] {
+    std::unique_ptr<io::endpoint> endp(
+        std::make_unique<tcp::acceptor>(4141, -1));
 
     /* Nominal case, cbd is acceptor and read on the socket */
     std::shared_ptr<io::stream> s_cbd;
@@ -163,9 +167,11 @@ TEST(TcpAcceptor, QuestionAnswer) {
     int retry = 10;
     while (retry-- && s_cbd->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::unique_lock<std::mutex> lock(cbd_m);
+    cbd_cv.wait(lock, [&cbd_finished] { return cbd_finished; });
   });
 
-  std::thread centengine([] {
+  std::thread centengine([&cbd_cv, &cbd_finished] {
     std::unique_ptr<tcp::connector> c(
         new tcp::connector("localhost", 4141, -1));
     std::unique_ptr<io::endpoint> endp(c.release());
@@ -201,6 +207,8 @@ TEST(TcpAcceptor, QuestionAnswer) {
 
       ASSERT_EQ(wanted, result);
     }
+    cbd_finished = true;
+    cbd_cv.notify_all();
   });
 
   centengine.join();
@@ -214,7 +222,7 @@ TEST(TcpAcceptor, MultiNominal) {
   std::condition_variable cbd_cv;
   bool cbd_finished = false;
 
-  std::thread cbd([&nb_poller, &cbd_finished, &cbd_m, &cbd_cv] {
+  std::thread cbd([nb_poller, &cbd_finished, &cbd_m, &cbd_cv] {
     char cc = 'A';
     std::string wanted;
     for (int i = 0; i < 10000; i++) {
@@ -228,8 +236,8 @@ TEST(TcpAcceptor, MultiNominal) {
     std::vector<std::string> data(nb_poller);
     {
       std::vector<std::shared_ptr<io::stream>> s_cbd(nb_poller);
-      std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
-      std::unique_ptr<io::endpoint> endp(a.release());
+      std::unique_ptr<io::endpoint> endp(
+          std::make_unique<tcp::acceptor>(4141, -1));
 
       /* Nominal case, cbd is acceptor and read on the socket */
       bool cont = true;
@@ -287,9 +295,8 @@ TEST(TcpAcceptor, MultiNominal) {
 
   for (size_t i = 0; i < nb_poller; i++) {
     pollers.emplace_back([&cbd_finished, &cbd_m, &cbd_cv] {
-      std::unique_ptr<tcp::connector> c(
-          new tcp::connector("localhost", 4141, -1));
-      std::unique_ptr<io::endpoint> endp(c.release());
+      std::unique_ptr<io::endpoint> endp(
+          std::make_unique<tcp::connector>("localhost", 4141, -1));
 
       /* Nominal case, centengine is connector and write on the socket */
       std::shared_ptr<io::stream> s_centengine;
@@ -297,7 +304,7 @@ TEST(TcpAcceptor, MultiNominal) {
         s_centengine = endp->open();
       } while (!s_centengine);
 
-      std::shared_ptr<io::raw> data_write{new io::raw()};
+      std::shared_ptr<io::raw> data_write{std::make_shared<io::raw>()};
       std::string cc("A");
       for (int i = 0; i < 10000; i++) {
         data_write->append(cc);
@@ -329,10 +336,13 @@ TEST(TcpAcceptor, MultiNominal) {
 }
 
 TEST(TcpAcceptor, NominalReversed) {
-  std::thread centengine([] {
-    std::unique_ptr<tcp::connector> c(
-        new tcp::connector("localhost", 4141, -1));
-    std::unique_ptr<io::endpoint> endp(c.release());
+  std::mutex cbd_m;
+  std::condition_variable cbd_cv;
+  bool cbd_finished = false;
+
+  std::thread centengine([&cbd_m, &cbd_cv, &cbd_finished] {
+    std::unique_ptr<io::endpoint> endp(
+        std::make_unique<tcp::connector>("localhost", 4141, -1));
 
     std::shared_ptr<io::stream> s_centengine;
     do {
@@ -357,13 +367,15 @@ TEST(TcpAcceptor, NominalReversed) {
     int retry = 10;
     while (retry-- && s_centengine->flush() == 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::unique_lock<std::mutex> lck(cbd_m);
+    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished; });
   });
 
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-  std::thread cbd([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
-    std::unique_ptr<io::endpoint> endp(a.release());
+  std::thread cbd([&cbd_m, &cbd_finished, &cbd_cv] {
+    std::unique_ptr<io::endpoint> endp(
+        std::make_unique<tcp::acceptor>(4141, -1));
 
     std::shared_ptr<io::stream> s_cbd;
     do {
@@ -388,6 +400,9 @@ TEST(TcpAcceptor, NominalReversed) {
       }
     }
     ASSERT_EQ(wanted, result);
+    std::lock_guard<std::mutex> lck(cbd_m);
+    cbd_finished = true;
+    cbd_cv.notify_all();
   });
 
   cbd.join();
@@ -696,14 +711,14 @@ TEST(TcpAcceptor, Wait2Connect) {
   }};
 
   while (!st) {
-    std::cout << "TRY " << i << "\n";
-    i++;
+    std::cout << "TRY " << i << std::endl;
     try {
       st = acc.open();
     } catch (std::exception const& e) {
       std::cout << std::this_thread::get_id() << "EXCEPTION: " << e.what()
                 << "\n";
     }
+    i++;
   }
   t.join();
   ASSERT_GT(i, 0);
@@ -738,7 +753,7 @@ TEST(TcpAcceptor, Simple) {
         break;
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-    std::shared_ptr<io::raw> data{new io::raw()};
+    std::shared_ptr<io::raw> data{std::make_shared<io::raw>()};
     std::shared_ptr<io::data> data_read;
 
     while (!io->read(data_read, -1)) {
@@ -765,7 +780,7 @@ TEST(TcpAcceptor, Multiple) {
     std::thread t{[] {
       tcp::connector con(test_addr, test_port, -1);
       std::shared_ptr<io::stream> str{try_connect(con)};
-      std::shared_ptr<io::raw> data{new io::raw()};
+      std::shared_ptr<io::raw> data{std::make_shared<io::raw>()};
       std::shared_ptr<io::data> data_read;
       data->append(std::string("TEST\n"));
       str->write(data);

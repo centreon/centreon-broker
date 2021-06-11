@@ -42,9 +42,10 @@ class hooker : public multiplexing::hooker {
   ~hooker();
   hooker(hooker const& other) = delete;
   hooker& operator=(hooker const& other) = delete;
-  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
-  void starting();
-  void stopping();
+  bool read(std::shared_ptr<io::data>& d,
+            time_t deadline = (time_t)-1) override;
+  void starting() override;
+  void stopping() override;
   int write(std::shared_ptr<io::data> const& d);
 
  private:

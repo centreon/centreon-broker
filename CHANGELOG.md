@@ -6,6 +6,7 @@
 
 *gRPC*
 
+A memory leak has been fixed.
 The reflection was not used and in the new version on the conan-center it does
 not compile anymore as is. We remove it for now.
 

@@ -21,11 +21,11 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <thread>
 #include <ctime>
 #include <list>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/processing/endpoint.hh"
@@ -48,13 +48,9 @@ class feeder;
  *  Accept incoming connections and launch a feeder thread.
  */
 class acceptor : public endpoint {
-  enum state {
-    stopped,
-    running,
-    finished
-  };
+  enum state { stopped, running, finished };
 
-  std::thread _thread;
+  std::unique_ptr<std::thread> _thread;
   state _state;
   mutable std::mutex _state_m;
   std::condition_variable _state_cv;
