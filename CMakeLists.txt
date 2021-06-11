@@ -584,7 +584,7 @@ target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} ${mariadb-conn
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection pthread)
+target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} pthread)
 
 # Standalone binary.
 set(DAEMON cbd)
@@ -592,7 +592,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-	"-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${nlohmann_json_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
+	"-Wl,--whole-archive" rokerbase roker "-Wl,--no-whole-archive" ${nlohmann_json_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gRPC_LIBS} ${absl_LIBS} )
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdog." ON)
