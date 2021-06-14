@@ -471,7 +471,7 @@ bool mysql_connection::is_finished() const {
 bool mysql_connection::ping() {
   int ret = mysql_ping(_conn);
   if (ret) {
-    _finish(nullptr);
+    log_v2::sql()->warn("SQL: database ping failed: Server has gone away.");
     return false;
   }
   return true;
