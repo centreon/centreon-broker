@@ -143,10 +143,6 @@ state parser::parse(std::string const& file) {
                                       retval, &state::poller_id,
                                       &json::is_number, &json::get<int>))
           ;
-        else if (get_conf<bool, state>({it.key(), it.value()}, "log_thread_id",
-                                       retval, &state::log_thread_id,
-                                       &json::is_boolean, &json::get<bool>))
-          ;
         else if (get_conf<state>({it.key(), it.value()}, "poller_name", retval,
                                  &state::poller_name, &json::is_string))
           ;
@@ -169,10 +165,6 @@ state parser::parse(std::string const& file) {
                                       "event_queue_max_size", retval,
                                       &state::event_queue_max_size,
                                       &json::is_number, &json::get<int>))
-          ;
-        else if (get_conf<bool, state>({it.key(), it.value()}, "log_thread_id",
-                                       retval, &state::log_thread_id,
-                                       &json::is_boolean, &json::get<bool>))
           ;
         else if (it.key() == "output") {
           if (it.value().is_array()) {
@@ -300,7 +292,7 @@ state parser::parse(std::string const& file) {
         }
 
         else if (it.key() == "logger") {
-          log_v2::config()->debug("logger object is deprcated on 21.10");
+          log_v2::config()->warn("logger object is deprecated on 21.10");
         } else
           retval.params()[it.key()] = it.value().dump();
       }

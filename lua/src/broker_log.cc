@@ -67,6 +67,8 @@ int _log_func(int log_level, lua_State* L, const char* header) {
           log_v2::lua()->info(text);
           break;
         case 1:
+          log_v2::lua()->warn(text);
+          break;
         case 2:
           log_v2::lua()->error(text);
           break;
@@ -112,7 +114,7 @@ static int l_broker_log_info(lua_State* L) {
  *  @return 0
  */
 static int l_broker_log_error(lua_State* L) {
-  return _log_func(1, L, "ERROR: ");
+  return _log_func(2, L, "ERROR: ");
 }
 
 /**
@@ -123,7 +125,7 @@ static int l_broker_log_error(lua_State* L) {
  *  @return 0
  */
 static int l_broker_log_warning(lua_State* L) {
-  return _log_func(2, L, "WARNING: ");
+  return _log_func(1, L, "WARNING: ");
 }
 
 /**

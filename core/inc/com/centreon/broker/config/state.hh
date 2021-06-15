@@ -48,9 +48,6 @@ class state {
   std::string _command_protocol;
   std::list<endpoint> _endpoints;
   int _event_queue_max_size;
-  bool _flush_logs;
-  bool _log_thread_id;
-  bool _log_human_readable_timestamp;
   std::string _module_dir;
   std::list<std::string> _module_list;
   std::map<std::string, std::string> _params;
@@ -91,12 +88,6 @@ class state {
   std::list<endpoint> const& endpoints() const noexcept;
   void event_queue_max_size(int val) noexcept;
   int event_queue_max_size() const noexcept;
-  void flush_logs(bool flush) noexcept;
-  bool flush_logs() const noexcept;
-  void log_thread_id(bool log_id) noexcept;
-  bool log_thread_id() const noexcept;
-  void log_human_readable_timestamp(bool human_log_time) noexcept;
-  bool log_human_readable_timestamp() const noexcept;
   std::string const& module_directory() const noexcept;
   void module_directory(std::string const& dir);
   std::list<std::string>& module_list() noexcept;

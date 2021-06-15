@@ -544,7 +544,7 @@ void macro_cache::_process_service_group_member(
   auto const& sgm = std::static_pointer_cast<neb::service_group_member>(data);
   log_v2::lua()->debug(
       "lua: processing service group member (group_name: {}, group_id: {}, "
-      "service_id: {}",
+      "host_id: {}, service_id: {}",
       sgm->group_name, sgm->group_id, sgm->host_id, sgm->service_id);
   if (sgm->enabled)
     _service_group_members[std::make_tuple(sgm->host_id, sgm->service_id,

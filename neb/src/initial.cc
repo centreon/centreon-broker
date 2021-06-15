@@ -192,7 +192,7 @@ static void send_host_dependencies_list() {
     }
   } catch (std::exception const& e) {
     log_v2::neb()->info(
-        "init: error occurred while dumping host dependencies: ", e.what());
+        "init: error occurred while dumping host dependencies: {}", e.what());
   } catch (...) {
     log_v2::neb()->error(
         "init: unknown error occurred while dumping host dependencies");

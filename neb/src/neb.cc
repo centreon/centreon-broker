@@ -160,7 +160,7 @@ int nebmodule_init(int flags, char const* args, void* handle) {
         std::shared_ptr<neb::callback>(new neb::callback(
             NEBCALLBACK_LOG_DATA, neb::gl_mod_handle, &neb::callback_log)));
   } catch (std::exception const& e) {
-    log_v2::core()->error("main: cbmod loading failed: ", e.what());
+    log_v2::core()->error("main: cbmod loading failed: {}", e.what());
     nebmodule_deinit(0, 0);
     return -1;
   } catch (...) {

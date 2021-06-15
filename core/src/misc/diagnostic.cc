@@ -239,7 +239,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
     }
 
     // ls.
-    log_v2::core()->info("diagnostic:     getting modules information");
+    log_v2::core()->info("diagnostic: getting modules information");
     {
       std::string ls_log_path;
       ls_log_path = tmp_dir;

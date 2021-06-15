@@ -98,7 +98,6 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         // Check if size is within bounds.
         if (size <= 0 || size > max_data_size) {
           // Skip corrupted data, one byte at a time.
-          // FIXME
           log_v2::core()->error(
               "compression: {:x} got corrupted packet size of {} bytes, not in "
               "the 0-{} range, skipping next byte",
@@ -132,7 +131,6 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
       }
       if (!r->size()) {  // No data or uncompressed size of 0 means corrupted
                          // input.
-        // FIXME
         log_v2::core()->error(
             "compression: {:x} got corrupted compressed data, skipping next "
             "byte",
@@ -144,7 +142,6 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         _rbuffer.pop(1);
         corrupted = true;
       } else {
-        // FIXME
         log_v2::core()->debug(
             "compression: {:x} uncompressed {} bytes to {} bytes",
             static_cast<void*>(this), size + sizeof(int32_t), r->size());
@@ -268,7 +265,6 @@ void stream::_flush() {
     std::shared_ptr<io::raw> compressed(new io::raw);
     std::vector<char>& data(compressed->get_buffer());
     data = std::move(zlib::compress(_wbuffer, _level));
-    // FIXME
     log_v2::core()->debug(
         "compression: {:x} compressed {} bytes to {} bytes (level {})",
         static_cast<void*>(this), _wbuffer.size(), compressed->size(), _level);

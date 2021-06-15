@@ -232,7 +232,6 @@ TEST(parser, log) {
       "     \"event_queue_max_size\": 100000,\n"
       "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
       "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
-      "     \"log_thread_id\": false,\n"
       "     \"log\": {\n"
       "       \"directory\": \"/tmp\"\n"
       "     }\n"
@@ -259,7 +258,6 @@ TEST(parser, log) {
   ASSERT_EQ(s.broker_name(), "central-broker-master");
   ASSERT_EQ(s.poller_id(), 1);
   ASSERT_EQ(s.module_directory(), "/usr/share/centreon/lib/centreon-broker");
-  ASSERT_EQ(s.log_thread_id(), false);
   ASSERT_EQ(s.event_queue_max_size(), 100000);
   ASSERT_EQ(s.command_file(), "/var/lib/centreon-broker/command.sock");
   ASSERT_EQ(s.cache_directory(), "/var/lib/centreon-broker/");
