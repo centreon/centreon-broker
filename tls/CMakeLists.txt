@@ -81,12 +81,12 @@ if (WITH_TESTING)
     PARENT_SCOPE
   )
 
-  add_executable(test-anon
-      "${TEST_DIR}/test-anon.cc")
-  target_link_libraries(test-anon ${OpenSSL_LIBS} -pthread -ldl)
-  add_executable(test-crypt
-      "${TEST_DIR}/test-crypt.cc")
-  target_link_libraries(test-crypt ${OpenSSL_LIBS} -pthread -ldl)
+  add_executable(anon-test
+      "${TEST_DIR}/anon-test.cc")
+  target_link_libraries(anon-test ${OpenSSL_LIBS} -pthread -ldl)
+  add_executable(crypt-test
+      "${TEST_DIR}/crypt-test.cc")
+  target_link_libraries(crypt-test ${OpenSSL_LIBS} -pthread -ldl ${fmt_LIBS})
 endif()
 # Install rule.
 install(TARGETS "${TLS}"
