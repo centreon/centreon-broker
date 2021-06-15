@@ -62,10 +62,32 @@ add_library("${TLS}" SHARED
   "${INC_DIR}/stream.hh"
 )
 
-target_link_libraries("${TLS}" ${GNUTLS_LIBRARIES})
+target_link_libraries("${TLS}" ${GNUTLS_LIBRARIES} ${OpenSSL_LIBS})
 
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
 
+# Testing.
+if (WITH_TESTING)
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    "${TEST_DIR}/acceptor.cc"
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    "${TLS}"
+    PARENT_SCOPE
+  )
+
+  add_executable(anon-test
+      "${TEST_DIR}/anon-test.cc")
+  target_link_libraries(anon-test ${OpenSSL_LIBS} -pthread -ldl)
+  add_executable(crypt-test
+      "${TEST_DIR}/crypt-test.cc")
+  target_link_libraries(crypt-test ${OpenSSL_LIBS} -pthread -ldl ${fmt_LIBS})
+endif()
 # Install rule.
 install(TARGETS "${TLS}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
