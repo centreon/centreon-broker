@@ -433,6 +433,7 @@ void kpi_service::_fill_impact(impact_values& impact,
  */
 void kpi_service::_open_new_event(io::stream* visitor,
                                   impact_values const& impacts) {
+  assert(!_last_check.is_null());
   _event = std::make_shared<kpi_event>(_id, _ba_id, _last_check);
   _event->impact_level =
       _downtimed ? impacts.get_downtime() : impacts.get_nominal();
