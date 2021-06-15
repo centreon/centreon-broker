@@ -20,7 +20,6 @@
 #include <QSet>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/contact.hh"
 
 using namespace com::centreon::broker;
@@ -39,9 +38,8 @@ void contact_loader::load(mysql* ms, contact_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!ms || !output)
     return;
-
-  logging::debug(logging::medium)
-      << "notification: loading contacts from the database";
+  log_v2::notification()->debug(
+      "notification: loading contacts from the database");
 
   // Load the contacts.
   std::promise<database::mysql_result> promise;

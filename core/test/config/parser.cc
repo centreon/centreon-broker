@@ -114,7 +114,6 @@ TEST(parser, endpoint) {
   ::remove(config_file.c_str());
 
   // Check against expected result.
-  ASSERT_EQ(s.loggers().size(), 0u);
   ASSERT_EQ(s.endpoints().size(), 5u);
 
   // Check input #1.
@@ -162,93 +161,6 @@ TEST(parser, endpoint) {
   ASSERT_EQ(output4.type, "file");
   ASSERT_EQ(output4.params["path"], "retention.dat");
   ASSERT_EQ(output4.params["protocol"], "ndo");
-}
-
-/**
- *  Check that 'logger's are properly parsed by the configuration
- *  parser.
- *
- *  @return EXIT_SUCCESS on success.
- */
-TEST(parser, logger) {
-  // File name.
-  std::string config_file(misc::temp_path());
-
-  // Open file.
-  FILE* file_stream(fopen(config_file.c_str(), "w"));
-  if (!file_stream)
-    throw msg_fmt("could not open '{}'", config_file);
-  // Data.
-  std::string data;
-  data =
-      "{\n"
-      "  \"centreonBroker\": {\n"
-      "    \"logger\": [\n"
-      "      {\n"
-      "        \"type\": \"file\",\n"
-      "        \"name\": \"my_log_file\",\n"
-      "        \"config\": true,\n"
-      "        \"debug\": false,\n"
-      "        \"error\": true,\n"
-      "        \"info\": false,\n"
-      "        \"level\": \"2\"\n"
-      "      },"
-      "      {"
-      "        \"type\": \"standard\",\n"
-      "        \"name\": \"stderr\",\n"
-      "        \"config\": false,\n"
-      "        \"error\": true,\n"
-      "        \"debug\": false,\n"
-      "        \"info\": true,\n"
-      "        \"level\": \"3\"\n"
-      "      }\n"
-      "    ]\n"
-      "  }\n"
-      "}\n";
-
-  // Write data.
-  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw msg_fmt("could not write content of '{}'", config_file);
-
-  // Close file.
-  fclose(file_stream);
-
-  std::ifstream f(config_file);
-  std::string const& json_to_parse{std::istreambuf_iterator<char>(f),
-                                   std::istreambuf_iterator<char>()};
-
-  json doc = json::parse(json_to_parse);
-
-  // Parse.
-  config::parser p;
-  config::state s{p.parse(config_file)};
-
-  // Remove temporary file.
-  ::remove(config_file.c_str());
-
-  // Check against expected result.
-  ASSERT_EQ(s.loggers().size(), 2u);
-
-  // Check logger #1.
-  std::list<config::logger>::iterator it(s.loggers().begin());
-  config::logger l1(*(it++));
-  ASSERT_EQ(l1.type(), config::logger::file);
-  ASSERT_EQ(l1.name(), "my_log_file");
-  ASSERT_EQ(l1.config(), true);
-  ASSERT_EQ(l1.debug(), false);
-  ASSERT_EQ(l1.error(), true);
-  ASSERT_EQ(l1.info(), false);
-  ASSERT_EQ(l1.level(), 2);
-
-  // Check logger #2.
-  config::logger l2(*it);
-  ASSERT_EQ(l2.type(), config::logger::standard);
-  ASSERT_EQ(l2.name(), "stderr");
-  ASSERT_EQ(l2.config(), false);
-  ASSERT_EQ(l2.debug(), false);
-  ASSERT_EQ(l2.error(), true);
-  ASSERT_EQ(l2.info(), true);
-  ASSERT_EQ(l2.level(), 3);
 }
 
 /**
@@ -347,7 +259,6 @@ TEST(parser, log) {
   ASSERT_EQ(s.broker_name(), "central-broker-master");
   ASSERT_EQ(s.poller_id(), 1);
   ASSERT_EQ(s.module_directory(), "/usr/share/centreon/lib/centreon-broker");
-  ASSERT_EQ(s.log_timestamp(), true);
   ASSERT_EQ(s.log_thread_id(), false);
   ASSERT_EQ(s.event_queue_max_size(), 100000);
   ASSERT_EQ(s.command_file(), "/var/lib/centreon-broker/command.sock");

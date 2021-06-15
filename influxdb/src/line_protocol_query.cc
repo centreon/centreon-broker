@@ -19,7 +19,7 @@
 #include "com/centreon/broker/influxdb/line_protocol_query.hh"
 #include <algorithm>
 #include <sstream>
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -195,9 +195,9 @@ std::string line_protocol_query::generate_metric(storage::metric const& me) {
       }
     }
   } catch (std::exception const& e) {
-    logging::error(logging::medium)
-        << "influxdb: could not generate query for metric " << me.metric_id
-        << ": " << e.what();
+    log_v2::influxdb()->error(
+        "influxdb: could not generate query for metric {}: {}", me.metric_id,
+        e.what());
     return "";
   }
   return iss.str();
@@ -231,9 +231,9 @@ std::string line_protocol_query::generate_status(storage::status const& st) {
       }
     }
   } catch (std::exception const& e) {
-    logging::error(logging::medium)
-        << "influxdb: could not generate query for status " << st.index_id
-        << ": " << e.what();
+    log_v2::influxdb()->error(
+        "influxdb: could not generate query for status {}: {}", st.index_id,
+        e.what());
     return "";
   }
 
@@ -345,8 +345,8 @@ void line_protocol_query::_compile_scheme(
                                               &storage::status::ctime>,
             escaper);
     } else
-      logging::config(logging::high)
-          << "influxdb: unknown macro '" << macro << "': ignoring it";
+      log_v2::influxdb()->info("influxdb: unknown macro '{}': ignoring it",
+                               macro);
     found_macro = end_macro = end_macro + 1;
   }
   std::string substr(scheme.substr(end_macro, found_macro - end_macro));

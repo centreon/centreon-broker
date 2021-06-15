@@ -29,7 +29,7 @@
 #include <sstream>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/stats/builder.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -164,12 +164,12 @@ void worker::_run() {
       }
     }
   } catch (std::exception const& e) {
-    logging::error(logging::high)
-        << "stats: FIFO thread will exit due to the following error: "
-        << e.what();
+    log_v2::stats()->error(
+        "stats: FIFO thread will exit due to the following error: {}",
+        e.what());
   } catch (...) {
-    logging::error(logging::high)
-        << "stats: FIFO thread will exit due to an unknown error";
+    log_v2::stats()->error(
+        "stats: FIFO thread will exit due to an unknown error");
   }
   ::unlink(_fifo.c_str());
 }

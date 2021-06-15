@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/simu/factory.hh"
 #include "com/centreon/broker/simu/stream.hh"
 
@@ -54,8 +54,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // generic simu module.
-    logging::info(logging::high)
-        << "simu: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::core()->info("simu: module for Centreon Broker {}",
+                         CENTREON_BROKER_VERSION);
 
     // Register simu layer.
     io::protocols::instance().reg("simu", std::make_shared<simu::factory>(), 1,

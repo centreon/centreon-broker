@@ -21,7 +21,6 @@
 #include <utility>
 #include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 
 using namespace com::centreon::broker::notification;
@@ -41,9 +40,8 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!ms || !output)
     return;
-
-  logging::debug(logging::medium)
-      << "notification: loading macros from the database";
+  log_v2::notification()->debug(
+      "notification: loading macros from the database");
 
   // Performance improvement, as we never go back.
   // query.setForwardOnly(true);
@@ -60,9 +58,8 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
   database: "
            << query.lastError().text());
   if (!query.next()) {
-    logging::config(logging::medium)
-      << "notification: could not find default monitoring options, "
-      << "some global macros will be empty";
+    log_v2::notification()->info("notification: could not find default
+            monitoring options, some global macros will be empty");
   }
   else {
     output->add_global_macro(
@@ -129,8 +126,9 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
       // Remove leading and trailing $$
       macro_name.erase(0, 1);
       macro_name.erase(macro_name.size() - 1);
-      logging::config(logging::low) << "notification: loading resource macro ("
-                                    << macro_name << ") from database";
+      log_v2::notification()->debug(
+          "notification: loading resource macro ({}) from database",
+          macro_name);
       output->add_resource_macro(macro_name, res.value_as_str(1));
     }
   } catch (std::exception const& e) {

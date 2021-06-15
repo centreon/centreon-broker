@@ -22,7 +22,6 @@
 
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -92,7 +91,6 @@ void availability_thread::run() {
     } catch (const std::exception& e) {
       // Something bad happened. Wait for the next loop.
       log_v2::bam()->error("BAM-BI: Something went wrong: {}", e.what());
-      logging::error(logging::medium) << e.what();
       _close_database();
     }
   }

@@ -32,7 +32,6 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/notification/stream.hh"
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
@@ -280,8 +279,7 @@ void stream::_open_db(std::unique_ptr<mysql>& ms,
 
   // Check that replication is OK.
   if (check_replication) {
-    logging::debug(logging::medium)
-        << "notification: checking replication status";
+    log_v2::notification()->debug("notification: checking replication status");
     std::promise<database::mysql_result> promise;
     ms->run_query_and_get_result("SHOW SLAVE STATUS", &promise);
     try {
@@ -297,20 +295,20 @@ void stream::_open_db(std::unique_ptr<mysql>& ms,
                 "complete: {}={}",
                 field, res.value_as_str(i));
         }
-        logging::info(logging::medium)
-            << "notification: database replication is complete, "
-               "connection granted";
+        log_v2::notification()->info(
+            "notification: database replication is complete, "
+            "connection granted");
       } else {
-        logging::info(logging::medium)
-            << "notification: database is not under replication";
+        log_v2::notification()->info(
+            "notification: database is not under replication");
       }
     } catch (std::exception const& e) {
-      logging::info(logging::medium)
-          << "notification: could not check replication status";
+      log_v2::notification()->info(
+          "notification: could not check replication status");
     }
   } else
-    logging::debug(logging::medium)
-        << "notification: NOT checking replication status";
+    log_v2::notification()->debug(
+        "notification: NOT checking replication status");
   //  catch (...) {
   //    {
   //      QMutexLocker lock(&global_lock);
@@ -378,10 +376,9 @@ void stream::_update_objects_from_db() {
  *  @param event  The event to process.
  */
 void stream::_process_service_status_event(neb::service_status const& event) {
-  logging::debug(logging::medium)
-      << "notification: processing status of service " << event.service_id
-      << " of host " << event.host_id << " (state " << event.last_hard_state
-      << ")";
+  log_v2::notification()->debug(
+      "notification: processing status of service {} of host {} (state {})",
+      event.service_id, event.host_id, event.last_hard_state);
 
   node_id id(event.host_id, event.service_id);
   short old_hard_state;
@@ -407,10 +404,10 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   // From OK to NOT-OK
   if (old_hard_state != event.last_hard_state &&
       old_hard_state == node_state::ok) {
-    logging::debug(logging::medium)
-        << "notification: state of service " << event.service_id << " of host "
-        << event.host_id << " changed from 0 to " << event.last_hard_state
-        << ", scheduling notification attempt";
+    log_v2::notification()->debug(
+        "notification: state of service {} of host {} changed from 0 to {}, "
+        "scheduling notification attempt",
+        event.service_id, event.host_id, event.last_hard_state);
     _notif_scheduler->remove_actions_of_node(id);
     action a;
     a.set_type(action::notification_processing);
@@ -437,9 +434,9 @@ void stream::_process_service_status_event(neb::service_status const& event) {
  *  @param event  The event to process.
  */
 void stream::_process_host_status_event(neb::host_status const& event) {
-  logging::debug(logging::medium)
-      << "notification: processing status of host " << event.host_id
-      << " (state " << event.last_hard_state << ")";
+  log_v2::notification()->debug(
+      "notification: processing status of host {} (state {})", event.host_id,
+      event.last_hard_state);
 
   node_id id(event.host_id);
   short old_hard_state;
@@ -491,10 +488,9 @@ void stream::_process_host_status_event(neb::host_status const& event) {
  */
 void stream::_process_ack(neb::acknowledgement const& event) {
   objects::node_id id(event.host_id, event.service_id);
-
-  logging::debug(logging::medium)
-      << "notification: processing acknowledgement of node (" << event.host_id
-      << ", " << event.service_id << ")";
+  log_v2::notification()->debug(
+      "notification: processing acknowledgement of node ({}, {})",
+      event.host_id, event.service_id);
 
   // End of ack.
   if (!event.deletion_time.is_null())
@@ -521,11 +517,10 @@ void stream::_process_ack(neb::acknowledgement const& event) {
  */
 void stream::_process_downtime(neb::downtime const& event) {
   objects::node_id id(event.host_id, event.service_id);
-
-  logging::debug(logging::medium)
-      << "notification: processing downtime of node (" << event.host_id << ", "
-      << event.service_id << ") starting at " << event.start_time
-      << " and ending at " << event.end_time;
+  log_v2::notification()->debug(
+      "notification: processing downtime of node ({}, {}) starting at {} and "
+      "ending at {}",
+      event.host_id, event.service_id, event.start_time, event.end_time);
 
   // End of downtime.
   if (!event.actual_end_time.is_null())

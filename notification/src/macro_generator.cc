@@ -20,7 +20,7 @@
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/notification/macro_getters.hh"
 #include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 #include "com/centreon/broker/notification/utilities/qhash_func.hh"
@@ -77,8 +77,7 @@ void macro_generator::generate(macro_container& container,
 
   for (macro_container::iterator it(container.begin()), end(container.end());
        it != end; ++it) {
-    logging::debug(logging::low)
-        << "notification: searching macro " << it.key();
+    log_v2::notification()->debug("notification: searching macro {}", it.key());
     if (_get_global_macros(it.key(), st, it.value()))
       continue;
     else if (_get_x_macros(it.key(), macro_context(id, cnt, st, cache, act),
@@ -87,9 +86,9 @@ void macro_generator::generate(macro_container& container,
     else if (_get_custom_macros(it.key(), id, cache, it.value()))
       continue;
     else {
-      logging::debug(logging::medium)
-          << "notification: macro '" << it.key() << "' was not found for node ("
-          << id.get_host_id() << ", " << id.get_service_id() << ")";
+      log_v2::notification()->debug(
+          "notification: macro '{}' was not found for node ({}, {})", it.key(),
+          id.get_host_id(), id.get_service_id());
       it->clear();
     }
   }

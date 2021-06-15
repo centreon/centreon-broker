@@ -397,7 +397,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/config/applier/modules.cc
   ${SRC_DIR}/config/applier/state.cc
   ${SRC_DIR}/config/endpoint.cc
-  ${SRC_DIR}/config/logger.cc
   ${SRC_DIR}/config/parser.cc
   ${SRC_DIR}/config/state.cc
   ${SRC_DIR}/database_config.cc
@@ -418,12 +417,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/io/raw.cc
   ${SRC_DIR}/io/stream.cc
   ${SRC_DIR}/log_v2.cc
-  ${SRC_DIR}/logging/file.cc
-  ${SRC_DIR}/logging/logger.cc
-  ${SRC_DIR}/logging/logging.cc
-  ${SRC_DIR}/logging/manager.cc
-  ${SRC_DIR}/logging/syslogger.cc
-  ${SRC_DIR}/logging/temp_logger.cc
   ${SRC_DIR}/mapping/entry.cc
   ${SRC_DIR}/misc/diagnostic.cc
   ${SRC_DIR}/misc/filesystem.cc
@@ -487,11 +480,9 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/compression/stream.hh
   ${INC_DIR}/config/applier/endpoint.hh
   ${INC_DIR}/config/applier/init.hh
-  ${INC_DIR}/config/applier/logger.hh
   ${INC_DIR}/config/applier/modules.hh
   ${INC_DIR}/config/applier/state.hh
   ${INC_DIR}/config/endpoint.hh
-  ${INC_DIR}/config/logger.hh
   ${INC_DIR}/config/parser.hh
   ${INC_DIR}/config/state.hh
   ${INC_DIR}/database_config.hh
@@ -517,14 +508,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/io/protocols.hh
   ${INC_DIR}/io/raw.hh
   ${INC_DIR}/io/stream.hh
-  ${INC_DIR}/logging/backend.hh
-  ${INC_DIR}/logging/defines.hh
-  ${INC_DIR}/logging/file.hh
-  ${INC_DIR}/logging/logger.hh
-  ${INC_DIR}/logging/logging.hh
-  ${INC_DIR}/logging/manager.hh
-  ${INC_DIR}/logging/syslogger.hh
-  ${INC_DIR}/logging/temp_logger.hh
   ${INC_DIR}/mapping/entry.hh
   ${INC_DIR}/mapping/property.hh
   ${INC_DIR}/mapping/source.hh
@@ -582,8 +565,7 @@ set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "-fPIC")
 target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} ${mariadb-connector-c_LIBS} pthread dl berpc)
 
 add_library(roker STATIC
-  ${SRC_DIR}/config/applier/init.cc
-  ${SRC_DIR}/config/applier/logger.cc)
+  ${SRC_DIR}/config/applier/init.cc)
 target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} grpc++_reflection pthread)
 
 # Standalone binary.

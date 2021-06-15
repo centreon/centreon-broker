@@ -19,7 +19,6 @@
 #include "com/centreon/broker/notification/notification_scheduler.hh"
 #include <QMutexLocker>
 #include <limits>
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/node_cache.hh"
 #include "com/centreon/broker/notification/state.hh"
 
@@ -55,13 +54,12 @@ void notification_scheduler::run() {
                                  ? std::numeric_limits<unsigned long>::max()
                              : (first_time >= now) ? (first_time - now) * 1000
                                                    : 0;
-
-    logging::debug(logging::medium) << "notification: scheduler sleeping for "
-                                    << wait_for / 1000.0 << " seconds";
+    log_v2::notification()->debug(
+        "notification: scheduler sleeping for {} seconds", wait_for / 1000.0);
 
     _general_condition.wait_for(lock, std::chrono::milliseconds(wait_for));
 
-    logging::debug(logging::medium) << "notification: scheduler waking up";
+    log_v2::notification()->debug("notification: scheduler waking up");
 
     // The should exit flag was set - exit.
     if (_should_exit)

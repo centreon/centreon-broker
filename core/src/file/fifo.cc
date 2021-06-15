@@ -27,7 +27,7 @@
 
 #include <cstring>
 
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 #define BUF_SIZE 4096 * 4
@@ -115,8 +115,7 @@ void fifo::_open_fifo() {
   // Stat failed, probably because of inexistant file.
   if (::stat(_path.c_str(), &s) != 0) {
     char const* msg(strerror(errno));
-    logging::config(logging::medium)
-        << "stats: cannot stat() '" << _path << "': " << msg;
+    log_v2::config()->info("stats: cannot stat() '{}'", _path);
 
     // Create FIFO.
     if (::mkfifo(_path.c_str(),

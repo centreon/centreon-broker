@@ -25,7 +25,7 @@
 #include "com/centreon/broker/exceptions/timeout.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
@@ -98,13 +98,14 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
         // Check if size is within bounds.
         if (size <= 0 || size > max_data_size) {
           // Skip corrupted data, one byte at a time.
-          logging::error(logging::low)
-              << "compression: " << this << " got corrupted packet size of "
-              << size << " bytes, not in the 0-" << max_data_size
-              << " range, skipping next byte";
+          // FIXME
+          log_v2::core()->error(
+              "compression: {:x} got corrupted packet size of {} bytes, not in "
+              "the 0-{} range, skipping next byte",
+              static_cast<void*>(this), size, max_data_size);
           if (!skipped)
-            logging::error(logging::high) << "compression: peer " << peer()
-                                          << " is sending corrupted data";
+            log_v2::core()->error(
+                "compression: peer {} is sending corrupted data", peer());
           ++skipped;
           _rbuffer.pop(1);
         } else
@@ -126,33 +127,37 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
                                    (_rbuffer.data() + sizeof(int32_t))),
                                size);
         } catch (exceptions::corruption const& e) {
-          logging::debug(logging::medium) << e.what();
+          log_v2::core()->debug(e.what());
         }
       }
       if (!r->size()) {  // No data or uncompressed size of 0 means corrupted
                          // input.
-        logging::error(logging::low)
-            << "compression: " << this
-            << " got corrupted compressed data, skipping next byte";
+        // FIXME
+        log_v2::core()->error(
+            "compression: {:x} got corrupted compressed data, skipping next "
+            "byte",
+            static_cast<void*>(this));
         if (!skipped)
-          logging::error(logging::high)
-              << "compression: peer " << peer() << " is sending corrupted data";
+          log_v2::core()->error(
+              "compression: peer {} is sending corrupted data", peer());
         ++skipped;
         _rbuffer.pop(1);
         corrupted = true;
       } else {
-        logging::debug(logging::low)
-            << "compression: " << this << " uncompressed "
-            << size + sizeof(int32_t) << " bytes to " << r->size() << " bytes";
+        // FIXME
+        log_v2::core()->debug(
+            "compression: {:x} uncompressed {} bytes to {} bytes",
+            static_cast<void*>(this), size + sizeof(int32_t), r->size());
         data = r;
         _rbuffer.pop(size + sizeof(int32_t));
         corrupted = false;
       }
     }
     if (skipped)
-      logging::info(logging::high)
-          << "compression: peer " << peer() << " sent " << skipped
-          << " corrupted compressed bytes, resuming processing";
+      log_v2::core()->info(
+          "compression: peer {} sent {} corrupted compressed bytes, resuming "
+          "processing",
+          peer(), skipped);
   } catch (exceptions::interrupt const& e) {
     (void)e;
     return true;
@@ -263,10 +268,10 @@ void stream::_flush() {
     std::shared_ptr<io::raw> compressed(new io::raw);
     std::vector<char>& data(compressed->get_buffer());
     data = std::move(zlib::compress(_wbuffer, _level));
-    logging::debug(logging::low)
-        << "compression: " << this << " compressed " << _wbuffer.size()
-        << " bytes to " << compressed->size() << " bytes (level " << _level
-        << ")";
+    // FIXME
+    log_v2::core()->debug(
+        "compression: {:x} compressed {} bytes to {} bytes (level {})",
+        static_cast<void*>(this), _wbuffer.size(), compressed->size(), _level);
     _wbuffer.clear();
 
     // Add compressed data size.

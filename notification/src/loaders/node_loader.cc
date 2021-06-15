@@ -20,7 +20,6 @@
 #include <QSet>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -37,9 +36,8 @@ void node_loader::load(mysql* ms, node_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!ms || !output)
     return;
-
-  logging::debug(logging::medium)
-      << "notification: loading nodes from the database";
+  log_v2::notification()->debug(
+      "notification: loading nodes from the database");
 
   // Performance improvement, as we never go back.
   //  query.setForwardOnly(true);
@@ -54,8 +52,8 @@ void node_loader::load(mysql* ms, node_builder* output) {
       uint32_t host_id = res.value_as_u32(0);
       node::ptr n(new node);
       n->set_node_id(node_id(host_id));
-      logging::config(logging::low)
-          << "notification: loading host " << host_id << " from database";
+      log_v2::notification()->debug(
+          "notification: loading host {} from database", host_id);
       output->add_node(n);
     }
   } catch (std::exception const& e) {
@@ -79,9 +77,9 @@ void node_loader::load(mysql* ms, node_builder* output) {
       uint32_t service_id = res.value_as_u32(1);
       node::ptr n(new node);
       n->set_node_id(node_id(host_id, service_id));
-      logging::config(logging::low)
-          << "notification: loading service (" << host_id << ", " << service_id
-          << ") from database";
+      log_v2::notification()->debug(
+          "notification: loading service ({}, {}) from database", host_id,
+          service_id);
       output->add_node(n);
     }
   } catch (std::exception const& e) {

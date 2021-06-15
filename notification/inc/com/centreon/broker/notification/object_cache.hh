@@ -24,7 +24,6 @@
 #include <string>
 #include <unordered_map>
 #include "com/centreon/broker/io/data.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/custom_variable_status.hh"
 
@@ -113,14 +112,14 @@ class object_cache {
     std::string var_name{var.service_id ? "_SERVICE" : "_HOST"};
     var_name.append(var.name);
     if (var.value.empty()) {
-      logging::debug(logging::low)
-          << "notification: removing custom variable '" << var_name
-          << "' from node (" << var.host_id << ", " << var.service_id << ")";
+      log_v2::notification()->debug(
+          "notification: removing custom variable '{}' from node ({}, {})",
+          var_name, var.host_id, var.service_id);
       _custom_variables.erase(var_name);
     } else {
-      logging::debug(logging::low)
-          << "notification: adding custom variable '" << var_name
-          << "' to node (" << var.host_id << ", " << var.service_id << ")";
+      log_v2::notification(
+          "notification: adding custom variable '{}' to node ({}, {})",
+          var_name, var.host_id, var.service_id);
       _custom_variables.insert({var_name, var});
     }
   }

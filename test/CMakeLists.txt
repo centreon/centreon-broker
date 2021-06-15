@@ -69,7 +69,6 @@ add_executable(ut
   ${TESTS_DIR}/compression/stream/write.cc
   ${TESTS_DIR}/compression/zlib/zlib.cc
   ${TESTS_DIR}/config/init.cc
-  ${TESTS_DIR}/config/logger.cc
   ${TESTS_DIR}/config/parser.cc
   ${TESTS_DIR}/file/splitter/concurrent.cc
   ${TESTS_DIR}/file/splitter/default.cc
@@ -98,7 +97,6 @@ add_executable(ut
   ${TESTS_DIR}/rpc/brokerrpc.cc
   ${TESTS_DIR}/exceptions.cc
   ${TESTS_DIR}/io.cc
-  ${TESTS_DIR}/logging.cc
   ${TESTS_DIR}/main.cc
   ${TESTS_DIR}/test_server.cc
 

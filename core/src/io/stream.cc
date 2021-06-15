@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/io/stream.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
@@ -97,11 +97,11 @@ void stream::update() {}
 bool stream::validate(std::shared_ptr<io::data> const& d,
                       std::string const& error) {
   if (!d) {
-    logging::error(logging::medium)
-        << error
-        << ": received a null event. This should never happen. "
-           "This is likely a software bug that you should report "
-           "to Centreon Broker developers.";
+    log_v2::core()->error(
+        "{}: received a null event. This should never happen. "
+        "This is likely a software bug that you should report "
+        "to Centreon Broker developers.",
+        error);
     return false;
   }
   return true;

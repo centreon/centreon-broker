@@ -131,12 +131,10 @@ set(CBMOD "cbmod")
 add_library("${CBMOD}" SHARED
   # Sources.
   "${PROJECT_SOURCE_DIR}/core/src/config/applier/init.cc"
-  "${PROJECT_SOURCE_DIR}/core/src/config/applier/logger.cc"
   "${SRC_DIR}/callback.cc"
   "${SRC_DIR}/callbacks.cc"
   "${SRC_DIR}/initial.cc"
   "${SRC_DIR}/internal.cc"
-  "${SRC_DIR}/monitoring_logger.cc"
   "${SRC_DIR}/neb.cc"
   "${SRC_DIR}/set_log_data.cc"
   "${SRC_DIR}/statistics/active_host_execution_time.cc"
@@ -175,7 +173,6 @@ add_library("${CBMOD}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/callbacks.hh"
   "${INC_DIR}/com/centreon/broker/neb/initial.hh"
   "${INC_DIR}/com/centreon/broker/neb/internal.hh"
-  "${INC_DIR}/com/centreon/broker/neb/monitoring_logger.hh"
   "${INC_DIR}/com/centreon/broker/neb/set_log_data.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/active_host_execution_time.hh"
   "${INC_DIR}/com/centreon/broker/neb/statistics/active_host_latency.hh"

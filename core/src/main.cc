@@ -29,13 +29,10 @@
 
 #include "com/centreon/broker/brokerrpc.hh"
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/config/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
 
 using namespace com::centreon::broker;
@@ -67,7 +64,6 @@ static void hup_handler(int signum) {
 
   // Log message.
   log_v2::core()->info("main: configuration update requested");
-  logging::config(logging::high) << "main: configuration update requested";
 
   try {
     // Parse configuration file.
@@ -85,23 +81,22 @@ static void hup_handler(int signum) {
 
       gl_state = conf;
     } catch (const std::exception& e) {
-      logging::error(logging::high)
-          << "main: configuration update "
-          << "could not succeed, reloading previous configuration: "
-          << e.what();
+      log_v2::core()->error(
+          "main: configuration update could not succeed, reloading previous "
+          "configuration: {}",
+          e.what());
       config::applier::state::instance().apply(gl_state);
     } catch (...) {
-      logging::error(logging::high)
-          << "main: configuration update "
-          << "could not succeed, reloading previous configuration";
+      log_v2::core()->error(
+          "main: configuration update could not succeed, reloading previous "
+          "configuration");
       config::applier::state::instance().apply(gl_state);
     }
   } catch (const std::exception& e) {
-    logging::config(logging::high)
-        << "main: configuration update failed: " << e.what();
+    log_v2::config()->info("main: configuration update failed: {}", e.what());
   } catch (...) {
-    logging::config(logging::high)
-        << "main: configuration update failed: unknown exception";
+    log_v2::config()->info(
+        "main: configuration update failed: unknown exception");
   }
 
   // Reenable SIGHUP handler.
@@ -177,75 +172,42 @@ int main(int argc, char* argv[]) {
       while (optind < argc)
         gl_mainconfigfiles.push_back(argv[optind++]);
 
-    // Apply default configuration.
-    config::state default_state;
-    {
-      // Logging object.
-      config::logger default_log;
-      default_log.config(!help);
-      default_log.debug(debug);
-      default_log.error(!help);
-      default_log.info(true);
-      logging::level level;
-      if (debug)
-        level = logging::low;
-      else if (check)
-        level = logging::medium;
-      else
-        level = logging::high;
-      default_log.level(level);
-      default_log.name((check || version) ? "stdout" : "stderr");
-      default_log.type(config::logger::standard);
-
-      // Configuration object.
-      default_state.loggers().push_back(default_log);
-
-      // Apply configuration.
-      config::applier::logger::instance().apply(default_state.loggers());
-    }
-
     // Check parameters requirements.
     if (diagnose) {
       if (gl_mainconfigfiles.empty()) {
-        logging::error(logging::high)
-            << "diagnostic: no configuration file provided: "
-            << "DIAGNOSTIC FILE MIGHT NOT BE USEFUL";
+        log_v2::core()->error(
+            "diagnostic: no configuration file provided: DIAGNOSTIC FILE MIGHT "
+            "NOT BE USEFUL");
       }
       misc::diagnostic diag;
       diag.generate(gl_mainconfigfiles);
     } else if (help) {
-      logging::info(logging::high)
-          << "USAGE: " << argv[0]
-          << " [-t] [-c] [-d] [-D] [-h] [-v] [<configfile>]";
-      logging::info(logging::high) << "  -t  Set x threads.";
-      logging::info(logging::high) << "  -c  Check configuration file.";
-      logging::info(logging::high) << "  -d  Enable debug mode.";
-      logging::info(logging::high) << "  -D  Generate a diagnostic file.";
-      logging::info(logging::high) << "  -h  Print this help.";
-      logging::info(logging::high) << "  -v  Print Centreon Broker version.";
-      logging::info(logging::high)
-          << "Centreon Broker " << CENTREON_BROKER_VERSION;
-      logging::info(logging::high) << "Copyright 2009-2021 Centreon";
-      logging::info(logging::high)
-          << "License ASL 2.0 "
-             "<http://www.apache.org/licenses/LICENSE-2.0>";
+      log_v2::core()->info(
+          "USAGE: {} [-t] [-c] [-d] [-D] [-h] [-v] [<configfile>]", argv[0]);
+
+      log_v2::core()->info("  -t  Set x threads.");
+      log_v2::core()->info("  -c  Check configuration file.");
+      log_v2::core()->info("  -d  Enable debug mode.");
+      log_v2::core()->info("  -D  Generate a diagnostic file.");
+      log_v2::core()->info("  -h  Print this help.");
+      log_v2::core()->info("  -v  Print Centreon Broker version.");
+      log_v2::core()->info("Centreon Broker {}", CENTREON_BROKER_VERSION);
+      log_v2::core()->info("Copyright 2009-2021 Centreon");
+      log_v2::core()->info(
+          "License ASL 2.0 <http://www.apache.org/licenses/LICENSE-2.0>");
       retval = 0;
     } else if (version) {
-      logging::info(logging::high)
-          << "Centreon Broker " << CENTREON_BROKER_VERSION;
+      log_v2::core()->info("Centreon Broker {}", CENTREON_BROKER_VERSION);
       retval = 0;
     } else if (gl_mainconfigfiles.empty()) {
-      logging::error(logging::high)
-          << "USAGE: " << argv[0]
-          << " [-c] [-d] [-D] [-h] [-v] [<configfile>]\n\n";
+      log_v2::core()->error(
+          "USAGE: {} [-c] [-d] [-D] [-h] [-v] [<configfile>]\n\n", argv[0]);
       return 1;
     } else {
-      logging::info(logging::medium)
-          << "Centreon Broker " << CENTREON_BROKER_VERSION;
-      logging::info(logging::medium) << "Copyright 2009-2021 Centreon";
-      logging::info(logging::medium)
-          << "License ASL 2.0 "
-             "<http://www.apache.org/licenses/LICENSE-2.0>";
+      log_v2::core()->info("Centreon Broker {}", CENTREON_BROKER_VERSION);
+      log_v2::core()->info("Copyright 2009-2021 Centreon");
+      log_v2::core()->info(
+          "License ASL 2.0 <http://www.apache.org/licenses/LICENSE-2.0>");
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
@@ -264,20 +226,6 @@ int main(int argc, char* argv[]) {
           conf.pool_size(n_thread);
         config::applier::init(conf);
 
-        // Verification modifications.
-        if (check) {
-          // Loggers.
-          for (auto& l : conf.loggers())
-            l.types(0);
-          conf.loggers().push_back(default_state.loggers().front());
-        }
-
-        // Add debug output if in debug mode.
-        if (debug)
-          conf.loggers().insert(conf.loggers().end(),
-                                default_state.loggers().begin(),
-                                default_state.loggers().end());
-
         // Apply resulting configuration totally or partially.
         config::applier::state::instance().apply(conf, !check);
         broker_name = conf.broker_name();
@@ -287,8 +235,8 @@ int main(int argc, char* argv[]) {
       // Set configuration update handler.
       if (signal(SIGHUP, hup_handler) == SIG_ERR) {
         char const* err{strerror(errno)};
-        logging::info(logging::high)
-            << "main: could not register configuration update handler: " << err;
+        log_v2::core()->info(
+            "main: could not register configuration update handler: {}", err);
       }
 
       // Init signal handler.
@@ -298,8 +246,7 @@ int main(int argc, char* argv[]) {
 
       // Set termination handler.
       if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
-        logging::info(logging::high)
-            << "main: could not register termination handler";
+        log_v2::core()->info("main: could not register termination handler");
 
       if (gl_state.rpc_port() == 0)
         default_port += gl_state.broker_id();
@@ -327,13 +274,11 @@ int main(int argc, char* argv[]) {
   // Standard exception.
   catch (const std::exception& e) {
     log_v2::core()->error("Error during cbd exit: {}", e.what());
-    logging::error(logging::high) << e.what();
     retval = EXIT_FAILURE;
   }
   // Unknown exception.
   catch (...) {
     log_v2::core()->error("Error general during cbd exit");
-    logging::error(logging::high) << "main: unknown error, aborting execution";
     retval = EXIT_FAILURE;
   }
 

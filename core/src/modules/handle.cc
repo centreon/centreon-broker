@@ -19,7 +19,6 @@
 #include "com/centreon/broker/modules/handle.hh"
 #include <cstring>
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -51,11 +50,10 @@ handle::~handle() noexcept {
   try {
     _close();
   } catch (std::exception const& e) {
-    logging::error(logging::high) << e.what();
+    log_v2::core()->error(e.what());
   } catch (...) {
-    logging::error(logging::high) << "modules: unknown error while "
-                                     "unloading '"
-                                  << _filename << "'";
+    log_v2::core()->error("modules: unknown error while unloading '{}'",
+                          _filename);
   }
 }
 

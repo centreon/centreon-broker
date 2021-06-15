@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
 
@@ -38,9 +37,8 @@ void timeperiod_loader::load(mysql* ms, timeperiod_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!ms || !output)
     return;
-
-  logging::debug(logging::medium)
-      << "notification: loading timeperiods from the database";
+  log_v2::notification()->debug(
+      "notification: loading timeperiods from the database");
 
   // Performance improvement, as we never go back.
   //  query.setForwardOnly(true);

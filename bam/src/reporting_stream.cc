@@ -38,7 +38,6 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
@@ -228,9 +227,10 @@ void reporting_stream::_apply(dimension_timeperiod_exception const& tpe) {
   if (timeperiod)
     timeperiod->add_exception(tpe.daterange, tpe.timerange);
   else
-    logging::error(logging::medium)
-        << "BAM-BI: could not apply exception on timeperiod "
-        << tpe.timeperiod_id << ": timeperiod does not exist";
+    log_v2::bam()->error(
+        "BAM-BI: could not apply exception on timeperiod {}: timeperiod does "
+        "not exist",
+        tpe.timeperiod_id);
 }
 
 /**
@@ -249,10 +249,10 @@ void reporting_stream::_apply(dimension_timeperiod_exclusion const& tpe) {
   if (timeperiod && excluded_tp)
     timeperiod->add_excluded(excluded_tp);
   else
-    logging::error(logging::medium)
-        << "BAM-BI: could not apply exclusion of timeperiod "
-        << tpe.excluded_timeperiod_id << " by timeperiod " << tpe.timeperiod_id
-        << ": at least one of the timeperiod does not exist";
+    log_v2::bam()->error(
+        "BAM-BI: could not apply exclusion of timeperiod {} by timeperiod {}: "
+        "at least one of the timeperiod does not exist",
+        tpe.excluded_timeperiod_id, tpe.timeperiod_id);
 }
 
 /**
@@ -393,9 +393,9 @@ void reporting_stream::_load_timeperiods() {
         time::timeperiod::ptr tp =
             _timeperiods.get_timeperiod(res.value_as_u32(0));
         if (!tp)
-          logging::error(logging::high)
-              << "BAM-BI: could not apply exception to non-existing timeperiod "
-              << res.value_as_u32(0);
+          log_v2::bam()->error(
+              "BAM-BI: could not apply exception to non-existing timeperiod {}",
+              res.value_as_u32(0));
         else
           tp->add_exception(res.value_as_str(1), res.value_as_str(2));
       }
@@ -421,10 +421,10 @@ void reporting_stream::_load_timeperiods() {
         time::timeperiod::ptr excluded_tp =
             _timeperiods.get_timeperiod(res.value_as_u32(1));
         if (!tp || !excluded_tp)
-          logging::error(logging::high)
-              << "BAM-BI: could not apply exclusion of timeperiod "
-              << res.value_as_u32(1) << " by timeperiod " << res.value_as_u32(0)
-              << ": at least one timeperiod does not exist";
+          log_v2::bam()->error(
+              "BAM-BI: could not apply exclusion of timeperiod {} by "
+              "timeperiod {}: at least one timeperiod does not exist",
+              res.value_as_u32(1), res.value_as_u32(0));
         else
           tp->add_excluded(excluded_tp);
       }
@@ -1055,8 +1055,8 @@ void reporting_stream::_process_dimension_truncate_signal(
       for (auto& e : _dimension_data_cache)
         _dimension_dispatch(e);
     } catch (std::exception const& e) {
-      logging::error(logging::medium)
-          << "BAM-BI: ignored dimension insertion failure: " << e.what();
+      log_v2::bam()->error("BAM-BI: ignored dimension insertion failure: {}",
+                           e.what());
     }
 
     _mysql.commit();

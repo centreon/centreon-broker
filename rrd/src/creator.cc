@@ -30,7 +30,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/rrd/creator.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -46,9 +46,9 @@ using namespace com::centreon::broker::rrd;
  */
 creator::creator(std::string const& tmpl_path, uint32_t cache_size)
     : _cache_size(cache_size), _tmpl_path(tmpl_path) {
-  logging::debug(logging::medium)
-      << "RRD: file creator will maintain at most " << _cache_size
-      << " templates in '" << _tmpl_path << "'";
+  log_v2::rrd()->debug(
+      "RRD: file creator will maintain at most {} templates in '{}'",
+      _cache_size, _tmpl_path);
 }
 
 /**
@@ -259,10 +259,9 @@ void creator::_open(std::string const& filename,
 
   // Debug message.
   argv[argc] = nullptr;
-  logging::debug(logging::high)
-      << "RRD: opening file '" << filename << "' (" << argv[0] << ", "
-      << argv[1] << ", " << (argv[2] ? argv[2] : "(null)") << ", step 1, from "
-      << from << ")";
+  log_v2::rrd()->debug("RRD: opening file '{}' ({}, {}, {}, step 1, from  {})",
+                       filename, argv[0], argv[1],
+                       (argv[2] ? argv[2] : "(null)"), from);
 
   // Create RRD file.
   rrd_clear_error();

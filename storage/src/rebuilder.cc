@@ -27,7 +27,6 @@
 
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/metric.hh"
@@ -199,12 +198,10 @@ void rebuilder::_run(asio::error_code ec) {
       log_v2::sql()->error(
           "storage: rebuilder: Unable to connect to the database: {}",
           e.what());
-      logging::error(logging::high) << e.what();
     } catch (...) {
       log_v2::sql()->error(
           "storage: rebuilder: Unable to connect to the database: unknown "
           "error");
-      logging::error(logging::high) << "storage: rebuilder: unknown error";
     }
     if (!_should_exit) {
       _timer.expires_after(std::chrono::seconds(_rebuild_check_interval));

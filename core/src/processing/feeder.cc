@@ -24,7 +24,6 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -198,15 +197,9 @@ void feeder::_callback() noexcept {
     (void)e;
     log_v2::core()->info("feeder '{}' shut down", get_name());
   } catch (const std::exception& e) {
-    logging::error(logging::medium)
-        << "feeder: error occured while processing client '" << _name
-        << "': " << e.what();
     set_last_error(e.what());
-    log_v2::core()->error("feeder '{}' error: ", e.what());
+    log_v2::core()->error("feeder '{}' error:{} ", _name, e.what());
   } catch (...) {
-    logging::error(logging::high)
-        << "feeder: unknown error occured while processing client '" << _name
-        << "'";
     log_v2::core()->error(
         "feeder: unknown error occured while processing client '{}'", _name);
   }

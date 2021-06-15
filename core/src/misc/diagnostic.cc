@@ -24,10 +24,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -87,40 +86,16 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
 
   // Add diagnostic log file.
   config::state diagnostic_state;
-  {
-    std::string diagnostic_log_path{fmt::format("{}/diagnostic.log", tmp_dir)};
-    to_remove.push_back(diagnostic_log_path);
-    {
-      config::logger diagnostic_log;
-      diagnostic_log.config(true);
-      diagnostic_log.debug(true);
-      diagnostic_log.error(true);
-      diagnostic_log.info(true);
-      diagnostic_log.level(logging::low);
-      diagnostic_log.name(diagnostic_log_path);
-      diagnostic_log.type(config::logger::file);
-      diagnostic_state.loggers().push_back(diagnostic_log);
-    }
-    {
-      config::logger stdout_log;
-      stdout_log.config(false);
-      stdout_log.debug(false);
-      stdout_log.error(true);
-      stdout_log.info(true);
-      stdout_log.level(logging::high);
-      stdout_log.name("stdout");
-      stdout_log.type(config::logger::standard);
-      diagnostic_state.loggers().push_back(stdout_log);
-    }
-  }
-  config::applier::logger::instance().apply(diagnostic_state.loggers());
+
+  std::string diagnostic_log_path{fmt::format("{}/diagnostic.log", tmp_dir)};
+  to_remove.push_back(diagnostic_log_path);
 
   // Base information about the software.
-  logging::info(logging::high)
-      << "diagnostic: Centreon Broker " << CENTREON_BROKER_VERSION;
+  log_v2::core()->info("diagnostic: Centreon Broker {}",
+                       CENTREON_BROKER_VERSION);
 
   // df.
-  logging::info(logging::high) << "diagnostic: getting disk usage";
+  log_v2::core()->info("diagnostic: getting disk usage");
   {
     std::string df_log_path;
     df_log_path = tmp_dir;
@@ -134,7 +109,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   }
 
   // lsb_release.
-  logging::info(logging::high) << "diagnostic: getting LSB information";
+  log_v2::core()->info("diagnostic: getting LSB information");
   {
     std::string lsb_release_log_path;
     lsb_release_log_path = tmp_dir;
@@ -148,7 +123,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   }
 
   // uname.
-  logging::info(logging::high) << "diagnostic: getting system name";
+  log_v2::core()->info("diagnostic: getting system name");
   {
     std::string uname_log_path;
     uname_log_path = tmp_dir;
@@ -162,7 +137,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   }
 
   // /proc/version
-  logging::info(logging::high) << "diagnostic: getting kernel information";
+  log_v2::core()->info("diagnostic: getting kernel information");
   {
     std::string proc_version_log_path;
     proc_version_log_path = tmp_dir;
@@ -176,8 +151,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   }
 
   // netstat.
-  logging::info(logging::high)
-      << "diagnostic: getting network connections information";
+  log_v2::core()->info("diagnostic: getting network connections information");
   {
     std::string netstat_log_path;
     netstat_log_path = tmp_dir;
@@ -191,7 +165,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   }
 
   // ps.
-  logging::info(logging::high) << "diagnostic: getting processes information";
+  log_v2::core()->info("diagnostic: getting processes information");
   {
     std::string ps_log_path;
     ps_log_path = tmp_dir;
@@ -205,7 +179,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   }
 
   // rpm.
-  logging::info(logging::high) << "diagnostic: getting packages information";
+  log_v2::core()->info("diagnostic: getting packages information");
   {
     std::string rpm_log_path;
     rpm_log_path = tmp_dir;
@@ -219,7 +193,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
   }
 
   // sestatus.
-  logging::info(logging::high) << "diagnostic: getting SELinux status";
+  log_v2::core()->info("diagnostic: getting SELinux status");
   {
     std::string selinux_log_path;
     selinux_log_path = tmp_dir;
@@ -237,8 +211,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
        end(cfg_files.end());
        it != end; ++it) {
     // Configuration file.
-    logging::info(logging::high)
-        << "diagnostic: getting configuration file '" << *it << "'";
+    log_v2::core()->info("diagnostic: getting configuration file '{}'", *it);
     std::string cfg_path;
     {
       cfg_path = tmp_dir;
@@ -260,13 +233,13 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
     try {
       conf = parsr.parse(*it);
     } catch (std::exception const& e) {
-      logging::error(logging::high) << "diagnostic: configuration file '" << *it
-                                    << "' parsing failed: " << e.what();
+      log_v2::core()->error(
+          "diagnostic: configuration file '{}' parsing failed: {}", *it,
+          e.what());
     }
 
     // ls.
-    logging::info(logging::high)
-        << "diagnostic:     getting modules information";
+    log_v2::core()->info("diagnostic:     getting modules information");
     {
       std::string ls_log_path;
       ls_log_path = tmp_dir;
@@ -289,25 +262,10 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
     }
 
     // Log files.
-    logging::info(logging::high) << "diagnostic:     getting log files";
-    for (std::list<config::logger>::const_iterator it(conf.loggers().begin()),
-         end(conf.loggers().end());
-         it != end; ++it)
-      if (it->type() == config::logger::file) {
-        std::string log_path;
-        log_path = tmp_dir;
-        log_path.append("/");
-        size_t pos{it->name().find_last_of('/')};
-        if (pos != std::string::npos)
-          log_path.append(it->name().substr(pos));
-        else
-          log_path.append(it->name());
-        to_remove.push_back(log_path);
 
-        char const* args[]{"tail", "-c", "20000000", it->name().c_str(),
-                           nullptr};
-        misc::exec_process(args, true);
-      }
+    char const* args[]{"tail", "-c", "20000000",
+                       conf.log_conf().log_path().c_str(), nullptr};
+    misc::exec_process(args, true);
   }
 
   // Generate file name if not existing.
@@ -318,8 +276,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
     my_out_file = out_file;
 
   // Create tarball.
-  logging::info(logging::high)
-      << "diagnostic: creating tarball '" << my_out_file << "'";
+  log_v2::core()->info("diagnostic: creating tarball '{}'", my_out_file);
   {
     std::string cmd{fmt::format("tar czf {} {}", my_out_file, tmp_dir)};
     std::string output{misc::exec(cmd)};

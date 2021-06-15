@@ -25,7 +25,6 @@
 
 #include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
@@ -96,13 +95,15 @@ void conflict_manager::_storage_process_service_status(
     if (index_id == 0) {
       throw msg_fmt(
           "storage: could not fetch index_id of newly inserted index ({}"
-          ", {})", host_id, service_id);
+          ", {})",
+          host_id, service_id);
     }
 
     /* Insert index in cache. */
     log_v2::perfdata()->info(
         "conflict_manager: add_metric_in_cache: index {}, for host_id {} and "
-        "service_id {}", index_id, host_id, service_id);
+        "service_id {}",
+        index_id, host_id, service_id);
     index_info info{.host_name = ss.host_name,
                     .index_id = index_id,
                     .locked = index_locked,
@@ -215,7 +216,8 @@ void conflict_manager::_storage_process_service_status(
       } catch (std::exception const& e) {
         throw msg_fmt(
             "storage: insertion of index ( {}, {}"
-            ") failed: {}", host_id, service_id, e.what());
+            ") failed: {}",
+            host_id, service_id, e.what());
       }
     }
   } else {
@@ -417,9 +419,9 @@ void conflict_manager::_storage_process_service_status(
         multiplexing::publisher pblshr;
         pblshr.write(to_publish);
       } catch (storage::exceptions::perfdata const& e) {
-        logging::error(logging::medium)
-            << "storage: error while parsing perfdata of service (" << host_id
-            << ", " << service_id << "): " << e.what();
+        log_v2::sql()->error(
+            "storage: error while parsing perfdata of service ({}, {}): {}",
+            host_id, service_id, e.what());
       }
     }
   }
@@ -537,7 +539,7 @@ void conflict_manager::_insert_perfdatas() {
  */
 void conflict_manager::_check_deleted_index() {
   // Info.
-  logging::info(logging::medium) << "storage: starting DB cleanup";
+  log_v2::sql()->info("storage: starting DB cleanup");
   uint32_t deleted_index(0);
   uint32_t deleted_metrics(0);
   //_update_status("status=deleting old performance data (might take a

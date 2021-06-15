@@ -22,7 +22,7 @@
 #include <ctime>
 #include <memory>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -57,7 +57,7 @@ nebmodule* neb_module_list;
  */
 static void send_custom_variables_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning custom variables dump";
+  log_v2::neb()->info("init: beginning custom variables dump");
 
   // Iterate through all hosts.
   for (host_map::iterator it{com::centreon::engine::host::hosts.begin()},
@@ -113,7 +113,7 @@ static void send_custom_variables_list() {
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of custom variables dump";
+  log_v2::neb()->info("init: end of custom variables dump");
 }
 
 /**
@@ -121,7 +121,7 @@ static void send_custom_variables_list() {
  */
 static void send_downtimes_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning downtimes dump";
+  log_v2::neb()->info("init: beginning downtimes dump");
 
   std::multimap<
       time_t,
@@ -161,7 +161,7 @@ static void send_downtimes_list() {
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of downtimes dump";
+  log_v2::neb()->info("init: end of downtimes dump");
 }
 
 /**
@@ -169,7 +169,7 @@ static void send_downtimes_list() {
  */
 static void send_host_dependencies_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning host dependencies dump";
+  log_v2::neb()->info("init: beginning host dependencies dump");
 
   try {
     // Loop through all dependencies.
@@ -191,15 +191,15 @@ static void send_host_dependencies_list() {
       neb::callback_dependency(NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA, &nsadd);
     }
   } catch (std::exception const& e) {
-    logging::error(logging::high)
-        << "init: error occurred while dumping host dependencies: " << e.what();
+    log_v2::neb()->info(
+        "init: error occurred while dumping host dependencies: ", e.what());
   } catch (...) {
-    logging::error(logging::high)
-        << "init: unknown error occurred while dumping host dependencies";
+    log_v2::neb()->error(
+        "init: unknown error occurred while dumping host dependencies");
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of host dependencies dump";
+  log_v2::neb()->info("init: end of host dependencies dump");
 
   return;
 }
@@ -209,7 +209,7 @@ static void send_host_dependencies_list() {
  */
 static void send_host_group_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning host group dump";
+  log_v2::neb()->info("init: beginning host group dump");
 
   // Loop through all host groups.
   for (hostgroup_map::const_iterator
@@ -242,7 +242,7 @@ static void send_host_group_list() {
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of host group dump";
+  log_v2::neb()->info("init: end of host group dump");
 }
 
 /**
@@ -250,7 +250,7 @@ static void send_host_group_list() {
  */
 static void send_host_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning host dump";
+  log_v2::neb()->info("init: beginning host dump");
 
   // Loop through all hosts.
   for (host_map::iterator it{com::centreon::engine::host::hosts.begin()},
@@ -270,7 +270,7 @@ static void send_host_list() {
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of host dump";
+  log_v2::neb()->info("init: end of host dump");
 }
 
 /**
@@ -278,7 +278,7 @@ static void send_host_list() {
  */
 static void send_host_parents_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning host parents dump";
+  log_v2::neb()->info("init: beginning host parents dump");
 
   try {
     // Loop through all hosts.
@@ -304,15 +304,15 @@ static void send_host_parents_list() {
       }
     }
   } catch (std::exception const& e) {
-    logging::error(logging::high)
-        << "init: error occurred while dumping host parents: " << e.what();
+    log_v2::neb()->error("init: error occurred while dumping host parents: {}",
+                         e.what());
   } catch (...) {
-    logging::error(logging::high)
-        << "init: unknown error occurred while dumping host parents";
+    log_v2::neb()->error(
+        "init: unknown error occurred while dumping host parents");
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of host parents dump";
+  log_v2::neb()->info("init: end of host parents dump");
 }
 
 /**
@@ -320,7 +320,7 @@ static void send_host_parents_list() {
  */
 static void send_module_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning modules dump";
+  log_v2::neb()->info("init: beginning modules dump");
 
   // Browse module list.
   for (nebmodule* nm(neb_module_list); nm; nm = nm->next)
@@ -337,7 +337,7 @@ static void send_module_list() {
     }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of modules dump";
+  log_v2::neb()->info("init: end of modules dump");
 }
 
 /**
@@ -346,7 +346,7 @@ static void send_module_list() {
  */
 static void send_service_dependencies_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning service dependencies dump";
+  log_v2::neb()->info("init: beginning service dependencies dump");
 
   try {
     // Loop through all dependencies.
@@ -369,16 +369,16 @@ static void send_service_dependencies_list() {
       neb::callback_dependency(NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA, &nsadd);
     }
   } catch (std::exception const& e) {
-    logging::error(logging::high)
-        << "init: error occurred while dumping service dependencies: "
-        << e.what();
+    log_v2::neb()->error(
+        "init: error occurred while dumping service dependencies: {}",
+        e.what());
   } catch (...) {
-    logging::error(logging::high) << "init: unknown error occurred "
-                                  << "while dumping service dependencies";
+    log_v2::neb()->error(
+        "init: unknown error occurred while dumping service dependencies");
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of service dependencies dump";
+  log_v2::neb()->info("init: end of service dependencies dump");
 }
 
 /**
@@ -386,7 +386,7 @@ static void send_service_dependencies_list() {
  */
 static void send_service_group_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning service group dump";
+  log_v2::neb()->info("init: beginning service group dump");
 
   // Loop through all service groups.
   for (servicegroup_map::const_iterator
@@ -419,7 +419,7 @@ static void send_service_group_list() {
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of service groups dump";
+  log_v2::neb()->info("init: end of service groups dump");
 }
 
 /**
@@ -427,7 +427,7 @@ static void send_service_group_list() {
  */
 static void send_service_list() {
   // Start log message.
-  logging::info(logging::medium) << "init: beginning service dump";
+  log_v2::neb()->info("init: beginning service dump");
 
   // Loop through all services.
   for (service_map::const_iterator
@@ -448,15 +448,15 @@ static void send_service_list() {
   }
 
   // End log message.
-  logging::info(logging::medium) << "init: end of services dump";
+  log_v2::neb()->info("init: end of services dump");
 }
 
 /**
  *  Send the instance configuration loaded event.
  */
 static void send_instance_configuration() {
-  logging::info(logging::medium)
-      << "init: sending initial instance configuration loading event";
+  log_v2::neb()->info(
+      "init: sending initial instance configuration loading event");
   std::shared_ptr<neb::instance_configuration> ic(
       new neb::instance_configuration);
   ic->loaded = true;

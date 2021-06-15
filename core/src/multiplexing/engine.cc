@@ -31,7 +31,6 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 
 using namespace com::centreon::broker;
@@ -118,7 +117,7 @@ void engine::_publish(std::shared_ptr<io::data> const& e) {
 void engine::start() {
   if (_write_func != &engine::_write) {
     // Set writing method.
-    logging::debug(logging::high) << "multiplexing: starting";
+    log_v2::perfdata()->debug("multiplexing: starting");
     _write_func = &engine::_write;
     stats::center::instance().update(&EngineStats::set_mode, _stats,
                                      EngineStats::WRITE);
@@ -137,8 +136,8 @@ void engine::start() {
         kiew.push(d);
       }
     } catch (const std::exception& e) {
-      logging::error(logging::medium)
-          << "multiplexing: couldn't read cache file: " << e.what();
+      log_v2::perfdata()->error("multiplexing: couldn't read cache file: {}",
+                                e.what());
     }
 
     // Copy global event queue to local queue.
@@ -162,8 +161,8 @@ void engine::start() {
           it->first->read(d, 0);
         }
       } catch (const std::exception& e) {
-        logging::error(logging::low)
-            << "multiplexing: cannot read from hook: " << e.what();
+        log_v2::perfdata()->error("multiplexing: cannot read from hook: {}",
+                                  e.what());
       }
     }
 
@@ -221,8 +220,8 @@ void engine::stop() {
       _cache_file.reset(new persistent_cache(_cache_file_path()));
       _cache_file->transaction();
     } catch (const std::exception& e) {
-      logging::error(logging::medium)
-          << "multiplexing: could not open cache file: " << e.what();
+      log_v2::perfdata()->error("multiplexing: could not open cache file: {}",
+                                e.what());
       _cache_file.reset();
     }
 
@@ -376,7 +375,7 @@ void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
       _unprocessed_events++;
     }
   } catch (const std::exception& e) {
-    logging::error(logging::medium)
-        << "multiplexing: could not write to cache file: " << e.what();
+    log_v2::perfdata()->error("multiplexing: could not write to cache file: {}",
+                              e.what());
   }
 }

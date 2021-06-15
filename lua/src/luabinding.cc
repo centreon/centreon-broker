@@ -20,7 +20,6 @@
 #include <fstream>
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/broker_cache.hh"
 #include "com/centreon/broker/lua/broker_event.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
@@ -62,8 +61,7 @@ luabinding::luabinding(std::string const& lua_script,
   _L = _load_interpreter();
   _update_lua_path(path);
 
-  logging::debug(logging::medium)
-      << "lua: initializing the Lua virtual machine";
+  log_v2::lua()->debug("lua: initializing the Lua virtual machine");
 
   try {
     _load_script(lua_script);
@@ -161,9 +159,9 @@ void luabinding::_load_script(const std::string& lua_script) {
   // Checking for filter() availability: this function is optional
   lua_getglobal(_L, "filter");
   if (!lua_isfunction(_L, lua_gettop(_L))) {
-    logging::debug(logging::medium)
-        << "lua: filter() global function is missing, "
-        << "the write() function will be called for each event";
+    log_v2::lua()->debug(
+        "lua: filter() global function is missing, the write() function will "
+        "be called for each event");
     _filter = false;
   } else
     _filter = true;
@@ -172,8 +170,7 @@ void luabinding::_load_script(const std::string& lua_script) {
   // Checking for flush() availability: this function is optional
   lua_getglobal(_L, "flush");
   if (!lua_isfunction(_L, lua_gettop(_L))) {
-    logging::debug(logging::medium)
-        << "lua: flush() global function is not defined";
+    log_v2::lua()->debug("lua: flush() global function is not defined");
     _flush = false;
   } else
     _flush = true;
@@ -288,7 +285,7 @@ void luabinding::_init_script(
  */
 int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   int retval = 0;
-  logging::debug(logging::medium) << "lua: luabinding::write call";
+  log_v2::lua()->debug("lua: luabinding::write call");
 
   // Give data to cache.
   _cache.write(data);
@@ -310,20 +307,19 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
     lua_pushinteger(_L, elem);
 
     if (lua_pcall(_L, 2, 1, 0) != 0) {
-      logging::error(logging::high)
-          << "lua: error while running function `filter()': "
-          << lua_tostring(_L, -1);
+      log_v2::lua()->error("lua: error while running function `filter()': {}",
+                           lua_tostring(_L, -1));
       return 0;
     }
 
     if (!lua_isboolean(_L, -1)) {
-      logging::error(logging::high) << "lua: `filter' must return a boolean";
+      log_v2::lua()->error("lua: `filter' must return a boolean");
       return 0;
     }
 
     execute_write = lua_toboolean(_L, -1);
-    logging::debug(logging::medium)
-        << "lua: `filter' returned " << (execute_write ? "true" : "false");
+    log_v2::lua()->debug("lua: `filter' returned {}",
+                         (execute_write ? "true" : "false"));
     lua_pop(_L, -1);
   }
 
@@ -347,13 +343,13 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   }
 
   if (lua_pcall(_L, 1, 1, 0) != 0) {
-    logging::error(logging::high)
-        << "lua: error running function `write'" << lua_tostring(_L, -1);
+    log_v2::lua()->error("lua: error running function `write' {}",
+                         lua_tostring(_L, -1));
     return 0;
   }
 
   if (!lua_isboolean(_L, -1)) {
-    logging::error(logging::high) << "lua: `write' must return a boolean";
+    log_v2::lua()->error("lua: `write' must return a boolean");
     return 0;
   }
   int acknowledge = lua_toboolean(_L, -1);
@@ -388,12 +384,12 @@ int32_t luabinding::flush() noexcept {
   // Let's get the function to call
   lua_getglobal(_L, "flush");
   if (lua_pcall(_L, 0, 1, 0) != 0) {
-    logging::error(logging::high)
-        << "lua: error running function `flush'" << lua_tostring(_L, -1);
+    log_v2::lua()->error("lua: error running function `flush' {}",
+                         lua_tostring(_L, -1));
     return 0;
   }
   if (!lua_isboolean(_L, -1)) {
-    logging::error(logging::high) << "lua: `flush' must return a boolean";
+    log_v2::lua()->error("lua: `flush' must return a boolean");
     return 0;
   }
   bool acknowledge = lua_toboolean(_L, -1);

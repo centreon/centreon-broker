@@ -20,7 +20,7 @@
 #include <zlib.h>
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/exceptions/corruption.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -92,8 +92,7 @@ std::vector<char> zlib::compress(std::vector<char> const& data,
  */
 std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
   if (!data) {
-    logging::debug(logging::medium)
-        << "compression: attempting to uncompress null buffer";
+    log_v2::core()->debug("compression: attempting to uncompress null buffer");
     return std::vector<char>();
   }
   if (nbytes <= 4) {

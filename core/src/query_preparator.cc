@@ -21,7 +21,7 @@
 #include <sstream>
 
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -129,7 +129,7 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   query.resize(query.size() - 1);
   query.append(")");
 
-  logging::debug(logging::low) << "mysql: query_preparator: " << query;
+  log_v2::sql()->debug("mysql: query_preparator: {}", query);
   // Prepare statement.
   mysql_stmt retval;
   try {
@@ -206,7 +206,7 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
     insert_bind_mapping.insert(
         std::make_pair(it->first, it->second + insert_size));
 
-  logging::debug(logging::low) << "mysql: query_preparator: " << insert;
+  log_v2::sql()->debug("mysql: query_preparator: {}", insert);
   // Prepare statement.
   mysql_stmt retval;
   try {

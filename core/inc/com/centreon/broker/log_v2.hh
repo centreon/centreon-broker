@@ -35,8 +35,13 @@ class log_v2 {
   std::shared_ptr<spdlog::logger> _bbdo_log;
   std::shared_ptr<spdlog::logger> _config_log;
   std::shared_ptr<spdlog::logger> _core_log;
+  std::shared_ptr<spdlog::logger> _graphite_log;
+  std::shared_ptr<spdlog::logger> _notification_log;
+  std::shared_ptr<spdlog::logger> _rrd_log;
+  std::shared_ptr<spdlog::logger> _stats_log;
   std::shared_ptr<spdlog::logger> _influxdb_log;
   std::shared_ptr<spdlog::logger> _lua_log;
+  std::shared_ptr<spdlog::logger> _neb_log;
   std::shared_ptr<spdlog::logger> _perfdata_log;
   std::shared_ptr<spdlog::logger> _processing_log;
   std::shared_ptr<spdlog::logger> _sql_log;
@@ -48,7 +53,7 @@ class log_v2 {
   ~log_v2();
 
  public:
-  static const std::array<std::string, 10> loggers;
+  static const std::array<std::string, 16> loggers;
 
   static log_v2& instance();
   void apply(const config::state& conf);
@@ -59,7 +64,12 @@ class log_v2 {
   static std::shared_ptr<spdlog::logger> config();
   static std::shared_ptr<spdlog::logger> core();
   static std::shared_ptr<spdlog::logger> influxdb();
+  static std::shared_ptr<spdlog::logger> graphite();
+  static std::shared_ptr<spdlog::logger> notification();
+  static std::shared_ptr<spdlog::logger> rrd();
+  static std::shared_ptr<spdlog::logger> stats();
   static std::shared_ptr<spdlog::logger> lua();
+  static std::shared_ptr<spdlog::logger> neb();
   static std::shared_ptr<spdlog::logger> perfdata();
   static std::shared_ptr<spdlog::logger> processing();
   static std::shared_ptr<spdlog::logger> sql();

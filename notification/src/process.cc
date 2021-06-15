@@ -19,7 +19,6 @@
 #include "com/centreon/broker/notification/process.hh"
 #include <QObject>
 #include <QStringList>
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/process_manager.hh"
 
 using namespace com::centreon::broker::notification;

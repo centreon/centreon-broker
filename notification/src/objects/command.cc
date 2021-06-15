@@ -19,7 +19,6 @@
 #include "com/centreon/broker/notification/objects/command.hh"
 #include <QRegExp>
 #include <QStringList>
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/notification/macro_generator.hh"
 #include "com/centreon/broker/notification/state.hh"
@@ -124,17 +123,16 @@ std::string command::resolve(contact::ptr const& cnt,
   if (macros.empty())
     return (_base_command);
 
-  logging::debug(logging::medium)
-      << "notification: found " << macros.size() << " macros";
+  log_v2::notification()->debug("notification: found {} macros", macros.size());
 
   // Generate each macro.
   try {
     macro_generator generator;
     generator.generate(macros, n->get_node_id(), *cnt, st, cache, act);
   } catch (std::exception const& e) {
-    logging::error(logging::medium)
-        << "notification: could not resolve some macro in command '" << _name
-        << "': " << e.what();
+    log_v2::notification()->error(
+        "notification: could not resolve some macro in command '{}': {}", _name,
+        e.what());
   }
 
   // Replace the macros by their values.

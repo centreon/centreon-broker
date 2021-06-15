@@ -23,7 +23,7 @@
 #include <cstring>
 #include <memory>
 #include <vector>
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -39,8 +39,7 @@ void worker_pool::add_worker(std::string const& fifo) {
   // Stat failed, probably because of inexistant file.
   if (stat(fifo_path.c_str(), &s) != 0) {
     char const* msg(strerror(errno));
-    logging::config(logging::medium)
-        << "stats: cannot stat() '" << fifo_path << "': " << msg;
+    log_v2::stats()->info("stats: cannot stat() '{}': {}", fifo_path, msg);
 
     // Create FIFO.
     if (mkfifo(fifo_path.c_str(),

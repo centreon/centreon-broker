@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/notification/loaders/command_loader.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
 
 using namespace com::centreon::broker::notification;
@@ -36,9 +35,8 @@ void command_loader::load(mysql* ms, command_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!ms || !output)
     return;
-
-  logging::debug(logging::medium)
-      << "notification: loading commands from the database";
+  log_v2::notification()->debug(
+      "notification: loading commands from the database");
 
   // Performance improvement, as we never go back.
   // query.setForwardOnly(true);

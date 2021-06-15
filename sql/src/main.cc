@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/sql/factory.hh"
 #include "com/centreon/broker/sql/stream.hh"
 
@@ -54,8 +54,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // SQL module.
-    logging::info(logging::high)
-        << "SQL: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::sql()->info("SQL: module for Centreon Broker {}",
+                        CENTREON_BROKER_VERSION);
 
     // Register SQL layer.
     io::protocols::instance().reg("SQL", std::make_shared<sql::factory>(), 1,

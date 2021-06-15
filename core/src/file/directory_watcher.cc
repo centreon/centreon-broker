@@ -30,7 +30,7 @@
 
 #include <memory>
 
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -139,8 +139,8 @@ std::vector<directory_event> directory_watcher::get_events() {
     throw msg_fmt("directory_watcher: couldn't read events: '{}'",
                   ::strerror(err));
   }
-  logging::debug(logging::medium)
-      << "file: directory watcher getting events of size " << buf_size;
+  log_v2::core()->debug("file: directory watcher getting events of size {}",
+                        buf_size);
   char* buf = new char[buf_size];
   int len = ::read(_inotify_instance_id, buf, buf_size);
   if (len == -1) {
@@ -192,9 +192,9 @@ std::vector<directory_event> directory_watcher::get_events() {
     }
 
     ret.push_back(directory_event(name, event_type, ft));
-    logging::debug(logging::medium)
-        << "file: directory watcher getting an event for path '" << name
-        << "' and type " << event_type;
+    log_v2::core()->debug(
+        "file: directory watcher getting an event for path '{}' and type {}",
+        name, event_type);
   }
 
   return (ret);

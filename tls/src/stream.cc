@@ -26,7 +26,6 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
@@ -203,7 +202,7 @@ long long stream::write_encrypted(void const* buffer, long long size) {
   std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(buffer)),
                         const_cast<char*>(static_cast<char const*>(buffer)) +
                             static_cast<std::size_t>(size));
-  logging::error(logging::low) << "tls write enc: " << size;
+  log_v2::tls()->error("tls write enc: {}", size);
   r->get_buffer() = std::move(tmp);
   _substream->write(r);
   _substream->flush();

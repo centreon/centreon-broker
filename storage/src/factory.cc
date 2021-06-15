@@ -22,7 +22,7 @@
 #include <memory>
 
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/storage/connector.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -96,9 +96,10 @@ io::endpoint* factory::new_endpoint(
     rrd_length = static_cast<uint32_t>(std::stoul(find_param(cfg, "length")));
   } catch (std::exception const& e) {
     rrd_length = 15552000;
-    logging::error(logging::high) << "storage: the length field should contain "
-                                     "a string containing a number. We use the "
-                                     "default value in replacement 15552000.";
+    log_v2::sql()->error(
+        "storage: the length field should contain "
+        "a string containing a number. We use the "
+        "default value in replacement 15552000.");
   }
 
   // Find interval length if set.
@@ -111,10 +112,11 @@ io::endpoint* factory::new_endpoint(
         interval_length = std::stoul(it->second);
       } catch (std::exception const& e) {
         interval_length = 60;
-        logging::error(logging::high) << "storage: the interval field should "
-                                         "contain a string containing a "
-                                         "number. We use the default value in "
-                                         "replacement 60.";
+        log_v2::sql()->error(
+            "storage: the interval field should "
+            "contain a string containing a "
+            "number. We use the default value in "
+            "replacement 60.");
       }
     }
     if (!interval_length)
@@ -134,11 +136,11 @@ io::endpoint* factory::new_endpoint(
         rebuild_check_interval = std::stoul(it->second);
       } catch (std::exception const& e) {
         rebuild_check_interval = 300;
-        logging::error(logging::high)
-            << "storage: the rebuild_check_interval field should "
-               "contain a string containing a number. We use the default value "
-               "in "
-               "replacement 300.";
+        log_v2::sql()->error(
+            "storage: the rebuild_check_interval field should "
+            "contain a string containing a number. We use the default value "
+            "in "
+            "replacement 300.");
       }
     } else
       rebuild_check_interval = 300;

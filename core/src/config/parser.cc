@@ -27,7 +27,6 @@
 #include <streambuf>
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/defines.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -175,11 +174,6 @@ state parser::parse(std::string const& file) {
                                        retval, &state::log_thread_id,
                                        &json::is_boolean, &json::get<bool>))
           ;
-        else if (get_conf<bool, state>({it.key(), it.value()},
-                                       "log_human_readable_timestamp", retval,
-                                       &state::log_human_readable_timestamp,
-                                       &json::is_boolean, &json::get<bool>))
-          ;
         else if (it.key() == "output") {
           if (it.value().is_array()) {
             for (json const& node : it.value()) {
@@ -306,21 +300,7 @@ state parser::parse(std::string const& file) {
         }
 
         else if (it.key() == "logger") {
-          if (it.value().is_array()) {
-            for (json const& node : it.value()) {
-              logger logr;
-              _parse_logger(node, logr);
-              retval.loggers().push_back(logr);
-            }
-          } else if (it.value().is_object()) {
-            logger logr;
-            _parse_logger(it.value(), logr);
-            retval.loggers().push_back(logr);
-          } else {
-            throw msg_fmt(
-                "config parser: cannot parse key "
-                "'logger':  value type must be an object");
-          }
+          log_v2::config()->debug("logger object is deprcated on 21.10");
         } else
           retval.params()[it.key()] = it.value().dump();
       }
@@ -408,128 +388,9 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
     if (it.value().is_string())
       e.params[it.key()] = it.value().get<std::string>();
     else
-      log_v2::config()->debug("config parser (while reading configuration file): "
-                              "for key: '{}' value is not a string.", it.key());
-  }
-}
-
-/**
- *  Parse the configuration of a logging object.
- *
- *  @param[in]  elem json element that have the logger configuration.
- *  @param[out] l    Logger object.
- */
-void parser::_parse_logger(json const& elem, logger& l) {
-  for (auto it = elem.begin(); it != elem.end(); ++it) {
-    if (it.key() == "config" && it.value().is_string()) {
-    } else if (it.key() == "debug" && it.value().is_string()) {
-      if (it.value().get<std::string>() == "yes")
-        l.config(true);
-      else
-        l.config(false);
-    } else if (it.key() == "error" && it.value().is_string()) {
-      if (it.value().get<std::string>() == "yes")
-        l.config(true);
-      else
-        l.config(false);
-    } else if (it.key() == "info" && it.value().is_string()) {
-      if (it.value().get<std::string>() == "yes")
-        l.config(true);
-      else
-        l.config(false);
-    } else if (it.key() == "perf" && it.value().is_string()) {
-      if (it.value().get<std::string>() == "yes")
-        l.config(true);
-      else
-        l.config(false);
-    } else if (get_conf<bool, logger>({it.key(), it.value()}, "config", l,
-                                      &logger::config, &json::is_boolean,
-                                      &json::get<bool>))
-      ;
-    else if (get_conf<bool, logger>({it.key(), it.value()}, "debug", l,
-                                    &logger::debug, &json::is_boolean,
-                                    &json::get<bool>))
-      ;
-    else if (get_conf<bool, logger>({it.key(), it.value()}, "error", l,
-                                    &logger::error, &json::is_boolean,
-                                    &json::get<bool>))
-      ;
-    else if (get_conf<bool, logger>({it.key(), it.value()}, "info", l,
-                                    &logger::info, &json::is_boolean,
-                                    &json::get<bool>))
-      ;
-    else if (get_conf<bool, logger>({it.key(), it.value()}, "perf", l,
-                                    &logger::perf, &json::is_boolean,
-                                    &json::get<bool>))
-      ;
-    else if (it.key() == "facility") {
-      std::string const& val{it.value().get<std::string>()};
-      if (!strcasecmp(val.c_str(), "kern"))
-        l.facility(LOG_KERN);
-      else if (!strcasecmp(val.c_str(), "user"))
-        l.facility(LOG_USER);
-      else if (!strcasecmp(val.c_str(), "mail"))
-        l.facility(LOG_MAIL);
-      else if (!strcasecmp(val.c_str(), "news"))
-        l.facility(LOG_NEWS);
-      else if (!strcasecmp(val.c_str(), "uucp"))
-        l.facility(LOG_UUCP);
-      else if (!strcasecmp(val.c_str(), "daemon"))
-        l.facility(LOG_DAEMON);
-      else if (!strcasecmp(val.c_str(), "auth"))
-        l.facility(LOG_AUTH);
-      else if (!strcasecmp(val.c_str(), "cron"))
-        l.facility(LOG_CRON);
-      else if (!strcasecmp(val.c_str(), "lpr"))
-        l.facility(LOG_LPR);
-      else if (!strcasecmp(val.c_str(), "local0"))
-        l.facility(LOG_LOCAL0);
-      else if (!strcasecmp(val.c_str(), "local1"))
-        l.facility(LOG_LOCAL1);
-      else if (!strcasecmp(val.c_str(), "local2"))
-        l.facility(LOG_LOCAL2);
-      else if (!strcasecmp(val.c_str(), "local3"))
-        l.facility(LOG_LOCAL3);
-      else if (!strcasecmp(val.c_str(), "local4"))
-        l.facility(LOG_LOCAL4);
-      else if (!strcasecmp(val.c_str(), "local5"))
-        l.facility(LOG_LOCAL5);
-      else if (!strcasecmp(val.c_str(), "local6"))
-        l.facility(LOG_LOCAL6);
-      else if (!strcasecmp(val.c_str(), "local7"))
-        l.facility(LOG_LOCAL7);
-      else
-        l.facility(std::stoul(val));
-    } else if (it.key() == "level") {
-      std::string const& val_str = {it.value().get<std::string>()};
-      int val{0};
-      if (misc::string::is_number(val_str))
-        val = std::stoi(val_str);
-
-      if ((val == 3) || (val_str == "high"))
-        l.level(com::centreon::broker::logging::low);
-      else if ((val == 2) || (val_str == "medium"))
-        l.level(com::centreon::broker::logging::medium);
-      else if ((val == 1) || (val_str == "low"))
-        l.level(com::centreon::broker::logging::high);
-      else
-        l.level(com::centreon::broker::logging::none);
-    } else if (it.key() == "max_size")
-      l.max_size(std::stoul(it.value().get<std::string>()));
-    else if (it.key() == "name")
-      l.name(it.value().get<std::string>());
-    else if (it.key() == "type") {
-      std::string const& val{it.value().get<std::string>()};
-      if (val == "file")
-        l.type(logger::file);
-      else if (val == "monitoring")
-        l.type(logger::monitoring);
-      else if (val == "standard")
-        l.type(logger::standard);
-      else if (val == "syslog")
-        l.type(logger::syslog);
-      else
-        throw msg_fmt("config parser: unknown logger type '{}'", val);
-    }
+      log_v2::config()->debug(
+          "config parser (while reading configuration file): "
+          "for key: '{}' value is not a string.",
+          it.key());
   }
 }

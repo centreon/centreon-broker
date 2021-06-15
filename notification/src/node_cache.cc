@@ -23,7 +23,6 @@
 #include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
@@ -82,9 +81,8 @@ void node_cache::starting() {
   // No cache, nothing to do.
   if (_cache.get() == NULL)
     return;
-
-  logging::debug(logging::low)
-      << "notification: loading the node cache " << _cache->get_cache_file();
+  log_v2::notification()->debug("notification: loading the node cache {}",
+                                _cache->get_cache_file());
 
   std::shared_ptr<io::data> data;
   try {
@@ -96,15 +94,14 @@ void node_cache::starting() {
     }
   } catch (std::exception const& e) {
     // Abnormal termination of the stream.
-    logging::error(logging::high)
-        << "notification: could not load the node cache "
-        << _cache->get_cache_file() << ": " << e.what();
+    log_v2::notification()->error(
+        "notification: could not load the node cache {}: {}",
+        _cache->get_cache_file(), e.what());
     return;
   }
-
-  logging::debug(logging::low)
-      << "notification: finished loading the node cache "
-      << _cache->get_cache_file() << " succesfully";
+  log_v2::notification()->debug(
+      "notification: finished loading the node cache {} succesfully",
+      _cache->get_cache_file());
 }
 
 /**
@@ -114,9 +111,8 @@ void node_cache::stopping() {
   // No cache, nothing to do.
   if (_cache.get() == NULL)
     return;
-
-  logging::debug(logging::low)
-      << "notification: writing the node cache " << _cache->get_cache_file();
+  log_v2::notification()->debug("notification: writing the node cache {}",
+                                _cache->get_cache_file());
 
   // Lock the mutex;
   QMutexLocker lock(&_mutex);
@@ -126,30 +122,30 @@ void node_cache::stopping() {
     _cache->transaction();
     // Sache into the cache.
     _save_cache();
-    logging::debug(logging::low)
-        << "notification: finished writing the node cache "
-        << _cache->get_cache_file() << " succesfully";
+    log_v2::notification()->debug(
+        "notification: finished writing the node cache {} succesfully",
+        _cache->get_cache_file());
   } catch (std::exception const& e) {
     // Abnormal termination of the stream.
-    logging::error(logging::high)
-        << "notification: could not write the node cache "
-        << _cache->get_cache_file() << ": " << e.what();
+    log_v2::notification()->error(
+        "notification: could not write the node cache {}: {}",
+        _cache->get_cache_file(), e.what());
     return;
   }
-
-  logging::debug(logging::low) << "notification: commiting the node cache '"
-                               << _cache->get_cache_file() << "'";
+  log_v2::notification()->debug("notification: commiting the node cache '{}'",
+                                _cache->get_cache_file());
 
   try {
     _cache->commit();
   } catch (std::exception const& e) {
-    logging::error(logging::high)
-        << "notification: could not commit the node cache '"
-        << _cache->get_cache_file() << "': " << e.what();
+    log_v2::notification()->error(
+        "notification: could not commit the node cache '{}': {}",
+        _cache->get_cache_file(), e.what());
   }
 
-  logging::debug(logging::low) << "notification: commited the node cache '"
-                               << _cache->get_cache_file() << "' succesfully";
+  log_v2::notification()->debug(
+      "notification: commited the node cache '{}' succesfully",
+      _cache->get_cache_file());
 }
 
 /**

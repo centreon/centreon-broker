@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/lua/factory.hh"
 #include "com/centreon/broker/lua/stream.hh"
 
@@ -54,8 +54,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // generic lua module.
-    logging::info(logging::high)
-        << "lua: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::lua()->info("lua: module for Centreon Broker {}",
+                        CENTREON_BROKER_VERSION);
 
     // Register lua layer.
     io::protocols::instance().reg("lua", std::make_shared<lua::factory>(), 1,

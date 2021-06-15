@@ -18,7 +18,6 @@
  */
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/factory.hh"
 
 using namespace com::centreon::broker;
@@ -56,8 +55,6 @@ void broker_module_init(void const* arg) {
     // TCP module.
     log_v2::tcp()->info("TCP: module for Centreon Broker {}",
                         CENTREON_BROKER_VERSION);
-    logging::info(logging::high)
-        << "TCP: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register TCP protocol.
     io::protocols::instance().reg("TCP", std::make_shared<tcp::factory>(), 1,

@@ -20,7 +20,6 @@
 #include <chrono>
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -121,11 +120,11 @@ void mysql_manager::clear() {
       try {
         conn->finish();
       } catch (std::exception const& e) {
-        logging::info(logging::low)
-            << "mysql_manager: Unable to stop a connection: " << e.what();
+        log_v2::sql()->info("mysql_manager: Unable to stop a connection: {}",
+                            e.what());
       }
   }
-  logging::debug(logging::low) << "mysql_manager: clear finished";
+  log_v2::sql()->debug("mysql_manager: clear finished");
 }
 
 /**

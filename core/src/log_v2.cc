@@ -24,16 +24,16 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <fstream>
 
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
 using namespace spdlog;
 
-const std::array<std::string, 10> log_v2::loggers{
-    "bam",      "bbdo",       "config", "core", "lua",
-    "perfdata", "processing", "sql",    "tcp",  "tls"};
+const std::array<std::string, 16> log_v2::loggers{
+    "bam",      "bbdo",         "config", "core",  "lua",      "influxdb",
+    "graphite", "notification", "rrd",    "stats", "perfdata", "processing",
+    "sql",      "neb",          "tcp",    "tls"};
 
 std::map<std::string, level::level_enum> log_v2::_levels_map{
     {"trace", level::trace}, {"debug", level::debug},
@@ -52,8 +52,13 @@ log_v2::log_v2() {
   _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
   _config_log = std::make_shared<logger>("config", null_sink);
   _core_log = std::make_shared<logger>("core", null_sink);
+  _graphite_log = std::make_shared<logger>("graphite", null_sink);
+  _notification_log = std::make_shared<logger>("notification", null_sink);
+  _rrd_log = std::make_shared<logger>("rrd", null_sink);
+  _stats_log = std::make_shared<logger>("stats", null_sink);
   _influxdb_log = std::make_shared<logger>("influxdb", null_sink);
   _lua_log = std::make_shared<logger>("lua", null_sink);
+  _neb_log = std::make_shared<logger>("neb", null_sink);
   _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
   _processing_log = std::make_shared<logger>("processing", null_sink);
   _sql_log = std::make_shared<logger>("sql", null_sink);
@@ -67,8 +72,13 @@ log_v2::~log_v2() {
   _bbdo_log->flush();
   _config_log->flush();
   _core_log->flush();
+  _graphite_log->flush();
+  _notification_log->flush();
+  _rrd_log->flush();
+  _stats_log->flush();
   _influxdb_log->flush();
   _lua_log->flush();
+  _neb_log->flush();
   _perfdata_log->flush();
   _processing_log->flush();
   _sql_log->flush();
@@ -100,8 +110,13 @@ void log_v2::apply(const config::state& conf) {
   _bam_log = std::make_shared<logger>("bam", null_sink);
   _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
   _config_log = std::make_shared<logger>("config", null_sink);
+  _graphite_log = std::make_shared<logger>("graphite", null_sink);
+  _notification_log = std::make_shared<logger>("notification", null_sink);
+  _rrd_log = std::make_shared<logger>("rrd", null_sink);
+  _stats_log = std::make_shared<logger>("stats", null_sink);
   _influxdb_log = std::make_shared<logger>("influxdb", null_sink);
   _lua_log = std::make_shared<logger>("lua", null_sink);
+  _neb_log = std::make_shared<logger>("neb", null_sink);
   _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
   _processing_log = std::make_shared<logger>("processing", null_sink);
   _sql_log = std::make_shared<logger>("sql", null_sink);
@@ -133,6 +148,16 @@ void log_v2::apply(const config::state& conf) {
       l = &_bam_log;
     else if (it->first == "influxdb")
       l = &_influxdb_log;
+    else if (it->first == "graphite")
+      l = &_graphite_log;
+    else if (it->first == "notification")
+      l = &_notification_log;
+    else if (it->first == "rrd")
+      l = &_rrd_log;
+    else if (it->first == "stats")
+      l = &_stats_log;
+    else if (it->first == "neb")
+      l = &_neb_log;
     else
       continue;
 
@@ -162,8 +187,28 @@ std::shared_ptr<spdlog::logger> log_v2::influxdb() {
   return instance()._influxdb_log;
 }
 
+std::shared_ptr<spdlog::logger> log_v2::graphite() {
+  return instance()._graphite_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::notification() {
+  return instance()._notification_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::rrd() {
+  return instance()._rrd_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::stats() {
+  return instance()._stats_log;
+}
+
 std::shared_ptr<spdlog::logger> log_v2::lua() {
   return instance()._lua_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::neb() {
+  return instance()._neb_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::perfdata() {
