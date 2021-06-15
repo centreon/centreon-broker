@@ -572,7 +572,7 @@ set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "-fPIC")
 target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} ${mariadb-connector-c_LIBS} pthread dl berpc)
 
 add_library(roker STATIC
-  ${SRC_DIR}/config/applier/init.cc
+  ${SRC_DIR}/config/applier/init.cc)
 target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${gRPC_LIBS} ${absl_LIBS} pthread)
 
 
