@@ -21,7 +21,7 @@
 #include <iostream>
 #include <string>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/modules/handle.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
 
 using namespace com::centreon::broker;
 
@@ -36,7 +36,8 @@ using namespace com::centreon::broker;
 bool check_for(std::string const& module,
                std::string const& expected_error_msg) {
   try {
-    modules::handle h(module);
+    config::applier::modules modules;
+    modules.load_file(module);
     return false;
   } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;

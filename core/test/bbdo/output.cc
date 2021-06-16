@@ -26,12 +26,12 @@
 
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/misc/variant.hh"
-#include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
@@ -94,7 +94,8 @@ class OutputTest : public ::testing::Test {
 // Then this event is translated into a Lua table and sent to the lua write()
 // function.
 TEST_F(OutputTest, WriteService) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(std::make_shared<neb::service>());
   svc->host_id = 12345;
