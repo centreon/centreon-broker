@@ -84,13 +84,14 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   }
 
   {
-    uint32_t current_connection(0);
+    uint32_t current_connection{0};
     std::lock_guard<std::mutex> lock(_cfg_mutex);
-    for (std::shared_ptr<mysql_connection>& c : _connection) {
+    for (std::shared_ptr<mysql_connection> c : _connection) {
       // Is this thread matching what the configuration needs?
-      if (c->match_config(db_cfg) && !c->is_finished() && !c->is_in_error()) {
+      if (c->match_config(db_cfg) && !c->is_finished() && !c->is_in_error() &&
+          c->ping()) {
         // Yes
-        retval.push_back(c);
+        retval.emplace_back(c);
         ++current_connection;
         if (current_connection >= connection_count)
           return retval;

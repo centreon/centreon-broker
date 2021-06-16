@@ -22,6 +22,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <fstream>
 
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -47,23 +48,25 @@ log_v2& log_v2::instance() {
 }
 
 log_v2::log_v2() {
+  auto stdout_sink = std::make_shared<sinks::stdout_color_sink_mt>();
   auto null_sink = std::make_shared<sinks::null_sink_mt>();
-  _bam_log = std::make_shared<logger>("bam", null_sink);
-  _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
-  _config_log = std::make_shared<logger>("config", null_sink);
-  _core_log = std::make_shared<logger>("core", null_sink);
-  _graphite_log = std::make_shared<logger>("graphite", null_sink);
-  _notification_log = std::make_shared<logger>("notification", null_sink);
-  _rrd_log = std::make_shared<logger>("rrd", null_sink);
-  _stats_log = std::make_shared<logger>("stats", null_sink);
-  _influxdb_log = std::make_shared<logger>("influxdb", null_sink);
-  _lua_log = std::make_shared<logger>("lua", null_sink);
-  _neb_log = std::make_shared<logger>("neb", null_sink);
-  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
-  _processing_log = std::make_shared<logger>("processing", null_sink);
-  _sql_log = std::make_shared<logger>("sql", null_sink);
-  _tcp_log = std::make_shared<logger>("tcp", null_sink);
-  _tls_log = std::make_shared<logger>("tls", null_sink);
+
+  _bam_log = std::make_shared<logger>("bam", stdout_sink);
+  _bbdo_log = std::make_shared<logger>("bbdo", stdout_sink);
+  _config_log = std::make_shared<logger>("config", stdout_sink);
+  _core_log = std::make_shared<logger>("core", stdout_sink);
+  _graphite_log = std::make_shared<logger>("graphite", stdout_sink);
+  _notification_log = std::make_shared<logger>("notification", stdout_sink);
+  _rrd_log = std::make_shared<logger>("rrd", stdout_sink);
+  _stats_log = std::make_shared<logger>("stats", stdout_sink);
+  _influxdb_log = std::make_shared<logger>("influxdb", stdout_sink);
+  _lua_log = std::make_shared<logger>("lua", stdout_sink);
+  _neb_log = std::make_shared<logger>("neb", stdout_sink);
+  _perfdata_log = std::make_shared<logger>("perfdata", stdout_sink);
+  _processing_log = std::make_shared<logger>("processing", stdout_sink);
+  _sql_log = std::make_shared<logger>("sql", stdout_sink);
+  _tcp_log = std::make_shared<logger>("tcp", stdout_sink);
+  _tls_log = std::make_shared<logger>("tls", stdout_sink);
 }
 
 log_v2::~log_v2() {

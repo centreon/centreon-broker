@@ -83,7 +83,10 @@ int _log_func(int log_level, lua_State* L, const char* header) {
         localtime_r(&now, &tmp);
         char buf[80];
         strftime(buf, sizeof(buf), "%c: ", &tmp);
-        of << buf << header << text << std::endl;
+        if (text)
+          of << buf << header << text << std::endl;
+        else
+          of << buf << header << "(null)" << std::endl;
       }
     }
   }

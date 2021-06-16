@@ -85,8 +85,8 @@ void test_server::run() {
 
   std::unique_lock<std::mutex> lock(_m_init);
   _initialised = true;
-  _m_init.unlock();
   _cond_init.notify_all();
+  lock.unlock();
 
   _ctx->run();
 }

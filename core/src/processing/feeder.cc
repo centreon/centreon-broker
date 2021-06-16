@@ -48,6 +48,7 @@ feeder::feeder(const std::string& name,
       _should_exit{false},
       _client(std::move(client)),
       _subscriber(name, false) {
+  std::unique_lock<std::mutex> lck(_state_m);
   if (!_client)
     throw msg_fmt("could not process '{}' with no client stream", _name);
 
@@ -57,8 +58,7 @@ feeder::feeder(const std::string& name,
   set_last_connection_attempt(timestamp::now());
   set_last_connection_success(timestamp::now());
   set_state("connecting");
-  std::unique_lock<std::mutex> lck(_state_m);
-  _thread = std::thread(&feeder::_callback, this);
+  _thread = std::make_unique<std::thread>(&feeder::_callback, this);
   _state_cv.wait(lck,
                  [&state = this->_state] { return state != feeder::stopped; });
 }
@@ -75,11 +75,13 @@ feeder::~feeder() {
     case running:
       _should_exit = true;
       _state_cv.wait(lock, [this] { return _state == finished; });
-      _thread.join();
       break;
     case finished:
-      _thread.join();
       break;
+  }
+  lock.unlock();
+  if (_thread && _thread->joinable()) {
+    _thread->join();
   }
 }
 
@@ -124,9 +126,9 @@ void feeder::_callback() noexcept {
   log_v2::processing()->info("feeder: thread of client '{}' is starting",
                              _name);
   time_t fill_stats_time = time(nullptr);
-  std::unique_lock<std::mutex> lock(_state_m);
 
   try {
+    std::unique_lock<std::mutex> lock(_state_m);
     set_state("connected");
     bool stream_can_read(true);
     bool muxer_can_read(true);
@@ -235,6 +237,7 @@ uint32_t feeder::_get_queued_events() const {
  * @return a const char* with the current state.
  */
 const char* feeder::get_state() const {
+  std::lock_guard<std::mutex> lck(_state_m);
   switch (_state) {
     case stopped:
       return "stopped";

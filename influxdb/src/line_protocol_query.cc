@@ -347,6 +347,7 @@ void line_protocol_query::_compile_scheme(
     } else
       log_v2::influxdb()->info("influxdb: unknown macro '{}': ignoring it",
                                macro);
+
     found_macro = end_macro = end_macro + 1;
   }
   std::string substr(scheme.substr(end_macro, found_macro - end_macro));

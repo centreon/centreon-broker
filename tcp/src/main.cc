@@ -19,6 +19,7 @@
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tcp/factory.hh"
+#include "com/centreon/broker/tcp/tcp_async.hh"
 
 using namespace com::centreon::broker;
 
@@ -39,7 +40,7 @@ void broker_module_deinit() {
   if (!--instances)
     // Unregister TCP protocol.
     io::protocols::instance().unreg("TCP");
-  return;
+  tcp::tcp_async::unload();
 }
 
 /**
@@ -59,6 +60,7 @@ void broker_module_init(void const* arg) {
     // Register TCP protocol.
     io::protocols::instance().reg("TCP", std::make_shared<tcp::factory>(), 1,
                                   4);
+    tcp::tcp_async::load();
   }
 }
 }

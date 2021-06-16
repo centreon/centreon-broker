@@ -456,7 +456,7 @@ time_t availability_thread::_compute_start_of_day(time_t when) {
 void availability_thread::_open_database() {
   // Add database connection.
   try {
-    _mysql.reset(new mysql(_db_cfg));
+    _mysql = std::make_unique<mysql>(_db_cfg);
   } catch (const std::exception& e) {
     throw msg_fmt(
         "BAM-BI: availability thread could not connect to "

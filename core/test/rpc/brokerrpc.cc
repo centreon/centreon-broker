@@ -23,6 +23,7 @@
 
 #include <cstdio>
 #include <fstream>
+#include <fmt/format.h>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/version.hh"
@@ -44,10 +45,7 @@ class BrokerRpc : public ::testing::Test {
 
     FILE* fp = popen(oss.str().c_str(), "r");
     while (fgets(path, sizeof(path), fp) != nullptr) {
-      size_t count = strlen(path);
-      if (count > 0)
-        --count;
-      retval.push_back(std::string(path, count));
+      retval.emplace_back(path);
     }
     pclose(fp);
     return retval;
@@ -60,22 +58,16 @@ TEST_F(BrokerRpc, StartStop) {
 }
 
 TEST_F(BrokerRpc, GetVersion) {
-  std::ostringstream oss;
-  oss << "GetVersion: major: " << version::major;
   brokerrpc brpc("0.0.0.0", 40000, "test");
   auto output = execute("GetVersion");
 #if CENTREON_BROKER_PATCH == 0
   ASSERT_EQ(output.size(), 2u);
-  ASSERT_EQ(output.front(), oss.str());
-  oss.str("");
-  oss << "minor: " << version::minor;
-  ASSERT_EQ(output.back(), oss.str());
+  ASSERT_EQ(output.front(), fmt::format("GetVersion: major: {}\n", version::major));
+  ASSERT_EQ(output.back(), fmt::format("minor: {}\n", version::minor));
 #else
   ASSERT_EQ(output.size(), 3u);
-  ASSERT_EQ(output.front(), oss.str());
-  oss.str("");
-  oss << "patch: " << version::patch;
-  ASSERT_EQ(output.back(), oss.str());
+  ASSERT_EQ(output.front(), fmt::format("GetVersion: major: {}\n", version::major));
+  ASSERT_EQ(output.back(), fmt::format("patch: {}\n", version::patch));
 #endif
   brpc.shutdown();
 }

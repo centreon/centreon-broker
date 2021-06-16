@@ -251,7 +251,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
 
   ASSERT_TRUE(result.is_object());
   ASSERT_EQ(result["version"].get<std::string>(), CENTREON_BROKER_VERSION);
-  ASSERT_EQ(result["pid"].get<uint32_t>(), getpid());
+  ASSERT_EQ(result["pid"].get<int32_t>(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
