@@ -181,8 +181,9 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
                "}\n"
                "end\n");
   std::map<std::string, misc::variant> conf;
-  modules::handle h("./neb/10-neb.so");
-  std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
+  std::unique_ptr<luabinding> lb = std::make_unique<luabinding>(filename, conf);
   std::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));
   RemoveFile(filename);

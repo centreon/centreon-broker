@@ -91,6 +91,7 @@ class state {
   std::string const& module_directory() const noexcept;
   void module_directory(std::string const& dir);
   std::list<std::string>& module_list() noexcept;
+  void add_module(std::string module);
   std::list<std::string> const& module_list() const noexcept;
   std::map<std::string, std::string>& params() noexcept;
   std::map<std::string, std::string> const& params() const noexcept;

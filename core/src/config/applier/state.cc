@@ -113,10 +113,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   if (first_application)
     first_application = false;
   else {
-    uint32_t module_count(0);
-    for (modules::iterator it = _modules.begin(), end = _modules.end();
-         it != end; ++it)
-      ++module_count;
+    uint32_t module_count = _modules.size();
     if (module_count)
       log_v2::config()->info("applier: {} modules loaded", module_count);
     else

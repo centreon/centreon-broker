@@ -42,7 +42,7 @@ class handle {
   void _close();
 
  public:
-  handle(const std::string& filename, const void* arg = nullptr);
+  handle(const std::string& filename, void* h, const void* arg = nullptr);
   ~handle() noexcept;
   handle() = delete;
   handle(const handle&) = delete;
@@ -51,10 +51,11 @@ class handle {
   bool is_open() const;
   void update(const void* arg = nullptr);
 
-  static char const* deinitialization;
-  static char const* initialization;
-  static char const* updatization;
-  static char const* versionning;
+  static const char* deinitialization;
+  static const char* initialization;
+  static const char* updatization;
+  static const char* versionning;
+  static const char* parents_list;
 };
 }  // namespace modules
 

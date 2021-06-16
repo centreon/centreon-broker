@@ -121,6 +121,7 @@ state parser::parse(std::string const& file) {
   try {
     if (json_document.is_object() &&
         json_document["centreonBroker"].is_object()) {
+      std::string module;
       for (auto it = json_document["centreonBroker"].begin();
            it != json_document["centreonBroker"].end(); ++it) {
         if (it.key() == "command_file" && it.value().is_object())
@@ -172,33 +173,35 @@ state parser::parse(std::string const& file) {
               endpoint out(endpoint::io_type::output);
               out.read_filters.insert("all");
               out.write_filters.insert("all");
-              _parse_endpoint(node, out);
+              _parse_endpoint(node, out, module);
+              retval.add_module(std::move(module));
               retval.endpoints().push_back(out);
             }
           } else if (it.value().is_object()) {
             endpoint out(endpoint::io_type::output);
             out.read_filters.insert("all");
             out.write_filters.insert("all");
-            _parse_endpoint(it.value(), out);
+            _parse_endpoint(it.value(), out, module);
+            retval.add_module(std::move(module));
             retval.endpoints().push_back(out);
           } else
             throw msg_fmt(
                 "config parser: cannot parse key '"
                 "'output':  value type must be an object");
-        }
-
-        else if (it.key() == "input") {
+        } else if (it.key() == "input") {
           if (it.value().is_array()) {
             for (json const& node : it.value()) {
               endpoint in(endpoint::io_type::input);
               in.read_filters.insert("all");
-              _parse_endpoint(node, in);
+              _parse_endpoint(node, in, module);
+              retval.add_module(std::move(module));
               retval.endpoints().push_back(in);
             }
           } else if (it.value().is_object()) {
             endpoint in(endpoint::io_type::input);
             in.read_filters.insert("all");
-            _parse_endpoint(it.value(), in);
+            _parse_endpoint(it.value(), in, module);
+            retval.add_module(std::move(module));
             retval.endpoints().push_back(in);
           } else
             throw msg_fmt(
@@ -329,8 +332,11 @@ bool parser::parse_boolean(std::string const& value) {
  *
  *  @param[in]  elem XML element that have the endpoint configuration.
  *  @param[out] e    Element object.
+ *  @param[out] module The module to load for this endpoint to work.
  */
-void parser::_parse_endpoint(json const& elem, endpoint& e) {
+void parser::_parse_endpoint(json const& elem,
+                             endpoint& e,
+                             std::string& module) {
   e.cfg = elem;
 
   for (auto it = elem.begin(); it != elem.end(); ++it) {
@@ -375,8 +381,31 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
             "'filters':  value is invalid");
     } else if (it.key() == "cache")
       e.cache_enabled = parse_boolean(it.value().get<std::string>());
-    else if (it.key() == "type")
+    else if (it.key() == "type") {
       e.type = it.value().get<std::string>();
+      if (e.type == "ipv4")
+        module = "50-tcp.so";
+      else if (e.type == "rrd")
+        module = "70-rrd.so";
+      else if (e.type == "sql")
+        module = "80-sql.so";
+      else if (e.type == "storage")
+        module = "20-storage.so";
+      else if (e.type == "bam")
+        module = "20-bam.so";
+      else if (e.type == "bam_bi")
+        module = "20-bam.so";
+      else if (e.type == "lua")
+        module = "70-lua.so";
+      else if (e.type == "simu")
+        module = "70-simu.so";
+      else if (e.type == "graphite")
+        module = "70-graphite.so";
+      else if (e.type == "influxdb")
+        module = "70-influxdb.so";
+      else
+        throw msg_fmt("config parser: endpoint of invalid type '{}'", e.type);
+    }
     if (it.value().is_string())
       e.params[it.key()] = it.value().get<std::string>();
     else

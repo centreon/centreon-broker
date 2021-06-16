@@ -41,7 +41,9 @@ namespace applier {
  */
 class modules {
   std::map<std::string, std::shared_ptr<handle>> _handles;
-  std::mutex _m_modules;
+  mutable std::mutex _m_modules;
+
+  bool _check_module(const std::string& name, void* h) noexcept;
 
  public:
   typedef std::map<std::string, std::shared_ptr<handle>>::iterator iterator;
@@ -59,7 +61,8 @@ class modules {
 
   std::mutex& module_mutex();
   void load_dir(const std::string& dirname, const void* arg);
-  void load_file(const std::string& filename, const void* arg);
+  void load_file(const std::string& filename, const void* arg = nullptr);
+  size_t size() const noexcept;
 };
 }  // namespace applier
 }  // namespace config

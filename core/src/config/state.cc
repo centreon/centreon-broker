@@ -261,6 +261,17 @@ std::list<std::string>& state::module_list() noexcept {
 }
 
 /**
+ * @brief Add the module to the module list if not already present.
+ *
+ * @param module the module name to add.
+ */
+void state::add_module(std::string module) {
+  auto found = std::find(_module_list.begin(), _module_list.end(), module);
+  if (found == _module_list.end())
+    _module_list.emplace_back(std::move(module));
+}
+
+/**
  *  Get the module list.
  *
  *  @return Const module list.

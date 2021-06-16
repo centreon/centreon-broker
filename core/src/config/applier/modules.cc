@@ -35,11 +35,11 @@ using namespace com::centreon::broker::config::applier;
  *  @param[in] module_dir  Module directory.
  *  @param[in] arg         Module argument.
  */
-void modules::apply(std::list<std::string> const& module_list,
-                    std::string const& module_dir,
-                    void const* arg) {
+void modules::apply(const std::list<std::string>& module_list,
+                    const std::string& module_dir,
+                    const void* arg) {
   // Load modules.
-  for (std::string const& m : module_list) {
+  for (const std::string& m : module_list) {
     log_v2::config()->info("module applier: loading module '{}'", m);
     load_file(m, arg);
   }
@@ -85,19 +85,119 @@ std::mutex& modules::module_mutex() {
 }
 
 /**
+ * @brief Check the shared library passed with its filename and handler.
+ *
+ * @param name File name of the module.
+ * @param h Handler of the module.
+ *
+ * @return a boolean True on success.
+ */
+bool modules::_check_module(const std::string& name, void* h) noexcept {
+  // Find init symbol.
+  log_v2::core()->debug(
+      "modules: checking initialization routine (symbol '{}') in '{}'",
+      handle::initialization, name);
+  void* init = dlsym(h, handle::initialization);
+
+  if (!init) {
+    log_v2::core()->error(
+        "modules: could not find initialization routine in '{}' (not a "
+        "Centreon Broker module ?): {}",
+        name, dlerror());
+    return false;
+  }
+
+  // Find deinit symbol.
+  log_v2::core()->debug(
+      "modules: checking deinitialization routine (symbol '{}') in '{}'",
+      handle::deinitialization, name);
+  void* deinit = dlsym(h, handle::deinitialization);
+
+  if (!deinit) {
+    log_v2::core()->error(
+        "modules: could not find deinitialization routine in '{}' (not a "
+        "Centreon Broker module ?): {}",
+        name, dlerror());
+    return false;
+  }
+
+  // Find deinit symbol.
+  log_v2::core()->debug(
+      "modules: checking updatization routine (symbol '{}') in '{}'",
+      handle::updatization, name);
+  void* update = dlsym(h, handle::updatization);
+
+  if (!update) {
+    log_v2::core()->error(
+        "modules: could not find updatization routine in '{}' (not a Centreon "
+        "Broker module ?): {}",
+        name, dlerror());
+    return false;
+  }
+
+  // Find version symbol.
+  log_v2::core()->debug(
+      "modules: checking module version (symbol '{}') in '{}'",
+      handle::versionning, name);
+
+  char const** version = (char const**)dlsym(h, handle::versionning);
+
+  // Could not find version symbol.
+  if (!version) {
+    log_v2::core()->error(
+        "modules: could not find version in '{}' (not a Centreon Broker module "
+        "?): {}",
+        name, dlerror());
+    return false;
+  }
+  if (!*version) {
+    log_v2::core()->error(
+        "modules: version symbol of module '{}' is empty (not a Centreon "
+        "Broker module ?)",
+        name);
+    return false;
+  }
+
+  // Check version.
+  if (::strncmp(CENTREON_BROKER_VERSION, *version,
+                strlen(CENTREON_BROKER_VERSION) + 1) != 0) {
+    log_v2::core()->error(
+        "modules: version mismatch in '{}': exepected '{}', found '{}'", name,
+        CENTREON_BROKER_VERSION, *version);
+    return false;
+  }
+  return true;
+}
+
+/**
  *  Load a plugin.
  *
  *  @param[in] filename File name.
  *  @param[in] arg      Module argument.
  */
 void modules::load_file(const std::string& filename, const void* arg) {
-  auto it = _handles.find(filename);
-  if (it == _handles.end())
-    _handles.emplace(filename, std::make_shared<handle>(filename, arg));
-  else {
+  auto found = _handles.find(filename);
+  if (found == _handles.end()) {
     log_v2::core()->info(
         "modules: attempt to load '{}' which is already loaded", filename);
-    it->second->update(arg);
+    void* h = dlopen(filename.c_str(), RTLD_LAZY);
+    if (_check_module(filename, h)) {
+      const char*** parents = (const char***)dlsym(h, handle::parents_list);
+      if (parents)
+        for (const char* p = **parents; p; ++p) {
+          auto found = _handles.find(p);
+          if (found == _handles.end())
+            load_file(p, arg);
+        }
+    } else {
+      dlclose(h);
+      return;
+    }
+    _handles.emplace(filename, std::make_shared<handle>(filename, h, arg));
+  } else {
+    log_v2::core()->info(
+        "modules: attempt to load '{}' which is already loaded", filename);
+    found->second->update(arg);
   }
 }
 
@@ -126,4 +226,14 @@ void modules::load_dir(const std::string& dirname, const void* arg) {
 
   // Ending log message.
   log_v2::core()->debug("modules: finished loading directory '{}'", dirname);
+}
+
+/**
+ * @brief Return the number of modules loaded.
+ *
+ * @return An size_t.
+ */
+size_t modules::size() const noexcept {
+  std::lock_guard<std::mutex> lck(_m_modules);
+  return _handles.size();
 }
