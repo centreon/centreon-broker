@@ -32,6 +32,10 @@ should be fixed with this new version.
 * if the connection fails to get the remote endpoint, the error was not catched
   and could break cbd/centengine.
 
+*sql*
+
+Add a parameter to select the MySQL UNIX socket
+
 ### Build
 
 repair the compilation for Raspberry PI
