@@ -220,7 +220,9 @@ fi
 pip3 install conan --upgrade
 
 if [ $my_id -eq 0 ] ; then
-  conan='conan'
+  conan='/usr/local/bin/conan'
+elif which conan ; then
+  conan=$(which conan)
 else
   conan="$HOME/.local/bin/conan"
 fi
