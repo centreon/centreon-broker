@@ -41,6 +41,7 @@ class database_config {
   database_config();
   database_config(std::string const& type,
                   std::string const& host,
+                  std::string const& socket,
                   unsigned short port,
                   std::string const& user,
                   std::string const& password,
@@ -56,6 +57,7 @@ class database_config {
 
   std::string const& get_type() const;
   std::string const& get_host() const;
+  std::string const& get_socket() const;
   unsigned short get_port() const;
   std::string const& get_user() const;
   std::string const& get_password() const;
@@ -66,6 +68,7 @@ class database_config {
 
   void set_type(std::string const& type);
   void set_host(std::string const& host);
+  void set_socket(std::string const& socket);
   void set_port(unsigned short port);
   void set_user(std::string const& user);
   void set_password(std::string const& password);
@@ -79,6 +82,7 @@ class database_config {
 
   std::string _type;
   std::string _host;
+  std::string _socket;
   unsigned short _port;
   std::string _user;
   std::string _password;

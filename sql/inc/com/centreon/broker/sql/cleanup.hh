@@ -37,6 +37,7 @@ class cleanup {
  public:
   cleanup(std::string const& db_type,
           std::string const& db_host,
+          std::string const& db_socket,
           unsigned short db_port,
           std::string const& db_user,
           std::string const& db_password,
@@ -57,6 +58,7 @@ class cleanup {
   std::thread _thread;
   std::string _db_type;
   std::string _db_host;
+  std::string _db_socket;
   unsigned short _db_port;
   std::string _db_user;
   std::string _db_password;
