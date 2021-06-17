@@ -36,7 +36,6 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -85,8 +84,6 @@ void broker_module_init(void const* arg) {
     // BAM module.
     log_v2::bam()->info("BAM: module for Centreon Broker {} ",
                         CENTREON_BROKER_VERSION);
-    logging::info(logging::high)
-        << "BAM: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register storage layer.
     io::protocols::instance().reg(bam_module, std::make_shared<bam::factory>(),

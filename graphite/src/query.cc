@@ -19,7 +19,7 @@
 #include "com/centreon/broker/graphite/query.hh"
 #include <algorithm>
 #include <sstream>
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -75,9 +75,9 @@ std::string query::generate_metric(storage::metric const& me) {
       tmp.str("");
     }
   } catch (std::exception const& e) {
-    logging::error(logging::high)
-        << "graphite: couldn't generate query for metric " << me.metric_id
-        << ":" << e.what();
+    log_v2::graphite()->error(
+        "graphite: couldn't generate query for metric {}: {}", me.metric_id,
+        e.what());
     return "";
   }
 
@@ -114,9 +114,9 @@ std::string query::generate_status(storage::status const& st) {
       tmp.str("");
     }
   } catch (std::exception const& e) {
-    logging::error(logging::high)
-        << "graphite: couldn't generate query for status " << st.index_id << ":"
-        << e.what();
+    log_v2::graphite()->error(
+        "graphite: couldn't generate query for status {}: {}", st.index_id,
+        e.what());
     return "";
   }
 
@@ -181,8 +181,8 @@ void query::_compile_naming_scheme(std::string const& naming_scheme,
     } else if (macro == "$INDEXID$") {
       _compiled_getters.push_back(&query::_get_index_id);
     } else
-      logging::config(logging::high)
-          << "graphite: unknown macro '" << macro << "': ignoring it";
+      log_v2::graphite()->info("graphite: unknown macro '{}': ignoring it",
+                               macro);
     found_macro = end_macro = end_macro + 1;
   }
   std::string substr = naming_scheme.substr(end_macro, found_macro - end_macro);

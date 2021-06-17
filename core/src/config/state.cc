@@ -18,8 +18,6 @@
 
 #include "com/centreon/broker/config/state.hh"
 
-#include "com/centreon/broker/logging/file.hh"
-
 using namespace com::centreon::broker::config;
 
 /**
@@ -30,11 +28,6 @@ state::state()
       _rpc_port{0},
       _command_protocol{"json"},
       _event_queue_max_size{10000},
-      _flush_logs{true},
-      _log_thread_id{false},
-      _log_timestamp{com::centreon::broker::logging::file::with_timestamp()},
-      _log_human_readable_timestamp{
-          com::centreon::broker::logging::file::with_human_redable_timestamp()},
       _poller_id{0},
       _pool_size{0},
       _log_conf{"/var/log/centreon-broker", "", 0, {}} {}
@@ -53,10 +46,6 @@ state::state(const state& other)
       _command_protocol(other._command_protocol),
       _endpoints(other._endpoints),
       _event_queue_max_size(other._event_queue_max_size),
-      _log_thread_id(other._log_thread_id),
-      _log_timestamp(other._log_timestamp),
-      _log_human_readable_timestamp(other._log_human_readable_timestamp),
-      _loggers(other._loggers),
       _module_dir(other._module_dir),
       _module_list(other._module_list),
       _params(other._params),
@@ -86,10 +75,6 @@ state& state::operator=(state const& other) {
     _command_protocol = other._command_protocol;
     _endpoints = other._endpoints;
     _event_queue_max_size = other._event_queue_max_size;
-    _log_thread_id = other._log_thread_id;
-    _log_timestamp = other._log_timestamp;
-    _log_human_readable_timestamp = other._log_human_readable_timestamp;
-    _loggers = other._loggers;
     _module_dir = other._module_dir;
     _module_list = other._module_list;
     _params = other._params;
@@ -112,12 +97,6 @@ void state::clear() {
   _command_protocol = "json";
   _endpoints.clear();
   _event_queue_max_size = 10000;
-  _flush_logs = true;
-  _log_thread_id = false;
-  _log_timestamp = com::centreon::broker::logging::file::with_timestamp();
-  _log_human_readable_timestamp =
-      com::centreon::broker::logging::file::with_human_redable_timestamp();
-  _loggers.clear();
   _module_dir.clear();
   _module_list.clear();
   _params.clear();
@@ -252,98 +231,6 @@ void state::event_queue_max_size(int val) noexcept {
  */
 int state::event_queue_max_size() const noexcept {
   return _event_queue_max_size;
-}
-
-/**
- *  Set if logs must be flushed.
- *
- *  @param[in] flush true to automatically flush log files.
- */
-void state::flush_logs(bool flush) noexcept {
-  _flush_logs = flush;
-}
-
-/**
- *  Check if logs must be flushed.
- *
- *  @return true if logs must be automatically flushed.
- */
-bool state::flush_logs() const noexcept {
-  return _flush_logs;
-}
-
-/**
- *  Get the logger list.
- *
- *  @return Logger list.
- */
-std::list<logger>& state::loggers() noexcept {
-  return _loggers;
-}
-
-/**
- *  Set whether or not to log thread IDs.
- *
- *  @param[in] log_id true to log thread IDs.
- */
-void state::log_thread_id(bool log_id) noexcept {
-  _log_thread_id = log_id;
-}
-
-/**
- *  Get whether or not to log thread IDs.
- *
- *  @return true if thread IDs must be logged.
- */
-bool state::log_thread_id() const noexcept {
-  return _log_thread_id;
-}
-
-/**
- *  Set if and how timestamp should be stored.
- *
- *  @param[in] log_time  Any acceptable value.
- */
-void state::log_timestamp(
-    com::centreon::broker::logging::timestamp_type log_time) noexcept {
-  _log_timestamp = log_time;
-}
-
-/**
- *  Get if and how timestamp should be stored.
- *
- *  @return Any acceptable value.
- */
-com::centreon::broker::logging::timestamp_type state::log_timestamp()
-    const noexcept {
-  return _log_timestamp;
-}
-
-/**
- *  Set whether or not a human readable timestamp logging should be enabled.
- *
- *  @param[in] human_log_time true to log a human readable timestamp.
- */
-void state::log_human_readable_timestamp(bool human_log_time) noexcept {
-  _log_human_readable_timestamp = human_log_time;
-}
-
-/**
- *  Get whether or not to log a human readable timestamp.
- *
- *  @return true if a human redable timestamp must be logged.
- */
-bool state::log_human_readable_timestamp() const noexcept {
-  return _log_human_readable_timestamp;
-}
-
-/**
- *  Get the logger list.
- *
- *  @return Logger list.
- */
-std::list<logger> const& state::loggers() const noexcept {
-  return _loggers;
 }
 
 /**

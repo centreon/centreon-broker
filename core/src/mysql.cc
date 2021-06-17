@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 

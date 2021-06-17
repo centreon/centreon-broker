@@ -23,7 +23,7 @@
 
 #include <asio.hpp>
 
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
@@ -117,12 +117,12 @@ class cached : public backend {
     try {
       _send_to_cached(cmd);
     } catch (msg_fmt const& e) {
-      logging::error(logging::medium) << e.what();
+      log_v2::rrd()->error(e.what());
     }
 
     if (::remove(filename.c_str()))
-      logging::error(logging::high) << "RRD: could not remove file '"
-                                    << filename << "': " << strerror(errno);
+      log_v2::rrd()->error("RRD: could not remove file '{}': {}", filename,
+                           strerror(errno));
   }
 
   /**
@@ -277,16 +277,15 @@ class cached : public backend {
     std::string cmd(fmt::format("UPDATE {} {}:{}\n", _filename, t, value));
 
     // Send command.
-    logging::debug(logging::high)
-        << "RRD: updating file '" << _filename << "' (" << cmd << ")";
+    log_v2::rrd()->debug("RRD: updating file '{}' ({})", _filename, cmd);
     try {
       _send_to_cached(cmd);
     } catch (msg_fmt const& e) {
       if (!strstr(e.what(), "illegal attempt to update using time"))
         throw exceptions::update(e.what());
       else
-        logging::error(logging::low) << "RRD: ignored update error in file '"
-                                     << _filename << "': " << e.what() + 5;
+        log_v2::rrd()->error("RRD: ignored update error in file '{}': {}",
+                             _filename, e.what() + 5);
     }
   }
 };

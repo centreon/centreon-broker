@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <cstring>
 #include <fstream>
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -72,9 +72,8 @@ std::list<std::string> filesystem::dir_content(std::string const& path,
     }
     closedir(dir);
   } else
-    logging::error(logging::medium)
-        << "directory_dumper: unable to read directory '" << path << "'";
-
+    log_v2::core()->error("directory_dumper: unable to read directory '{}'",
+                          path);
   return retval;
 }
 

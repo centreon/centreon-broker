@@ -20,7 +20,7 @@
 #include "com/centreon/broker/influxdb/stream.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/storage/internal.hh"
 
 using namespace com::centreon::broker;
@@ -56,8 +56,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // Storage module.
-    logging::info(logging::high)
-        << "influxdb: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::influxdb()->info("influxdb: module for Centreon Broker {}",
+                             CENTREON_BROKER_VERSION);
 
     // Register storage layer.
     io::protocols::instance().reg("influxdb",

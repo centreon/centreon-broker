@@ -176,7 +176,6 @@ void state::update_objects_from_db(mysql& centreon_db) {
     ml.load(&centreon_db, &builder);
   }
 
-  // Debug logging for all the data loaded.
 #ifndef NDEBUG
   // data_logger::log_container("_nodes", _nodes);
   // data_logger::log_container("_node_by_id", _node_by_id);

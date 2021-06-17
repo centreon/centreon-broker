@@ -20,7 +20,6 @@
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -41,16 +40,15 @@ void modules::apply(std::list<std::string> const& module_list,
                     void const* arg) {
   // Load modules.
   for (std::string const& m : module_list) {
-    logging::config(logging::high)
-        << "module applier: loading module '" << m << "'";
+    log_v2::config()->info("module applier: loading module '{}'", m);
     load_file(m, arg);
   }
   if (!module_dir.empty()) {
-    logging::config(logging::high)
-        << "module applier: loading directory '" << module_dir << "'";
+    log_v2::config()->info("module applier: loading directory '{}'",
+                           module_dir);
     load_dir(module_dir, arg);
   } else
-    logging::debug(logging::high) << "module applier: no directory defined";
+    log_v2::config()->debug("module applier: no directory defined");
 }
 
 /**
@@ -122,7 +120,7 @@ void modules::load_dir(const std::string& dirname, const void* arg) {
     try {
       load_file(l, arg);
     } catch (const msg_fmt& e) {
-      logging::error(logging::high) << e.what();
+      log_v2::config()->error(e.what());
     }
   }
 

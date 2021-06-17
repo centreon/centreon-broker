@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/logging/manager.hh"
 
 class CentreonBrokerEnvironment : public testing::Environment {
  public:

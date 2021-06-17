@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include "com/centreon/broker/file/splitter.hh"
-#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;

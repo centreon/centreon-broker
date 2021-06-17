@@ -19,7 +19,7 @@
 #include <rrd.h>
 
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/rrd/factory.hh"
 
 using namespace com::centreon::broker;
@@ -54,13 +54,13 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // RRD module.
-    logging::info(logging::high)
-        << "RRD: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::rrd()->info("RRD: module for Centreon Broker {}",
+                        CENTREON_BROKER_VERSION);
 
     // Print RRDtool version.
     char const* rrdversion(rrd_strversion());
-    logging::info(logging::high)
-        << "RRD: using rrdtool " << (rrdversion ? rrdversion : "(unknown)");
+    log_v2::rrd()->info("RRD: using rrdtool {}",
+                        (rrdversion ? rrdversion : "(unknown)"));
 
     // Register RRD layer.
     io::protocols::instance().reg("RRD", std::make_shared<rrd::factory>(), 1,

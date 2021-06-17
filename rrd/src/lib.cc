@@ -28,7 +28,6 @@
 #include <cstring>
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -127,8 +126,7 @@ void lib::open(std::string const& filename,
 void lib::remove(std::string const& filename) {
   if (::remove(filename.c_str())) {
     char const* msg(strerror(errno));
-    logging::error(logging::high)
-        << "RRD: could not remove file '" << filename << "': " << msg;
+    log_v2::rrd()->error("RRD: could not remove file '{}': {}", filename, msg);
   }
 }
 
@@ -141,8 +139,9 @@ void lib::remove(std::string const& filename) {
 void lib::update(time_t t, std::string const& value) {
   // Build argument string.
   if (value == "") {
-    logging::error(logging::low) << "RRD: ignored update non-float value '"
-                                 << value << "' in file '" << _filename;
+    log_v2::rrd()->error(
+        "RRD: ignored update non-float value '{}' in file '{}'", value,
+        _filename);
     return;
   }
 
@@ -162,10 +161,11 @@ void lib::update(time_t t, std::string const& value) {
                    argv)) {
     char const* msg(rrd_get_error());
     if (!strstr(msg, "illegal attempt to update using time"))
-      logging::error(logging::high) << "RRD: failed to update value in file '"
-                                    << _filename << "': " << msg;
+      log_v2::rrd()->error("RRD: failed to update value in file '{}': {}",
+                           _filename, msg);
+
     else
-      logging::error(logging::low)
-          << "RRD: ignored update error in file '" << _filename << "': " << msg;
+      log_v2::rrd()->error("RRD: ignored update error in file '{}': {}",
+                           _filename, msg);
   }
 }

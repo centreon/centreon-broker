@@ -21,7 +21,6 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -118,8 +117,7 @@ stream::~stream() {}
  *  @return Number of events acknowledged.
  */
 int32_t stream::flush() {
-  logging::debug(logging::medium)
-      << "graphite: commiting " << _actual_query << " queries";
+  log_v2::graphite()->debug("graphite: commiting {} queries", _actual_query);
   int32_t ret(_pending_queries);
   if (_actual_query != 0)
     _commit();

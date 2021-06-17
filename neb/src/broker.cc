@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -55,8 +55,8 @@ void broker_module_deinit() {
 void broker_module_init(void const* arg) {
   (void)arg;
   if (!neb_instances++) {
-    logging::info(logging::high)
-        << "NEB: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::core()->info("NEB: module for Centreon Broker {}",
+                         CENTREON_BROKER_VERSION);
     io::events& e(io::events::instance());
 
     // Register category.

@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/neb/node_cache.hh"
 #include <memory>
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -190,8 +190,8 @@ neb::service_status* node_cache::get_service_status(node_id id) {
  *  @param[in] hst  The host event.
  */
 void node_cache::_process_host(neb::host const& hst) {
-  logging::debug(logging::medium)
-      << "node events: processing host declaration for (" << hst.host_id << ")";
+  log_v2::core()->debug("node events: processing host declaration for ({})",
+                        hst.host_id);
   _hosts[node_id(hst.host_id)] = hst;
   _names_to_node[std::make_pair(hst.host_name, "")] = node_id(hst.host_id);
 }
@@ -202,9 +202,9 @@ void node_cache::_process_host(neb::host const& hst) {
  *  @param[in] svc  The service event.
  */
 void node_cache::_process_service(neb::service const& svc) {
-  logging::debug(logging::medium)
-      << "node events: processing service declaration for (" << svc.host_id
-      << ", " << svc.service_id << ")";
+  log_v2::core()->debug(
+      "node events: processing service declaration for ({}, {})", svc.host_id,
+      svc.service_id);
   _services[node_id(svc.host_id, svc.service_id)] = svc;
   _names_to_node[std::make_pair(svc.host_name, svc.service_description)] =
       node_id(svc.host_id, svc.service_id);
@@ -216,8 +216,8 @@ void node_cache::_process_service(neb::service const& svc) {
  *  @param[in] hst  Host status event.
  */
 void node_cache::_process_host_status(neb::host_status const& hst) {
-  logging::debug(logging::medium)
-      << "node events: processing host status for (" << hst.host_id << ")";
+  log_v2::core()->debug("node events: processing host status for ({})",
+                        hst.host_id);
   node_id id(hst.host_id);
   _host_statuses[id] = hst;
   return;
@@ -229,9 +229,8 @@ void node_cache::_process_host_status(neb::host_status const& hst) {
  *  @param[in] sst  Service status event.
  */
 void node_cache::_process_service_status(neb::service_status const& sst) {
-  logging::debug(logging::medium)
-      << "node events: processing service status for (" << sst.host_id << ", "
-      << sst.service_id << ")";
+  log_v2::core()->debug("node events: processing service status for ({}, {})",
+                        sst.host_id, sst.service_id);
   node_id id(sst.host_id, sst.service_id);
   _service_statuses[id] = sst;
   return;

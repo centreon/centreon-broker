@@ -23,7 +23,6 @@
 #include <map>
 #include <string>
 #include <utility>
-#include "com/centreon/broker/logging/backend.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/callback.hh"

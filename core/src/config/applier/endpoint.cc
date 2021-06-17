@@ -31,7 +31,6 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/stringifier.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -339,8 +338,8 @@ processing::failover* endpoint::_create_failover(
     std::shared_ptr<io::endpoint> endp,
     std::list<config::endpoint>& l) {
   // Debug message.
-  logging::config(logging::medium)
-      << "endpoint applier: creating new endpoint '" << cfg.name << "'";
+  log_v2::config()->info("endpoint applier: creating new endpoint '{}'",
+                         cfg.name);
 
   // Check that failover is configured.
   std::shared_ptr<processing::failover> failovr;
@@ -377,10 +376,10 @@ processing::failover* endpoint::_create_failover(
       bool is_acceptor(false);
       std::shared_ptr<io::endpoint> endp(_create_endpoint(*it, is_acceptor));
       if (is_acceptor) {
-        logging::error(logging::high)
-            << "endpoint applier: secondary failover '" << *failover_it
-            << "' is an acceptor and cannot therefore be "
-            << "instantiated for endpoint '" << cfg.name << "'";
+        log_v2::config()->error(
+            "endpoint applier: secondary failover '{}' is an acceptor and "
+            "cannot therefore be instantiated for endpoint '{}'",
+            *failover_it, cfg.name);
       }
       failovr->add_secondary_endpoint(endp);
     }
@@ -540,8 +539,8 @@ std::unordered_set<uint32_t> endpoint::_filters(
     for (io::events::events_container::const_iterator it(tmp_elements.begin()),
          end(tmp_elements.end());
          it != end; ++it) {
-      logging::config(logging::medium)
-          << "endpoint applier: new filtering element: " << it->first;
+      log_v2::config()->info("endpoint applier: new filtering element: {}",
+                             it->first);
       elements.insert(it->first);
     }
   }

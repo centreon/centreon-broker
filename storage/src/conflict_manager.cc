@@ -22,7 +22,6 @@
 
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
@@ -401,7 +400,7 @@ void conflict_manager::_callback() {
   try {
     _load_caches();
   } catch (std::exception const& e) {
-    logging::error(logging::high) << "error while loading caches: " << e.what();
+    log_v2::sql()->error("error while loading caches: {}", e.what());
     _broken = true;
   }
 
@@ -410,9 +409,9 @@ void conflict_manager::_callback() {
     try {
       _check_deleted_index();
     } catch (std::exception const& e) {
-      logging::error(logging::high)
-          << "conflict_manager: error while checking deleted indexes: "
-          << e.what();
+      log_v2::sql()->error(
+          "conflict_manager: error while checking deleted indexes: {}",
+          e.what());
       _broken = true;
       break;
     }
@@ -577,8 +576,8 @@ void conflict_manager::_callback() {
         }
       }
     } catch (std::exception const& e) {
-      logging::error(logging::high)
-          << "conflict_manager: error in the main loop: " << e.what();
+      log_v2::sql()->error("conflict_manager: error in the main loop: {}",
+                           e.what());
       if (strstr(e.what(), "server has gone away")) {
         // The case where we must restart the connector.
         _broken = true;

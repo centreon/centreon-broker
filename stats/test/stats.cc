@@ -18,7 +18,6 @@
  */
 #include <gtest/gtest.h>
 #include <chrono>
-#include <com/centreon/broker/logging/manager.hh>
 #include <com/centreon/broker/stats/parser.hh>
 #include <com/centreon/broker/stats/worker.hh>
 #include <com/centreon/broker/stats/worker_pool.hh>

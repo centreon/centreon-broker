@@ -22,7 +22,6 @@
 
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -132,10 +131,11 @@ void failover::_run() {
 
   // Check endpoint.
   if (!_endpoint) {
-    logging::error(logging::high)
-        << "failover: thread of endpoint '" << _name << "' has no endpoint"
-        << " object, this is likely a software bug that should be reported"
-        << " to Centreon Broker developers";
+    log_v2::processing()->error(
+        "failover: thread of endpoint '{}' has no endpoint object, this is "
+        "likely a software bug that should be reported to Centreon Broker "
+        "developers",
+        _name);
     std::unique_lock<std::mutex> lock_stop(_stopped_m);
     _stopped = true;
     _stopped_cv.notify_all();
@@ -196,13 +196,15 @@ void failover::_run() {
           if (s)
             secondaries.push_back(s);
           else
-            logging::error(logging::medium)
-                << "failover: could not open a secondary of endpoint '" << _name
-                << ": secondary returned a null stream";
+            log_v2::processing()->error(
+                "failover: could not open a secondary of endpoint {}: "
+                "secondary returned a null stream",
+                _name);
         } catch (std::exception const& e) {
-          logging::error(logging::medium)
-              << "failover: error occured while opening a secondary "
-              << "of endpoint '" << _name << "': " << e.what();
+          log_v2::processing()->error(
+              "failover: error occured while opening a secondary of endpoint "
+              "'{}': {}",
+              _name, e.what());
         }
       _update_status("");
 
@@ -318,10 +320,10 @@ void failover::_run() {
                 (*it)->write(d);
                 ++it;
               } catch (std::exception const& e) {
-                logging::error(logging::medium)
-                    << "failover: error "
-                    << "occurred while writing to a secondary of endpoint '"
-                    << _name << "' (secondary will be removed): " << e.what();
+                log_v2::processing()->error(
+                    "failover: error occurred while writing to a secondary of "
+                    "endpoint '{}' (secondary will be removed): {}",
+                    _name, e.what());
                 it = secondaries.erase(it);
               }
             }
@@ -352,7 +354,6 @@ void failover::_run() {
     // Some real error occured.
     catch (std::exception const& e) {
       log_v2::core()->error("failover: global error: {}", e.what());
-      logging::error(logging::high) << e.what();
       {
         if (_stream) {
           int32_t ack_events = _stream->stop();
@@ -367,11 +368,11 @@ void failover::_run() {
         _initialized = true;
       }
     } catch (...) {
-      logging::error(logging::high)
-          << "failover: endpoint '" << _name
-          << "' encountered an unknown exception, this is likely a "
-          << "software bug that should be reported to Centreon Broker "
-             "developers";
+      log_v2::processing()->error(
+          "failover: endpoint '{}' encountered an unknown exception, this is "
+          "likely a software bug that should be reported to Centreon Broker "
+          "developers",
+          _name);
       {
         int32_t ack_events = _stream->stop();
         _subscriber->get_muxer().ack_events(ack_events);

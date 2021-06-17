@@ -25,13 +25,10 @@
 #include <memory>
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/file.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/vars.hh"
@@ -56,8 +53,6 @@ state::state() : _poller_id(0), _rpc_port(0) {}
  *  @param[in] run_mux Set to true if multiplexing must be run.
  */
 void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
-  // Apply logging configuration
-  logger::instance().apply(s.loggers());
   // Sanity checks.
   static char const* const allowed_chars(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_.");
@@ -111,19 +106,6 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
     _cache_dir.append(PREFIX_VAR);
   _cache_dir.append("/");
   _cache_dir.append(s.broker_name());
-
-  // Flush logs or not.
-  com::centreon::broker::logging::file::with_flush(s.flush_logs());
-
-  // Enable or not thread ID logging.
-  com::centreon::broker::logging::file::with_thread_id(s.log_thread_id());
-
-  // Enable or not timestamp logging.
-  com::centreon::broker::logging::file::with_timestamp(s.log_timestamp());
-
-  // Enable or not human readable timstamp logging.
-  com::centreon::broker::logging::file::with_human_redable_timestamp(
-      s.log_human_readable_timestamp());
 
   // Apply modules configuration.
   _modules.apply(s.module_list(), s.module_directory(), &s);

@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/factory.hh"
 
 using namespace com::centreon::broker;
@@ -54,8 +53,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // Notification module.
-    logging::info(logging::high) << "notification: module for Centreon Broker "
-                                 << CENTREON_BROKER_VERSION;
+    log_v2::notification()->info("notification: module for Centreon Broker {}",
+                                 CENTREON_BROKER_VERSION);
 
     // Register Notification layer.
     io::protocols::instance().reg(

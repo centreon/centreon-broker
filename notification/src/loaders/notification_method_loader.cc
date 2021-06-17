@@ -20,7 +20,6 @@
 #include <QSet>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/notification_method.hh"
 
 using namespace com::centreon::broker::notification;
@@ -34,8 +33,8 @@ void notification_method_loader::load(mysql* ms,
   if (!ms || !output)
     return;
 
-  logging::debug(logging::medium)
-      << "notification: loading notification methods from the database";
+  log_v2::notification()->debug(
+      "notification: loading notification methods from the database");
 
   // Performance improvement, as we never go back.
   // query.setForwardOnly(true);
@@ -58,9 +57,8 @@ void notification_method_loader::load(mysql* ms,
       nm->set_types(res.value_as_str(5));
       nm->set_start(res.value_as_u32(6));
       nm->set_end(res.value_as_u32(7));
-      logging::debug(logging::low)
-          << "notification: new method " << res.value_as_u32(0) << " ('"
-          << nm->get_name() << "')";
+      log_v2::notification()->debug("notification: new method {} ('{}')",
+                                    res.value_as_u32(0), nm->get_name());
       output->add_notification_method(res.value_as_u32(0), nm);
     }
   } catch (std::exception const& e) {

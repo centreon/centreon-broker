@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/lua/broker_log.hh"
 #include <fstream>
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -55,20 +55,30 @@ static int l_broker_log_set_parameters(lua_State* L) {
   return 0;
 }
 
-int _log_func(logging::logger& log_func, lua_State* L, const char* header) {
+int _log_func(int log_level, lua_State* L, const char* header) {
   broker_log* bl(
       *static_cast<broker_log**>(luaL_checkudata(L, 1, "lua_broker_log")));
   int level(lua_tointeger(L, 2));
   char const* text(lua_tostring(L, 3));
   if (level <= bl->get_level()) {
-    if (bl->get_file().empty())
-      log_func(static_cast<logging::level>(level)) << "lua: " << text;
-    else {
+    if (bl->get_file().empty()) {
+      switch (log_level) {
+        case 0:
+          log_v2::lua()->info(text);
+          break;
+        case 1:
+          log_v2::lua()->warn(text);
+          break;
+        case 2:
+          log_v2::lua()->error(text);
+          break;
+      }
+    } else {
       std::ofstream of;
       of.open(bl->get_file().c_str(), std::ios_base::app);
       if (of.fail())
-        logging::error(logging::medium)
-            << "Unable to open the log file '" << bl->get_file() << "'";
+        log_v2::lua()->error("Unable to open the log file '{}'",
+                             bl->get_file());
       else {
         time_t now(time(nullptr));
         struct tm tmp;
@@ -93,7 +103,7 @@ int _log_func(logging::logger& log_func, lua_State* L, const char* header) {
  *  @return 0
  */
 static int l_broker_log_info(lua_State* L) {
-  return _log_func(logging::info, L, "INFO: ");
+  return _log_func(0, L, "INFO: ");
 }
 
 /**
@@ -104,7 +114,7 @@ static int l_broker_log_info(lua_State* L) {
  *  @return 0
  */
 static int l_broker_log_error(lua_State* L) {
-  return _log_func(logging::error, L, "ERROR: ");
+  return _log_func(2, L, "ERROR: ");
 }
 
 /**
@@ -115,7 +125,7 @@ static int l_broker_log_error(lua_State* L) {
  *  @return 0
  */
 static int l_broker_log_warning(lua_State* L) {
-  return _log_func(logging::error, L, "WARNING: ");
+  return _log_func(1, L, "WARNING: ");
 }
 
 /**

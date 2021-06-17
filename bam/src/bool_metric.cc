@@ -19,7 +19,6 @@
 #include "com/centreon/broker/bam/bool_metric.hh"
 
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/metric.hh"
 
 using namespace com::centreon::broker::bam;
@@ -139,8 +138,6 @@ void bool_metric::resolve_metrics(hst_svc_mapping const& mappings) {
   if (ids.empty()) {
     log_v2::bam()->error("bam: could not find metric ids for metric '{}'",
                          _metric_name);
-    logging::error(logging::high)
-        << "bam: could not find metric ids for metric '" << _metric_name << "'";
   }
   _resolved_metric_ids = ids;
   _unknown_state_metrics = ids;

@@ -21,7 +21,6 @@
 #include "com/centreon/broker/influxdb/influxdb12.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -72,8 +71,7 @@ stream::~stream() {}
  *  @return Number of events acknowledged.
  */
 int32_t stream::flush() {
-  logging::debug(logging::medium)
-      << "influxdb: commiting " << _actual_query << " queries";
+  log_v2::influxdb()->debug("influxdb: commiting {} queries", _actual_query);
   int ret(_pending_queries);
   _actual_query = 0;
   _pending_queries = 0;

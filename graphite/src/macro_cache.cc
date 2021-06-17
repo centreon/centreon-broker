@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/graphite/macro_cache.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
@@ -48,9 +48,8 @@ macro_cache::~macro_cache() {
     try {
       _save_to_disk();
     } catch (std::exception const& e) {
-      logging::error(logging::medium)
-          << "graphite: macro cache couldn't save data to disk: '" << e.what()
-          << "'";
+      log_v2::graphite()->error(
+          "graphite: macro cache couldn't save data to disk: '{}'", e.what());
     }
   }
 }

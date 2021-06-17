@@ -19,7 +19,7 @@
 
 #include <vector>
 #include "com/centreon/broker/config/state.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/stats/parser.hh"
 #include "com/centreon/broker/stats/worker_pool.hh"
 
@@ -54,8 +54,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // Stats module.
-    logging::info(logging::high)
-        << "stats: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::sql()->info("stats: module for Centreon Broker {}",
+                        CENTREON_BROKER_VERSION);
 
     // Check that stats are enabled.
     config::state const& base_cfg(*static_cast<config::state const*>(arg));
@@ -79,19 +79,16 @@ void broker_module_init(void const* arg) {
         }
         loaded = true;
       } catch (std::exception const& e) {
-        logging::config(logging::high) << "stats: "
-                                          "engine loading failure: "
-                                       << e.what();
+        log_v2::stats()->info("stats: engine loading failure: {}", e.what());
       } catch (...) {
-        logging::config(logging::high) << "stats: "
-                                          "engine loading failure";
+        log_v2::stats()->info("stats: engine loading failure");
       }
     }
     if (!loaded) {
       pool.cleanup();
-      logging::config(logging::high)
-          << "stats: invalid stats "
-             "configuration, stats engine is NOT loaded";
+      log_v2::stats()->info(
+          "stats: invalid stats "
+          "configuration, stats engine is NOT loaded");
     }
   }
 }

@@ -195,8 +195,9 @@ std::string line_protocol_query::generate_metric(storage::metric const& me) {
       }
     }
   } catch (std::exception const& e) {
-    log_v2::influxdb()->error("influxdb: could not generate query for metric {}: {}",
-        me.metric_id, e.what());
+    log_v2::influxdb()->error(
+        "influxdb: could not generate query for metric {}: {}", me.metric_id,
+        e.what());
     return "";
   }
   return iss.str();
@@ -230,8 +231,9 @@ std::string line_protocol_query::generate_status(storage::status const& st) {
       }
     }
   } catch (std::exception const& e) {
-    log_v2::influxdb()->error("influxdb: could not generate query for status {}: {}",
-        st.index_id, e.what());
+    log_v2::influxdb()->error(
+        "influxdb: could not generate query for status {}: {}", st.index_id,
+        e.what());
     return "";
   }
 
@@ -344,7 +346,8 @@ void line_protocol_query::_compile_scheme(
             escaper);
     } else
       log_v2::influxdb()->info("influxdb: unknown macro '{}': ignoring it",
-          macro);
+                               macro);
+
     found_macro = end_macro = end_macro + 1;
   }
   std::string substr(scheme.substr(end_macro, found_macro - end_macro));

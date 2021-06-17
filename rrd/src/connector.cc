@@ -22,7 +22,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/rrd/output.hh"
 
 using namespace com::centreon::broker;
@@ -165,8 +165,7 @@ std::string connector::_real_path_of(std::string const& path) {
 
   // Resolution success.
   if (real_path) {
-    logging::info(logging::medium)
-        << "RRD: path '" << path << "' resolved as '" << real_path << "'";
+    log_v2::rrd()->info("RRD: path '{}' resolved as '{}'", path, real_path);
     try {
       retval = real_path;
     } catch (...) {
@@ -178,8 +177,8 @@ std::string connector::_real_path_of(std::string const& path) {
   // Resolution failure.
   else {
     char const* msg{strerror(errno)};
-    logging::error(logging::high) << "RRD: could not resolve path '" << path
-                                  << "', using it as such: " << msg;
+    log_v2::rrd()->error(
+        "RRD: could not resolve path '{}', using it as such: {}", path, msg);
     retval = path;
   }
 

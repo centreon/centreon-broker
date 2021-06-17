@@ -27,7 +27,6 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -120,10 +119,11 @@ void muxer::ack_events(int count) {
     std::lock_guard<std::mutex> lock(_mutex);
     for (int i = 0; i < count && !_events.empty(); ++i) {
       if (_events.begin() == _pos) {
-        logging::error(logging::high) << "multiplexing: attempt to acknowledge "
-                                         "more events than available in "
-                                      << _name << " event queue: " << count
-                                      << " requested, " << i << " acknowledged";
+        log_v2::perfdata()->error(
+            "multiplexing: attempt to acknowledge "
+            "more events than available in {} event queue: {} requested, {} "
+            "acknowledged",
+            _name, count, i);
         break;
       }
       _events.pop_front();
@@ -404,9 +404,9 @@ void muxer::_clean() {
         --_events_size;
       }
     } catch (std::exception const& e) {
-      logging::error(logging::high)
-          << "multiplexing: could not backup memory queue of '" << _name
-          << "': " << e.what();
+      log_v2::perfdata()->error(
+          "multiplexing: could not backup memory queue of '{}': {}", _name,
+          e.what());
     }
   }
   _events.clear();
@@ -473,8 +473,7 @@ std::string muxer::_queue_file() const {
  *  Remove all the queue files attached to this muxer.
  */
 void muxer::remove_queue_files() {
-  logging::info(logging::low)
-      << "multiplexing: '" << _queue_file() << "' removed";
+  log_v2::perfdata()->info("multiplexing: '{}' removed", _queue_file());
 
   /* Here _file is already destroyed */
   persistent_file file(_queue_file());

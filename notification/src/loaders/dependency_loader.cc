@@ -21,7 +21,6 @@
 #include <utility>
 #include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/dependency.hh"
 
 using namespace com::centreon::broker::notification;
@@ -41,8 +40,8 @@ void dependency_loader::load(mysql* ms, dependency_builder* output) {
   if (!ms || !output)
     return;
 
-  logging::debug(logging::medium)
-      << "notification: loading dependencies from the database";
+  log_v2::notification()->debug(
+      "notification: loading dependencies from the database");
 
   // We do not know the type of a dependency until far latter.
   // Cache the options until we know enough to correctly parse them.

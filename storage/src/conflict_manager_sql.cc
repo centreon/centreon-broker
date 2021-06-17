@@ -20,7 +20,6 @@
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/query_preparator.hh"
@@ -155,8 +154,11 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   // Cancellation of downtimes.
   log_v2::sql()->debug("SQL: Cancellation of downtimes (instance_id: {})",
                        instance_id);
-  query = fmt::format("UPDATE downtimes SET cancelled=1 WHERE actual_end_time IS NULL AND cancelled=0 "
-      "AND instance_id={}", instance_id);
+  query = fmt::format(
+      "UPDATE downtimes SET cancelled=1 WHERE actual_end_time IS NULL AND "
+      "cancelled=0 "
+      "AND instance_id={}",
+      instance_id);
 
   _mysql.run_query(query, database::mysql_error::clean_downtimes, false, conn);
   _add_action(conn, actions::downtimes);
@@ -164,9 +166,12 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   // Remove comments.
   log_v2::sql()->debug("conflict_manager: remove comments (instance_id: {})",
                        instance_id);
-  
-  query = fmt::format("UPDATE comments SET deletion_time={} WHERE instance_id={} AND persistent=0 AND "
-      "(deletion_time IS NULL OR deletion_time=0)", time(nullptr), instance_id);
+
+  query = fmt::format(
+      "UPDATE comments SET deletion_time={} WHERE instance_id={} AND "
+      "persistent=0 AND "
+      "(deletion_time IS NULL OR deletion_time=0)",
+      time(nullptr), instance_id);
 
   _mysql.run_query(query, database::mysql_error::clean_comments, false, conn);
   _add_action(conn, actions::comments);
@@ -867,9 +872,10 @@ void conflict_manager::_process_host_group_member(
     /* If the group does not exist, we create it. */
     if (_cache_host_instance[hgm.host_id]) {
       if (_hostgroup_cache.find(hgm.group_id) == _hostgroup_cache.end()) {
-        logging::error(logging::low)
-            << "SQL: host group " << hgm.group_id
-            << " does not exist - insertion before insertion of members";
+        log_v2::sql()->error(
+            "SQL: host group {} does not exist - insertion before insertion of "
+            "members",
+            hgm.group_id);
         _prepare_hg_insupdate_statement();
 
         neb::host_group hg;
@@ -891,10 +897,10 @@ void conflict_manager::_process_host_group_member(
                            false, conn);
       _add_action(conn, actions::hostgroups);
     } else
-      logging::error(logging::medium)
-          << "SQL: host with host_id = " << hgm.host_id
-          << " does not exist - unable to store "
-             "unexisting host in a hostgroup. You should restart centengine.";
+      log_v2::sql()->error(
+          "SQL: host with host_id = {} does not exist - unable to store "
+          "unexisting host in a hostgroup. You should restart centengine.",
+          hgm.host_id);
   }
   // Delete.
   else {
@@ -1330,10 +1336,10 @@ void conflict_manager::_process_service_check(
                              database::mysql_error::store_service_check_command,
                              false, conn);
       } else
-        logging::error(logging::medium)
-            << "SQL: host with host_id = " << sc.host_id
-            << " does not exist - unable to store service command check of "
-               "that host. You should restart centengine";
+        log_v2::sql()->error(
+            "SQL: host with host_id = {} does not exist - unable to store "
+            "service command check of that host. You should restart centengine",
+            sc.host_id);
     }
   } else
     // Do nothing.
@@ -1499,9 +1505,10 @@ void conflict_manager::_process_service_group_member(
 
     /* If the group does not exist, we create it. */
     if (_servicegroup_cache.find(sgm.group_id) == _servicegroup_cache.end()) {
-      logging::error(logging::low)
-          << "SQL: service group " << sgm.group_id
-          << " does not exist - insertion before insertion of members";
+      log_v2::sql()->error(
+          "SQL: service group {} does not exist - insertion before insertion "
+          "of members",
+          sgm.group_id);
       _prepare_sg_insupdate_statement();
 
       neb::service_group sg;
@@ -1598,10 +1605,10 @@ void conflict_manager::_process_service(
           "bam fake service",
           s.service_description);
   } else
-    logging::error(logging::medium)
-        << "SQL: host with host_id = " << s.host_id
-        << " does not exist - unable to store "
-           "service of that host. You should restart centengine";
+    log_v2::sql()->error(
+        "SQL: host with host_id = {} does not exist - unable to store service "
+        "of that host. You should restart centengine",
+        s.host_id);
   *std::get<2>(t) = true;
 }
 

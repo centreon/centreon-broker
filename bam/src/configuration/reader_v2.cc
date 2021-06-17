@@ -35,7 +35,6 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
@@ -367,9 +366,6 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
   }
 }
 
-
-
-
 /**
  *  Load host/service IDs from the DB.
  *
@@ -664,10 +660,6 @@ void reader_v2::_load_dimensions() {
                   "BAM: could not retrieve BA {} used as KPI {} in dimension "
                   "table: ignoring this KPI",
                   k->kpi_ba_id, k->kpi_id);
-              logging::error(logging::high)
-                  << "BAM: could not retrieve BA " << k->kpi_ba_id
-                  << " used as KPI " << k->kpi_id
-                  << " in dimension table: ignoring this KPI";
               continue;
             }
             k->kpi_ba_name = found->second->ba_name;

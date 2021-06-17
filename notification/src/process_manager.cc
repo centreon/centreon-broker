@@ -20,8 +20,6 @@
 #include <QStringList>
 #include "com/centreon/broker/notification/process.hh"
 
-#include "com/centreon/broker/logging/logging.hh"
-
 using namespace com::centreon::broker::notification;
 
 process_manager* process_manager::_instance_ptr = 0;
@@ -90,13 +88,13 @@ process_manager::process_manager() : _process_list_mutex{} {
  *  @param[in] process  The process that has finished execution.
  */
 void process_manager::process_finished(process& pr) {
-  logging::debug(logging::medium) << "notification: a process has finished";
+  log_v2::notification()->debug("notification: a process has finished");
 
   std::string error_output;
   int exit_code;
   if (pr.get_error(exit_code, error_output))
-    logging::error(logging::low)
-        << "notification: error while executing a process: " << error_output;
+    log_v2::notification()->error(
+        "notification: error while executing a process: {}", error_output);
 
   std::lock_guard<std::recursive_mutex> lock(_process_list_mutex);
 
@@ -115,7 +113,7 @@ void process_manager::process_finished(process& pr) {
  *  @param[in] process  The process that has finished timeouted.
  */
 void process_manager::process_timeouted(process& process) {
-  logging::debug(logging::medium) << "notification: a process has timeouted";
+  log_v2::notification()->debug("notification: a process has timeouted");
 
   process.kill();
   process_finished(process);

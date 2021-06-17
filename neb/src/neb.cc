@@ -20,19 +20,15 @@
 #include <csignal>
 #include <cstring>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/instance_configuration.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/monitoring_logger.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -123,32 +119,7 @@ int nebmodule_init(int flags, char const* args, void* handle) {
     // Reset locale.
     setlocale(LC_NUMERIC, "C");
 
-    // Default logging object.
-    std::shared_ptr<neb::monitoring_logger> monlog{
-        std::make_shared<neb::monitoring_logger>()};
-
     try {
-      // Default logging object.
-      {
-        // Debug ?
-        bool debug;
-        char const* dbg_flag("-d ");
-        if (args && !strncmp(args, dbg_flag, strlen(dbg_flag))) {
-          debug = true;
-          args += strlen(dbg_flag);
-        } else
-          debug = false;
-
-        // Add log.
-        logging::manager::instance().log_on(
-            monlog,
-            (debug ? logging::config_type | logging::debug_type |
-                         logging::error_type | logging::info_type
-                   : logging::config_type | logging::error_type |
-                         logging::info_type),
-            (debug ? logging::low : logging::high));
-      }
-
       // Set configuration file.
       if (args) {
         char const* config_file("config_file=");
@@ -167,31 +138,19 @@ int nebmodule_init(int flags, char const* args, void* handle) {
       // Initialization.
       com::centreon::broker::config::applier::init(s);
 
-      // Apply loggers.
-      com::centreon::broker::config::applier::logger::instance().apply(
-          s.loggers());
-
       try {
         log_v2::instance().apply(s);
       } catch (const std::exception& e) {
         log_v2::core()->error(e.what());
       }
 
-      // Remove monitoring log.
-      logging::manager::instance().log_on(monlog, 0);
     } catch (std::exception const& e) {
-      logging::error(logging::high) << e.what();
-      logging::manager::instance().log_on(monlog, 0);
+      log_v2::core()->error(e.what());
       return -1;
     } catch (...) {
-      logging::error(logging::high)
-          << "main: configuration file parsing failed";
-      logging::manager::instance().log_on(monlog, 0);
+      log_v2::core()->error("main: configuration file parsing failed");
       return -1;
     }
-
-    // Remove old monitoring object.
-    logging::manager::instance().log_on(monlog, 0);
 
     // Register process and log callback.
     neb::gl_registered_callbacks.push_back(std::shared_ptr<neb::callback>(
@@ -200,14 +159,13 @@ int nebmodule_init(int flags, char const* args, void* handle) {
     neb::gl_registered_callbacks.push_back(
         std::shared_ptr<neb::callback>(new neb::callback(
             NEBCALLBACK_LOG_DATA, neb::gl_mod_handle, &neb::callback_log)));
-
   } catch (std::exception const& e) {
-    logging::error(logging::high) << "main: cbmod loading failed: " << e.what();
+    log_v2::core()->error("main: cbmod loading failed: {}", e.what());
     nebmodule_deinit(0, 0);
     return -1;
   } catch (...) {
-    logging::error(logging::high)
-        << "main: cbmod loading failed due to an unknown exception";
+    log_v2::core()->error(
+        "main: cbmod loading failed due to an unknown exception");
     nebmodule_deinit(0, 0);
     return -1;
   }

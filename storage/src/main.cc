@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/storage/factory.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/internal.hh"
@@ -66,8 +66,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // Storage module.
-    logging::info(logging::high)
-        << "storage: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::sql()->info("storage: module for Centreon Broker {}",
+                        CENTREON_BROKER_VERSION);
 
     io::events& e(io::events::instance());
 

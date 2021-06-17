@@ -23,7 +23,7 @@
 
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/config.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 
@@ -138,11 +138,10 @@ database_config::database_config(config::endpoint const& cfg) {
     try {
       _queries_per_transaction = std::stoul(it->second);
     } catch (std::exception const& e) {
-      logging::error(logging::high)
-          << "queries_per_transaction is a number "
-             "but must be given as a string. Unable "
-             "to read the value '"
-          << it->second << "' - value 10000 taken by default.";
+      log_v2::core()->error(
+          "queries_per_transaction is a number but must be given as a string. "
+          "Unable to read the value '{}' - value 10000 taken by default.",
+          it->second);
       _queries_per_transaction = 10000;
     }
   } else
@@ -161,10 +160,11 @@ database_config::database_config(config::endpoint const& cfg) {
     try {
       _connections_count = std::stoul(it->second);
     } catch (std::exception const& e) {
-      logging::error(logging::high) << "connections_count is a string "
-                                       "containing an integer. If not "
-                                       "specified, it will be considered as "
-                                       "\"1\".";
+      log_v2::core()->error(
+          "connections_count is a string "
+          "containing an integer. If not "
+          "specified, it will be considered as "
+          "\"1\".");
       _connections_count = 1;
     }
   } else
