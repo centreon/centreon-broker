@@ -62,9 +62,9 @@ timestamp kpi::get_last_state_change() const {
  *
  *  @param[in] e  The kpi event.
  */
-void kpi::set_initial_event(kpi_event const& e) {
+void kpi::set_initial_event(const kpi_event& e) {
   if (!_event) {
-    _event.reset(new kpi_event(e));
+    _event = std::make_shared<kpi_event>(e);
     impact_values impacts;
     impact_hard(impacts);
     double new_impact_level =
@@ -74,10 +74,10 @@ void kpi::set_initial_event(kpi_event const& e) {
     if (new_impact_level != _event->impact_level &&
         _event->impact_level != -1) {
       time_t now = ::time(nullptr);
-      std::shared_ptr<kpi_event> new_event(new kpi_event(e));
+      std::shared_ptr<kpi_event> new_event = std::make_shared<kpi_event>(e);
       new_event->end_time = now;
       _initial_events.push_back(new_event);
-      new_event = std::shared_ptr<kpi_event>(new kpi_event(e));
+      new_event = std::make_shared<kpi_event>(e);
       new_event->start_time = now;
       _initial_events.push_back(new_event);
       _event = new_event;
@@ -102,7 +102,7 @@ void kpi::commit_initial_events(io::stream* visitor) {
              it(_initial_events.begin()),
          end(_initial_events.end());
          it != end; ++it)
-      visitor->write(std::shared_ptr<io::data>(new kpi_event(**it)));
+      visitor->write(std::make_shared<kpi_event>(**it));
   }
   _initial_events.clear();
 }

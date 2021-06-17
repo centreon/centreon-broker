@@ -148,11 +148,13 @@ int32_t reporting_stream::stop() {
  *  @return Number of events acknowledged.
  */
 int reporting_stream::write(std::shared_ptr<io::data> const& data) {
-  log_v2::bam()->trace("BAM: reporting stream write");
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "BAM-BI"))
     return 0;
+
+  log_v2::bam()->trace("BAM: reporting stream write - event of type {:x}",
+                       data->type());
 
   switch (data->type()) {
     case io::events::data_type<io::events::bam, bam::de_kpi_event>::value:
@@ -191,11 +193,13 @@ int reporting_stream::write(std::shared_ptr<io::data> const& data) {
       _process_rebuild(data);
       break;
     default:
+      log_v2::bam()->trace("BAM: nothing to do with event of type {:x}",
+                           data->type());
       break;
   }
 
   // Event acknowledgement.
-  int retval(_ack_events);
+  int retval = _ack_events;
   _ack_events = 0;
   return retval;
 }
@@ -250,8 +254,8 @@ void reporting_stream::_apply(dimension_timeperiod_exclusion const& tpe) {
     timeperiod->add_excluded(excluded_tp);
   else
     log_v2::bam()->error(
-        "BAM-BI: could not apply exclusion of timeperiod {} by timeperiod {}: "
-        "at least one of the timeperiod does not exist",
+        "BAM-BI: could not apply exclusion of timeperiod {} by timeperiod {}"
+        ": at least one of the timeperiod does not exist",
         tpe.excluded_timeperiod_id, tpe.timeperiod_id);
 }
 
@@ -292,16 +296,13 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
   }
 
   // Close each event.
-  for (std::list<std::pair<uint32_t, time_t>>::const_iterator
-           it(events.begin()),
-       end(events.end());
-       it != end; ++it) {
+  for (auto& p : events) {
     time_t end_time;
     {
       std::string query_str(
           fmt::format("SELECT start_time FROM {} WHERE {}={} AND start_time>{} "
                       "ORDER BY start_time ASC LIMIT 1",
-                      table, id, it->first, it->second));
+                      table, id, p.first, p.second));
       log_v2::bam()->trace("reporting_stream: query: '{}'", query_str);
       std::promise<mysql_result> promise;
       _mysql.run_query_and_get_result(query_str, &promise);
@@ -316,13 +317,13 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
             "BAM-BI: could not get end time of inconsistent event of {} {} "
             "starting"
             " at {} : {}",
-            event_type, it->first, it->second, e.what());
+            event_type, p.first, p.second, e.what());
       }
     }
     {
       std::string query(
           fmt::format("UPDATE {} SET end_time={} WHERE {}={} AND start_time={}",
-                      table, end_time, id, it->first, it->second));
+                      table, end_time, id, p.first, p.second));
       log_v2::bam()->trace("reporting_stream: query: '{}'", query);
       _mysql.run_query(query, database::mysql_error::close_event, true);
     }
@@ -1294,13 +1295,14 @@ void reporting_stream::_compute_event_durations(
   }
 
   for (std::vector<std::pair<time::timeperiod::ptr, bool>>::const_iterator
-           it(timeperiods.begin()),
-       end(timeperiods.end());
+           it = timeperiods.begin(),
+           end = timeperiods.end();
        it != end; ++it) {
     time::timeperiod::ptr tp = it->first;
     bool is_default = it->second;
 
-    std::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
+    std::shared_ptr<ba_duration_event> dur_ev{
+        std::make_shared<ba_duration_event>()};
     dur_ev->ba_id = ev->ba_id;
     dur_ev->real_start_time = ev->start_time;
     dur_ev->start_time = tp->get_next_valid(ev->start_time);

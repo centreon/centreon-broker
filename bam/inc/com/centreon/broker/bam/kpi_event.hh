@@ -45,7 +45,7 @@ class kpi_event : public io::data {
 
  public:
   typedef impact_values::state state;
-  kpi_event(uint32_t kpi_id, uint32_t ba_id);
+  kpi_event(uint32_t kpi_id, uint32_t ba_id, time_t start_time);
   kpi_event(const kpi_event& other);
   ~kpi_event() noexcept = default;
   kpi_event& operator=(const kpi_event& other);
