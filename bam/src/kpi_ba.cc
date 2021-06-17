@@ -258,17 +258,14 @@ void kpi_ba::_open_new_event(io::stream* visitor,
                              int impact,
                              kpi_ba::state ba_state,
                              timestamp event_start_time) {
-  _event = std::make_shared<kpi_event>(_id, _ba_id);
+  _event = std::make_shared<kpi_event>(_id, _ba_id, event_start_time);
   _event->impact_level = impact;
   _event->in_downtime = _ba->get_in_downtime();
   _event->output = _ba->get_output();
   _event->perfdata = _ba->get_perfdata();
-  _event->start_time = event_start_time;
   _event->status = ba_state;
-  if (visitor) {
-    std::shared_ptr<io::data> ke(new kpi_event(*_event));
-    visitor->write(ke);
-  }
+  if (visitor)
+    visitor->write(std::make_shared<kpi_event>(*_event));
 }
 
 /**

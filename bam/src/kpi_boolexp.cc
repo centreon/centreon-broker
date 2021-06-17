@@ -198,12 +198,11 @@ void kpi_boolexp::_fill_impact(impact_values& impact) {
 void kpi_boolexp::_open_new_event(io::stream* visitor,
                                   int impact,
                                   kpi_boolexp::state state) {
-  _event = std::make_shared<kpi_event>(_id, _ba_id);
+  _event = std::make_shared<kpi_event>(_id, _ba_id, ::time(nullptr));
   _event->impact_level = impact;
   _event->in_downtime = false;
   _event->output = "BAM boolean expression computed by Centreon Broker";
   _event->perfdata = "";
-  _event->start_time = time(nullptr);
   _event->status = state;
   if (visitor) {
     visitor->write(_event);

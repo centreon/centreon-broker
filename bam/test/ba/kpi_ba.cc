@@ -259,6 +259,7 @@ TEST_F(KpiBA, KpiBaDt) {
   dt->host_id = 3;
   dt->service_id = 1;
   dt->entry_time = now + 12;
+  dt->actual_start_time = now + 12;
   dt->was_started = true;
   kpis[0]->service_update(dt, _visitor.get());
 

@@ -239,12 +239,12 @@ if [ "$force" = "1" ] ; then
 fi
 cd build
 if [ $maj = "centos7" ] ; then
-    rm -rf ~/.conan/profiles/default
-    if [ "$CONAN_REBUILD" = "1" ] ; then
-      $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
-    else
-      $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
-    fi
+  rm -rf ~/.conan/profiles/default
+  if [ "$CONAN_REBUILD" = "1" ] ; then
+    $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
+  else
+    $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+  fi
 else
     $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
 fi

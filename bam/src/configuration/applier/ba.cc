@@ -19,7 +19,7 @@
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include <fmt/format.h>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/service.hh"
@@ -111,7 +111,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   for (std::map<uint32_t, applied>::iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
-    logging::config(logging::medium) << "BAM: removing BA " << it->first;
+    log_v2::bam()->info("BAM: removing BA {}", it->first);
     std::shared_ptr<neb::service> s(
         _ba_service(it->first, it->second.cfg.get_host_id(),
                     it->second.cfg.get_service_id()));
@@ -124,11 +124,11 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   to_delete.clear();
 
   // Create new objects.
-  for (bam::configuration::state::bas::iterator it(to_create.begin()),
-       end(to_create.end());
+  for (bam::configuration::state::bas::iterator it = to_create.begin(),
+                                                end = to_create.end();
        it != end; ++it) {
-    logging::config(logging::medium) << "BAM: creating BA " << it->first
-                                     << " ('" << it->second.get_name() << "')";
+    log_v2::bam()->info("BAM: creating BA {} ('{}')", it->first,
+                        it->second.get_name());
     std::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
@@ -146,18 +146,18 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
        it != end; ++it) {
     std::map<uint32_t, applied>::iterator pos(_applied.find(it->get_id()));
     if (pos != _applied.end()) {
-      logging::config(logging::medium) << "BAM: modifying BA " << it->get_id();
+      log_v2::bam()->info("BAM: modifying BA {}", it->get_id());
       pos->second.obj->set_name(it->get_name());
       pos->second.obj->set_state_source(it->get_state_source());
       pos->second.obj->set_level_warning(it->get_warning_level());
       pos->second.obj->set_level_critical(it->get_critical_level());
       pos->second.cfg = *it;
     } else
-      logging::error(logging::high)
-          << "BAM: attempting to modify BA " << it->get_id()
-          << ", however associated object was not found. This is likely a"
-          << " software bug that you should report to Centreon Broker "
-          << "developers";
+      log_v2::bam()->error(
+          "BAM: attempting to modify BA {}, however associated object was not "
+          "found. This is likely a software bug that you should report to "
+          "Centreon Broker developers",
+          it->get_id());
   }
 
   // Set all BA objects as valid. Invalid BAs will be reset as invalid
@@ -290,8 +290,8 @@ void applier::ba::load_from_cache(persistent_cache& cache) {
         *std::static_pointer_cast<inherited_downtime const>(d);
     std::map<uint32_t, applied>::iterator found = _applied.find(dwn.ba_id);
     if (found != _applied.end()) {
-      logging::debug(logging::medium)
-          << "BAM: found an inherited downtime for BA " << found->first;
+      log_v2::bam()->debug("BAM: found an inherited downtime for BA {}",
+                           found->first);
       found->second.obj->set_inherited_downtime(dwn);
     }
     cache.get(d);

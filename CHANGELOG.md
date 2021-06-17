@@ -4,6 +4,12 @@
 
 ### Bug fix
 
+*BAM*
+
+When a new BA is created with new KPI, it is possible to have an issue during
+the kpi events insertion in the database with the start time column. This patch
+fixes this issue.
+
 *SQL*
 
 Broker stores its connections to the database in an array. Once they are

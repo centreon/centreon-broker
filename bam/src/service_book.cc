@@ -19,6 +19,7 @@
 #include "com/centreon/broker/bam/service_book.hh"
 
 #include "com/centreon/broker/bam/service_listener.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -35,6 +36,8 @@ using namespace com::centreon::broker::bam;
 void service_book::listen(uint32_t host_id,
                           uint32_t service_id,
                           service_listener* listnr) {
+  log_v2::bam()->trace("BAM: service ({}, {}) added to service book", host_id,
+                       service_id);
   _book.insert(std::make_pair(std::make_pair(host_id, service_id), listnr));
 }
 
