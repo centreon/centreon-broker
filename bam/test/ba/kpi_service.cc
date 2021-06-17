@@ -507,6 +507,7 @@ TEST_F(BamBA, KpiServiceDtInheritAllCritical) {
     dt->host_id = ss->host_id;
     dt->service_id = 1;
     dt->was_started = true;
+    dt->actual_start_time = now + 2;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());
 
@@ -565,6 +566,7 @@ TEST_F(BamBA, KpiServiceDtInheritOneOK) {
     dt->host_id = ss->host_id;
     dt->service_id = 1;
     dt->was_started = true;
+    dt->actual_start_time = now + 2;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());
 
@@ -574,8 +576,8 @@ TEST_F(BamBA, KpiServiceDtInheritOneOK) {
   }
 
   auto events = _visitor->queue();
-  ASSERT_EQ(events.size(), 5u);
   _visitor->print_events();
+  ASSERT_EQ(events.size(), 13u);
 }
 
 TEST_F(BamBA, KpiServiceIgnoreDt) {
@@ -619,6 +621,7 @@ TEST_F(BamBA, KpiServiceIgnoreDt) {
 
     dt->host_id = ss->host_id;
     dt->service_id = 1;
+    dt->actual_start_time = now + 2;
     dt->was_started = true;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());
@@ -670,6 +673,7 @@ TEST_F(BamBA, KpiServiceDtIgnoreKpi) {
 
     dt->host_id = ss->host_id;
     dt->service_id = 1;
+    dt->actual_start_time = now + 2;
     dt->was_started = true;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());
@@ -728,6 +732,7 @@ TEST_F(BamBA, KpiServiceDtIgnoreKpiImpact) {
 
     dt->host_id = ss->host_id;
     dt->service_id = 1;
+    dt->actual_start_time = now + 2;
     dt->was_started = true;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());
@@ -788,6 +793,7 @@ TEST_F(BamBA, KpiServiceDtIgnoreKpiBest) {
 
     dt->host_id = ss->host_id;
     dt->service_id = 1;
+    dt->actual_start_time = now + 2;
     dt->was_started = true;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());
@@ -849,6 +855,7 @@ TEST_F(BamBA, KpiServiceDtIgnoreKpiWorst) {
     dt->host_id = ss->host_id;
     dt->service_id = 1;
     dt->was_started = true;
+    dt->actual_start_time = now + 2;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());
 
@@ -899,6 +906,7 @@ TEST_F(BamBA, KpiServiceDtIgnoreKpiRatio) {
 
     dt->host_id = ss->host_id;
     dt->service_id = 1;
+    dt->actual_start_time = now + 2;
     dt->was_started = true;
     dt->actual_end_time = 0;
     kpis[j]->service_update(dt, _visitor.get());

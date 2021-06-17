@@ -431,11 +431,23 @@ void ba::set_level_warning(double level) {
  *  @param[in] event  The event to set.
  */
 void ba::set_initial_event(ba_event const& event) {
+  log_v2::bam()->trace(
+      "BAM: ba initial event set (ba_id:{}, start_time:{}, end_time:{}, "
+      "in_downtime:{}, status:{})",
+      event.ba_id, event.start_time, event.end_time, event.in_downtime,
+      event.status);
+
   if (!_event) {
     _event.reset(new ba_event(event));
     _in_downtime = event.in_downtime;
     _last_kpi_update = _event->start_time;
     _initial_events.push_back(_event);
+  } else {
+    log_v2::bam()->error(
+        "BAM: impossible to set ba initial event (ba_id:{}, start_time:{}, "
+        "end_time:{}, in_downtime:{}, status:{}): event already defined",
+        event.ba_id, event.start_time, event.end_time, event.in_downtime,
+        event.status);
   }
 }
 
@@ -507,7 +519,7 @@ void ba::visit(io::stream* visitor) {
 
     // Generate BA status event.
     {
-      std::shared_ptr<ba_status> status(new ba_status);
+      std::shared_ptr<ba_status> status{std::make_shared<ba_status>()};
       status->ba_id = _id;
       status->in_downtime = _in_downtime;
       if (_event)
@@ -582,7 +594,7 @@ void ba::visit(io::stream* visitor) {
  *  @param dt       Downtime of the service.
  *  @param visitor  Visitor that will receive events.
  */
-void ba::service_update(std::shared_ptr<neb::downtime> const& dt,
+void ba::service_update(const std::shared_ptr<neb::downtime>& dt,
                         io::stream* visitor) {
   (void)visitor;
   if ((dt->host_id == _host_id) && (dt->service_id == _service_id)) {

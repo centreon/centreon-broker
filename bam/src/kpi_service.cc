@@ -193,10 +193,17 @@ void kpi_service::service_update(
 
     // Update information.
     if (status->last_check.is_null()) {
-      if (_last_check.is_null())
+      if (_last_check.is_null()) {
         _last_check = status->last_update;
+        log_v2::bam()->trace(
+            "service kpi {} last check updated with status last update {}", _id,
+            status->last_update);
+      }
     } else {
       _last_check = status->last_check;
+      log_v2::bam()->trace(
+          "service kpi {} last check updated with status last check {}", _id,
+          status->last_check);
     }
     _output = status->output;
     _perfdata = status->perf_data;
@@ -247,24 +254,28 @@ void kpi_service::service_update(
  */
 void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
                                  io::stream* visitor) {
-  if (dt && dt->host_id == _host_id && dt->service_id == _service_id) {
-    // Update information.
-    _downtimed = dt->was_started && dt->actual_end_time.is_null();
-    if (!_event || _event->in_downtime != _downtimed)
-      _last_check = _downtimed ? dt->actual_start_time : dt->actual_end_time;
-
-    // Log message.
-    log_v2::bam()->debug(
-        "BAM: KPI {} is getting a downtime event for service ({}, {}), in "
-        "downtime: {} at {}",
-        _id, _host_id, _service_id, _downtimed, _last_check);
-
-    // Generate status event.
-    visit(visitor);
-
-    // Propagate change.
-    propagate_update(visitor);
+  assert(dt && dt->host_id == _host_id && dt->service_id == _service_id);
+  // Update information.
+  _downtimed = dt->was_started && dt->actual_end_time.is_null();
+  if (!_event || _event->in_downtime != _downtimed) {
+    _last_check = _downtimed ? dt->actual_start_time : dt->actual_end_time;
+    assert(static_cast<time_t>(_last_check) > 10);
+    log_v2::bam()->trace("kpi service {} update, last check set to {}", _id,
+                         _last_check);
   }
+
+  // Log message.
+  log_v2::bam()->debug(
+      "BAM: KPI {} is getting notified of a downtime on its service ({}, {}), "
+      "in "
+      "downtime: {} at {}",
+      _id, _host_id, _service_id, _downtimed, _last_check);
+
+  // Generate status event.
+  visit(visitor);
+
+  // Propagate change.
+  propagate_update(visitor);
 }
 
 /**
@@ -422,13 +433,12 @@ void kpi_service::_fill_impact(impact_values& impact,
  */
 void kpi_service::_open_new_event(io::stream* visitor,
                                   impact_values const& impacts) {
-  _event = std::make_shared<kpi_event>(_id, _ba_id);
+  _event = std::make_shared<kpi_event>(_id, _ba_id, _last_check);
   _event->impact_level =
       _downtimed ? impacts.get_downtime() : impacts.get_nominal();
   _event->in_downtime = _downtimed;
   _event->output = _output;
   _event->perfdata = _perfdata;
-  _event->start_time = _last_check;
   _event->status = _state_hard;
   log_v2::bam()->trace(
       "BAM: New BI event for kpi {}, ba {}, in downtime {} since {}", _id,
@@ -448,6 +458,10 @@ void kpi_service::_open_new_event(io::stream* visitor,
  */
 void kpi_service::set_initial_event(kpi_event const& e) {
   kpi::set_initial_event(e);
+  log_v2::bam()->trace(
+      "BAM: set initial event from kpi event {} (start time {} ; in downtime "
+      "{})",
+      _event->kpi_id, _event->start_time, _event->in_downtime);
   _last_check = _event->start_time;
   _downtimed = _event->in_downtime;
 }

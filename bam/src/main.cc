@@ -139,6 +139,5 @@ void broker_module_init(void const* arg) {
                                                   "inherited_downtime");
     }
   }
-  return;
 }
 }

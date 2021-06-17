@@ -169,5 +169,5 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
 void stream::statistics(nlohmann::json& tree) const {
   nlohmann::json obj{storage::conflict_manager::instance().get_statistics()};
   tree["sql pending events"] = _pending_events;
-  tree["conflict_manager"] = obj;
+  tree["conflict_manager"] = obj[0];
 }

@@ -124,8 +124,8 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   to_delete.clear();
 
   // Create new objects.
-  for (bam::configuration::state::bas::iterator it(to_create.begin()),
-       end(to_create.end());
+  for (bam::configuration::state::bas::iterator it = to_create.begin(),
+                                                end = to_create.end();
        it != end; ++it) {
     log_v2::bam()->info("BAM: creating BA {} ('{}')", it->first,
                         it->second.get_name());
