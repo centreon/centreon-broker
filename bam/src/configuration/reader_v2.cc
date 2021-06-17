@@ -146,9 +146,8 @@ void reader_v2::_load(state::kpis& kpis) {
 
         // KPI state.
         if (!res.value_is_null(17)) {
-          kpi_event e(kpi_id, res.value_as_u32(4));
+          kpi_event e(kpi_id, res.value_as_u32(4), res.value_as_u64(17));
           e.status = res.value_as_i32(8);
-          e.start_time = res.value_as_u64(17);
           e.in_downtime = res.value_as_bool(18);
           e.impact_level = res.value_is_null(19) ? -1 : res.value_as_f64(19);
           kpis[kpi_id].set_opened_event(e);
@@ -207,17 +206,18 @@ void reader_v2::_load(state::kpis& kpis) {
  *                       description.
  */
 void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
+  log_v2::bam()->info("BAM: loading BAs");
   try {
     {
       std::string query(
           fmt::format("SELECT b.ba_id, b.name, b.state_source, b.level_w,"
-                      "       b.level_c, b.last_state_change, b.current_status,"
-                      "       b.in_downtime, b.inherit_kpi_downtimes"
-                      "  FROM mod_bam AS b"
-                      "  INNER JOIN mod_bam_poller_relations AS pr"
-                      "    ON b.ba_id=pr.ba_id"
-                      "  WHERE b.activate='1'"
-                      "    AND pr.poller_id={}",
+                      " b.level_c, b.last_state_change, b.current_status,"
+                      " b.in_downtime, b.inherit_kpi_downtimes"
+                      " FROM mod_bam AS b"
+                      " INNER JOIN mod_bam_poller_relations AS pr"
+                      " ON b.ba_id=pr.ba_id"
+                      " WHERE b.activate='1'"
+                      " AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
       log_v2::bam()->trace("reader_v2 query: {}", query);
@@ -244,6 +244,9 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
             e.status = res.value_as_i32(6);
             e.in_downtime = res.value_as_bool(7);
             bas[ba_id].set_opened_event(e);
+            log_v2::bam()->trace(
+                "BAM: ba {} configuration (start_time:{}, in downtime: {})",
+                ba_id, e.start_time, e.in_downtime);
           }
         }
       } catch (std::exception const& e) {
@@ -366,9 +369,6 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
         e.what());
   }
 }
-
-
-
 
 /**
  *  Load host/service IDs from the DB.

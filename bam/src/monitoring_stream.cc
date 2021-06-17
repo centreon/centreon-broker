@@ -201,7 +201,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       std::shared_ptr<neb::service_status> ss(
           std::static_pointer_cast<neb::service_status>(data));
       log_v2::bam()->trace(
-          "BAM: processing service status (host {}, service {}, hard state {}, "
+          "BAM: processing service status (host: {}, service: {}, hard state {}, "
           "current state {})",
           ss->host_id, ss->service_id, ss->last_hard_state, ss->current_state);
       multiplexing::publisher pblshr;
@@ -245,10 +245,10 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
     case bam::ba_status::static_type(): {
       ba_status* status(static_cast<ba_status*>(data.get()));
       log_v2::bam()->trace(
-          "BAM: processing BA status (id {}, level {}, acknowledgement {}, "
-          "downtime {})",
+          "BAM: processing BA status (id {}, nominal {}, acknowledgement {}, "
+          "downtime {}) - in downtime {}",
           status->ba_id, status->level_nominal, status->level_acknowledgement,
-          status->level_downtime);
+          status->level_downtime, status->in_downtime);
       _ba_update.bind_value_as_f64(0, status->level_nominal);
       _ba_update.bind_value_as_f64(1, status->level_acknowledgement);
       _ba_update.bind_value_as_f64(2, status->level_downtime);
@@ -337,12 +337,6 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   // Event acknowledgement.
   return 0;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Prepare queries.

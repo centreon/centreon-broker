@@ -34,54 +34,60 @@ namespace io {
  *
  */
 class extension {
-    std::string _name;
-    bool _optional;
-    bool _mandatory;
-    std::unordered_map<std::string, std::string> _options;
+  std::string _name;
+  bool _optional;
+  bool _mandatory;
+  std::unordered_map<std::string, std::string> _options;
 
-  public:
-    extension() : _optional{false}, _mandatory{false} {}
+ public:
+  extension() : _optional{false}, _mandatory{false} {}
 
-    extension(const std::string& name, bool optional, bool mandatory) :
-      _name{name},
-      _optional{optional},
-      _mandatory{mandatory} {}
+  extension(const std::string& name, bool optional, bool mandatory)
+      : _name{name}, _optional{optional}, _mandatory{mandatory} {}
 
-    extension(const extension& other) : _name{other._name}, _optional{other._optional}, _mandatory{other._mandatory}, _options{other._options} {}
+  extension(const extension& other)
+      : _name{other._name},
+        _optional{other._optional},
+        _mandatory{other._mandatory},
+        _options{other._options} {}
 
-    extension(extension&& other) : _name{std::move(other._name)}, _optional{other._optional}, _mandatory{other._mandatory}, _options{std::move(other._options)} {}
+  extension(extension&& other)
+      : _name{std::move(other._name)},
+        _optional{other._optional},
+        _mandatory{other._mandatory},
+        _options{std::move(other._options)} {}
 
-    extension& operator=(extension&& ext) {
-      if (&ext != this) {
-        _name = std::move(ext._name);
-        _optional = ext._optional;
-        _mandatory = ext._mandatory;
-        _options = std::move(ext._options);
-      }
-      return *this;
+  extension& operator=(extension&& ext) {
+    if (&ext != this) {
+      _name = std::move(ext._name);
+      _optional = ext._optional;
+      _mandatory = ext._mandatory;
+      _options = std::move(ext._options);
     }
+    return *this;
+  }
 
-    extension& operator=(const extension& ext) {
-      if (&ext != this) {
-        _name = ext._name;
-        _optional = ext._optional;
-        _mandatory = ext._mandatory;
-        _options = ext._options;
-      }
-      return *this;
+  extension& operator=(const extension& ext) {
+    if (&ext != this) {
+      _name = ext._name;
+      _optional = ext._optional;
+      _mandatory = ext._mandatory;
+      _options = ext._options;
     }
+    return *this;
+  }
 
-    std::unordered_map<std::string, std::string>& mutable_options() {
-      return _options;
-    }
-    const std::unordered_map<std::string, std::string>& options() const {
-      return _options;
-    }
-    const std::string& name() const { return _name; }
-    bool is_optional() const { return _optional; }
-    bool is_mandatory() const { return _mandatory; }
+  std::unordered_map<std::string, std::string>& mutable_options() {
+    return _options;
+  }
+  const std::unordered_map<std::string, std::string>& options() const {
+    return _options;
+  }
+  const std::string& name() const { return _name; }
+  bool is_optional() const { return _optional; }
+  bool is_mandatory() const { return _mandatory; }
 };
-}
+}  // namespace io
 
 CCB_END()
 #endif /* !CCB_IO_EXTENSION_HH */

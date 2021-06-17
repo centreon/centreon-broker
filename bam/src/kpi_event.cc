@@ -26,11 +26,12 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  */
-kpi_event::kpi_event(uint32_t kpi_id, uint32_t ba_id)
+kpi_event::kpi_event(uint32_t kpi_id, uint32_t ba_id, time_t start_time)
     : io::data(kpi_event::static_type()),
       kpi_id(kpi_id),
       impact_level(0),
       in_downtime(false),
+      start_time(start_time),
       status(kpi_event::state::state_unknown),
       ba_id(ba_id) {}
 
@@ -111,7 +112,7 @@ mapping::entry const kpi_event::entries[] = {
 
 // Operations.
 static io::data* new_kpi_event() {
-  return new kpi_event(0, 0);
+  return new kpi_event(0, 0, 0);
 }
 
 io::event_info::event_operations const kpi_event::operations = {&new_kpi_event};

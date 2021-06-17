@@ -47,9 +47,9 @@ class version_response : public io::data {
 
   version_response();
   version_response(const std::string& extensions);
-  version_response(const version_response &) = delete;
+  version_response(const version_response&) = delete;
   ~version_response() noexcept = default;
-  version_response& operator=(const version_response & ) = delete;
+  version_response& operator=(const version_response&) = delete;
 
   /**
    *  Get the event type.
