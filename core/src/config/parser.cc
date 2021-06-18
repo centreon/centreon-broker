@@ -208,9 +208,7 @@ state parser::parse(std::string const& file) {
                 "config parser: cannot parse key '"
                 "'input':  value type must be an object");
 
-        }
-
-        else if (it.key() == "log") {
+        } else if (it.key() == "log") {
           if (!it.value().is_object())
             throw msg_fmt(
                 "config parser: cannot parse key "
@@ -292,12 +290,14 @@ state parser::parse(std::string const& file) {
               conf.loggers.emplace(it.key(), it.value().get<std::string>());
             }
           }
-        }
-
-        else if (it.key() == "logger") {
+        } else if (it.key() == "logger") {
           log_v2::config()->warn("logger object is deprecated on 21.10");
-        } else
+        } else {
+          if (it.key() == "stats")
+            retval.add_module("15-stats.so");
+
           retval.params()[it.key()] = it.value().dump();
+        }
       }
     }
   } catch (const json::parse_error& e) {
@@ -383,7 +383,7 @@ void parser::_parse_endpoint(json const& elem,
       e.cache_enabled = parse_boolean(it.value().get<std::string>());
     else if (it.key() == "type") {
       e.type = it.value().get<std::string>();
-      if (e.type == "ipv4")
+      if (e.type == "ipv4" || e.type == "tcp" || e.type == "ipv6")
         module = "50-tcp.so";
       else if (e.type == "rrd")
         module = "70-rrd.so";

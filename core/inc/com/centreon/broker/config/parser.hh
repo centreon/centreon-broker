@@ -47,7 +47,6 @@ class parser {
   void _parse_endpoint(const nlohmann::json& elem,
                        endpoint& e,
                        std::string& module);
-  void _parse_logger(const nlohmann::json& elem, logger& l);
 };
 }  // namespace config
 

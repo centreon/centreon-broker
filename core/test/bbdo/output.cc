@@ -139,7 +139,8 @@ TEST_F(OutputTest, WriteService) {
 }
 
 TEST_F(OutputTest, WriteLongService) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   auto svc = std::make_shared<neb::service>();
   svc->host_id = 12;
@@ -186,7 +187,8 @@ TEST_F(OutputTest, WriteLongService) {
 }
 
 TEST_F(OutputTest, WriteReadService) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -229,7 +231,8 @@ TEST_F(OutputTest, WriteReadService) {
 }
 
 TEST_F(OutputTest, ShortPersistentFile) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   std::shared_ptr<neb::service_status> svc(new neb::service_status);
   svc->host_id = 12345;
@@ -272,7 +275,8 @@ TEST_F(OutputTest, ShortPersistentFile) {
 }
 
 TEST_F(OutputTest, LongPersistentFile) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -315,7 +319,8 @@ TEST_F(OutputTest, LongPersistentFile) {
 }
 
 TEST_F(OutputTest, WriteReadBadChksum) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -353,7 +358,8 @@ TEST_F(OutputTest, WriteReadBadChksum) {
 }
 
 TEST_F(OutputTest, ServiceTooShort) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;
@@ -398,7 +404,8 @@ TEST_F(OutputTest, ServiceTooShort) {
 }
 
 TEST_F(OutputTest, ServiceTooShortAndAGoodOne) {
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
 
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12345;

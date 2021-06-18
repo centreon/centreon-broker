@@ -60,8 +60,7 @@ class modules {
   void discard();
 
   std::mutex& module_mutex();
-  void load_dir(const std::string& dirname, const void* arg);
-  void load_file(const std::string& filename, const void* arg = nullptr);
+  bool load_file(const std::string& filename, const void* arg = nullptr);
   size_t size() const noexcept;
 };
 }  // namespace applier

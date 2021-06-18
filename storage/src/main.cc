@@ -40,7 +40,17 @@ extern "C" {
 /**
  *  Module version symbol. Used to check for version mismatch.
  */
-char const* broker_module_version = CENTREON_BROKER_VERSION;
+const char* broker_module_version = CENTREON_BROKER_VERSION;
+
+/**
+ * @brief Return an array with modules needed for this one to work.
+ *
+ * @return An array of const char*
+ */
+const char* const* broker_module_parents() {
+  constexpr static const char* retval[]{"10-neb.so", nullptr};
+  return retval;
+}
 
 /**
  *  Module deinitialization routine.

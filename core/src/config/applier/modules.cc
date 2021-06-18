@@ -41,14 +41,10 @@ void modules::apply(const std::list<std::string>& module_list,
   // Load modules.
   for (const std::string& m : module_list) {
     log_v2::config()->info("module applier: loading module '{}'", m);
-    load_file(m, arg);
+    if (!load_file(fmt::format("{}/{}", module_dir, m), arg))
+      log_v2::config()->error("module applier: impossible to load module '{}'",
+                              m);
   }
-  if (!module_dir.empty()) {
-    log_v2::config()->info("module applier: loading directory '{}'",
-                           module_dir);
-    load_dir(module_dir, arg);
-  } else
-    log_v2::config()->debug("module applier: no directory defined");
 }
 
 /**
@@ -93,6 +89,9 @@ std::mutex& modules::module_mutex() {
  * @return a boolean True on success.
  */
 bool modules::_check_module(const std::string& name, void* h) noexcept {
+  if (!h)
+    return false;
+
   // Find init symbol.
   log_v2::core()->debug(
       "modules: checking initialization routine (symbol '{}') in '{}'",
@@ -121,26 +120,12 @@ bool modules::_check_module(const std::string& name, void* h) noexcept {
     return false;
   }
 
-  // Find deinit symbol.
-  log_v2::core()->debug(
-      "modules: checking updatization routine (symbol '{}') in '{}'",
-      handle::updatization, name);
-  void* update = dlsym(h, handle::updatization);
-
-  if (!update) {
-    log_v2::core()->error(
-        "modules: could not find updatization routine in '{}' (not a Centreon "
-        "Broker module ?): {}",
-        name, dlerror());
-    return false;
-  }
-
   // Find version symbol.
   log_v2::core()->debug(
       "modules: checking module version (symbol '{}') in '{}'",
       handle::versionning, name);
 
-  char const** version = (char const**)dlsym(h, handle::versionning);
+  const char** version = (const char**)dlsym(h, handle::versionning);
 
   // Could not find version symbol.
   if (!version) {
@@ -174,24 +159,41 @@ bool modules::_check_module(const std::string& name, void* h) noexcept {
  *
  *  @param[in] filename File name.
  *  @param[in] arg      Module argument.
+ *
+ *  @return True on success.
  */
-void modules::load_file(const std::string& filename, const void* arg) {
+bool modules::load_file(const std::string& filename, const void* arg) {
   auto found = _handles.find(filename);
   if (found == _handles.end()) {
-    log_v2::core()->info(
-        "modules: attempt to load '{}' which is already loaded", filename);
-    void* h = dlopen(filename.c_str(), RTLD_LAZY);
+    log_v2::core()->info("modules: attempt to load module '{}'", filename);
+    void* h = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     if (_check_module(filename, h)) {
-      const char*** parents = (const char***)dlsym(h, handle::parents_list);
-      if (parents)
-        for (const char* p = **parents; p; ++p) {
-          auto found = _handles.find(p);
+      void* parents = dlsym(h, handle::parents_list);
+      if (parents) {
+        size_t pos = filename.find_last_of('/');
+        fmt::string_view path;
+        if (pos != std::string::npos)
+          path = fmt::string_view(filename.data(), pos);
+        else
+          path = fmt::string_view(".", 1);
+        union {
+          const char* const* (*code)();
+          void* data;
+        } sym;
+        sym.data = parents;
+        const char* const* pts = (*(sym.code))();
+        for (auto p = pts; *p; ++p) {
+          auto found = _handles.find(*p);
           if (found == _handles.end())
-            load_file(p, arg);
+            if (!load_file(fmt::format("{}/{}", path, *p), arg))
+              log_v2::config()->error(
+                  "modules: impossible to load parent module '{}'", *p);
         }
+      }
     } else {
-      dlclose(h);
-      return;
+      if (h)
+        dlclose(h);
+      return false;
     }
     _handles.emplace(filename, std::make_shared<handle>(filename, h, arg));
   } else {
@@ -199,33 +201,7 @@ void modules::load_file(const std::string& filename, const void* arg) {
         "modules: attempt to load '{}' which is already loaded", filename);
     found->second->update(arg);
   }
-}
-
-/**
- * @brief Load a directory containing plugins.
- *
- * @param dirname Directory name.
- * @param arg     Module argument.
- */
-void modules::load_dir(const std::string& dirname, const void* arg) {
-  // Debug message.
-  log_v2::core()->debug("modules: loading directory '{}'", dirname);
-
-  // Set directory browsing parameters.
-  std::list<std::string> list =
-      misc::filesystem::dir_content_with_filter(dirname, "*.so");
-  list.sort();
-
-  for (auto& l : list) {
-    try {
-      load_file(l, arg);
-    } catch (const msg_fmt& e) {
-      log_v2::config()->error(e.what());
-    }
-  }
-
-  // Ending log message.
-  log_v2::core()->debug("modules: finished loading directory '{}'", dirname);
+  return true;
 }
 
 /**
