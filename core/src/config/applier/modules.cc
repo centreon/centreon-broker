@@ -195,7 +195,7 @@ bool modules::load_file(const std::string& filename, const void* arg) {
         dlclose(h);
       return false;
     }
-    _handles.emplace(filename, std::make_shared<handle>(filename, h, arg));
+    _handles.emplace(filename, std::make_unique<handle>(filename, h, arg));
   } else {
     log_v2::core()->info(
         "modules: attempt to load '{}' which is already loaded", filename);

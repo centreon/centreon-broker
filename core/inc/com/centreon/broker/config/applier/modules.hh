@@ -40,13 +40,13 @@ namespace applier {
  *  Load modules as per the configuration.
  */
 class modules {
-  std::map<std::string, std::shared_ptr<handle>> _handles;
+  std::map<std::string, std::unique_ptr<handle>> _handles;
   mutable std::mutex _m_modules;
 
   bool _check_module(const std::string& name, void* h) noexcept;
 
  public:
-  typedef std::map<std::string, std::shared_ptr<handle>>::iterator iterator;
+  typedef std::map<std::string, std::unique_ptr<handle>>::iterator iterator;
 
   modules() = default;
   ~modules() noexcept = default;
