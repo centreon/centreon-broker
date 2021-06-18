@@ -21,8 +21,8 @@
 #include <list>
 #include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
-#include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
 #include "com/centreon/broker/storage/status.hh"
@@ -181,8 +181,9 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
                "}\n"
                "end\n");
   std::map<std::string, misc::variant> conf;
-  modules::handle h("./neb/10-neb.so");
-  std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
+  std::unique_ptr<luabinding> lb = std::make_unique<luabinding>(filename, conf);
   std::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));
   RemoveFile(filename);
@@ -216,7 +217,8 @@ TEST_F(SimuGenericTest, ReadReturnCustomVariable) {
                "    default_value=\"centengine\"}\n"
                "end\n");
   std::map<std::string, misc::variant> conf;
-  modules::handle h("./neb/10-neb.so");
+  config::applier::modules modules;
+  modules.load_file("./neb/10-neb.so");
   std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
   std::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));

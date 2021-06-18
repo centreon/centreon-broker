@@ -25,21 +25,14 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
 
-// Routine symbols.
-char const* handle::deinitialization("broker_module_deinit");
-char const* handle::initialization("broker_module_init");
-char const* handle::updatization("broker_module_update");
-char const* handle::versionning("broker_module_version");
+const char* handle::deinitialization{"broker_module_deinit"};
+const char* handle::initialization{"broker_module_init"};
+const char* handle::updatization{"broker_module_update"};
+const char* handle::versionning{"broker_module_version"};
+const char* handle::parents_list{"broker_module_parents"};
 
-handle::handle(const std::string& filename, const void* arg)
-    : _filename{filename},
-      _handle{dlopen(_filename.c_str(), RTLD_NOW | RTLD_GLOBAL)} {
-  // Could not load library.
-  if (!_handle)
-    throw msg_fmt("modules: could not load library '{}': {}", _filename,
-                  dlerror());
-  // Initialize module.
-  _check_version();
+handle::handle(const std::string& filename, void* h, const void* arg)
+    : _filename{filename}, _handle{h} {
   _init(arg);
 }
 
@@ -136,38 +129,6 @@ void handle::update(void const* arg) {
 }
 
 /**
- *  Check that the module has the correct version.
- */
-void handle::_check_version() {
-  // Find version symbol.
-  log_v2::core()->debug(
-      "modules: checking module version (symbol '{}') in '{}'", versionning,
-      _filename);
-
-  char const** version = (char const**)dlsym(_handle, versionning);
-
-  // Could not find version symbol.
-  if (!version) {
-    char const* error_str{dlerror()};
-    throw msg_fmt(
-        "modules: could not find version in '{}'"
-        " (not a Centreon Broker module ?): {}",
-        _filename, error_str);
-  }
-  if (!*version)
-    throw msg_fmt(
-        "modules: version symbol of module '{}'"
-        " is empty (not a Centreon Broker module ?)",
-        _filename);
-
-  // Check version.
-  if (::strcmp(CENTREON_BROKER_VERSION, *version) != 0)
-    throw msg_fmt(
-        "modules: version mismatch in '{}': exepected '{}', found '{}'",
-        _filename, CENTREON_BROKER_VERSION, *version);
-}
-
-/**
  *  Call the module's initialization routine.
  *
  *  @param[in] arg Module argument.
@@ -179,15 +140,6 @@ void handle::_init(void const* arg) {
     void* data;
   } sym;
   sym.data = dlsym(_handle, initialization);
-
-  // Could not find initialization routine.
-  if (!sym.data) {
-    char const* error_str = dlerror();
-    throw msg_fmt(
-        "modules: could not find initialization routine in '{}' (not a "
-        "Centreon Broker module ?): {}",
-        _filename, error_str);
-  }
 
   // Call initialization routine.
   log_v2::core()->debug("modules: running initialization routine of '{}'",

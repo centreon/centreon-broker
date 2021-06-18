@@ -37,14 +37,16 @@ namespace config {
 class parser {
  public:
   parser();
-  parser(parser const& other) = delete;
+  parser(parser const&) = delete;
   ~parser();
-  parser& operator=(parser const& other) = delete;
-  state parse(std::string const& file);
-  static bool parse_boolean(std::string const& value);
+  parser& operator=(const parser&) = delete;
+  state parse(const std::string& file);
+  static bool parse_boolean(const std::string& value);
 
  private:
-  void _parse_endpoint(nlohmann::json const& elem, endpoint& e);
+  void _parse_endpoint(const nlohmann::json& elem,
+                       endpoint& e,
+                       std::string& module);
 };
 }  // namespace config
 

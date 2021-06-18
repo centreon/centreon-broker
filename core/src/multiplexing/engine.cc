@@ -293,11 +293,11 @@ engine::engine()
     : _hooks{},
       _hooks_begin{_hooks.begin()},
       _hooks_end{_hooks.end()},
-      _stats{stats::center::instance().register_engine()},
-      _unprocessed_events{0u},
       _engine_m{},
       _muxers{},
       _muxers_m{},
+      _stats{stats::center::instance().register_engine()},
+      _unprocessed_events{0u},
       _write_func(&engine::_nop) {
   stats::center::instance().update(&EngineStats::set_mode, _stats,
                                    EngineStats::NOP);

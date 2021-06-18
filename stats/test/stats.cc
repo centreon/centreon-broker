@@ -85,9 +85,8 @@ TEST_F(StatsTest, Builder) {
 TEST_F(StatsTest, BuilderWithModules) {
   stats::builder build;
   auto& modules = config::applier::state::instance().get_modules();
-  modules.apply(std::list<std::string>{}, "./storage/", nullptr);
-  modules.apply(std::list<std::string>{}, "./neb/", nullptr);
-  modules.apply(std::list<std::string>{}, "./lua/", nullptr);
+  modules.apply({"storage/20-storage.so", "neb/10-neb.so", "lua/70-lua.so"},
+                ".", nullptr);
 
   build.build();
 
@@ -179,7 +178,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
       "      \"name\": \"CentreonInput\",\n"
       "      \"type\": \"tcp\",\n"
       "      \"port\": \"5668\",\n"
-      "      \"protocol\": \"ndo\",\n"
+      "      \"protocol\": \"bbdo\",\n"
       "      \"compression\": \"yes\"\n"
       "    },\n"
       "    \"output\": [\n"
@@ -192,32 +191,35 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
       "        \"db_user\": \"centreon\",\n"
       "        \"db_password\": \"merethis\",\n"
       "        \"db_name\": \"centreon_storage\",\n"
-      "        \"failover\": \"CentreonRetention\",\n"
+      "        \"failover\": \"CentreonBrokerRRD\",\n"
       "        \"secondary_failover\": [\n"
-      "          \"CentreonSecondaryFailover1\",\n"
-      "          \"CentreonSecondaryFailover2\"\n"
+      "          \"CentreonBrokerRRD1\",\n"
+      "          \"CentreonBrokerRRD2\"\n"
       "        ],\n"
       "        \"buffering_timeout\": \"10\",\n"
       "        \"read_timeout\": \"5\",\n"
       "        \"retry_interval\": \"300\"\n"
       "      },\n"
       "      {\n"
-      "        \"name\": \"CentreonRetention\",\n"
-      "        \"type\": \"file\",\n"
-      "        \"path\": \"retention.dat\",\n"
-      "        \"protocol\": \"ndo\"\n"
+      "        \"name\": \"CentreonBrokerRRD\",\n"
+      "        \"type\": \"ipv4\",\n"
+      "        \"port\": \"5670\",\n"
+      "        \"host\": \"localhost\",\n"
+      "        \"protocol\": \"bbdo\"\n"
       "      },\n"
       "      {\n"
-      "        \"name\": \"CentreonSecondaryFailover1\",\n"
-      "        \"type\": \"file\",\n"
-      "        \"path\": \"retention.dat\",\n"
-      "        \"protocol\": \"ndo\"\n"
+      "        \"name\": \"CentreonBrokerRRD1\",\n"
+      "        \"type\": \"ipv4\",\n"
+      "        \"port\": \"5671\",\n"
+      "        \"host\": \"localhost\",\n"
+      "        \"protocol\": \"bbdo\"\n"
       "      },\n"
       "      {\n"
-      "        \"name\": \"CentreonSecondaryFailover2\",\n"
-      "        \"type\": \"file\",\n"
-      "        \"path\": \"retention.dat\",\n"
-      "        \"protocol\": \"ndo\"\n"
+      "        \"name\": \"CentreonBrokerRRD2\",\n"
+      "        \"type\": \"ipv4\",\n"
+      "        \"port\": \"5672\",\n"
+      "        \"host\": \"localhost\",\n"
+      "        \"protocol\": \"bbdo\"\n"
       "      }\n"
       "    ]\n"
       "  }\n"

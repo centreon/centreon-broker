@@ -21,29 +21,9 @@
 #include <iostream>
 #include <string>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/modules/handle.hh"
+#include "com/centreon/broker/config/applier/modules.hh"
 
 using namespace com::centreon::broker;
-
-/**
- *  Check that a module doesn't load with a specific error message.
- *
- *  @param[in] module              The module that doesn't load.
- *  @param[in] expected_error_msg  The expected error message.
- *
- *  @return                        True if the module didn't load.
- */
-bool check_for(std::string const& module,
-               std::string const& expected_error_msg) {
-  try {
-    modules::handle h(module);
-    return false;
-  } catch (std::exception const& e) {
-    std::cout << e.what() << std::endl;
-    return (std::string{e.what()}.find(expected_error_msg) !=
-            std::string::npos);
-  }
-}
 
 class Modules : public testing::Test {
  public:
@@ -55,11 +35,14 @@ class Modules : public testing::Test {
 /**
  *  Verify that the module version checks work.
  */
-TEST_F(Modules, load) {
-  // Initialization.
-  ASSERT_TRUE(check_for(CENTREON_BROKER_TEST_MODULE_PATH "./libnull_module.so",
-                        "undefined symbol: broker_module_version"));
-  ASSERT_TRUE(check_for(CENTREON_BROKER_TEST_MODULE_PATH
-                        "./libbad_version_module.so",
-                        "version mismatch in"));
+TEST_F(Modules, loadNoVersion) {
+  config::applier::modules modules;
+  ASSERT_FALSE(modules.load_file(CENTREON_BROKER_TEST_MODULE_PATH
+                                 "./libnull_module.so"));
+}
+
+TEST_F(Modules, loadBadVersion) {
+  config::applier::modules modules;
+  ASSERT_FALSE(modules.load_file(CENTREON_BROKER_TEST_MODULE_PATH
+                                 "./libbad_version_module.so"));
 }

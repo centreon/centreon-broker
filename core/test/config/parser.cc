@@ -80,19 +80,19 @@ TEST(parser, endpoint) {
       "      },\n"
       "      {\n"
       "        \"name\": \"CentreonRetention\",\n"
-      "        \"type\": \"file\",\n"
+      "        \"type\": \"ipv4\",\n"
       "        \"path\": \"retention.dat\",\n"
       "        \"protocol\": \"ndo\"\n"
       "      },\n"
       "      {\n"
       "        \"name\": \"CentreonSecondaryFailover1\",\n"
-      "        \"type\": \"file\",\n"
+      "        \"type\": \"ipv4\",\n"
       "        \"path\": \"retention.dat\",\n"
       "        \"protocol\": \"ndo\"\n"
       "      },\n"
       "      {\n"
       "        \"name\": \"CentreonSecondaryFailover2\",\n"
-      "        \"type\": \"file\",\n"
+      "        \"type\": \"ipv4\",\n"
       "        \"path\": \"retention.dat\",\n"
       "        \"protocol\": \"ndo\"\n"
       "      }\n"
@@ -146,21 +146,21 @@ TEST(parser, endpoint) {
   // Check output #2.
   config::endpoint output2(*(it++));
   ASSERT_EQ(output2.name, "CentreonRetention");
-  ASSERT_EQ(output2.type, "file");
+  ASSERT_EQ(output2.type, "ipv4");
   ASSERT_EQ(output2.params["path"], "retention.dat");
   ASSERT_EQ(output2.params["protocol"], "ndo");
 
   // Check output #3.
   config::endpoint output3(*(it++));
   ASSERT_EQ(output3.name, "CentreonSecondaryFailover1");
-  ASSERT_EQ(output3.type, "file");
+  ASSERT_EQ(output3.type, "ipv4");
   ASSERT_EQ(output3.params["path"], "retention.dat");
   ASSERT_EQ(output3.params["protocol"], "ndo");
 
   // Check output #4.
   config::endpoint output4(*it);
   ASSERT_EQ(output4.name, "CentreonSecondaryFailover2");
-  ASSERT_EQ(output4.type, "file");
+  ASSERT_EQ(output4.type, "ipv4");
   ASSERT_EQ(output4.params["path"], "retention.dat");
   ASSERT_EQ(output4.params["protocol"], "ndo");
 }
