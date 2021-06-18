@@ -85,9 +85,8 @@ TEST_F(StatsTest, Builder) {
 TEST_F(StatsTest, BuilderWithModules) {
   stats::builder build;
   auto& modules = config::applier::state::instance().get_modules();
-  modules.apply(std::list<std::string>{}, "./storage/", nullptr);
-  modules.apply(std::list<std::string>{}, "./neb/", nullptr);
-  modules.apply(std::list<std::string>{}, "./lua/", nullptr);
+  modules.apply({"storage/20-storage.so", "neb/10-neb.so", "lua/70-lua.so"},
+                ".", nullptr);
 
   build.build();
 
