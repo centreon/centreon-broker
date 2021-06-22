@@ -177,6 +177,8 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
       throw msg_fmt(msg);
     }
   }
+  log_v2::tcp()->trace("Writing data: {} bytes: {}", v.size(),
+                       debug_buf(v.data(), v.size()));
 
   {
     std::lock_guard<std::mutex> lck(_exposed_write_queue_m);

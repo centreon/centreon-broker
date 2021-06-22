@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <stdio.h>
 
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -33,12 +34,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 using namespace com::centreon::exceptions;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  @brief Constructor.
  *
@@ -48,8 +43,12 @@ using namespace com::centreon::exceptions;
  *  @param[in] sess  TLS session, providing informations on the
  *                   encryption that should be used.
  */
-stream::stream(gnutls_session_t* sess)
-    : io::stream("TLS"), _deadline((time_t)-1), _session(sess) {}
+stream::stream(SSL* s_ssl, BIO* s_ssl_bio, BIO* s_ssl_bio_io)
+    : io::stream("TLS"),
+      _deadline((time_t)-1),
+      _ssl(s_ssl),
+      _ssl_bio(s_ssl_bio),
+      _ssl_bio_io(s_ssl_bio_io) {}
 
 /**
  *  @brief Destructor.
@@ -58,13 +57,13 @@ stream::stream(gnutls_session_t* sess)
  *  been released yet.
  */
 stream::~stream() {
-  if (_session) {
+  if (_ssl) {
     try {
-      _deadline = time(nullptr) + 30;  // XXX : use connection timeout
-      gnutls_bye(*_session, GNUTLS_SHUT_RDWR);
-      gnutls_deinit(*_session);
-      delete (_session);
-      _session = nullptr;
+      // _deadline = time(nullptr) + 30;  // XXX : use connection timeout
+      // gnutls_bye(*_session, GNUTLS_SHUT_RDWR);
+      // gnutls_deinit(*_session);
+      // delete (_session);
+      // _session = nullptr;
     }
     // Ignore exception whatever the error might be.
     catch (...) {
@@ -86,75 +85,100 @@ stream::~stream() {
  *  @return Respect io::stream::read()'s return value.
  */
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
+  log_v2::tls()->error("tls on start read");
+  // size_t r1;
+  // r1 = BIO_ctrl_get_write_guarantee(_ssl_bio_io);
+  // BIO_write(_ssl_bio_io, &d, (int)r1);
   // Clear existing content.
-  d.reset();
+  
+  bool timed_out{false};
 
-  // Read data.
-  _deadline = deadline;
-  std::shared_ptr<io::raw> buffer(new io::raw);
-  buffer->resize(BUFSIZ);
-  int ret(gnutls_record_recv(*_session, buffer->data(), buffer->size()));
-  if (ret < 0) {
-    if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN)) {
-      log_v2::tls()->error("TLS: could not receive data: {}",
-                           gnutls_strerror(ret));
-      throw msg_fmt("TLS: could not receive data: {} ", gnutls_strerror(ret));
-    } else
-      return false;
-  } else if (ret) {
-    buffer->resize(ret);
-    d = buffer;
-    return true;
-  } else {
-    log_v2::tls()->error("TLS session is terminated");
-    throw msg_fmt("TLS session is terminated");
-  }
-  return false;
-}
+  std::shared_ptr<io::data> packet;
+  log_v2::tls()->info("avant substream read");
+  timed_out = !_substream->read(packet, _deadline);
+  log_v2::tls()->info("timed out ? {}", timed_out);
+  if (!timed_out) {
+    if (SSL_in_init(_ssl)) {
+      log_v2::tls()->error("client waiting in SSL_accept - {}",
+                        SSL_state_string_long(_ssl));
+      io::raw* ra(static_cast<io::raw*>(packet.get()));
+      int r = BIO_write(_ssl_bio_io, ra->data(), ra->size());
+      if (r < 0) {
+        if (!BIO_should_retry(_ssl_bio)) {
+          log_v2::tls()->error("ERROR in write CLIENT");
+          // err_in_client = 1;
+          return false;
+        }
+      /*
+      * Again, "BIO_should_retry" can be ignored.
+      */
+      } else if (r == 0) {
+        log_v2::tls()->error("SSL CLIENT STARTUP FAILED");
+        return false;
+      } else {
+        log_v2::tls()->error("client write {} bytes", r);
+      }
 
-/**
- *  Read encrypted data from base stream.
- *
- *  @param[out] buffer Output buffer.
- *  @param[in]  size   Maximum size.
- *
- *  @return Number of bytes actually read.
- */
-long long stream::read_encrypted(void* buffer, long long size) {
-  // Read some data.
-  bool timed_out(false);
-  while (_buffer.empty()) {
-    std::shared_ptr<io::data> d;
-    timed_out = !_substream->read(d, _deadline);
-    if (!timed_out && d && d->type() == io::raw::static_type()) {
-      io::raw* r(static_cast<io::raw*>(d.get()));
-      _buffer.reserve(_buffer.size() + r->get_buffer().size());
-      _buffer.insert(_buffer.end(), r->get_buffer().begin(),
-                     r->get_buffer().end());
-      //_buffer.append(r->data(), r->size());
-    } else if (timed_out)
-      break;
-  }
+      // int rr = BIO_ctrl_pending(_ssl_bio_io);
+      // int rr2 = BIO_ctrl_wpending(_ssl_bio_io);
+      // log_v2::tls()->info("Data pending? {}", rr);
+      // log_v2::tls()->info("Data pending w? {}", rr2);
+      if (r) {
+        char* dataptr = nullptr;
+        size_t rr = BIO_nread(_ssl_bio_io, &dataptr, r);
+        log_v2::tls()->info("rr = {}", rr);
+        auto to_send{std::make_shared<io::raw>(&dataptr, rr)};
+        _substream->write(to_send);
 
-  // Transfer data.
-  uint32_t rb(_buffer.size());
-  if (!rb) {
-    if (timed_out) {
-      gnutls_transport_set_errno(*_session, EAGAIN);
-      return -1;
+        // FIXME: surely not necessary.
+        _substream->flush();
+        return true;
+      }
     } else {
-      return 0;
+      io::raw* ra(static_cast<io::raw*>(packet.get()));
+      int r = BIO_write(_ssl_bio_io, ra, ra->size());
+      if (r < 0) {
+        if (!BIO_should_retry(_ssl_bio)) {
+          log_v2::tls()->error("ERROR in write CLIENT");
+          // err_in_client = 1;
+          return false;
+        }
+      /*
+      * Again, "BIO_should_retry" can be ignored.
+      */
+      } else if (r == 0) {
+        log_v2::tls()->error("SSL CLIENT STARTUP FAILED");
+        return false;
+      } else {
+        log_v2::tls()->error("client read {}", r);
+      }
+    
+      log_v2::tls()->error("error timed out");
+      
+      std::unique_ptr<io::raw> buffer(new io::raw);
+      log_v2::tls()->error("read size d {}", sizeof(d));
+      r = BIO_read(_ssl_bio, &d, sizeof(d));
+      if (r < 0) {
+        if (!BIO_should_retry(_ssl_bio)) {
+          log_v2::tls()->error("ERROR in CLIENT");
+          // err_in_client = 1;
+          return false;
+        }
+        /*
+        * Again, "BIO_should_retry" can be ignored.
+        */
+      } else if (r == 0) {
+        log_v2::tls()->error("SSL CLIENT STARTUP FAILED");
+        return false;
+      } else {
+        log_v2::tls()->error("client read {}", r);
+      }
     }
-  } else if (size >= rb) {
-    memcpy(buffer, _buffer.data(), rb);
-    _buffer.clear();
-    return rb;
-  } else {
-    memcpy(buffer, _buffer.data(), size);
-    _buffer.erase(_buffer.begin(), _buffer.begin() + size);
-    //_buffer.remove(0, size);
-    return size;
-  }
+  } else if (timed_out)
+    return true;
+  // _substream->read(d);
+  // _substream->flush();
+  return 1;
 }
 
 /**
@@ -166,46 +190,49 @@ long long stream::read_encrypted(void* buffer, long long size) {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(std::shared_ptr<io::data> const& d) {
-  if (!validate(d, get_name()))
-    return 1;
+int stream::write(const std::shared_ptr<io::data>& d) {
+  assert(d);
 
-  // Send data.
-  if (d->type() == io::raw::static_type()) {
-    io::raw const* packet(static_cast<io::raw const*>(d.get()));
-    char const* ptr(packet->const_data());
-    int size(packet->size());
-    while (size > 0) {
-      int ret(gnutls_record_send(*_session, ptr, size));
-      if (ret < 0) {
-        log_v2::tls()->error("TLS: could not send data: {}",
-                             gnutls_strerror(ret));
-        throw msg_fmt("TLS: could not send data: {}", gnutls_strerror(ret));
-      }
-      ptr += ret;
-      size -= ret;
+  log_v2::tls()->error("tls on start write");
+  if (SSL_in_init(_ssl))
+    log_v2::tls()->error("server waiting in SSL_accept - {}",
+                         SSL_state_string_long(_ssl));
+
+  io::raw* packet{static_cast<io::raw*>(d.get())};
+  log_v2::tls()->error("write size d {}", packet->size());
+
+  int nb = BIO_write(_ssl_bio, packet->data(), packet->size());
+  if (nb < 0) {
+    if (!BIO_should_retry(_ssl_bio)) {
+      log_v2::tls()->error("ERROR in SERVER");
+
+      // err_in_server = 1;
+      // goto err;
     }
+    /* Ignore "BIO_should_retry". */
+  } else if (nb == 0) {
+    log_v2::tls()->error("SSL SERVER STARTUP FAILED");
+  } else {
+    log_v2::tls()->debug("server wrote {}", nb);
+    char* dataptr;
+    size_t toto = BIO_nwrite0(_ssl_bio, &dataptr);
+    printf("############# %d #############\n", toto);
+    for (int i = 0; i < toto; i++) {
+      printf("%02x ", (unsigned char)dataptr[i]);
+    }
+    printf("\n");
   }
 
-  return 1;
-}
+  size_t r = BIO_ctrl_pending(_ssl_bio_io);
+  log_v2::tls()->info("{} bytes to send", r);
+  if (r > 0) {
+    auto to_send{std::make_shared<io::raw>()};
+    to_send->resize(r);
+    size_t rr = BIO_read(_ssl_bio_io, to_send->data(), r);
+    _substream->write(to_send);
 
-/**
- *  Write encrypted data to base stream.
- *
- *  @param[in] buffer Data to write.
- *  @param[in] size   Size of buffer.
- *
- *  @return Number of bytes written.
- */
-long long stream::write_encrypted(void const* buffer, long long size) {
-  std::shared_ptr<io::raw> r(new io::raw);
-  std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(buffer)),
-                        const_cast<char*>(static_cast<char const*>(buffer)) +
-                            static_cast<std::size_t>(size));
-  logging::error(logging::low) << "tls write enc: " << size;
-  r->get_buffer() = std::move(tmp);
-  _substream->write(r);
-  _substream->flush();
-  return size;
+    // FIXME: surely not necessary.
+    //_substream->flush();
+  }
+  return 1;
 }

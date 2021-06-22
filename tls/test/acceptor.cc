@@ -30,8 +30,8 @@
 #include "com/centreon/broker/tcp/tcp_async.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
-#include "com/centreon/exceptions/msg_fmt.hh"
 #include "com/centreon/broker/tls/internal.hh"
+#include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
@@ -43,17 +43,22 @@ class TlsTest : public ::testing::Test {
  public:
   void SetUp() override {
     pool::load(0);
+    tcp::tcp_async::load();
     tls::initialize();
   }
 
   void TearDown() override {
-    tcp::tcp_async::instance().stop_timer();
+    tcp::tcp_async::unload();
     pool::unload();
   }
 };
 
 TEST_F(TlsTest, Nominal) {
-  std::thread cbd([] {
+  std::mutex cbd_m;
+  std::condition_variable cbd_cv;
+  bool cbd_finished = false;
+
+  std::thread cbd([&cbd_m, &cbd_cv, &cbd_finished] {
     auto a{std::make_unique<tcp::acceptor>(4141, -1)};
 
     /* Nominal case, cbd is acceptor and read on the socket */
@@ -68,6 +73,8 @@ TEST_F(TlsTest, Nominal) {
       u_cbd_tls = a_tls->open(s_cbd);
     } while (!u_cbd_tls);
 
+    std::cout << "cbd tls OK" << std::endl;
+
     std::shared_ptr<io::data> data_read;
     while (!data_read ||
            std::static_pointer_cast<io::raw>(data_read)->size() < 10000)
@@ -78,7 +85,7 @@ TEST_F(TlsTest, Nominal) {
     std::string result(vec.begin(), vec.end());
     char cc = 'A';
     std::string wanted;
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 10; i++) {
       wanted += cc;
       if (++cc == 'z') {
         wanted += "\n";
@@ -86,9 +93,12 @@ TEST_F(TlsTest, Nominal) {
       }
     }
     ASSERT_EQ(wanted, result);
+    std::lock_guard<std::mutex> lck(cbd_m);
+    cbd_finished = true;
+    cbd_cv.notify_all();
   });
 
-  std::thread centengine([] {
+  std::thread centengine([&cbd_m, &cbd_cv, &cbd_finished] {
     auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
     /* Nominal case, centengine is connector and write on the socket */
@@ -103,9 +113,11 @@ TEST_F(TlsTest, Nominal) {
       u_centengine_tls = c_tls->open(s_centengine);
     } while (!u_centengine_tls);
 
+    std::cout << "centengine tls OK" << std::endl;
+    
     std::shared_ptr<io::raw> data_write{new io::raw()};
     std::string cc("A");
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 10; i++) {
       data_write->append(cc);
       if (++(cc[0]) == 'z') {
         data_write->append(std::string("\n"));
@@ -113,9 +125,8 @@ TEST_F(TlsTest, Nominal) {
       }
     }
     u_centengine_tls->write(data_write);
-    int retry = 10;
-    while (retry-- && u_centengine_tls->flush() == 0)
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::unique_lock<std::mutex> lck(cbd_m);
+    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished;});
   });
 
   centengine.join();

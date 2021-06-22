@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@
 #define CCB_TLS_STREAM_HH
 
 #include <gnutls/gnutls.h>
-
+#include <openssl/err.h>
+#include <openssl/ssl.h>
+#include <string.h>
+#include <string>
 #include <vector>
 
 #include "com/centreon/broker/io/stream.hh"
@@ -41,18 +44,19 @@ namespace tls {
 class stream : public io::stream {
   std::vector<char> _buffer;
   time_t _deadline;
-  gnutls_session_t* _session;
+  SSL* _ssl;
+  BIO* _ssl_bio;
+  BIO* _ssl_bio_io;
+  int _step = 0;
 
  public:
-  stream(gnutls_session_t* session);
+  stream(SSL* s_ssl, BIO* s_ssl_bio, BIO* s_ssl_bio_io);
   ~stream();
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
-  long long read_encrypted(void* buffer, long long size);
-  int32_t write(std::shared_ptr<io::data> const& d) override;
+  int32_t write(const std::shared_ptr<io::data>& d) override;
   int32_t stop() override { return 0; }
-  long long write_encrypted(void const* buffer, long long size);
 };
 }  // namespace tls
 

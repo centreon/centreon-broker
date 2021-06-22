@@ -17,9 +17,9 @@
  *
  */
 
+#include <assert.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
-#include <assert.h>
 #include <string.h>
 #include <string>
 
@@ -154,6 +154,7 @@ int main() {
               i = sizeof(cbuf);
             else
               i = (int)cw_num;
+            printf("BIO_write 1\n");
             r = BIO_write(c_ssl_bio, cbuf, i);
             if (r < 0) {
               if (!BIO_should_retry(c_ssl_bio)) {
@@ -357,6 +358,10 @@ int main() {
               if (r < (int)num)
                 num = r;
               r = BIO_read(io2, dataptr, (int)num);
+              for (int i = 0; i < r; i++) {
+                printf("%02x ", (unsigned char)dataptr[i]);
+              }
+              printf("\n");
               if (r != (int)num) { /* can't happen */
                 fprintf(stderr,
                         "ERROR: BIO_read could not read "
@@ -373,8 +378,9 @@ int main() {
               }
 
               if (debug)
-                printf((io2 == client_io) ? "C->S relaying: %d bytes\n"
-                                          : "S->C relaying: %d bytes\n",
+                printf((io2 == client_io)
+                           ? "C->S relayingeeeeee: %d bytes\n"
+                           : "S->C relayingeeeeeeeeee: %d bytes\n",
                        (int)num);
             }
           } /* no loop, BIO_ctrl_get_read_request now
