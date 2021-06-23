@@ -55,7 +55,7 @@ class stat_visitable {
 
  public:
   stat_visitable(std::string const& name = std::string());
-  virtual ~stat_visitable() = default;
+  virtual ~stat_visitable() noexcept = default;
   stat_visitable(stat_visitable const& other) = delete;
   stat_visitable& operator=(stat_visitable const& other) = delete;
 
