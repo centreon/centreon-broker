@@ -125,9 +125,17 @@ TEST_F(TlsTest, Anon) {
       }
     }
 
+    std::shared_ptr<io::data> d;
+    bool timeout = u_cbd->read(d, time(nullptr) + 3);
+    char *buf;
+    if (!timeout) {
+      io::raw* packet = static_cast<io::raw*>(d.get());
+      sr_num = packet->size();
+      buf = packet->data();
+    }
     if (sr_num > 0) {
       /* Read from server. */
-      r = BIO_read(s_ssl_bio, sbuf, sizeof(sbuf));
+      r = BIO_read(s_ssl_bio, buf, sr_num);
       printf("BIO_read(s_ssl_bio, ...) => %d\n", r);
       if (r < 0) {
         ASSERT_TRUE(BIO_should_retry(s_ssl_bio));
@@ -137,7 +145,7 @@ TEST_F(TlsTest, Anon) {
       } else {
         ASSERT_TRUE(r > 0);
 
-        printf("server read %d '%s'\n", r, sbuf);
+        printf("server read %d '%s'\n", r, buf);
         sr_num -= r;
       }
     }
@@ -169,7 +177,7 @@ TEST_F(TlsTest, Anon) {
 
         printf("S->C relaying: %d bytes\n", (int)r1);
       }
-    } while (r1);
+    } while (true);
 
     /////////////////////////////////////
 
@@ -182,10 +190,10 @@ TEST_F(TlsTest, Anon) {
     auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
     /* Nominal case, centengine is connector and write on the socket */
-    std::shared_ptr<io::stream> s_centengine;
+    std::unique_ptr<io::stream> u_centengine;
     do {
-      s_centengine = c->open();
-    } while (!s_centengine);
+      u_centengine = c->open();
+    } while (!u_centengine);
 
     SSL_CTX* c_ctx = SSL_CTX_new(TLS_client_method());
     ASSERT_FALSE(c_ctx == nullptr);
@@ -217,7 +225,7 @@ TEST_F(TlsTest, Anon) {
     int i, r;
     memset(cbuf, 0, sizeof(cbuf));
     strcpy(cbuf, "Hello cbd");
-    cw_num = 10;
+    cw_num = strlen(cbuf) + 1;
     if (SSL_in_init(c_ssl))
       printf("client waiting in SSL_connect - %s\n",
              SSL_state_string_long(c_ssl));
@@ -283,6 +291,7 @@ TEST_F(TlsTest, Anon) {
         }
         printf("\n");
         ASSERT_TRUE (r == r1);
+        u_centengine->write(send);
 
         progress = true;
       }
