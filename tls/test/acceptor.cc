@@ -21,6 +21,7 @@
 
 #include <fmt/format.h>
 #include <gtest/gtest.h>
+#include <openssl/ssl.h>
 
 #include <nlohmann/json.hpp>
 
@@ -52,6 +53,250 @@ class TlsTest : public ::testing::Test {
     pool::unload();
   }
 };
+
+TEST_F(TlsTest, Anon) {
+  std::mutex cbd_m;
+  std::condition_variable cbd_cv;
+  bool cbd_finished = false;
+
+  std::thread cbd([&cbd_m, &cbd_cv, &cbd_finished] {
+    auto a{std::make_unique<tcp::acceptor>(4141, -1)};
+
+    /* Nominal case, cbd is acceptor and read on the socket */
+    std::unique_ptr<io::stream> u_cbd;
+    do {
+      u_cbd = a->open();
+    } while (!u_cbd);
+
+    SSL_CTX* s_ctx = SSL_CTX_new(TLS_server_method());
+    ASSERT_FALSE(s_ctx == nullptr);
+
+    /* This is needed if we want to use the aNULL cipher */
+    SSL_CTX_set_security_level(s_ctx, 0);
+
+    SSL_CTX_set_ecdh_auto(s_ctx, 1);
+
+    ASSERT_TRUE(SSL_CTX_set_cipher_list(s_ctx, "aNULL"));
+
+    SSL* s_ssl = SSL_new(s_ctx);
+    BIO* s_ssl_bio = nullptr;
+    BIO *server = nullptr, *server_io = nullptr;
+
+    size_t bufsiz = 256;
+    ASSERT_TRUE(BIO_new_bio_pair(&server, bufsiz, &server_io, bufsiz));
+
+    s_ssl_bio = BIO_new(BIO_f_ssl());
+    ASSERT_TRUE(s_ssl_bio);
+
+    SSL_set_accept_state(s_ssl);
+    SSL_set_bio(s_ssl, server, server);
+    (void)BIO_set_ssl(s_ssl_bio, s_ssl, BIO_NOCLOSE);
+
+   size_t sw_num = 0, sr_num = 0;
+
+    char sbuf[1024 * 8];
+    int i, r;
+    memset(sbuf, 0, sizeof(sbuf));
+    if (SSL_in_init(s_ssl))
+      printf("server waiting in SSL_connect - %s\n",
+             SSL_state_string_long(s_ssl));
+
+    if (sw_num > 0) {
+      /* Write to client. */
+      if (sw_num > (long)sizeof(sbuf))
+        i = sizeof(sbuf);
+      else
+        i = (int)sw_num;
+      r = BIO_write(s_ssl_bio, sbuf, i);
+      printf("BIO_write(s_ssl_bio, ...) => %d\n", r);
+      if (r < 0) {
+        ASSERT_TRUE(BIO_should_retry(s_ssl_bio));
+        /*
+         * BIO_should_retry(...) can just be ignored here. The
+         * library expects us to call BIO_write with the same
+         * arguments again, and that's what we will do in the
+         * next iteration.
+         */
+      } else {
+        ASSERT_TRUE(r > 0);
+
+        printf("server wrote %d\n", r);
+        sw_num -= r;
+      }
+    }
+
+    if (sr_num > 0) {
+      /* Read from server. */
+      r = BIO_read(s_ssl_bio, sbuf, sizeof(sbuf));
+      printf("BIO_read(s_ssl_bio, ...) => %d\n", r);
+      if (r < 0) {
+        ASSERT_TRUE(BIO_should_retry(s_ssl_bio));
+        /*
+         * Again, "BIO_should_retry" can be ignored.
+         */
+      } else {
+        ASSERT_TRUE(r > 0);
+
+        printf("server read %d '%s'\n", r, sbuf);
+        sr_num -= r;
+      }
+    }
+
+    size_t r1;
+    bool progress = false;
+    do {
+      int r;
+      r1 = BIO_ctrl_pending(server_io);
+      printf("BIO_ctrl_pending(server_io, ...) => %d\n", r1);
+
+      if (r1) {
+        char* dataptr;
+
+        r = BIO_nread(server_io, &dataptr, (int)r1);
+        printf("BIO_nread(server_io, ...) => %d\n", r);
+        assert(r > 0);
+        assert(r <= (int)r1);
+        /*
+         * possibly r < r1 (non-contiguous data)
+         */
+        r1 = r;
+        auto send = std::make_shared<io::raw>();
+        send->resize(r1);
+        memcpy(send->data(), dataptr, r1);
+        printf("BIO_write(client_io, ...) => %d\n", r);
+        u_cbd->write(send);
+        progress = true;
+
+        printf("S->C relaying: %d bytes\n", (int)r1);
+      }
+    } while (r1);
+
+    /////////////////////////////////////
+
+    std::lock_guard<std::mutex> lck(cbd_m);
+    cbd_finished = true;
+    cbd_cv.notify_all();
+  });
+
+  std::thread centengine([&cbd_m, &cbd_cv, &cbd_finished] {
+    auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
+
+    /* Nominal case, centengine is connector and write on the socket */
+    std::shared_ptr<io::stream> s_centengine;
+    do {
+      s_centengine = c->open();
+    } while (!s_centengine);
+
+    SSL_CTX* c_ctx = SSL_CTX_new(TLS_client_method());
+    ASSERT_FALSE(c_ctx == nullptr);
+
+    /* This is needed if we want to use the aNULL cipher */
+    SSL_CTX_set_security_level(c_ctx, 0);
+
+    SSL_CTX_set_ecdh_auto(c_ctx, 1);
+
+    ASSERT_TRUE(SSL_CTX_set_cipher_list(c_ctx, "aNULL"));
+
+    SSL* c_ssl = SSL_new(c_ctx);
+    BIO* c_ssl_bio = nullptr;
+    BIO *client = nullptr, *client_io = nullptr;
+
+    size_t bufsiz = 256;
+    ASSERT_TRUE(BIO_new_bio_pair(&client, bufsiz, &client_io, bufsiz));
+
+    c_ssl_bio = BIO_new(BIO_f_ssl());
+    ASSERT_TRUE(c_ssl_bio);
+
+    SSL_set_connect_state(c_ssl);
+    SSL_set_bio(c_ssl, client, client);
+    (void)BIO_set_ssl(c_ssl_bio, c_ssl, BIO_NOCLOSE);
+
+    size_t cw_num = 0, cr_num = 0;
+
+    char cbuf[1024 * 8];
+    int i, r;
+    memset(cbuf, 0, sizeof(cbuf));
+    strcpy(cbuf, "Hello cbd");
+    cw_num = 10;
+    if (SSL_in_init(c_ssl))
+      printf("client waiting in SSL_connect - %s\n",
+             SSL_state_string_long(c_ssl));
+
+    if (cw_num > 0) {
+      /* Write to server. */
+      if (cw_num > (long)sizeof(cbuf))
+        i = sizeof(cbuf);
+      else
+        i = (int)cw_num;
+      printf("BIO_write 1\n");
+      r = BIO_write(c_ssl_bio, cbuf, i);
+      if (r < 0) {
+        ASSERT_TRUE(BIO_should_retry(c_ssl_bio));
+        /*
+         * BIO_should_retry(...) can just be ignored here. The
+         * library expects us to call BIO_write with the same
+         * arguments again, and that's what we will do in the
+         * next iteration.
+         */
+      } else {
+        ASSERT_TRUE(r > 0);
+
+        printf("client wrote %d\n", r);
+        cw_num -= r;
+      }
+    }
+
+    if (cr_num > 0) {
+      /* Read from server. */
+      r = BIO_read(c_ssl_bio, cbuf, sizeof(cbuf));
+      printf("BIO_read(c_ssl_bio, ...) => %d\n", r);
+      if (r < 0) {
+        ASSERT_TRUE(BIO_should_retry(c_ssl_bio));
+        /*
+         * Again, "BIO_should_retry" can be ignored.
+         */
+      } else {
+        ASSERT_TRUE(r > 0);
+
+        printf("client read %d '%s'\n", r, cbuf);
+        cr_num -= r;
+      }
+    }
+
+    size_t r1;
+    bool progress = false;
+    do {
+      int r;
+      r1 = BIO_ctrl_pending(client_io);
+      printf("BIO_ctrl_pending(client_io, ...) => %d\n", r1);
+
+      if (r1) {
+        char* dataptr;
+
+        auto send = std::make_shared<io::raw>();
+        send->resize(r1);
+
+        r = BIO_read(client_io, send->data(), r1);
+        printf("BIO_read(client_io, ...) => %d\n", r);
+        for (int i = 0; i < r; i++) {
+          printf("%02x ", (unsigned char)send->data()[i]);
+        }
+        printf("\n");
+        ASSERT_TRUE (r == r1);
+
+        progress = true;
+      }
+    } while (r1);
+
+    ///////////////////////////////////////
+
+    std::unique_lock<std::mutex> lck(cbd_m);
+    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished; });
+  });
+
+  centengine.join();
+  cbd.join();
+}
 
 TEST_F(TlsTest, Nominal) {
   std::mutex cbd_m;
@@ -114,7 +359,7 @@ TEST_F(TlsTest, Nominal) {
     } while (!u_centengine_tls);
 
     std::cout << "centengine tls OK" << std::endl;
-    
+
     std::shared_ptr<io::raw> data_write{new io::raw()};
     std::string cc("A");
     for (int i = 0; i < 10; i++) {
@@ -126,7 +371,7 @@ TEST_F(TlsTest, Nominal) {
     }
     u_centengine_tls->write(data_write);
     std::unique_lock<std::mutex> lck(cbd_m);
-    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished;});
+    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished; });
   });
 
   centengine.join();

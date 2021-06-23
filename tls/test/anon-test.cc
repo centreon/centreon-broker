@@ -182,6 +182,7 @@ int main() {
             /* Read from server. */
 
             r = BIO_read(c_ssl_bio, cbuf, sizeof(cbuf));
+            printf("BIO_read(c_ssl_bio, ...) => %d\n", r);
             if (r < 0) {
               if (!BIO_should_retry(c_ssl_bio)) {
                 fprintf(stderr, "ERROR in CLIENT\n");
@@ -235,6 +236,7 @@ int main() {
             else
               i = (int)sw_num;
             r = BIO_write(s_ssl_bio, sbuf, i);
+            printf("BIO_write(s_ssl_bio, ...) => %d\n", r);
             if (r < 0) {
               if (!BIO_should_retry(s_ssl_bio)) {
                 fprintf(stderr, "ERROR in SERVER\n");
@@ -256,6 +258,7 @@ int main() {
             /* Read from client. */
 
             r = BIO_read(s_ssl_bio, sbuf, sizeof(sbuf));
+            printf("BIO_read(s_ssl_bio, ...) => %d\n", r);
             if (r < 0) {
               if (!BIO_should_retry(s_ssl_bio)) {
                 fprintf(stderr, "ERROR in SERVER\n");
@@ -280,22 +283,23 @@ int main() {
           /* "I/O" BETWEEN CLIENT AND SERVER. */
 
           size_t r1, r2;
-          BIO *io1 = server_io, *io2 = client_io;
           /*
-           * we use the non-copying interface for io1 and the standard
-           * BIO_write/BIO_read interface for io2
+           * we use the non-copying interface for server_io and the standard
+           * BIO_write/BIO_read interface for client_io
            */
 
           static int prev_progress = 1;
           int progress = 0;
 
-          /* io1 to io2 */
+          /* server_io to client_io */
           do {
             size_t num;
             int r;
 
-            r1 = BIO_ctrl_pending(io1);
-            r2 = BIO_ctrl_get_write_guarantee(io2);
+            r1 = BIO_ctrl_pending(server_io);
+            printf("BIO_ctrl_pending(server_io, ...) => %d\n", r1);
+            r2 = BIO_ctrl_get_write_guarantee(client_io);
+            printf("BIO_ctrl_get_write_guarantee(client_io, ...) => %d\n", r2);
 
             num = r1;
             if (r2 < num)
@@ -306,14 +310,16 @@ int main() {
               if (INT_MAX < num) /* yeah, right */
                 num = INT_MAX;
 
-              r = BIO_nread(io1, &dataptr, (int)num);
+              r = BIO_nread(server_io, &dataptr, (int)num);
+              printf("BIO_nread(server_io, ...) => %d\n", r);
               assert(r > 0);
               assert(r <= (int)num);
               /*
                * possibly r < num (non-contiguous data)
                */
               num = r;
-              r = BIO_write(io2, dataptr, (int)num);
+              r = BIO_write(client_io, dataptr, (int)num);
+              printf("BIO_write(client_io, ...) => %d\n", r);
               if (r != (int)num) { /* can't happen */
                 fprintf(stderr,
                         "ERROR: BIO_write could not write "
@@ -323,19 +329,19 @@ int main() {
               progress = 1;
 
               if (debug)
-                printf((io1 == client_io) ? "C->S relaying: %d bytes\n"
-                                          : "S->C relaying: %d bytes\n",
-                       (int)num);
+                printf("S->C relaying: %d bytes\n", (int)num);
             }
           } while (r1 && r2);
 
-          /* io2 to io1 */
+          /* client_io to server_io */
           {
             size_t num;
             int r;
 
-            r1 = BIO_ctrl_pending(io2);
-            r2 = BIO_ctrl_get_read_request(io1);
+            r1 = BIO_ctrl_pending(client_io);
+            printf("BIO_ctrl_pending(client_io, ...) => %d\n", r1);
+            r2 = BIO_ctrl_get_read_request(server_io);
+            printf("BIO_ctrl_get_read_request(server_io, ...) => %d\n", r2);
             /*
              * here we could use ..._get_write_guarantee instead of
              * ..._get_read_request, but by using the latter we test
@@ -353,11 +359,13 @@ int main() {
               if (num > 1)
                 --num; /* test restartability even more thoroughly */
 
-              r = BIO_nwrite0(io1, &dataptr);
+              r = BIO_nwrite0(server_io, &dataptr);
+              printf("BIO_nwrite0(server_io, ...) => %d\n", r);
               assert(r > 0);
               if (r < (int)num)
                 num = r;
-              r = BIO_read(io2, dataptr, (int)num);
+              r = BIO_read(client_io, dataptr, (int)num);
+              printf("BIO_read(client_io, ...) => %d\n", r);
               for (int i = 0; i < r; i++) {
                 printf("%02x ", (unsigned char)dataptr[i]);
               }
@@ -369,7 +377,8 @@ int main() {
                 goto err;
               }
               progress = 1;
-              r = BIO_nwrite(io1, &dataptr, (int)num);
+              r = BIO_nwrite(server_io, &dataptr, (int)num);
+              printf("BIO_nwrite(server_io, ...) => %d\n", r);
               if (r != (int)num) { /* can't happen */
                 fprintf(stderr,
                         "ERROR: BIO_nwrite() did not accept "
@@ -378,10 +387,7 @@ int main() {
               }
 
               if (debug)
-                printf((io2 == client_io)
-                           ? "C->S relayingeeeeee: %d bytes\n"
-                           : "S->C relayingeeeeeeeeee: %d bytes\n",
-                       (int)num);
+                printf("C->S relayingeeeeee: %d bytes\n", num);
             }
           } /* no loop, BIO_ctrl_get_read_request now
              * returns 0 anyway */
