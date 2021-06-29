@@ -20,7 +20,7 @@
 
 #include <ctime>
 #include <limits>
-#include <sstream>
+#include <iostream>
 
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
@@ -464,6 +464,7 @@ stream::~stream() {
   // Stop cleanup thread.
   //_cleanup_thread.exit();
   log_v2::sql()->debug("sql: stream destruction");
+  std::cout << "SQL::stream conflict_manager unload" << std::endl;
   storage::conflict_manager::instance().unload(storage::conflict_manager::sql);
 }
 

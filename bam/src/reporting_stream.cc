@@ -19,6 +19,7 @@
 #include "com/centreon/broker/bam/reporting_stream.hh"
 
 #include <cstdlib>
+#include <iostream>
 
 #include "com/centreon/broker/bam/ba_duration_event.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
@@ -73,7 +74,7 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
   _close_all_events();
 
   // Initialize the availabilities thread.
-  _availabilities.reset(new availability_thread(db_cfg, _timeperiods));
+  _availabilities = std::make_unique<availability_thread>(db_cfg, _timeperiods);
   _availabilities->start_and_wait();
 }
 
@@ -81,6 +82,7 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
  *  Destructor.
  */
 reporting_stream::~reporting_stream() {
+  std::cout << "REPORTING_STREAM DESTRUCTION" << std::endl;
   // Terminate the availabilities thread.
   _availabilities->terminate();
   _availabilities->wait();
@@ -136,8 +138,7 @@ int reporting_stream::flush() {
 int reporting_stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
-  if (!validate(data, "BAM-BI"))
-    return (0);
+  assert(data);
 
   switch (data->type()) {
     case io::events::data_type<io::events::bam, bam::de_kpi_event>::value:
@@ -423,12 +424,10 @@ void reporting_stream::_load_timeperiods() {
  *  Prepare queries.
  */
 void reporting_stream::_prepare() {
-  std::string query;
-
-  query =
+  std::string query(
       "INSERT INTO mod_bam_reporting_ba_events (ba_id,"
       "first_level,start_time,end_time,status,in_downtime)"
-      " VALUES(?,?,?,?,?,?)";
+      " VALUES(?,?,?,?,?,?)");
   _ba_full_event_insert = _mysql.prepare_query(query);
 
   query =
@@ -492,12 +491,7 @@ void reporting_stream::_prepare() {
   _kpi_event_link_update = _mysql.prepare_query(query);
 
   query =
-      "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
-      "                sla_month_percent_crit, sla_month_percent_warn,"
-      "                sla_month_duration_crit, sla_month_duration_warn)"
-      " VALUES (?, ?, ?, ?,"
-      "         ?, ?,"
-      "         ?)";
+      "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,sla_month_percent_crit, sla_month_percent_warn,sla_month_duration_crit, sla_month_duration_warn) VALUES (?,?,?,?,?,?,?)";
   _dimension_ba_insert = _mysql.prepare_query(query);
 
   query =
@@ -542,15 +536,15 @@ void reporting_stream::_prepare() {
 
   _dimension_truncate_tables.clear();
   query = "DELETE FROM mod_bam_reporting_kpi";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_relations_ba_bv";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_ba";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_bv";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_timeperiods";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
 
   // Dimension KPI insertion
   query =
@@ -735,6 +729,7 @@ void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
       _kpi_event_update, &promise, mysql_task::int_type::AFFECTED_ROWS));
   // No kpis were updated, insert one.
   try {
+    std::cout << "Wait result of promise1" << std::endl;
     if (promise.get_future().get() == 0) {
       _kpi_full_event_insert.bind_value_as_i32(0, ke.kpi_id);
       _kpi_full_event_insert.bind_value_as_u64(
@@ -762,17 +757,20 @@ void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
       _mysql.run_statement_and_get_int<uint64_t>(
           _kpi_event_link, &result, mysql_task::LAST_INSERT_ID, thread_id);
 
+      std::cout << "Wait result of promise2" << std::endl;
       uint64_t evt_id{
           result.get_future()
               .get()};  //_kpi_event_link.last_insert_id().toUInt()};
       _last_inserted_kpi[ke.ba_id].insert({ke.start_time.get_time_t(), evt_id});
     }
   } catch (std::exception const& e) {
+    std::cout << "Wait result of promise failed" << std::endl;
     throw exceptions::msg()
         << "BAM-BI: could not update KPI " << ke.kpi_id << " starting at "
         << ke.start_time << " and ending at " << ke.end_time << ": "
         << e.what();
   }
+  std::cout << "Wait result of promise OK" << std::endl;
 }
 
 /**
@@ -799,8 +797,10 @@ void reporting_stream::_process_dimension_ba(
   _dimension_ba_insert.bind_value_as_f64(4, dba.sla_month_percent_warn);
   _dimension_ba_insert.bind_value_as_f64(5, dba.sla_duration_crit);
   _dimension_ba_insert.bind_value_as_f64(6, dba.sla_duration_warn);
+  std::cout << "### INSERT INTO DIMENSION BA\n";
   _mysql.run_statement(_dimension_ba_insert, database::mysql_error::insert_ba,
                        false);
+  std::cout << "### INSERT INTO DIMENSION BA DONE" << std::endl;
 }
 
 /**
@@ -840,6 +840,8 @@ void reporting_stream::_process_dimension_ba_bv_relation(
   log_v2::bam()->debug("BAM-BI: processing relation between BA {} and BV {}",
                        dbabv.ba_id, dbabv.bv_id);
 
+  std::cout << "processing relation between BA " << dbabv.ba_id << " and bv "
+    << dbabv.bv_id << std::endl;
   _dimension_ba_bv_relation_insert.bind_value_as_i32(0, dbabv.ba_id);
   _dimension_ba_bv_relation_insert.bind_value_as_i32(1, dbabv.bv_id);
   _mysql.run_statement(_dimension_ba_bv_relation_insert,
@@ -1052,50 +1054,50 @@ void reporting_stream::_process_dimension_kpi(
   log_v2::bam()->debug("BAM-BI: processing declaration of KPI {} ('{}')",
                        dk.kpi_id, kpi_name);
 
-  _dimension_kpi_insert.bind_value_as_i32(0, dk.kpi_id);
-  _dimension_kpi_insert.bind_value_as_str(
-      1, misc::string::truncate(kpi_name, get_mod_bam_reporting_kpi_col_size(
-                                              mod_bam_reporting_kpi_kpi_name)));
-  _dimension_kpi_insert.bind_value_as_i32(2, dk.ba_id);
-  _dimension_kpi_insert.bind_value_as_str(
-      3,
-      misc::string::truncate(dk.ba_name, get_mod_bam_reporting_kpi_col_size(
-                                             mod_bam_reporting_kpi_ba_name)));
-  _dimension_kpi_insert.bind_value_as_i32(4, dk.host_id);
-  _dimension_kpi_insert.bind_value_as_str(
-      5, misc::string::truncate(dk.host_name,
-                                get_mod_bam_reporting_kpi_col_size(
-                                    mod_bam_reporting_kpi_host_name)));
-  _dimension_kpi_insert.bind_value_as_i32(6, dk.service_id);
-  _dimension_kpi_insert.bind_value_as_str(
-      7,
-      misc::string::truncate(dk.service_description,
-                             get_mod_bam_reporting_kpi_col_size(
-                                 mod_bam_reporting_kpi_service_description)));
-  if (dk.kpi_ba_id)
-    _dimension_kpi_insert.bind_value_as_i32(8, dk.kpi_ba_id);
-  else
-    _dimension_kpi_insert.bind_value_as_null(8);
-  _dimension_kpi_insert.bind_value_as_str(
-      9, misc::string::truncate(dk.kpi_ba_name,
-                                get_mod_bam_reporting_kpi_col_size(
-                                    mod_bam_reporting_kpi_kpi_ba_name)));
-  _dimension_kpi_insert.bind_value_as_i32(10, dk.meta_service_id);
-  _dimension_kpi_insert.bind_value_as_str(
-      11, misc::string::truncate(dk.meta_service_name,
-                                 get_mod_bam_reporting_kpi_col_size(
-                                     mod_bam_reporting_kpi_meta_service_name)));
-  _dimension_kpi_insert.bind_value_as_f64(12, dk.impact_warning);
-  _dimension_kpi_insert.bind_value_as_f64(13, dk.impact_critical);
-  _dimension_kpi_insert.bind_value_as_f64(14, dk.impact_unknown);
-  _dimension_kpi_insert.bind_value_as_i32(15, dk.boolean_id);
-  _dimension_kpi_insert.bind_value_as_str(
-      16, misc::string::truncate(dk.boolean_name,
-                                 get_mod_bam_reporting_kpi_col_size(
-                                     mod_bam_reporting_kpi_boolean_name)));
-
-  _mysql.run_statement(_dimension_kpi_insert,
-                       database::mysql_error::insert_dimension_kpi, false);
+//  _dimension_kpi_insert.bind_value_as_i32(0, dk.kpi_id);
+//  _dimension_kpi_insert.bind_value_as_str(
+//      1, misc::string::truncate(kpi_name, get_mod_bam_reporting_kpi_col_size(
+//                                              mod_bam_reporting_kpi_kpi_name)));
+//  _dimension_kpi_insert.bind_value_as_i32(2, dk.ba_id);
+//  _dimension_kpi_insert.bind_value_as_str(
+//      3,
+//      misc::string::truncate(dk.ba_name, get_mod_bam_reporting_kpi_col_size(
+//                                             mod_bam_reporting_kpi_ba_name)));
+//  _dimension_kpi_insert.bind_value_as_i32(4, dk.host_id);
+//  _dimension_kpi_insert.bind_value_as_str(
+//      5, misc::string::truncate(dk.host_name,
+//                                get_mod_bam_reporting_kpi_col_size(
+//                                    mod_bam_reporting_kpi_host_name)));
+//  _dimension_kpi_insert.bind_value_as_i32(6, dk.service_id);
+//  _dimension_kpi_insert.bind_value_as_str(
+//      7,
+//      misc::string::truncate(dk.service_description,
+//                             get_mod_bam_reporting_kpi_col_size(
+//                                 mod_bam_reporting_kpi_service_description)));
+//  if (dk.kpi_ba_id)
+//    _dimension_kpi_insert.bind_value_as_i32(8, dk.kpi_ba_id);
+//  else
+//    _dimension_kpi_insert.bind_value_as_null(8);
+//  _dimension_kpi_insert.bind_value_as_str(
+//      9, misc::string::truncate(dk.kpi_ba_name,
+//                                get_mod_bam_reporting_kpi_col_size(
+//                                    mod_bam_reporting_kpi_kpi_ba_name)));
+//  _dimension_kpi_insert.bind_value_as_i32(10, dk.meta_service_id);
+//  _dimension_kpi_insert.bind_value_as_str(
+//      11, misc::string::truncate(dk.meta_service_name,
+//                                 get_mod_bam_reporting_kpi_col_size(
+//                                     mod_bam_reporting_kpi_meta_service_name)));
+//  _dimension_kpi_insert.bind_value_as_f64(12, dk.impact_warning);
+//  _dimension_kpi_insert.bind_value_as_f64(13, dk.impact_critical);
+//  _dimension_kpi_insert.bind_value_as_f64(14, dk.impact_unknown);
+//  _dimension_kpi_insert.bind_value_as_i32(15, dk.boolean_id);
+//  _dimension_kpi_insert.bind_value_as_str(
+//      16, misc::string::truncate(dk.boolean_name,
+//                                 get_mod_bam_reporting_kpi_col_size(
+//                                     mod_bam_reporting_kpi_boolean_name)));
+//
+//  _mysql.run_statement(_dimension_kpi_insert,
+//                       database::mysql_error::insert_dimension_kpi, false);
 }
 
 /**
@@ -1111,41 +1113,41 @@ void reporting_stream::_process_dimension_timeperiod(
   log_v2::bam()->debug("BAM-BI: processing declaration of timeperiod {} ('{}')",
                        tp.id, tp.name);
 
-  _dimension_timeperiod_insert.bind_value_as_i32(0, tp.id);
-  _dimension_timeperiod_insert.bind_value_as_str(
-      1, misc::string::truncate(tp.name,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_name)));
-  _dimension_timeperiod_insert.bind_value_as_str(
-      2, misc::string::truncate(tp.sunday,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_sunday)));
-  _dimension_timeperiod_insert.bind_value_as_str(
-      3, misc::string::truncate(tp.monday,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_monday)));
-  _dimension_timeperiod_insert.bind_value_as_str(
-      4, misc::string::truncate(tp.tuesday,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_tuesday)));
-  _dimension_timeperiod_insert.bind_value_as_str(
-      5, misc::string::truncate(tp.wednesday,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_wednesday)));
-  _dimension_timeperiod_insert.bind_value_as_str(
-      6, misc::string::truncate(tp.thursday,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_thursday)));
-  _dimension_timeperiod_insert.bind_value_as_str(
-      7, misc::string::truncate(tp.friday,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_friday)));
-  _dimension_timeperiod_insert.bind_value_as_str(
-      8, misc::string::truncate(tp.saturday,
-                                get_mod_bam_reporting_timeperiods_col_size(
-                                    mod_bam_reporting_timeperiods_saturday)));
-  _mysql.run_statement(_dimension_timeperiod_insert,
-                       database::mysql_error::insert_timeperiod, false);
+//  _dimension_timeperiod_insert.bind_value_as_i32(0, tp.id);
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      1, misc::string::truncate(tp.name,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_name)));
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      2, misc::string::truncate(tp.sunday,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_sunday)));
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      3, misc::string::truncate(tp.monday,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_monday)));
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      4, misc::string::truncate(tp.tuesday,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_tuesday)));
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      5, misc::string::truncate(tp.wednesday,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_wednesday)));
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      6, misc::string::truncate(tp.thursday,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_thursday)));
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      7, misc::string::truncate(tp.friday,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_friday)));
+//  _dimension_timeperiod_insert.bind_value_as_str(
+//      8, misc::string::truncate(tp.saturday,
+//                                get_mod_bam_reporting_timeperiods_col_size(
+//                                    mod_bam_reporting_timeperiods_saturday)));
+//  _mysql.run_statement(_dimension_timeperiod_insert,
+//                       database::mysql_error::insert_timeperiod, false);
   _apply(tp);
 }
 
@@ -1162,22 +1164,22 @@ void reporting_stream::_process_dimension_timeperiod_exception(
   log_v2::bam()->debug("BAM-BI: processing exception of timeperiod {}",
                        tpe.timeperiod_id);
 
-  _dimension_timeperiod_exception_insert.bind_value_as_i32(0,
-                                                           tpe.timeperiod_id);
-  _dimension_timeperiod_exception_insert.bind_value_as_str(
-      1, misc::string::truncate(
-             tpe.daterange,
-             get_mod_bam_reporting_timeperiods_exceptions_col_size(
-                 mod_bam_reporting_timeperiods_exceptions_daterange)));
-  _dimension_timeperiod_exception_insert.bind_value_as_str(
-      2, misc::string::truncate(
-             tpe.timerange,
-             get_mod_bam_reporting_timeperiods_exceptions_col_size(
-                 mod_bam_reporting_timeperiods_exceptions_timerange)));
-
-  _mysql.run_statement(_dimension_timeperiod_exception_insert,
-                       database::mysql_error::insert_timeperiod_exception,
-                       false);
+//  _dimension_timeperiod_exception_insert.bind_value_as_i32(0,
+//                                                           tpe.timeperiod_id);
+//  _dimension_timeperiod_exception_insert.bind_value_as_str(
+//      1, misc::string::truncate(
+//             tpe.daterange,
+//             get_mod_bam_reporting_timeperiods_exceptions_col_size(
+//                 mod_bam_reporting_timeperiods_exceptions_daterange)));
+//  _dimension_timeperiod_exception_insert.bind_value_as_str(
+//      2, misc::string::truncate(
+//             tpe.timerange,
+//             get_mod_bam_reporting_timeperiods_exceptions_col_size(
+//                 mod_bam_reporting_timeperiods_exceptions_timerange)));
+//
+//  _mysql.run_statement(_dimension_timeperiod_exception_insert,
+//                       database::mysql_error::insert_timeperiod_exception,
+//                       false);
   _apply(tpe);
 }
 
@@ -1195,13 +1197,13 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
       "BAM-BI: processing exclusion of timeperiod {} by timeperiod {}",
       tpe.excluded_timeperiod_id, tpe.timeperiod_id);
 
-  _dimension_timeperiod_exclusion_insert.bind_value_as_i32(0,
-                                                           tpe.timeperiod_id);
-  _dimension_timeperiod_exclusion_insert.bind_value_as_i32(
-      1, tpe.excluded_timeperiod_id);
-  _mysql.run_statement(_dimension_timeperiod_exclusion_insert,
-                       database::mysql_error::insert_exclusion_timeperiod,
-                       false);
+//  _dimension_timeperiod_exclusion_insert.bind_value_as_i32(0,
+//                                                           tpe.timeperiod_id);
+//  _dimension_timeperiod_exclusion_insert.bind_value_as_i32(
+//      1, tpe.excluded_timeperiod_id);
+//  _mysql.run_statement(_dimension_timeperiod_exclusion_insert,
+//                       database::mysql_error::insert_exclusion_timeperiod,
+//                       false);
   _apply(tpe);
 }
 
@@ -1218,12 +1220,12 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
   log_v2::bam()->debug("BAM-BI: processing relation of BA {} to timeperiod {}",
                        r.ba_id, r.timeperiod_id);
 
-  _dimension_ba_timeperiod_insert.bind_value_as_i32(0, r.ba_id);
-  _dimension_ba_timeperiod_insert.bind_value_as_i32(1, r.timeperiod_id);
-  _dimension_ba_timeperiod_insert.bind_value_as_bool(2, r.is_default);
-  _mysql.run_statement(_dimension_ba_timeperiod_insert,
-                       database::mysql_error::insert_relation_ba_timeperiod,
-                       false);
+//  _dimension_ba_timeperiod_insert.bind_value_as_i32(0, r.ba_id);
+//  _dimension_ba_timeperiod_insert.bind_value_as_i32(1, r.timeperiod_id);
+//  _dimension_ba_timeperiod_insert.bind_value_as_bool(2, r.is_default);
+//  _mysql.run_statement(_dimension_ba_timeperiod_insert,
+//                       database::mysql_error::insert_relation_ba_timeperiod,
+//                       false);
   _timeperiods.add_relation(r.ba_id, r.timeperiod_id, r.is_default);
 }
 

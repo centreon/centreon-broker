@@ -19,6 +19,7 @@
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
 
 #include <fmt/format.h>
+#include <iostream>
 
 #include <cstring>
 #include <memory>
@@ -392,11 +393,18 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
         " ON m.index_id=i.id"
         " INNER JOIN services AS s"
         " ON i.host_id=s.host_id AND i.service_id=s.service_id");
+
+    std::cout << "New storage mysql reader_v2 object" << std::endl;
     mysql storage_mysql(_storage_cfg);
     std::promise<database::mysql_result> promise;
     storage_mysql.run_query_and_get_result(query, &promise);
+
+  std::thread::id this_id = std::this_thread::get_id();
+  std::cout << "WAITING FUTURE (" << std::hex << this_id << std::dec << ")" << std::endl;
+
     database::mysql_result res(promise.get_future().get());
     while (storage_mysql.fetch_row(res)) {
+      std::cout << "FETCH ROW" << std::endl;
       mapping.register_metric(res.value_as_u32(0), res.value_as_str(1),
                               res.value_as_u32(2), res.value_as_u32(3));
     }

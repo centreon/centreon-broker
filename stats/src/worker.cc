@@ -72,6 +72,7 @@ void worker::run(std::string const& fifo_file) {
 
   // Launch thread.
   _thread = std::thread(&worker::_run, this);
+  pthread_setname_np(_thread.native_handle(), "stats_worker");
 }
 
 /**************************************

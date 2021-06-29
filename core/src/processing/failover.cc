@@ -19,6 +19,7 @@
 #include "com/centreon/broker/processing/failover.hh"
 
 #include <unistd.h>
+#include <iostream>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -42,8 +43,7 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
                    std::string const& name)
     : endpoint(name),
       _should_exit(false),
-      _started(false),
-      _stopped{false},
+      _state(not_started),
       _buffering_timeout(0),
       _endpoint(endp),
       _failover_launched(false),
@@ -59,7 +59,9 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
  *  Destructor.
  */
 failover::~failover() {
+  std::cout << "#### destructor failover " << _name << std::endl;
   exit();
+  std::cout << "#### destructor failover " << _name << " done" << std::endl;
 }
 
 /**
@@ -76,15 +78,22 @@ void failover::add_secondary_endpoint(std::shared_ptr<io::endpoint> endp) {
  */
 void failover::exit() {
   log_v2::core()->trace("failover '{}' exit.", _name);
-  std::unique_lock<std::mutex> lock(_stopped_m);
-  if (_started) {
+  std::unique_lock<std::mutex> lck(_state_m);
+  if (_state != not_started) {
     if (!_should_exit) {
       _should_exit = true;
-      log_v2::config()->trace("Waiting for {} to be stopped", _name);
-      _stopped_cv.wait(lock, [this] { return _stopped; });
-      _thread.join();
-      _started = false;
+      log_v2::processing()->trace("Waiting for {} to be stopped", _name);
+
+      if (_name == "centreon-bam-monitoring") std::cout << "exit3" << std::endl;
+      _state_cv.wait(lck, [this] {
+          std::thread::id this_id = std::this_thread::get_id();
+          std::cout << "waiting... (" << std::hex << this_id << std::dec << ")state = "
+                    << _state << std::endl;
+          return _state == stopped || _state == not_started;
+      });
     }
+    if (_thread.joinable())
+      _thread.join();
   }
   _subscriber->get_muxer().wake();
   log_v2::core()->trace("failover '{}' exited.", _name);
@@ -95,7 +104,7 @@ void failover::exit() {
  *
  *  @return Failover thread buffering timeout.
  */
-time_t failover::get_buffering_timeout() const throw() {
+time_t failover::get_buffering_timeout() const noexcept {
   return _buffering_timeout;
 }
 
@@ -121,10 +130,11 @@ time_t failover::get_retry_interval() const throw() {
  *  Thread core function.
  */
 void failover::_run() {
-  std::unique_lock<std::mutex> lock_start(_started_m);
-  _started = true;
-  _started_cv.notify_all();
-  lock_start.unlock();
+  std::unique_lock<std::mutex> lck(_state_m);
+  if (_name == "centreon-bam-monitoring") {
+    std::thread::id this_id = std::this_thread::get_id();
+    std::cout << "loop2 (" << std::hex << this_id << std::dec << std::endl;
+  }
   // Initial log.
   log_v2::processing()->debug("failover: thread of endpoint '{}' is starting",
                               _name);
@@ -135,12 +145,15 @@ void failover::_run() {
         << "failover: thread of endpoint '" << _name << "' has no endpoint"
         << " object, this is likely a software bug that should be reported"
         << " to Centreon Broker developers";
-    std::unique_lock<std::mutex> lock_stop(_stopped_m);
-    _stopped = true;
-    _stopped_cv.notify_all();
+    _state = stopped;
+    _state_cv.notify_all();
+  if (_name == "centreon-bam-monitoring") std::cout << "endpoint" << std::endl;
     return;
   }
 
+  _state = running;
+  lck.unlock();
+  _state_cv.notify_all();
   // Thread should be aware of external exit requests.
   do {
     // This try/catch block handles any error of the current thread
@@ -175,7 +188,6 @@ void failover::_run() {
         _update_status("buffering data");
 
         // Wait loop.
-        // FIXME SGA: condvar should be more elegant...
         for (ssize_t i = 0; !should_exit() && i < _buffering_timeout * 10;
              i++) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -184,6 +196,7 @@ void failover::_run() {
         _update_status("");
       }
 
+  if (_name == "centreon-bam-monitoring") std::cout << "loop3" << std::endl;
       // Open secondaries.
       _update_status("initializing secondaries");
       std::vector<std::shared_ptr<io::stream> > secondaries;
@@ -228,6 +241,7 @@ void failover::_run() {
       time_t fill_stats_time = time(nullptr);
 
       while (!should_exit()) {
+  log_v2::processing()->debug("failover: loop8 '{}' is starting", _name);
         // Check for update.
         if (_update) {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
@@ -241,6 +255,7 @@ void failover::_run() {
           set_queued_events(_subscriber->get_muxer().get_event_queue_size());
         }
 
+  log_v2::processing()->debug("failover: loop9 '{}' is starting", _name);
         // Read from endpoint stream.
         d.reset();
         bool timed_out_stream(true);
@@ -351,6 +366,7 @@ void failover::_run() {
     }
     // Some real error occured.
     catch (std::exception const& e) {
+  log_v2::processing()->debug("failover: loop1 '{}' is starting", _name);
       log_v2::core()->error("failover: global error: {}", e.what());
       logging::error(logging::high) << e.what();
       {
@@ -363,6 +379,7 @@ void failover::_run() {
         _initialized = true;
       }
     } catch (...) {
+  log_v2::processing()->debug("failover: loop2 '{}' is starting", _name);
       logging::error(logging::high)
           << "failover: endpoint '" << _name
           << "' encountered an unknown exception, this is likely a "
@@ -397,6 +414,7 @@ void failover::_run() {
 
   } while (!should_exit());
 
+  log_v2::processing()->debug("end of the loop '{}'", _name);
   // Clear stream.
   {
     std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
@@ -415,9 +433,9 @@ void failover::_run() {
   log_v2::processing()->debug("failover: thread of endpoint '{}' is exiting",
                               _name);
 
-  std::unique_lock<std::mutex> lock_stop(_stopped_m);
-  _stopped = true;
-  _stopped_cv.notify_all();
+  lck.lock();
+  _state = stopped;
+  _state_cv.notify_all();
 }
 
 /**
@@ -555,13 +573,14 @@ uint32_t failover::_get_queued_events() const {
  *  Start the internal thread.
  */
 void failover::start() {
-  log_v2::core()->trace("start failover '{}'.", _name);
-  std::unique_lock<std::mutex> lock(_started_m);
-  _stopped = false;
-  if (!_started) {
+  if (_name == "centreon-bam-monitoring") std::cout << "start" << std::endl;
+  log_v2::processing()->debug("start failover '{}'.", _name);
+  std::unique_lock<std::mutex> lck(_state_m);
+  if (_state != running) {
     _should_exit = false;
     _thread = std::thread(&failover::_run, this);
-    _started_cv.wait(lock, [this] { return _started; });
+    pthread_setname_np(_thread.native_handle(), "proc_failover");
+    _state_cv.wait(lck, [this] { return _state != not_started; });
   }
   log_v2::core()->trace("failover '{}' started.", _name);
 }

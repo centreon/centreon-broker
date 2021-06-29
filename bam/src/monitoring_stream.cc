@@ -22,7 +22,7 @@
 #include <ctime>
 #include <fstream>
 #include <limits>
-#include <sstream>
+#include <iostream>
 
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
@@ -90,6 +90,7 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
  *  Destructor.
  */
 monitoring_stream::~monitoring_stream() {
+  std::cout << "## monitoring_stream destruction" << std::endl;
   // save cache
   try {
     _write_cache();

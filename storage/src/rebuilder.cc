@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/storage/rebuilder.hh"
 
+#include <iostream>
 #include <fmt/format.h>
 #include <cfloat>
 #include <cmath>
@@ -92,6 +93,7 @@ void rebuilder::_run(asio::error_code ec) {
   else {
     try {
       // Open DB.
+      std::cout << "new storage rebuilder mysql object " << std::endl;
       mysql ms(_db_cfg);
 
       // Fetch index to rebuild.

@@ -24,6 +24,7 @@
 #include <list>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -89,12 +90,6 @@ class name_match_failover {
  private:
   std::string _name;
 };
-
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
 
 /**
  *  Destructor.
@@ -210,18 +205,24 @@ void endpoint::discard() {
     log_v2::config()->debug("endpoint applier: requesting threads termination");
     std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
+  std::cout << " endpoint::discard3" << std::endl;
     // Send termination requests.
     for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end;
          ++it) {
+      std::thread::id this_id = std::this_thread::get_id();
+      std::cout << " endpoint::discard2 (" << std::hex << this_id << ") "
+                << it->second->get_name() << std::endl;
       log_v2::config()->trace(
-          "endpoint applier: send exit signal on endpoint '{}'",
+          "endpoint applier: send exit signal to endpoint '{}'",
           it->second->get_name());
       delete it->second;
     }
 
+  std::cout << " endpoint::discard4" << std::endl;
     log_v2::config()->debug("endpoint applier: all threads are terminated");
     _endpoints.clear();
   }
+  std::cout << " endpoint::discard5" << std::endl;
 }
 
 /**

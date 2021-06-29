@@ -161,6 +161,7 @@ stream::stream(std::string const& lua_script,
     // No more need of the Lua interpreter
     delete lb;
   });
+  pthread_setname_np(_thread.native_handle(), "lua_queue");
 
   init_cv.wait(lock, [&configured] { return configured; });
   if (fail) {

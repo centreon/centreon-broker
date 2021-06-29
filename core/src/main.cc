@@ -118,6 +118,7 @@ static void hup_handler(int signum) {
  */
 static void term_handler(int signum) {
   (void)signum;
+  std::cout << "###### term_handler #####" << std::endl;
   gl_term = true;
 }
 
@@ -137,6 +138,23 @@ int main(int argc, char* argv[]) {
   int opt, option_index = 0, n_thread = 0;
   std::string broker_name{"unknown"};
   uint16_t default_port{51000};
+
+  // Set configuration update handler.
+  if (signal(SIGHUP, hup_handler) == SIG_ERR) {
+    char const* err(strerror(errno));
+    logging::info(logging::high)
+      << "main: could not register configuration update handler: " << err;
+  }
+
+  // Init signal handler.
+  struct sigaction sigterm_act;
+  memset(&sigterm_act, 0, sizeof(sigterm_act));
+  sigterm_act.sa_handler = &term_handler;
+
+  // Set termination handler.
+  if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
+    logging::info(logging::high)
+      << "main: could not register termination handler";
 
   // Return value.
   int retval(0);
@@ -285,23 +303,6 @@ int main(int argc, char* argv[]) {
         gl_state = conf;
       }
 
-      // Set configuration update handler.
-      if (signal(SIGHUP, hup_handler) == SIG_ERR) {
-        char const* err(strerror(errno));
-        logging::info(logging::high)
-            << "main: could not register configuration update handler: " << err;
-      }
-
-      // Init signal handler.
-      struct sigaction sigterm_act;
-      memset(&sigterm_act, 0, sizeof(sigterm_act));
-      sigterm_act.sa_handler = &term_handler;
-
-      // Set termination handler.
-      if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
-        logging::info(logging::high)
-            << "main: could not register termination handler";
-
       if (gl_state.rpc_port() == 0)
         default_port += gl_state.broker_id();
       else
@@ -316,6 +317,7 @@ int main(int argc, char* argv[]) {
       // Launch event loop.
       retval = EXIT_SUCCESS;
       if (!check) {
+        std::cout << "############## DEPART #############" << std::endl;
         while (!gl_term) {
           std::this_thread::sleep_for(std::chrono::seconds(1));
         }

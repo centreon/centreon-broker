@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -143,6 +144,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_ref_count++;
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
+      pthread_setname_np(_singleton->_thread.native_handle(), "conflict_mngr");
       return true;
     }
     log_v2::sql()->info(
@@ -470,6 +472,7 @@ void conflict_manager::_callback() {
             if (_should_exit())
               break;
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            //timeout += 500;
             continue;
           }
           while (!events.empty()) {
@@ -742,6 +745,7 @@ json11::Json::object conflict_manager::get_statistics() {
  * @brief Delete the conflict_manager singleton.
  */
 int32_t conflict_manager::unload(stream_type type) {
+  std::cout << "UNLOAD" << std::endl;
   if (!_singleton) {
     log_v2::sql()->info("conflict_manager: already unloaded.");
     return 0;

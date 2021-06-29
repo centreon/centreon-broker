@@ -22,7 +22,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <sstream>
+#include <iostream>
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -86,7 +86,8 @@ stream::stream(database_config const& dbcfg,
  */
 stream::~stream() {
   // Stop cleanup thread.
-  log_v2::sql()->trace("storage: stream destruction");
+  log_v2::sql()->debug("storage: stream destruction");
+  std::cout << "STORAGE::stream conflict_manager unload" << std::endl;
   conflict_manager::instance().unload(conflict_manager::storage);
 }
 

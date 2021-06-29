@@ -189,6 +189,7 @@ void acceptor::start() {
     _should_exit = false;
     _thread = std::make_unique<std::thread>(&acceptor::_callback, this);
     _state_cv.wait(lock, [this] { return _state == acceptor::running; });
+    pthread_setname_np(_thread->native_handle(), "proc_acceptor");
   }
 }
 

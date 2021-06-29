@@ -87,8 +87,10 @@ void pool::_start() {
                        : _pool_size;
 
     log_v2::core()->info("Starting the TCP thread pool of {} threads", count);
-    for (uint32_t i = 0; i < count; i++)
+    for (uint32_t i = 0; i < count; i++) {
       _pool.emplace_back([this] { _io_context.run(); });
+      pthread_setname_np(_pool[i].native_handle(), "pool_thread");
+    }
   }
 }
 

@@ -19,6 +19,7 @@
 #include "com/centreon/broker/bam/availability_thread.hh"
 
 #include <ctime>
+#include <iostream>
 
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -112,6 +113,7 @@ void availability_thread::terminate() {
 void availability_thread::start_and_wait() {
   if (!_started_flag) {
     _thread = std::thread(&availability_thread::run, this);
+    pthread_setname_np(_thread.native_handle(), "bam_avail_thrd");
     _started_flag = true;
   }
 }
@@ -454,6 +456,7 @@ time_t availability_thread::_compute_start_of_day(time_t when) {
 void availability_thread::_open_database() {
   // Add database connection.
   try {
+    std::cout << "new availability thread mysql object" << std::endl;
     _mysql = std::make_unique<mysql>(_db_cfg);
   } catch (const std::exception& e) {
     throw exceptions::msg()
