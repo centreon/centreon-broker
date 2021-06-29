@@ -90,12 +90,6 @@ class name_match_failover {
   std::string _name;
 };
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Destructor.
  */
@@ -214,7 +208,7 @@ void endpoint::discard() {
     for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end;
          ++it) {
       log_v2::config()->trace(
-          "endpoint applier: send exit signal on endpoint '{}'",
+          "endpoint applier: send exit signal to endpoint '{}'",
           it->second->get_name());
       delete it->second;
     }

@@ -112,6 +112,7 @@ void availability_thread::terminate() {
 void availability_thread::start_and_wait() {
   if (!_started_flag) {
     _thread = std::thread(&availability_thread::run, this);
+    pthread_setname_np(_thread.native_handle(), "bam_avail_thrd");
     _started_flag = true;
   }
 }

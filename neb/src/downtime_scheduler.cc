@@ -73,6 +73,7 @@ void downtime_scheduler::run() {
  */
 void downtime_scheduler::start_and_wait() {
   _thread = std::thread(&downtime_scheduler::run, this);
+  pthread_setname_np(_thread.native_handle(), "downtime_schdl");
   _started_flag = true;
 }
 
