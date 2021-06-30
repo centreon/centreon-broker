@@ -74,7 +74,7 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
   _close_all_events();
 
   // Initialize the availabilities thread.
-  _availabilities.reset(new availability_thread(db_cfg, _timeperiods));
+  _availabilities = std::make_unique<availability_thread>(db_cfg, _timeperiods);
   _availabilities->start_and_wait();
 }
 
@@ -150,8 +150,7 @@ int32_t reporting_stream::stop() {
 int reporting_stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
-  if (!validate(data, "BAM-BI"))
-    return 0;
+  assert(data);
 
   log_v2::bam()->trace("BAM: reporting stream write - event of type {:x}",
                        data->type());
@@ -526,17 +525,15 @@ void reporting_stream::_prepare() {
   _kpi_event_link_update = _mysql.prepare_query(query);
 
   query =
-      "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
-      "                sla_month_percent_crit, sla_month_percent_warn,"
-      "                sla_month_duration_crit, sla_month_duration_warn)"
-      " VALUES (?, ?, ?, ?,"
-      "         ?, ?,"
-      "         ?)";
+      "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description, "
+      "sla_month_percent_crit, sla_month_percent_warn, "
+      "sla_month_duration_crit, sla_month_duration_warn)"
+      " VALUES (?,?,?,?,?,?,?)";
   _dimension_ba_insert = _mysql.prepare_query(query);
 
   query =
       "INSERT INTO mod_bam_reporting_bv (bv_id, bv_name, bv_description)"
-      "  VALUES (?, ?, ?)";
+      " VALUES (?,?,?)";
   _dimension_bv_insert = _mysql.prepare_query(query);
 
   query =
@@ -576,15 +573,15 @@ void reporting_stream::_prepare() {
 
   _dimension_truncate_tables.clear();
   query = "DELETE FROM mod_bam_reporting_kpi";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_relations_ba_bv";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_ba";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_bv";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
   query = "DELETE FROM mod_bam_reporting_timeperiods";
-  _dimension_truncate_tables.push_back(_mysql.prepare_query(query));
+  _dimension_truncate_tables.emplace_back(_mysql.prepare_query(query));
 
   // Dimension KPI insertion
   query =

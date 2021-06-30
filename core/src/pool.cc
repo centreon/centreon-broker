@@ -84,8 +84,10 @@ pool::pool(size_t size)
   if (_closed) {
     log_v2::core()->info("Starting the TCP thread pool of {} threads",
                          _pool_size);
-    for (uint32_t i = 0; i < _pool_size; ++i)
+    for (uint32_t i = 0; i < _pool_size; ++i) {
       _pool.emplace_back([this] { _io_context.run(); });
+      pthread_setname_np(_pool[i].native_handle(), "pool_thread");
+    }
     _closed = false;
   }
 }

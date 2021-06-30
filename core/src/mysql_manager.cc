@@ -89,10 +89,10 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     std::lock_guard<std::mutex> lock(_cfg_mutex);
     for (std::shared_ptr<mysql_connection> c : _connection) {
       // Is this thread matching what the configuration needs?
-      if (c->match_config(db_cfg) && !c->is_finished() && !c->is_in_error() &&
-          c->ping()) {
+      if (c->match_config(db_cfg) && !c->is_finished() &&
+          !c->is_finish_asked() && !c->is_in_error() && c->ping()) {
         // Yes
-        retval.emplace_back(c);
+        retval.push_back(c);
         ++current_connection;
         if (current_connection >= connection_count)
           return retval;
@@ -118,15 +118,15 @@ void mysql_manager::clear() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
   for (std::shared_ptr<mysql_connection>& conn : _connection) {
-    if (!conn.unique() && !conn->is_finished())
+    if (!conn.unique() && !conn->is_finish_asked())
       try {
         conn->finish();
-      } catch (std::exception const& e) {
-        logging::info(logging::low)
-            << "mysql_manager: Unable to stop a connection: " << e.what();
+      } catch (const std::exception& e) {
+        log_v2::sql()->info("mysql_manager: Unable to stop a connection: {}",
+            e.what());
       }
   }
-  logging::debug(logging::low) << "mysql_manager: clear finished";
+  log_v2::sql()->debug("mysql_manager: clear finished");
 }
 
 /**
