@@ -10,6 +10,8 @@ Broker stores its connections to the database in an array. Once they are
 established, it does not test if they are still valid after a laps of time.
 But we know that MariaDB closes inactive connections. So here, we have added
 a check to verify if a connection is still ok.
+A possible deadlock due to the mysql connections has been removed when cbd is
+stopped.
 
 *gRPC*
 
