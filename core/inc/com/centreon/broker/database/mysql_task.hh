@@ -45,7 +45,6 @@ class mysql_task {
     STATEMENT_UINT,
     STATEMENT_UINT64,
     FETCH_ROW,
-    FINISH,
   };
 
   enum int_type {
@@ -73,11 +72,6 @@ class mysql_task_fetch : public mysql_task {
       : mysql_task(mysql_task::FETCH_ROW), result(result), promise(promise) {}
   mysql_result* result;
   std::promise<bool>* promise;
-};
-
-class mysql_task_finish : public mysql_task {
- public:
-  mysql_task_finish() : mysql_task(mysql_task::FINISH) {}
 };
 
 class mysql_task_prepare : public mysql_task {

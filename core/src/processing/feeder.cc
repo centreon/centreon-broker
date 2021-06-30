@@ -59,6 +59,7 @@ feeder::feeder(const std::string& name,
   set_last_connection_success(timestamp::now());
   set_state("connecting");
   _thread = std::make_unique<std::thread>(&feeder::_callback, this);
+  pthread_setname_np(_thread->native_handle(), "proc_feeder");
   _state_cv.wait(lck,
                  [&state = this->_state] { return state != feeder::stopped; });
 }

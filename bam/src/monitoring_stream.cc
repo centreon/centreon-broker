@@ -22,7 +22,6 @@
 #include <ctime>
 #include <fstream>
 #include <limits>
-#include <sstream>
 
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
