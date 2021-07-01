@@ -55,12 +55,10 @@ class failover : public endpoint {
   std::atomic_bool _should_exit;
 
   std::thread _thread;
-  bool _started;
-  mutable std::mutex _started_m;
-  std::condition_variable _started_cv;
-  bool _stopped;
-  mutable std::mutex _stopped_m;
-  std::condition_variable _stopped_cv;
+  enum _running_state { not_started, running, stopped };
+  _running_state _state;
+  mutable std::mutex _state_m;
+  std::condition_variable _state_cv;
   void _run();
 
  public:
@@ -75,7 +73,7 @@ class failover : public endpoint {
   bool get_initialized() const throw();
   time_t get_retry_interval() const throw();
   void start() override;
-  void exit() override;
+  void exit() override final;
   bool should_exit() const;
   void set_buffering_timeout(time_t secs);
   void set_failover(std::shared_ptr<processing::failover> fo);

@@ -70,10 +70,10 @@ class feeder : public stat_visitable {
   uint32_t _get_queued_events() const override;
 
  public:
-  feeder(std::string const& name,
+  feeder(const std::string& name,
          std::shared_ptr<io::stream> client,
-         std::unordered_set<uint32_t> const& read_filters,
-         std::unordered_set<uint32_t> const& write_filters);
+         const std::unordered_set<uint32_t>& read_filters,
+         const std::unordered_set<uint32_t>& write_filters);
   ~feeder();
   feeder(const feeder&) = delete;
   feeder& operator=(const feeder&) = delete;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2017 Centreon
+** Copyright 2011-2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,12 +30,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -48,8 +42,7 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
                    std::string const& name)
     : endpoint(name),
       _should_exit(false),
-      _started(false),
-      _stopped{false},
+      _state(not_started),
       _buffering_timeout(0),
       _endpoint(endp),
       _failover_launched(false),
@@ -82,15 +75,17 @@ void failover::add_secondary_endpoint(std::shared_ptr<io::endpoint> endp) {
  */
 void failover::exit() {
   log_v2::core()->trace("failover '{}' exit.", _name);
-  std::unique_lock<std::mutex> lock(_stopped_m);
-  if (_started) {
+  std::unique_lock<std::mutex> lck(_state_m);
+  if (_state != not_started) {
     if (!_should_exit) {
       _should_exit = true;
-      log_v2::config()->trace("Waiting for {} to be stopped", _name);
-      _stopped_cv.wait(lock, [this] { return _stopped; });
-      _thread.join();
-      _started = false;
+      log_v2::processing()->trace("Waiting for {} to be stopped", _name);
+
+      _state_cv.wait(
+          lck, [this] { return _state == stopped || _state == not_started; });
     }
+    if (_thread.joinable())
+      _thread.join();
   }
   _subscriber->get_muxer().wake();
   log_v2::core()->trace("failover '{}' exited.", _name);
@@ -101,7 +96,7 @@ void failover::exit() {
  *
  *  @return Failover thread buffering timeout.
  */
-time_t failover::get_buffering_timeout() const throw() {
+time_t failover::get_buffering_timeout() const noexcept {
   return _buffering_timeout;
 }
 
@@ -127,10 +122,7 @@ time_t failover::get_retry_interval() const throw() {
  *  Thread core function.
  */
 void failover::_run() {
-  std::unique_lock<std::mutex> lock_start(_started_m);
-  _started = true;
-  _started_cv.notify_all();
-  lock_start.unlock();
+  std::unique_lock<std::mutex> lck(_state_m);
   // Initial log.
   log_v2::processing()->debug("failover: thread of endpoint '{}' is starting",
                               _name);
@@ -141,12 +133,14 @@ void failover::_run() {
         << "failover: thread of endpoint '" << _name << "' has no endpoint"
         << " object, this is likely a software bug that should be reported"
         << " to Centreon Broker developers";
-    std::unique_lock<std::mutex> lock_stop(_stopped_m);
-    _stopped = true;
-    _stopped_cv.notify_all();
+    _state = stopped;
+    _state_cv.notify_all();
     return;
   }
 
+  _state = running;
+  lck.unlock();
+  _state_cv.notify_all();
   // Thread should be aware of external exit requests.
   do {
     // This try/catch block handles any error of the current thread
@@ -181,7 +175,6 @@ void failover::_run() {
         _update_status("buffering data");
 
         // Wait loop.
-        // FIXME SGA: condvar should be more elegant...
         for (ssize_t i = 0; !should_exit() && i < _buffering_timeout * 10;
              i++) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -421,9 +414,9 @@ void failover::_run() {
   log_v2::processing()->debug("failover: thread of endpoint '{}' is exiting",
                               _name);
 
-  std::unique_lock<std::mutex> lock_stop(_stopped_m);
-  _stopped = true;
-  _stopped_cv.notify_all();
+  lck.lock();
+  _state = stopped;
+  _state_cv.notify_all();
 }
 
 /**
@@ -491,7 +484,7 @@ void failover::update() {
  *
  *  @return  The read filters used by the failover.
  */
-std::string const& failover::_get_read_filters() const {
+const std::string& failover::_get_read_filters() const {
   return _subscriber->get_muxer().get_read_filters_str();
 }
 
@@ -500,7 +493,7 @@ std::string const& failover::_get_read_filters() const {
  *
  *  @return  The write filters used by the failover.
  */
-std::string const& failover::_get_write_filters() const {
+const std::string& failover::_get_write_filters() const {
   return _subscriber->get_muxer().get_write_filters_str();
 }
 
@@ -548,7 +541,7 @@ void failover::_launch_failover() {
  *
  *  @param[in] status New status.
  */
-void failover::_update_status(std::string const& status) {
+void failover::_update_status(const std::string& status) {
   std::lock_guard<std::mutex> lock(_status_m);
   _status = status;
 }
@@ -561,13 +554,13 @@ uint32_t failover::_get_queued_events() const {
  *  Start the internal thread.
  */
 void failover::start() {
-  log_v2::core()->trace("start failover '{}'.", _name);
-  std::unique_lock<std::mutex> lock(_started_m);
-  _stopped = false;
-  if (!_started) {
+  log_v2::processing()->debug("start failover '{}'.", _name);
+  std::unique_lock<std::mutex> lck(_state_m);
+  if (_state != running) {
     _should_exit = false;
     _thread = std::thread(&failover::_run, this);
-    _started_cv.wait(lock, [this] { return _started; });
+    pthread_setname_np(_thread.native_handle(), "proc_failover");
+    _state_cv.wait(lck, [this] { return _state != not_started; });
   }
   log_v2::core()->trace("failover '{}' started.", _name);
 }

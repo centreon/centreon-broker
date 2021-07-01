@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015,2017 Centreon
+** Copyright 2011-2012,2015,2017, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ feeder::feeder(std::string const& name,
   set_last_connection_success(timestamp::now());
   set_state("connecting");
   _thread = std::make_unique<std::thread>(&feeder::_callback, this);
+  pthread_setname_np(_thread->native_handle(), "proc_feeder");
   _state_cv.wait(lck,
                  [&state = this->_state] { return state != feeder::stopped; });
 }
