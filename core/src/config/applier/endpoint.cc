@@ -208,7 +208,7 @@ void endpoint::_discard() {
     for (auto it = _endpoints.begin(); it != _endpoints.end();) {
       if (it->second->is_feeder()) {
         log_v2::config()->trace(
-            "endpoint applier: send exit signal on endpoint '{}'",
+            "endpoint applier: send exit signal to endpoint '{}'",
             it->second->get_name());
         delete it->second;
         it = _endpoints.erase(it);

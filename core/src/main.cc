@@ -133,6 +133,22 @@ int main(int argc, char* argv[]) {
   std::string broker_name{"unknown"};
   uint16_t default_port{51000};
 
+  // Set configuration update handler.
+  if (signal(SIGHUP, hup_handler) == SIG_ERR) {
+    char const* err{strerror(errno)};
+    log_v2::core()->info(
+        "main: could not register configuration update handler: {}", err);
+  }
+
+  // Init signal handler.
+  struct sigaction sigterm_act;
+  memset(&sigterm_act, 0, sizeof(sigterm_act));
+  sigterm_act.sa_handler = &term_handler;
+
+  // Set termination handler.
+  if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
+    log_v2::core()->info("main: could not register termination handler");
+
   // Return value.
   int retval(0);
 
@@ -231,22 +247,6 @@ int main(int argc, char* argv[]) {
         broker_name = conf.broker_name();
         gl_state = conf;
       }
-
-      // Set configuration update handler.
-      if (signal(SIGHUP, hup_handler) == SIG_ERR) {
-        char const* err{strerror(errno)};
-        log_v2::core()->info(
-            "main: could not register configuration update handler: {}", err);
-      }
-
-      // Init signal handler.
-      struct sigaction sigterm_act;
-      memset(&sigterm_act, 0, sizeof(sigterm_act));
-      sigterm_act.sa_handler = &term_handler;
-
-      // Set termination handler.
-      if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
-        log_v2::core()->info("main: could not register termination handler");
 
       if (gl_state.rpc_port() == 0)
         default_port += gl_state.broker_id();

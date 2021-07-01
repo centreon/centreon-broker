@@ -21,7 +21,6 @@
 #include <unistd.h>
 
 #include <ctime>
-#include <sstream>
 
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/mysql.hh"
@@ -108,6 +107,7 @@ void cleanup::start() {
     return;
   std::lock_guard<std::mutex> lk(_start_stop_m);
   _thread = std::thread(&cleanup::_run, this);
+  pthread_setname_np(_thread.native_handle(), "sql_cleanup");
   _started = true;
   _should_exit = false;
 }
