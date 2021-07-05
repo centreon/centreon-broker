@@ -38,12 +38,6 @@ using namespace com::centreon::exceptions;
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
-/**************************************
- *                                     *
- *         Exported Functions          *
- *                                     *
- **************************************/
-
 extern "C" {
 /**
  *  @brief Module exit point.
@@ -143,6 +137,8 @@ int nebmodule_init(int flags, char const* args, void* handle) {
       } catch (const std::exception& e) {
         log_v2::core()->error(e.what());
       }
+
+      com::centreon::broker::config::applier::state::instance().apply(s);
 
     } catch (std::exception const& e) {
       log_v2::core()->error(e.what());
