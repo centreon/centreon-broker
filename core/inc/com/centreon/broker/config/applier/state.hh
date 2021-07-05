@@ -43,7 +43,7 @@ class state {
   modules _modules;
 
   state();
-  ~state() noexcept = default;
+  ~state() noexcept;
 
  public:
   static state& instance();

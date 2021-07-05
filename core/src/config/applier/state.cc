@@ -216,6 +216,10 @@ void state::unload() {
   gl_state = nullptr;
 }
 
+state::~state() noexcept {
+  _modules.discard();
+}
+
 config::applier::modules& state::get_modules() {
   return _modules;
 }
