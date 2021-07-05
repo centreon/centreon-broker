@@ -41,12 +41,6 @@ using namespace com::centreon::broker;
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
-/**************************************
- *                                     *
- *         Exported Functions          *
- *                                     *
- **************************************/
-
 extern "C" {
 /**
  *  @brief Module exit point.
@@ -126,7 +120,8 @@ int nebmodule_init(int flags, char const* args, void* handle) {
     setlocale(LC_NUMERIC, "C");
 
     // Default logging object.
-    std::shared_ptr<neb::monitoring_logger> monlog{std::make_shared<neb::monitoring_logger>()};
+    std::shared_ptr<neb::monitoring_logger> monlog{
+        std::make_shared<neb::monitoring_logger>()};
 
     try {
       // Default logging object.
@@ -170,11 +165,15 @@ int nebmodule_init(int flags, char const* args, void* handle) {
           s.loggers());
 
       std::string err;
-      if (!log_v2::instance().load("/etc/centreon-broker/log-config.json", s.broker_name(), err))
+      if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
+                                   s.broker_name(), err))
         logging::error(logging::low) << err;
 
       // Remove monitoring log.
       logging::manager::instance().log_on(monlog, 0);
+
+      com::centreon::broker::config::applier::state::instance().apply(s);
+
     } catch (std::exception const& e) {
       logging::error(logging::high) << e.what();
       logging::manager::instance().log_on(monlog, 0);
