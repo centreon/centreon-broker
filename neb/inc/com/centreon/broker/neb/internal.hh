@@ -70,7 +70,7 @@ extern std::string gl_configuration_file;
 extern multiplexing::publisher gl_publisher;
 
 // Registered callbacks.
-extern std::list<std::shared_ptr<neb::callback> > gl_registered_callbacks;
+extern std::list<std::unique_ptr<neb::callback>> gl_registered_callbacks;
 
 // Acknowledgement list.
 extern std::map<std::pair<uint32_t, uint32_t>, neb::acknowledgement>
