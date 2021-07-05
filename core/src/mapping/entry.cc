@@ -22,6 +22,13 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::mapping;
 
+entry::~entry() noexcept {
+  if (_source) {
+    delete _source;
+    _source = nullptr;
+  }
+}
+
 /**
  *  Get the boolean value.
  *

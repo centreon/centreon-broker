@@ -240,12 +240,8 @@ class entry {
     other._source = nullptr;
   }
 
-  ~entry() noexcept {
-    if (_source) {
-      delete _source;
-      _source = nullptr;
-    }
-  }
+  ~entry() noexcept;
+
   entry& operator=(entry const&) = delete;
   uint32_t get_attribute() const { return _attribute; }
   bool get_bool(const io::data& d) const;

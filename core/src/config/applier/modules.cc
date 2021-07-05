@@ -183,9 +183,10 @@ bool modules::load_file(const std::string& filename, const void* arg) {
         sym.data = parents;
         const char* const* pts = (*(sym.code))();
         for (auto p = pts; *p; ++p) {
-          auto found = _handles.find(*p);
+          std::string fn(fmt::format("{}/{}", path, *p));
+          auto found = _handles.find(fn);
           if (found == _handles.end())
-            if (!load_file(fmt::format("{}/{}", path, *p), arg))
+            if (!load_file(fn, arg))
               log_v2::config()->error(
                   "modules: impossible to load parent module '{}'", *p);
         }

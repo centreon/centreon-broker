@@ -58,7 +58,7 @@ class source {
   /**
    *  Destructor.
    */
-  virtual ~source() noexcept {}
+  virtual ~source() noexcept = default;
   source(source const&) = delete;
   source& operator=(source const&) = delete;
   virtual bool get_bool(io::data const& d) = 0;

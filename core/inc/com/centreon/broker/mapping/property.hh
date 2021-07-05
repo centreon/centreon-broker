@@ -113,7 +113,7 @@ class property : public source {
   /**
    *  Destructor.
    */
-  ~property() noexcept {}
+  ~property() noexcept = default;
 
   property& operator=(property const&) = delete;
   property(const property&) = delete;
@@ -324,6 +324,11 @@ class sproperty : public property<T> {
    */
   sproperty(std::string(T::*q), size_t max_len)
       : property<T>(q), _max_len(max_len) {}
+
+  /**
+   *  Destructor.
+   */
+  ~sproperty() noexcept = default;
 
   /**
    *  Get a string property.

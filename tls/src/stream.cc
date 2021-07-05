@@ -202,7 +202,6 @@ long long stream::write_encrypted(void const* buffer, long long size) {
   std::vector<char> tmp(const_cast<char*>(static_cast<char const*>(buffer)),
                         const_cast<char*>(static_cast<char const*>(buffer)) +
                             static_cast<std::size_t>(size));
-  log_v2::tls()->error("tls write enc: {}", size);
   r->get_buffer() = std::move(tmp);
   _substream->write(r);
   _substream->flush();

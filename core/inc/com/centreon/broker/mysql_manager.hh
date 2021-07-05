@@ -19,7 +19,6 @@
 #define CCB_MYSQL_MANAGER_HH
 
 #include <mutex>
-#include <thread>
 #include <unordered_map>
 #include <vector>
 
