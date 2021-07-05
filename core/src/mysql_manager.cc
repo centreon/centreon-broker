@@ -26,14 +26,31 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
+static std::mutex instance_m;
+mysql_manager* mysql_manager::_instance = nullptr;
+
 /**
  * @brief The function to use to call the unique instance of mysql_manager.
  *
  * @return A reference to the mysql_manager object.
  */
 mysql_manager& mysql_manager::instance() {
-  static mysql_manager _singleton;
-  return _singleton;
+  assert(_instance);
+  return *_instance;
+}
+
+void mysql_manager::load() {
+  std::lock_guard<std::mutex> lck(instance_m);
+  if (!_instance)
+    _instance = new mysql_manager();
+}
+
+void mysql_manager::unload() {
+  std::lock_guard<std::mutex> lck(instance_m);
+  if (_instance) {
+    delete _instance;
+    _instance = nullptr;
+  }
 }
 
 /**

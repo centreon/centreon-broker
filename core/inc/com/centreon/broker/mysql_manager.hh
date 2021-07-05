@@ -63,6 +63,7 @@ CCB_BEGIN()
  *
  */
 class mysql_manager {
+  static mysql_manager* _instance;
   mutable std::mutex _cfg_mutex;
   std::vector<std::shared_ptr<mysql_connection>> _connection;
 
@@ -72,9 +73,11 @@ class mysql_manager {
   std::vector<int> _stats_counts;
 
   mysql_manager();
+  ~mysql_manager();
 
  public:
-  ~mysql_manager();
+  static void load();
+  static void unload();
   static mysql_manager& instance();
   std::vector<std::shared_ptr<mysql_connection>> get_connections(
       database_config const& db_cfg);

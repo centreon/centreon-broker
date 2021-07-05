@@ -27,6 +27,7 @@
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
 
@@ -43,6 +44,7 @@ void config::applier::init(size_t n_thread, const std::string& name) {
   // Load singletons.
   pool::load(n_thread);
   stats::center::load();
+  mysql_manager::load();
   config::applier::state::load();
   multiplexing::engine::load();
   io::protocols::load();
@@ -51,6 +53,14 @@ void config::applier::init(size_t n_thread, const std::string& name) {
   mode = initialized;
 }
 
+/**
+ * @brief Load necessary structures.
+ *
+ * @param conf The configuration used to initialize the all.
+ */
+void config::applier::init(const config::state& conf) {
+  init(conf.pool_size(), conf.broker_name());
+}
 /**
  *  Unload necessary structures.
  */
@@ -62,15 +72,7 @@ void config::applier::deinit() {
   config::applier::state::unload();
   io::events::unload();
   io::protocols::unload();
+  mysql_manager::unload();
   stats::center::unload();
   pool::unload();
-}
-
-/**
- * @brief Load necessary structures.
- *
- * @param conf The configuration used to initialize the all.
- */
-void config::applier::init(const config::state& conf) {
-  init(conf.pool_size(), conf.broker_name());
 }
