@@ -25,10 +25,12 @@
 
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/misc/shared_mutex.hh"
 
 CCB_BEGIN()
 
 class log_v2 {
+  static log_v2* _instance;
   static std::map<std::string, spdlog::level::level_enum> _levels_map;
   std::string _log_name;
   std::shared_ptr<spdlog::logger> _bam_log;
@@ -47,12 +49,15 @@ class log_v2 {
   std::shared_ptr<spdlog::logger> _sql_log;
   std::shared_ptr<spdlog::logger> _tcp_log;
   std::shared_ptr<spdlog::logger> _tls_log;
-  std::mutex _load_m;
+  misc::shared_mutex _load_m;
 
   log_v2();
   ~log_v2();
 
  public:
+  static void load();
+  static void unload();
+
   static const std::array<std::string, 16> loggers;
 
   static log_v2& instance();

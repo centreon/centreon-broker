@@ -133,6 +133,7 @@ int main(int argc, char* argv[]) {
   std::string broker_name{"unknown"};
   uint16_t default_port{51000};
 
+  log_v2::load();
   // Set configuration update handler.
   if (signal(SIGHUP, hup_handler) == SIG_ERR) {
     char const* err{strerror(errno)};
@@ -282,5 +283,6 @@ int main(int argc, char* argv[]) {
     retval = EXIT_FAILURE;
   }
 
+  log_v2::unload();
   return retval;
 }

@@ -61,6 +61,7 @@ int nebmodule_deinit(int flags, int reason) {
 
     // Unload singletons.
     com::centreon::broker::config::applier::deinit();
+    log_v2::unload();
   }
   // Avoid exception propagation in C code.
   catch (...) {
@@ -85,6 +86,7 @@ int nebmodule_deinit(int flags, int reason) {
  *  @return 0 on success, any other value on failure.
  */
 int nebmodule_init(int flags, char const* args, void* handle) {
+  log_v2::load();
   try {
     // Save module handle and flags for future use.
     neb::gl_mod_flags = flags;

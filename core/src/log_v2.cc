@@ -31,6 +31,8 @@ using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
 using namespace spdlog;
 
+log_v2* log_v2::_instance = nullptr;
+
 const std::array<std::string, 16> log_v2::loggers{
     "bam",      "bbdo",         "config", "core",  "lua",      "influxdb",
     "graphite", "notification", "rrd",    "stats", "perfdata", "processing",
@@ -43,14 +45,27 @@ std::map<std::string, level::level_enum> log_v2::_levels_map{
     {"disabled", level::off}};
 
 log_v2& log_v2::instance() {
-  static log_v2 instance;
-  return instance;
+  assert(_instance);
+  return *_instance;
+}
+
+void log_v2::load() {
+  if (!_instance)
+    _instance = new log_v2();
+}
+
+void log_v2::unload() {
+  if (_instance) {
+    delete _instance;
+    _instance = nullptr;
+  }
 }
 
 log_v2::log_v2() {
   auto stdout_sink = std::make_shared<sinks::stdout_color_sink_mt>();
   auto null_sink = std::make_shared<sinks::null_sink_mt>();
 
+  std::lock_guard<misc::shared_mutex> lck(_load_m);
   _bam_log = std::make_shared<logger>("bam", stdout_sink);
   _bbdo_log = std::make_shared<logger>("bbdo", stdout_sink);
   _config_log = std::make_shared<logger>("config", stdout_sink);
@@ -90,7 +105,7 @@ log_v2::~log_v2() {
 }
 
 void log_v2::apply(const config::state& conf) {
-  std::lock_guard<std::mutex> lock(_load_m);
+  std::lock_guard<misc::shared_mutex> lock(_load_m);
 
   const auto& log = conf.log_conf();
 
@@ -171,67 +186,131 @@ void log_v2::apply(const config::state& conf) {
 }
 
 std::shared_ptr<spdlog::logger> log_v2::bam() {
-  return instance()._bam_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._bam_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::bbdo() {
-  return instance()._bbdo_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._bbdo_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::config() {
-  return instance()._config_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._config_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::core() {
-  return instance()._core_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._core_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::influxdb() {
-  return instance()._influxdb_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._influxdb_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::graphite() {
-  return instance()._graphite_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._graphite_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::notification() {
-  return instance()._notification_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._notification_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::rrd() {
-  return instance()._rrd_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._rrd_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::stats() {
-  return instance()._stats_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._stats_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::lua() {
-  return instance()._lua_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._lua_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::neb() {
-  return instance()._neb_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._neb_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::perfdata() {
-  return instance()._perfdata_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._perfdata_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::processing() {
-  return instance()._processing_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._processing_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::sql() {
-  return instance()._sql_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._sql_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::tcp() {
-  return instance()._tcp_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._tcp_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::tls() {
-  return instance()._tls_log;
+  log_v2& inst = instance();
+  inst._load_m.lock_shared();
+  auto retval = inst._tls_log;
+  inst._load_m.unlock();
+  return retval;
 }
 
 const std::string& log_v2::log_name() const {
