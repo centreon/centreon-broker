@@ -668,14 +668,17 @@ void ba::set_inherited_downtime(inherited_downtime const& dwn) {
  */
 void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
                        ba::impact_info& impact) {
+  const std::array<short, 5> order{0, 3, 4, 2, 1};
   auto is_state_worse = [&](short current_state, short new_state) -> bool {
-    std::array<short, 4> ord{0, 2, 3, 1};
-    return ord[new_state] > ord[current_state];
+    assert((unsigned int)current_state < order.size());
+    assert((unsigned int)new_state < order.size());
+    return order[new_state] > order[current_state];
   };
 
   auto is_state_better = [&](short current_state, short new_state) -> bool {
-    std::array<short, 4> ord{0, 2, 3, 1};
-    return ord[new_state] < ord[current_state];
+    assert((unsigned int)current_state < order.size());
+    assert((unsigned int)new_state < order.size());
+    return order[new_state] < order[current_state];
   };
 
   // Adjust values.
