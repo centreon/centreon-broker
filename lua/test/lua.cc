@@ -271,7 +271,7 @@ TEST_F(LuaTest, SocketCreation) {
                "end\n\n"
                "function write(d)\n"
                "end\n\n");
-  luabinding* bind;
+  luabinding* bind = nullptr;
   ASSERT_NO_THROW(bind = new luabinding(filename, conf, *_cache));
   delete bind;
   RemoveFile(filename);

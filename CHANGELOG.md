@@ -4,6 +4,10 @@
 
 ### Bug fix
 
+*cbmod*
+
+A link issue in cbmod caused a crash in centengine. This new version fixes it.
+
 *SQL*
 
 Broker stores its connections to the database in an array. Once they are
