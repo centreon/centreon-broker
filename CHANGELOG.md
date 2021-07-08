@@ -4,6 +4,10 @@
 
 ### Bug fix
 
+*cbmod*
+
+A link issue in cbmod caused a crash in centengine. This new version fixes it.
+
 *BAM*
 
 When a new BA is created with new KPI, it is possible to have an issue during

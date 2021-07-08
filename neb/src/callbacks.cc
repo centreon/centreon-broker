@@ -108,7 +108,7 @@ static struct {
     {NEBCALLBACK_RELATION_DATA, &neb::callback_relation}};
 
 // Registered callbacks.
-std::list<std::shared_ptr<neb::callback> > neb::gl_registered_callbacks;
+std::list<std::unique_ptr<neb::callback>> neb::gl_registered_callbacks;
 
 // External function to get program version.
 extern "C" {
@@ -1524,19 +1524,19 @@ int neb::callback_process(int callback_type, void* data) {
 
       // Register callbacks.
       logging::debug(logging::high) << "callbacks: registering callbacks";
-      for (uint32_t i(0); i < sizeof(gl_callbacks) / sizeof(*gl_callbacks); ++i)
-        gl_registered_callbacks.push_back(std::shared_ptr<callback>(
-            new neb::callback(gl_callbacks[i].macro, gl_mod_handle,
-                              gl_callbacks[i].callback)));
+      for (uint32_t i = 0; i < sizeof(gl_callbacks) / sizeof(*gl_callbacks); ++i)
+        gl_registered_callbacks.emplace_back(std::make_unique<callback>(
+            gl_callbacks[i].macro, gl_mod_handle,
+                              gl_callbacks[i].callback));
 
       // Register Engine-specific callbacks.
       if (gl_mod_flags & NEBMODULE_ENGINE) {
-        for (uint32_t i(0);
+        for (uint32_t i = 0;
              i < sizeof(gl_engine_callbacks) / sizeof(*gl_engine_callbacks);
              ++i)
-          gl_registered_callbacks.push_back(std::shared_ptr<callback>(
-              new neb::callback(gl_engine_callbacks[i].macro, gl_mod_handle,
-                                gl_engine_callbacks[i].callback)));
+          gl_registered_callbacks.emplace_back(std::make_unique<callback>(
+              gl_engine_callbacks[i].macro, gl_mod_handle,
+                                gl_engine_callbacks[i].callback));
       }
 
       // Parse configuration file.

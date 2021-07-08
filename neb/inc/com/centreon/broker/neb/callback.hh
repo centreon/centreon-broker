@@ -31,16 +31,14 @@ namespace neb {
  *  Handle callback registration/deregistration with Nagios.
  */
 class callback {
- public:
-  callback(int id, void* handle, int (*function)(int, void*));
-  ~callback() throw();
-
- private:
-  callback(callback const& right);
-  callback& operator=(callback const& right);
-
   int (*_function)(int, void*);
   int _id;
+
+ public:
+  callback(int id, void* handle, int (*function)(int, void*));
+  ~callback() noexcept;
+  callback(const callback&);
+  callback& operator=(const callback&);
 };
 }  // namespace neb
 
