@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015,2019-2020 Centreon
+** Copyright 2009-2013,2015,2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,12 +22,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
-
-/**************************************
- *                                     *
- *            Public Methods           *
- *                                     *
- **************************************/
 
 /**
  *  @brief Default constructor.
@@ -76,12 +70,6 @@ service_status& service_status::operator=(service_status const& ss) {
   return *this;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  @brief Copy internal members of the given object to the current
  *         instance.
@@ -101,12 +89,6 @@ void service_status::_internal_copy(service_status const& ss) {
   service_description = ss.service_description;
   service_id = ss.service_id;
 }
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const service_status::entries[] = {

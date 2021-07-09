@@ -22,8 +22,8 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "com/centreon/misc/argument.hh"
 #include "com/centreon/namespace.hh"
+#include "com/centreon/misc/argument.hh"
 
 CC_BEGIN()
 
@@ -74,7 +74,7 @@ class get_options {
                            std::string& key,
                            std::string& value);
 };
-}  // namespace misc
+}
 
 CC_END()
 
