@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015-2016,2018 Centreon
+** Copyright 2009-2013,2015-2016,2018-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,12 +41,6 @@ using namespace com::centreon::exceptions;
 
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
-
-/**************************************
- *                                     *
- *         Exported Functions          *
- *                                     *
- **************************************/
 
 extern "C" {
 /**
@@ -179,6 +173,9 @@ int nebmodule_init(int flags, char const* args, void* handle) {
 
       // Remove monitoring log.
       logging::manager::instance().log_on(monlog, 0);
+
+      com::centreon::broker::config::applier::state::instance().apply(s);
+
     } catch (std::exception const& e) {
       logging::error(logging::high) << e.what();
       logging::manager::instance().log_on(monlog, 0);
@@ -194,12 +191,10 @@ int nebmodule_init(int flags, char const* args, void* handle) {
     logging::manager::instance().log_on(monlog, 0);
 
     // Register process and log callback.
-    neb::gl_registered_callbacks.push_back(std::shared_ptr<neb::callback>(
-        new neb::callback(NEBCALLBACK_PROCESS_DATA, neb::gl_mod_handle,
-                          &neb::callback_process)));
-    neb::gl_registered_callbacks.push_back(
-        std::shared_ptr<neb::callback>(new neb::callback(
-            NEBCALLBACK_LOG_DATA, neb::gl_mod_handle, &neb::callback_log)));
+    neb::gl_registered_callbacks.emplace_back(std::make_unique<neb::callback>(
+        NEBCALLBACK_PROCESS_DATA, neb::gl_mod_handle, &neb::callback_process));
+    neb::gl_registered_callbacks.emplace_back(std::make_unique<neb::callback>(
+        NEBCALLBACK_LOG_DATA, neb::gl_mod_handle, &neb::callback_log));
 
   } catch (std::exception const& e) {
     logging::error(logging::high) << "main: cbmod loading failed: " << e.what();
