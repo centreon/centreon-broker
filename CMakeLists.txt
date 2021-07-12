@@ -86,6 +86,7 @@ find_package(OpenSSL REQUIRED)
 find_package(c-ares REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(mariadb-connector-c REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 add_definitions(${spdlog_DEFINITIONS} ${mariadb-connector-c_DEFINITIONS})
 
@@ -97,6 +98,7 @@ include_directories(${absl_INCLUDE_DIRS})
 include_directories(${gRPC_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
 include_directories(${mariadb-connector-c_INCLUDE_DIRS})
+include_directories(${nlohmann_json_INCLUDE_DIRS})
 
 link_directories(${fmt_LIB_DIRS})
 link_directories(${spdlog_LIB_DIRS})
