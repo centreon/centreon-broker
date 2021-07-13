@@ -82,12 +82,6 @@ class ba : public computable, public service_listener {
  private:
   static int const _recompute_limit = 100;
 
-  void _apply_impact(kpi* kpi_ptr, impact_info& impact);
-  void _open_new_event(io::stream* visitor, short service_hard_state);
-  void _recompute();
-  void _unapply_impact(kpi* kpi_ptr, impact_info& impact);
-  void _compute_inherited_downtime(io::stream* visitor);
-
   ba::state _computed_soft_state;
   ba::state _computed_hard_state;
   float _num_soft_critical_childs;
@@ -111,6 +105,11 @@ class ba : public computable, public service_listener {
   std::unique_ptr<inherited_downtime> _inherited_downtime;
   std::vector<std::shared_ptr<ba_event>> _initial_events;
 
+  void _apply_impact(kpi* kpi_ptr, impact_info& impact);
+  void _open_new_event(io::stream* visitor, short service_hard_state);
+  void _recompute();
+  void _unapply_impact(kpi* kpi_ptr, impact_info& impact);
+  void _compute_inherited_downtime(io::stream* visitor);
   void _commit_initial_events(io::stream* visitor);
 
  public:
