@@ -160,7 +160,13 @@ int32_t stream::flush() {
 }
 
 int32_t stream::stop() {
-  return flush();
+  int32_t retval = 0;
+  try {
+    retval = flush();
+  } catch (const std::exception& e) {
+    log_v2::tcp()->error("tcp: error during stop: {}", e.what());
+  }
+  return retval;
 }
 
 /**
