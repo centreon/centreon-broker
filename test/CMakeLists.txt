@@ -78,6 +78,7 @@ add_executable(ut
   ${TESTS_DIR}/file/splitter/permission_denied.cc
   ${TESTS_DIR}/file/splitter/resume.cc
   ${TESTS_DIR}/file/splitter/split.cc
+  ${TESTS_DIR}/misc/buffer.cc
   ${TESTS_DIR}/misc/exec.cc
   ${TESTS_DIR}/misc/filesystem.cc
   ${TESTS_DIR}/misc/math.cc

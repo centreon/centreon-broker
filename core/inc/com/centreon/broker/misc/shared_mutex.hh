@@ -27,8 +27,7 @@
 CCB_BEGIN()
 
 namespace misc {
-// This code is adapted from:
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2406.html#shared_mutex_imp
+// Here is a shared mutex class based on the glibc rwlock.
 class shared_mutex {
   pthread_rwlock_t _rwlock;
 

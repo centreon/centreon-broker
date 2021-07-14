@@ -26,6 +26,7 @@
 #include <nlohmann/json.hpp>
 
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/misc/buffer.hh"
 #include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/tcp/connector.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
@@ -57,7 +58,7 @@ class TlsTest : public ::testing::Test {
 TEST_F(TlsTest, Anon) {
   std::mutex cbd_m;
   std::condition_variable cbd_cv;
-  bool cbd_finished = false;
+  std::atomic_bool cbd_finished{false};
 
   std::thread cbd([&cbd_m, &cbd_cv, &cbd_finished] {
     auto a{std::make_unique<tcp::acceptor>(4141, -1)};
@@ -79,6 +80,8 @@ TEST_F(TlsTest, Anon) {
     ASSERT_TRUE(SSL_CTX_set_cipher_list(s_ctx, "aNULL"));
 
     SSL* s_ssl = SSL_new(s_ctx);
+    ASSERT_TRUE(s_ssl);
+
     BIO* s_ssl_bio = nullptr;
     BIO *server = nullptr, *server_io = nullptr;
 
@@ -92,101 +95,80 @@ TEST_F(TlsTest, Anon) {
     SSL_set_bio(s_ssl, server, server);
     (void)BIO_set_ssl(s_ssl_bio, s_ssl, BIO_NOCLOSE);
 
-   size_t sw_num = 0, sr_num = 0;
+    misc::buffer rbuf;
 
-    char sbuf[1024 * 8];
-    int i, r;
-    memset(sbuf, 0, sizeof(sbuf));
-    if (SSL_in_init(s_ssl))
-      printf("server waiting in SSL_connect - %s\n",
-             SSL_state_string_long(s_ssl));
+    char sbuf[1024];
 
-    if (sw_num > 0) {
-      /* Write to client. */
-      if (sw_num > (long)sizeof(sbuf))
-        i = sizeof(sbuf);
-      else
-        i = (int)sw_num;
-      r = BIO_write(s_ssl_bio, sbuf, i);
-      printf("BIO_write(s_ssl_bio, ...) => %d\n", r);
-      if (r < 0) {
-        ASSERT_TRUE(BIO_should_retry(s_ssl_bio));
-        /*
-         * BIO_should_retry(...) can just be ignored here. The
-         * library expects us to call BIO_write with the same
-         * arguments again, and that's what we will do in the
-         * next iteration.
-         */
-      } else {
-        ASSERT_TRUE(r > 0);
+    int r;
 
-        printf("server wrote %d\n", r);
-        sw_num -= r;
-      }
-    }
-
-    std::shared_ptr<io::data> d;
-    bool timeout = u_cbd->read(d, time(nullptr) + 3);
-    char *buf;
-    if (!timeout) {
-      io::raw* packet = static_cast<io::raw*>(d.get());
-      sr_num = packet->size();
-      buf = packet->data();
-    }
-    if (sr_num > 0) {
-      /* Read from server. */
-      r = BIO_read(s_ssl_bio, buf, sr_num);
-      printf("BIO_read(s_ssl_bio, ...) => %d\n", r);
-      if (r < 0) {
-        ASSERT_TRUE(BIO_should_retry(s_ssl_bio));
-        /*
-         * Again, "BIO_should_retry" can be ignored.
-         */
-      } else {
-        ASSERT_TRUE(r > 0);
-
-        printf("server read %d '%s'\n", r, buf);
-        sr_num -= r;
-      }
-    }
-
-    size_t r1;
-    bool progress = false;
     do {
-      int r;
-      r1 = BIO_ctrl_pending(server_io);
-      printf("BIO_ctrl_pending(server_io, ...) => %d\n", r1);
+      if (SSL_in_init(s_ssl)) {
+        printf("cbd: server waiting in SSL_accept - %s\n",
+               SSL_state_string_long(s_ssl));
 
-      if (r1) {
-        char* dataptr;
+        r = SSL_do_handshake(s_ssl);
+      }
+      else {
+        /* We want to read something */
+        r = SSL_read(s_ssl, sbuf, 20);
+        printf("cbd: cbd read %d\n", r);
+        if (r > 0) {
+          printf("cbd: received: '%s'\n", sbuf);
+          ASSERT_EQ(strncmp(sbuf, "Hello cbd", 9), 0);
+          break;
+        }
+      }
 
-        r = BIO_nread(server_io, &dataptr, (int)r1);
-        printf("BIO_nread(server_io, ...) => %d\n", r);
-        assert(r > 0);
-        assert(r <= (int)r1);
-        /*
-         * possibly r < r1 (non-contiguous data)
-         */
-        r1 = r;
-        auto send = std::make_shared<io::raw>();
-        send->resize(r1);
-        memcpy(send->data(), dataptr, r1);
-        printf("BIO_write(client_io, ...) => %d\n", r);
-        u_cbd->write(send);
-        progress = true;
+      if (r == -1) {
+        switch (SSL_get_error(s_ssl, r)) {
+          case SSL_ERROR_WANT_READ:
+          case SSL_ERROR_WANT_WRITE:
+            printf("cbd: want read/write\n");
+            {
+              size_t sz;
+              while ((sz = BIO_ctrl_pending(server_io)) > 0) {
+                printf("cbd: want to write %lu\n", sz);
+                char* dataptr;
+                sz = BIO_nread(server_io, &dataptr, sz);
+                auto packet = std::make_shared<io::raw>();
+                packet->get_buffer().insert(packet->get_buffer().end(), dataptr, dataptr + sz);
+                u_cbd->write(packet);
+                printf("cbd: %lu bytes sent from cbd", sz);
+              }
 
-        printf("S->C relaying: %d bytes\n", (int)r1);
+              while ((sz = BIO_ctrl_get_read_request(server_io)) > 0) {
+                printf("cbd: want to read %lu\n", sz);
+                std::shared_ptr<io::data> d;
+                bool no_timeout = u_cbd->read(d, 0);
+                if (no_timeout) {
+                  io::raw* packet = static_cast<io::raw*>(d.get());
+                  printf("cbd: %ld bytes read from cbd\n", packet->size());
+                  rbuf.push(packet->get_buffer());
+                  printf("cbd: rbuf total size %ld bytes\n", rbuf.size());
+                }
+                if (rbuf.size() > 0) {
+                  int s = std::min(rbuf.size(), sz);
+                  int ss = BIO_write(server_io, rbuf.pop(s).data(), s);
+                  ASSERT_EQ(ss, s);
+                }
+                else
+                  break;
+              }
+            }
+            break;
+          case SSL_ERROR_NONE:
+            printf("cbd: handshake done!\n");
+            break;
+          default:
+            printf("cbd: unknown error\n");
+        }
       }
     } while (true);
 
-    /////////////////////////////////////
-
-    std::lock_guard<std::mutex> lck(cbd_m);
     cbd_finished = true;
-    cbd_cv.notify_all();
   });
 
-  std::thread centengine([&cbd_m, &cbd_cv, &cbd_finished] {
+  std::thread centengine([&cbd_finished] {
     auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
     /* Nominal case, centengine is connector and write on the socket */
@@ -219,168 +201,76 @@ TEST_F(TlsTest, Anon) {
     SSL_set_bio(c_ssl, client, client);
     (void)BIO_set_ssl(c_ssl_bio, c_ssl, BIO_NOCLOSE);
 
-    size_t cw_num = 0, cr_num = 0;
+    char cbuf[20] = "Hello cbd";
+    misc::buffer rbuf;
 
-    char cbuf[1024 * 8];
-    int i, r;
-    memset(cbuf, 0, sizeof(cbuf));
-    strcpy(cbuf, "Hello cbd");
-    cw_num = strlen(cbuf) + 1;
-    if (SSL_in_init(c_ssl))
-      printf("client waiting in SSL_connect - %s\n",
-             SSL_state_string_long(c_ssl));
+    int i = 0, r;
 
-    if (cw_num > 0) {
-      /* Write to server. */
-      if (cw_num > (long)sizeof(cbuf))
-        i = sizeof(cbuf);
-      else
-        i = (int)cw_num;
-      printf("BIO_write 1\n");
-      r = BIO_write(c_ssl_bio, cbuf, i);
-      if (r < 0) {
-        ASSERT_TRUE(BIO_should_retry(c_ssl_bio));
-        /*
-         * BIO_should_retry(...) can just be ignored here. The
-         * library expects us to call BIO_write with the same
-         * arguments again, and that's what we will do in the
-         * next iteration.
-         */
-      } else {
-        ASSERT_TRUE(r > 0);
+    /* trigger of the ssl exchanges */
+    r = BIO_read(c_ssl_bio, cbuf, strlen(cbuf) + 1);
+    printf("BIO_read c_ssl_bio... r = %d\n", r);
 
-        printf("client wrote %d\n", r);
-        cw_num -= r;
-      }
-    }
-
-    if (cr_num > 0) {
-      /* Read from server. */
-      r = BIO_read(c_ssl_bio, cbuf, sizeof(cbuf));
-      printf("BIO_read(c_ssl_bio, ...) => %d\n", r);
-      if (r < 0) {
-        ASSERT_TRUE(BIO_should_retry(c_ssl_bio));
-        /*
-         * Again, "BIO_should_retry" can be ignored.
-         */
-      } else {
-        ASSERT_TRUE(r > 0);
-
-        printf("client read %d '%s'\n", r, cbuf);
-        cr_num -= r;
-      }
-    }
-
-    size_t r1;
-    bool progress = false;
     do {
-      int r;
-      r1 = BIO_ctrl_pending(client_io);
-      printf("BIO_ctrl_pending(client_io, ...) => %d\n", r1);
+      if (SSL_in_init(c_ssl)) {
+        printf("centengine: client connecting in SSL_connect - %s\n",
+               SSL_state_string_long(c_ssl));
 
-      if (r1) {
-        char* dataptr;
-
-        auto send = std::make_shared<io::raw>();
-        send->resize(r1);
-
-        r = BIO_read(client_io, send->data(), r1);
-        printf("BIO_read(client_io, ...) => %d\n", r);
-        for (int i = 0; i < r; i++) {
-          printf("%02x ", (unsigned char)send->data()[i]);
+        r = SSL_do_handshake(c_ssl);
+      }
+      else {
+        r = SSL_write(c_ssl, cbuf, strlen(cbuf) + 1);
+        if (r > 0) {
+          i++;
+          printf("centengine: message gone '%s' r = %d\n", cbuf, r);
+          //done = true;
         }
-        printf("\n");
-        ASSERT_TRUE (r == r1);
-        u_centengine->write(send);
-
-        progress = true;
       }
-    } while (r1);
+      if (r == -1) {
+        switch (SSL_get_error(c_ssl, r)) {
+          case SSL_ERROR_WANT_READ:
+          case SSL_ERROR_WANT_WRITE:
+            printf("centengine: want read/write\n");
+            {
+              size_t sz;
+              while ((sz = BIO_ctrl_pending(client_io)) > 0) {
+                printf("centengine: want to write %lu\n", sz);
+                char* dataptr;
+                sz = BIO_nread(client_io, &dataptr, sz);
+                auto packet = std::make_shared<io::raw>();
+                packet->get_buffer().insert(packet->get_buffer().end(), dataptr, dataptr + sz);
+                u_centengine->write(packet);
+                printf("centengine: %lu bytes sent from centengine", sz);
+              }
 
-    ///////////////////////////////////////
-
-    std::unique_lock<std::mutex> lck(cbd_m);
-    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished; });
-  });
-
-  centengine.join();
-  cbd.join();
-}
-
-TEST_F(TlsTest, Nominal) {
-  std::mutex cbd_m;
-  std::condition_variable cbd_cv;
-  bool cbd_finished = false;
-
-  std::thread cbd([&cbd_m, &cbd_cv, &cbd_finished] {
-    auto a{std::make_unique<tcp::acceptor>(4141, -1)};
-
-    /* Nominal case, cbd is acceptor and read on the socket */
-    std::shared_ptr<io::stream> s_cbd;
-    do {
-      s_cbd = a->open();
-    } while (!s_cbd);
-
-    auto a_tls{std::make_unique<tls::acceptor>("", "", "", "")};
-    std::unique_ptr<io::stream> u_cbd_tls;
-    do {
-      u_cbd_tls = a_tls->open(s_cbd);
-    } while (!u_cbd_tls);
-
-    std::cout << "cbd tls OK" << std::endl;
-
-    std::shared_ptr<io::data> data_read;
-    while (!data_read ||
-           std::static_pointer_cast<io::raw>(data_read)->size() < 10000)
-      ASSERT_NO_THROW(u_cbd_tls->read(data_read, static_cast<time_t>(-1)));
-
-    std::vector<char> vec(
-        std::static_pointer_cast<io::raw>(data_read)->get_buffer());
-    std::string result(vec.begin(), vec.end());
-    char cc = 'A';
-    std::string wanted;
-    for (int i = 0; i < 10; i++) {
-      wanted += cc;
-      if (++cc == 'z') {
-        wanted += "\n";
-        cc = 'A';
+              while ((sz = BIO_ctrl_get_read_request(client_io)) > 0) {
+                printf("centengine: want to read %lu\n", sz);
+                std::shared_ptr<io::data> d;
+                bool no_timeout = u_centengine->read(d, 0);
+                if (no_timeout) {
+                  io::raw* packet = static_cast<io::raw*>(d.get());
+                  printf("centengine: %ld bytes read from centengine\n", packet->size());
+                  rbuf.push(packet->get_buffer());
+                  printf("centengine: rbuf total size %lu bytes\n", rbuf.size());
+                }
+                if (rbuf.size() > 0) {
+                  int s = std::min(rbuf.size(), sz);
+                  int ss = BIO_write(client_io, rbuf.pop(s).data(), s);
+                  ASSERT_EQ(ss, s);
+                }
+                else
+                  break;
+              }
+            }
+            break;
+          case SSL_ERROR_NONE:
+            printf("centengine: handshake done!\n");
+            break;
+          default:
+            printf("centengine: unknown error\n");
+        }
       }
-    }
-    ASSERT_EQ(wanted, result);
-    std::lock_guard<std::mutex> lck(cbd_m);
-    cbd_finished = true;
-    cbd_cv.notify_all();
-  });
 
-  std::thread centengine([&cbd_m, &cbd_cv, &cbd_finished] {
-    auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
-
-    /* Nominal case, centengine is connector and write on the socket */
-    std::shared_ptr<io::stream> s_centengine;
-    do {
-      s_centengine = c->open();
-    } while (!s_centengine);
-
-    auto c_tls{std::make_unique<tls::connector>("", "", "", "")};
-    std::unique_ptr<io::stream> u_centengine_tls;
-    do {
-      u_centengine_tls = c_tls->open(s_centengine);
-    } while (!u_centengine_tls);
-
-    std::cout << "centengine tls OK" << std::endl;
-
-    std::shared_ptr<io::raw> data_write{new io::raw()};
-    std::string cc("A");
-    for (int i = 0; i < 10; i++) {
-      data_write->append(cc);
-      if (++(cc[0]) == 'z') {
-        data_write->append(std::string("\n"));
-        cc = "A";
-      }
-    }
-    u_centengine_tls->write(data_write);
-    std::unique_lock<std::mutex> lck(cbd_m);
-    cbd_cv.wait(lck, [&cbd_finished] { return cbd_finished; });
+    } while (!cbd_finished);
   });
 
   centengine.join();

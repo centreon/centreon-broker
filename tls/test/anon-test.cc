@@ -154,8 +154,8 @@ int main() {
               i = sizeof(cbuf);
             else
               i = (int)cw_num;
-            printf("BIO_write 1\n");
-            r = BIO_write(c_ssl_bio, cbuf, i);
+            int r = BIO_write(c_ssl_bio, cbuf, i);
+            printf("BIO_write => c_ssl_bio %d\n", r);
             if (r < 0) {
               if (!BIO_should_retry(c_ssl_bio)) {
                 fprintf(stderr, "ERROR in CLIENT\n");
