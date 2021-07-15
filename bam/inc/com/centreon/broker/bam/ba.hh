@@ -47,6 +47,20 @@ class kpi;
  *
  *  Represents a BA that gets computed every time an impact change
  *  of value.
+ *
+ *  Each change is represented by a ba_event. This current ba_event is stored
+ *  in the _event attribute.
+ *
+ *  If we want to be able to compute availabilities, and many others things
+ *  concerning the ba, the current event must not stay empty otherwise it is
+ *  as if the ba would be forgotten.
+ *
+ *  There are two ways for _event to be initialized:
+ *  * the set_initial_event() method: the first _event initialization is done
+ *    here.
+ *  * the _open_new_event() method: this method is called each time a change
+ *    occures. The current event is pushed to the events stack and a new one
+ *    is created with this function.
  */
 class ba : public computable, public service_listener {
   const uint32_t _id;
@@ -95,10 +109,9 @@ class ba : public computable, public service_listener {
   bool _valid;
   configuration::ba::downtime_behaviour _dt_behaviour;
   std::unique_ptr<inherited_downtime> _inherited_downtime;
+  std::vector<std::shared_ptr<ba_event>> _initial_events;
 
   void _commit_initial_events(io::stream* visitor);
-
-  std::vector<std::shared_ptr<ba_event> > _initial_events;
 
  public:
   ba(uint32_t id,
@@ -107,7 +120,7 @@ class ba : public computable, public service_listener {
      configuration::ba::state_source source,
      bool generate_virtual_status = true);
   ba(const ba&) = delete;
-  ~ba() noexcept = default;
+  ~ba() noexcept;
   ba& operator=(ba const& other) = delete;
   void add_impact(std::shared_ptr<kpi> const& impact);
   bool child_has_update(computable* child,

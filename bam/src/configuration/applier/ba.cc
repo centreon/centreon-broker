@@ -256,6 +256,7 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
   obj->set_downtime_behaviour(cfg.get_downtime_behaviour());
   if (cfg.get_opened_event().ba_id)
     obj->set_initial_event(cfg.get_opened_event());
+
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
   return obj;
 }

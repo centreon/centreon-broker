@@ -25,6 +25,7 @@
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
@@ -90,6 +91,14 @@ ba::ba(uint32_t id,
       _valid(true),
       _dt_behaviour{configuration::ba::dt_ignore} {
   assert(_host_id);
+}
+
+ba::~ba() noexcept {
+  if (!_initial_events.empty()) {
+    for (auto e : _initial_events)
+      multiplexing::publisher().write(e);
+    _initial_events.clear();
+  }
 }
 
 /**
@@ -438,7 +447,7 @@ void ba::set_initial_event(ba_event const& event) {
       event.status);
 
   if (!_event) {
-    _event.reset(new ba_event(event));
+    _event = std::make_shared<ba_event>(event);
     _in_downtime = event.in_downtime;
     _last_kpi_update = _event->start_time;
     _initial_events.push_back(_event);
@@ -512,8 +521,7 @@ void ba::visit(io::stream* visitor) {
              hard_state != _event->status) {
       state_changed = true;
       _event->end_time = _last_kpi_update;
-      visitor->write(std::static_pointer_cast<io::data>(_event));
-      _event.reset();
+      visitor->write(_event);
       _open_new_event(visitor, hard_state);
     }
 
@@ -705,16 +713,19 @@ void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
  *  @param[in]  service_hard_state  Hard state of virtual BA service.
  */
 void ba::_open_new_event(io::stream* visitor, short service_hard_state) {
-  _event.reset(new ba_event);
+  _event = std::make_shared<ba_event>();
   _event->ba_id = _id;
   _event->first_level = _level_hard < 0 ? 0 : _level_hard;
   _event->in_downtime = _in_downtime;
   _event->status = service_hard_state;
   _event->start_time = _last_kpi_update;
-  if (visitor) {
-    std::shared_ptr<io::data> be(new ba_event(*_event));
-    visitor->write(be);
-  }
+  log_v2::bam()->trace(
+      "ba (ba_id: {}) updated with new event (first_level:{}, in_downtime: {}, "
+      "status: {}, start_time: {})",
+      _id, _event->first_level, _event->in_downtime, service_hard_state,
+      _event->start_time);
+  if (visitor)
+    visitor->write(std::make_shared<ba_event>(*_event));
 }
 
 /**
@@ -800,7 +811,7 @@ void ba::_commit_initial_events(io::stream* visitor) {
              it(_initial_events.begin()),
          end(_initial_events.end());
          it != end; ++it)
-      visitor->write(std::shared_ptr<io::data>(new ba_event(**it)));
+      visitor->write(std::make_shared<ba_event>(**it));
   }
   _initial_events.clear();
 }
