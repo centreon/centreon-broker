@@ -47,6 +47,7 @@ class ba_duration_event : public io::data {
     return io::events::data_type<io::events::bam,
                                  bam::de_ba_duration_event>::value;
   }
+  bool is_valid() const;
 
   uint32_t ba_id;
   timestamp real_start_time;

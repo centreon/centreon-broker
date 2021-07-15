@@ -134,7 +134,7 @@ bool ba::child_has_update(computable* child, io::stream* visitor) {
 
     // Logging.
     log_v2::bam()->debug(
-        "BAM: BA {}, '{}' is getting notified of child update (KPI {}, impact "
+        "BAM: BA {} '{}' is getting notified of child update (KPI {}, impact "
         "{}, last state change {}, downtime {})",
         _id, _name, it->second.kpi_ptr->get_id(), new_hard_impact.get_nominal(),
         it->second.kpi_ptr->get_last_state_change(), kpi_in_downtime);

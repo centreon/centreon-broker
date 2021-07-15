@@ -95,11 +95,10 @@ void ba_duration_event::_internal_copy(ba_duration_event const& other) {
   timeperiod_is_default = other.timeperiod_is_default;
 }
 
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
+bool ba_duration_event::is_valid() const {
+  return start_time != (time_t)-1 && end_time != (time_t)-1 &&
+         start_time < end_time;
+}
 
 // Mapping.
 mapping::entry const ba_duration_event::entries[] = {

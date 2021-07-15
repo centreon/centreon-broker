@@ -72,10 +72,10 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
 
   // Close remaining events.
   _close_all_events();
+  _mysql.commit();
 
   // Initialize the availabilities thread.
   _availabilities = std::make_unique<availability_thread>(db_cfg, _timeperiods);
-  _availabilities->start_and_wait();
 }
 
 /**
@@ -83,9 +83,6 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
  */
 reporting_stream::~reporting_stream() {
   log_v2::bam()->trace("BAM: reporting stream destructor");
-  // Terminate the availabilities thread.
-  _availabilities->terminate();
-  _availabilities->wait();
 }
 
 /**
@@ -147,7 +144,7 @@ int32_t reporting_stream::stop() {
  *
  *  @return Number of events acknowledged.
  */
-int reporting_stream::write(std::shared_ptr<io::data> const& data) {
+int reporting_stream::write(const std::shared_ptr<io::data>& data) {
   // Take this event into account.
   ++_pending_events;
   assert(data);
@@ -604,7 +601,7 @@ void reporting_stream::_prepare() {
  *
  *  @param[in] e The event.
  */
-void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
+void reporting_stream::_process_ba_event(const std::shared_ptr<io::data>& e) {
   bam::ba_event const& be = *std::static_pointer_cast<bam::ba_event const>(e);
   log_v2::bam()->debug(
       "BAM-BI: processing event of BA {} (start time {}, end time {}, status "
@@ -1304,9 +1301,7 @@ void reporting_stream::_compute_event_durations(
     dur_ev->real_start_time = ev->start_time;
     dur_ev->start_time = tp->get_next_valid(ev->start_time);
     dur_ev->end_time = ev->end_time;
-    if ((dur_ev->start_time != (time_t)-1) &&
-        (dur_ev->end_time != (time_t)-1) &&
-        (dur_ev->start_time < dur_ev->end_time)) {
+    if (dur_ev->is_valid()) {
       dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
       dur_ev->sla_duration =
           tp->duration_intersect(dur_ev->start_time, dur_ev->end_time);
