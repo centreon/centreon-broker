@@ -23,24 +23,6 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/tls/test")
 include_directories(${INC_DIR} ${PROJECT_SOURCE_DIR}/neb/inc/)
 set(INC_DIR "${INC_DIR}/com/centreon/broker/tls")
 
-# Find GNU TLS.
-find_file(
-  GNUTLS_FOUND
-  "gnutls.h"
-  PATHS "/usr/gnutls2/include/gnutls"
-  NO_DEFAULT_PATH)
-if (GNUTLS_FOUND)
-  set(GNUTLS_INCLUDE_DIR "/usr/gnutls2/include")
-  set(GNUTLS_LIBRARIES "/usr/gnutls2/lib/libgnutls.so")
-else ()
-  include(FindGnuTLS)
-  if (NOT GNUTLS_FOUND)
-    message(FATAL_ERROR "Could not find GNU TLS.")
-  endif ()
-endif ()
-
-include_directories("${GNUTLS_INCLUDE_DIR}")
-
 # TLS module.
 set(TLS "60-tls")
 set(TLS "${TLS}" PARENT_SCOPE)
@@ -62,10 +44,32 @@ add_library("${TLS}" SHARED
   "${INC_DIR}/stream.hh"
 )
 
-target_link_libraries("${TLS}" ${GNUTLS_LIBRARIES})
+target_link_libraries("${TLS}" ${OpenSSL_LIBS})
 
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
 
+# Testing.
+if (WITH_TESTING)
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    "${TEST_DIR}/acceptor.cc"
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    "${TLS}"
+    PARENT_SCOPE
+  )
+
+  add_executable(anon-test
+      "${TEST_DIR}/anon-test.cc")
+  target_link_libraries(anon-test ${OpenSSL_LIBS} -pthread -ldl)
+  add_executable(crypt-test
+      "${TEST_DIR}/crypt-test.cc")
+  target_link_libraries(crypt-test ${OpenSSL_LIBS} -pthread -ldl ${fmt_LIBS})
+endif()
 # Install rule.
 install(TARGETS "${TLS}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"

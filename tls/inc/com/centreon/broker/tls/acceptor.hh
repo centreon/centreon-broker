@@ -45,13 +45,13 @@ class acceptor : public io::endpoint {
   std::string _tls_hostname;
 
  public:
-  acceptor(const std::string& cert = std::string(),
-           const std::string& key = std::string(),
-           const std::string& ca = std::string(),
-           const std::string& tls_hostname = std::string());
-  ~acceptor() = default;
-  acceptor(acceptor const& right) = delete;
-  acceptor& operator=(acceptor const&) = delete;
+  acceptor(std::string cert = std::string(),
+           std::string key = std::string(),
+           std::string ca = std::string(),
+           std::string tls_hostname = std::string());
+  ~acceptor() noexcept = default;
+  acceptor(const acceptor&) = delete;
+  acceptor& operator=(const acceptor&) = delete;
   std::unique_ptr<io::stream> open() override;
   std::unique_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 };

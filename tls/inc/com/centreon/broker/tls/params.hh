@@ -19,8 +19,6 @@
 #ifndef CCB_TLS_PARAMS_HH
 #define CCB_TLS_PARAMS_HH
 
-#include <gnutls/gnutls.h>
-
 #include <string>
 
 #include "com/centreon/broker/namespace.hh"
@@ -45,31 +43,31 @@ class params {
   std::string _cert;
   std::string _tls_hostname;
   bool _compress;
-  union {
-    gnutls_certificate_credentials_t cert;
-    gnutls_anon_client_credentials_t client;
-    gnutls_anon_server_credentials_t server;
-  } _cred;
+  // union {
+  //  gnutls_certificate_credentials_t cert;
+  //  gnutls_anon_client_credentials_t client;
+  //  gnutls_anon_server_credentials_t server;
+  //} _cred;
   bool _init;
   std::string _key;
   connection_type _type;
 
   void _clean();
-  void _init_anonymous();
+  // void _init_anonymous();
 
  public:
   params(connection_type type);
   params(params const& p) = delete;
   params& operator=(params const& p) = delete;
   virtual ~params();
-  void apply(gnutls_session_t session);
+  void apply(/*gnutls_session_t session*/);
   void load();
   void reset();
   void set_cert(std::string const& cert, std::string const& key);
   void set_compression(bool compress = false);
   void set_trusted_ca(std::string const& ca_cert);
   void set_tls_hostname(std::string const& tls_hostname);
-  void validate_cert(gnutls_session_t session);
+  void validate_cert(/*gnutls_session_t session*/);
 };
 }  // namespace tls
 

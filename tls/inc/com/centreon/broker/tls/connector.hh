@@ -40,10 +40,10 @@ class connector : public io::endpoint {
   std::string _tls_hostname;
 
  public:
-  connector(std::string const& cert = std::string(),
-            std::string const& key = std::string(),
-            std::string const& ca = std::string(),
-            std::string const& tls_hostname = std::string());
+  connector(std::string cert = std::string(),
+            std::string key = std::string(),
+            std::string ca = std::string(),
+            std::string tls_hostname = std::string());
   ~connector() = default;
   connector(const connector&) = delete;
   connector& operator=(const connector&) = delete;

@@ -18,8 +18,6 @@
 
 #include "com/centreon/broker/tls/params.hh"
 
-#include <gnutls/gnutls.h>
-
 #include <cstdlib>
 
 #include "com/centreon/broker/log_v2.hh"
@@ -52,97 +50,102 @@ params::~params() {
  *
  *  @param[out] session Object on which parameters will be applied.
  */
-void params::apply(gnutls_session_t session) {
-  // Set the encryption method (normal ciphers with anonymous
-  // Diffie-Hellman and optionnally compression).
-  int ret;
-  ret = gnutls_priority_set_direct(
-      session,
-      (_compress ? "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1."
-                   "0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
-                 : "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1."
-                   "0:-VERS-TLS1.1:+ANON-DH:+COMP-"
-                   "DEFLATE:%COMPAT"),
-      nullptr);
-
-  if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error("TLS: encryption parameter application failed: {}",
-                         gnutls_strerror(ret));
-    throw msg_fmt("TLS: encryption parameter application failed: {}",
-                  gnutls_strerror(ret));
-  }
-
-  // Set anonymous credentials...
-  if (_cert.empty() || _key.empty()) {
-    if (CLIENT == _type) {
-      log_v2::tls()->info("TLS: using anonymous client credentials");
-      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.client);
-    } else {
-      log_v2::tls()->info("TLS: using anonymous server credentials");
-      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.server);
-    }
-  }
-  // ... or certificate credentials.
-  else {
-    log_v2::tls()->info("TLS: using certificates as credentials");
-    ret = gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, _cred.cert);
-    if (SERVER == _type)
-      gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
-  }
-  if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error("TLS: could not set credentials: {}",
-                         gnutls_strerror(ret));
-    throw msg_fmt("TLS: could not set credentials: {}", gnutls_strerror(ret));
-  }
+void params::apply(/*gnutls_session_t session*/) {
+  //  // Set the encryption method (normal ciphers with anonymous
+  //  // Diffie-Hellman and optionnally compression).
+  //  int ret;
+  //  ret = gnutls_priority_set_direct(
+  //      session,
+  //      (_compress ?
+  //      "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1."
+  //                   "0:-VERS-TLS1.1:+ANON-DH:%COMPAT"
+  //                 :
+  //                 "NORMAL:-VERS-DTLS1.0:-VERS-DTLS1.2:-VERS-SSL3.0:-VERS-TLS1."
+  //                   "0:-VERS-TLS1.1:+ANON-DH:+COMP-"
+  //                   "DEFLATE:%COMPAT"),
+  //      nullptr);
+  //
+  //  if (ret != GNUTLS_E_SUCCESS) {
+  //    log_v2::tls()->error("TLS: encryption parameter application failed: {}",
+  //                         gnutls_strerror(ret));
+  //    throw msg_fmt("TLS: encryption parameter application failed: {}",
+  //                  gnutls_strerror(ret));
+  //  }
+  //
+  //  // Set anonymous credentials...
+  //  if (_cert.empty() || _key.empty()) {
+  //    if (CLIENT == _type) {
+  //      log_v2::tls()->info("TLS: using anonymous client credentials");
+  //      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.client);
+  //    } else {
+  //      log_v2::tls()->info("TLS: using anonymous server credentials");
+  //      ret = gnutls_credentials_set(session, GNUTLS_CRD_ANON, _cred.server);
+  //    }
+  //  }
+  //  // ... or certificate credentials.
+  //  else {
+  //    log_v2::tls()->info("TLS: using certificates as credentials");
+  //    ret = gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE,
+  //    _cred.cert); if (SERVER == _type)
+  //      gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUEST);
+  //  }
+  //  if (ret != GNUTLS_E_SUCCESS) {
+  //    log_v2::tls()->error("TLS: could not set credentials: {}",
+  //                         gnutls_strerror(ret));
+  //    throw msg_fmt("TLS: could not set credentials: {}",
+  //    gnutls_strerror(ret));
+  //  }
 }
 
 /**
  *  Load TLS parameters.
  */
 void params::load() {
-  // Certificate-based.
-  if (!_cert.empty() && !_key.empty()) {
-    // Initialize credentials.
-    int ret;
-    ret = gnutls_certificate_allocate_credentials(&_cred.cert);
-    if (ret != GNUTLS_E_SUCCESS) {
-      log_v2::tls()->error("TLS: credentials allocation failed: {}",
-                           gnutls_strerror(ret));
-      throw msg_fmt("TLS: credentials allocation failed: {}",
-                    gnutls_strerror(ret));
-    }
-    gnutls_certificate_set_dh_params(_cred.cert, dh_params);
-    _init = true;
-
-    // Load certificate files.
-    ret = gnutls_certificate_set_x509_key_file(
-        _cred.cert, _cert.c_str(), _key.c_str(), GNUTLS_X509_FMT_PEM);
-    if (ret != GNUTLS_E_SUCCESS) {
-      log_v2::tls()->error("TLS: could not load certificate ({}, {}): {}",
-                           _cert, _key, gnutls_strerror(ret));
-      throw msg_fmt("TLS: could not load certificate: {}",
-                    gnutls_strerror(ret));
-    }
-
-    if (!_ca.empty()) {
-      // Load certificate.
-      ret = gnutls_certificate_set_x509_trust_file(_cred.cert, _ca.c_str(),
-                                                   GNUTLS_X509_FMT_PEM);
-      if (ret <= 0) {
-        log_v2::tls()->error(
-            "TLS: could not load trusted Certificate Authority's certificate "
-            "'{}': {}",
-            _ca, gnutls_strerror(ret));
-        throw msg_fmt(
-            "TLS: could not load trusted Certificate Authority's certificate: "
-            "{}",
-            gnutls_strerror(ret));
-      }
-    }
-  }
-  // Anonymous.
-  else
-    _init_anonymous();
+  //  // Certificate-based.
+  //  if (!_cert.empty() && !_key.empty()) {
+  //    // Initialize credentials.
+  //    int ret;
+  //    ret = gnutls_certificate_allocate_credentials(&_cred.cert);
+  //    if (ret != GNUTLS_E_SUCCESS) {
+  //      log_v2::tls()->error("TLS: credentials allocation failed: {}",
+  //                           gnutls_strerror(ret));
+  //      throw msg_fmt("TLS: credentials allocation failed: {}",
+  //                    gnutls_strerror(ret));
+  //    }
+  //    gnutls_certificate_set_dh_params(_cred.cert, dh_params);
+  //    _init = true;
+  //
+  //    // Load certificate files.
+  //    ret = gnutls_certificate_set_x509_key_file(
+  //        _cred.cert, _cert.c_str(), _key.c_str(), GNUTLS_X509_FMT_PEM);
+  //    if (ret != GNUTLS_E_SUCCESS) {
+  //      log_v2::tls()->error("TLS: could not load certificate ({}, {}): {}",
+  //                           _cert, _key, gnutls_strerror(ret));
+  //      throw msg_fmt("TLS: could not load certificate: {}",
+  //                    gnutls_strerror(ret));
+  //    }
+  //
+  //    if (!_ca.empty()) {
+  //      // Load certificate.
+  //      ret = gnutls_certificate_set_x509_trust_file(_cred.cert, _ca.c_str(),
+  //                                                   GNUTLS_X509_FMT_PEM);
+  //      if (ret <= 0) {
+  //        log_v2::tls()->error(
+  //            "TLS: could not load trusted Certificate Authority's certificate
+  //            "
+  //            "'{}': {}",
+  //            _ca, gnutls_strerror(ret));
+  //        throw msg_fmt(
+  //            "TLS: could not load trusted Certificate Authority's
+  //            certificate: "
+  //            "{}",
+  //            gnutls_strerror(ret));
+  //      }
+  //    }
+  //  }
+  //  // Anonymous.
+  //  else
+  //    _init_anonymous();
 }
 
 /**
@@ -223,51 +226,52 @@ void params::set_trusted_ca(std::string const& ca_cert) {
  *
  *  @param[in] session Session on which checks will be performed.
  */
-void params::validate_cert(gnutls_session_t session) {
-  if (!_ca.empty()) {
-    int ret;
-    uint32_t status;
-    if (!_tls_hostname.empty()) {
-      log_v2::tls()->info(
-          "TLS: common name '{}' used for certificate verification",
-          _tls_hostname);
-      ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
-                                             &status);
-    } else {
-      log_v2::tls()->info(
-          "TLS: Server hostname used for certificate verification");
-      ret = gnutls_certificate_verify_peers2(session, &status);
-    }
-
-    if (ret != GNUTLS_E_SUCCESS) {
-      log_v2::tls()->error(
-          "TLS: certificate verification failed , assuming invalid "
-          "certificate: {}",
-          gnutls_strerror(ret));
-      throw msg_fmt(
-          "TLS: certificate verification failed, assuming invalid certificate: "
-          "{}",
-          gnutls_strerror(ret));
-    } else if (status & GNUTLS_CERT_INVALID) {
-      log_v2::tls()->error("TLS: peer certificate is invalid");
-      throw msg_fmt("TLS: peer certificate is invalid");
-    } else if (status & GNUTLS_CERT_REVOKED) {
-      log_v2::tls()->error("TLS: peer certificate was revoked");
-      throw msg_fmt("TLS: peer certificate was revoked");
-    } else if (status & GNUTLS_CERT_SIGNER_NOT_FOUND) {
-      log_v2::tls()->error(
-          "TLS: peer certificate was not issued by a trusted authority");
-      throw msg_fmt(
-          "TLS: peer certificate was not issued by a trusted authority");
-    } else if (status & GNUTLS_CERT_INSECURE_ALGORITHM) {
-      log_v2::tls()->error(
-          "TLS: peer certificate is using an insecure algorithm that cannot be "
-          "trusted");
-      throw msg_fmt(
-          "TLS: peer certificate is using an insecure algorithm that cannot be "
-          "trusted");
-    }
-  }
+void params::validate_cert(/*gnutls_session_t session*/) {
+  //  if (!_ca.empty()) {
+  //    int ret;
+  //    uint32_t status;
+  //    if (!_tls_hostname.empty()) {
+  //      log_v2::tls()->info(
+  //          "TLS: common name '{}' used for certificate verification",
+  //          _tls_hostname);
+  //      ret = gnutls_certificate_verify_peers3(session, _tls_hostname.c_str(),
+  //                                             &status);
+  //    } else {
+  //      log_v2::tls()->info(
+  //          "TLS: Server hostname used for certificate verification");
+  //      ret = gnutls_certificate_verify_peers2(session, &status);
+  //    }
+  //
+  //    if (ret != GNUTLS_E_SUCCESS) {
+  //      log_v2::tls()->error(
+  //          "TLS: certificate verification failed , assuming invalid "
+  //          "certificate: {}",
+  //          gnutls_strerror(ret));
+  //      throw msg_fmt(
+  //          "TLS: certificate verification failed, assuming invalid
+  //          certificate: "
+  //          "{}",
+  //          gnutls_strerror(ret));
+  //    } else if (status & GNUTLS_CERT_INVALID) {
+  //      log_v2::tls()->error("TLS: peer certificate is invalid");
+  //      throw msg_fmt("TLS: peer certificate is invalid");
+  //    } else if (status & GNUTLS_CERT_REVOKED) {
+  //      log_v2::tls()->error("TLS: peer certificate was revoked");
+  //      throw msg_fmt("TLS: peer certificate was revoked");
+  //    } else if (status & GNUTLS_CERT_SIGNER_NOT_FOUND) {
+  //      log_v2::tls()->error(
+  //          "TLS: peer certificate was not issued by a trusted authority");
+  //      throw msg_fmt(
+  //          "TLS: peer certificate was not issued by a trusted authority");
+  //    } else if (status & GNUTLS_CERT_INSECURE_ALGORITHM) {
+  //      log_v2::tls()->error(
+  //          "TLS: peer certificate is using an insecure algorithm that cannot
+  //          be " "trusted");
+  //      throw msg_fmt(
+  //          "TLS: peer certificate is using an insecure algorithm that cannot
+  //          be " "trusted");
+  //    }
+  //  }
 }
 
 /**
@@ -276,34 +280,35 @@ void params::validate_cert(gnutls_session_t session) {
  *  All allocated ressources will be released.
  */
 void params::_clean() {
-  if (_init) {
-    if (_cert.empty() || _key.empty()) {
-      if (CLIENT == _type)
-        gnutls_anon_free_client_credentials(_cred.client);
-      else
-        gnutls_anon_free_server_credentials(_cred.server);
-    } else
-      gnutls_certificate_free_credentials(_cred.cert);
-    _init = false;
-  }
+  //  if (_init) {
+  //    if (_cert.empty() || _key.empty()) {
+  //      if (CLIENT == _type)
+  //        gnutls_anon_free_client_credentials(_cred.client);
+  //      else
+  //        gnutls_anon_free_server_credentials(_cred.server);
+  //    } else
+  //      gnutls_certificate_free_credentials(_cred.cert);
+  //    _init = false;
+  //  }
 }
 
 /**
  *  Initialize anonymous credentials.
  */
-void params::_init_anonymous() {
-  int ret;
-  if (CLIENT == _type)
-    ret = gnutls_anon_allocate_client_credentials(&_cred.client);
-  else
-    ret = gnutls_anon_allocate_server_credentials(&_cred.server);
-  if (ret != GNUTLS_E_SUCCESS) {
-    log_v2::tls()->error("TLS: anonymous credentials initialization failed: {}",
-                         gnutls_strerror(ret));
-    throw msg_fmt("TLS: anonymous credentials initialization failed: {}",
-                  gnutls_strerror(ret));
-  }
-  if (_type != CLIENT)
-    gnutls_anon_set_server_dh_params(_cred.server, dh_params);
-  _init = true;
-}
+// void params::_init_anonymous() {
+//  int ret;
+//  if (CLIENT == _type)
+//    ret = gnutls_anon_allocate_client_credentials(&_cred.client);
+//  else
+//    ret = gnutls_anon_allocate_server_credentials(&_cred.server);
+//  if (ret != GNUTLS_E_SUCCESS) {
+//    log_v2::tls()->error("TLS: anonymous credentials initialization failed:
+//    {}",
+//                         gnutls_strerror(ret));
+//    throw msg_fmt("TLS: anonymous credentials initialization failed: {}",
+//                  gnutls_strerror(ret));
+//  }
+//  if (_type != CLIENT)
+//    gnutls_anon_set_server_dh_params(_cred.server, dh_params);
+//  _init = true;
+//}
