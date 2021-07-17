@@ -165,8 +165,12 @@ void stream::_manage_stream(int r, ssl_action action) {
       break;
     case SSL_ERROR_NONE:
       log_v2::tls()->info("SSL_ERROR_NONE");
-      if (action == ssl_handshake)
+      if (action == ssl_handshake) {
         _handshake_done = true;
+        log_v2::tls()->info(
+            "Encryption protocol '{}' configured with '{}' cipher",
+            SSL_get_version(_ssl), SSL_get_cipher_name(_ssl));
+      }
       _do_stream();
       break;
     default:

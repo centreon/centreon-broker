@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -72,6 +72,30 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
       SSL* c_ssl = SSL_new(tls::ctx);
       if (c_ssl == nullptr)
         throw msg_fmt("Unable to allocate connector ssl object");
+
+      if (!_cert.empty() && !_key.empty()) {
+        log_v2::tls()->info("TLS: using certificates as credentials");
+
+        /* Load certificate */
+        int r = SSL_use_certificate_file(c_ssl, _cert.c_str(), SSL_FILETYPE_PEM);
+        if (r <= 0)
+          throw msg_fmt("Error: cannot load certificate file '{}'", _cert);
+
+        /* Load private key */
+        r = SSL_use_PrivateKey_file(c_ssl, _key.c_str(), SSL_FILETYPE_PEM);
+        if (r <= 0)
+          throw msg_fmt("Error: cannot load private key file '{}'", _key);
+
+        /* Check if the private key is valid */
+        r = SSL_check_private_key(c_ssl);
+        if (r != 1)
+          throw msg_fmt("Error: checking the private key '{}' failed.", _key);
+
+        if (!SSL_set_cipher_list(c_ssl, "HIGH"))
+          throw msg_fmt("Error: cannot set the cipher list to HIGH");
+      }
+      else
+        log_v2::tls()->info("TLS: using anonymous client credentials");
 
       BIO *c_bio = nullptr, *client = nullptr, *c_bio_io = nullptr;
 
