@@ -67,6 +67,9 @@ log_v2::log_v2() {
   _sql_log = std::make_shared<logger>("sql", stdout_sink);
   _tcp_log = std::make_shared<logger>("tcp", stdout_sink);
   _tls_log = std::make_shared<logger>("tls", stdout_sink);
+  _bbdo_log->set_level(level::trace);
+  _tls_log->set_level(level::trace);
+  _tcp_log->set_level(level::trace);
 }
 
 log_v2::~log_v2() {
