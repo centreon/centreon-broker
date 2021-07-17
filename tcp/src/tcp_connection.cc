@@ -20,6 +20,7 @@
 #include <functional>
 
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::exceptions;
@@ -107,54 +108,6 @@ int32_t tcp_connection::flush() {
 }
 
 /**
- * @brief This function is an internal function just used to debug. It displays
- * the data array as hex 8 bits integers in the limit of 20 values. If the array
- * is longer, only the 10 first bytes and the 10 last bytes are displayed.
- *
- * @param data A const char* array.
- * @param size The size of the data array.
- *
- * @return A string containing the result.
- */
-static std::string debug_buf(const char* data, int32_t size) {
-  auto to_str = [](uint8_t d) -> uint8_t {
-    uint8_t ret;
-    if (d < 10)
-      ret = '0' + d;
-    else
-      ret = 'a' + d - 10;
-    return ret;
-  };
-
-  std::string retval;
-  int l1;
-  if (size <= 10)
-    l1 = size;
-  else
-    l1 = 10;
-
-  for (int i = 0; i < l1; i++) {
-    uint8_t c = data[i];
-    uint8_t d1 = c >> 4;
-    uint8_t d2 = c & 0xf;
-    retval.push_back(to_str(d1));
-    retval.push_back(to_str(d2));
-  }
-  if (size > 10) {
-    if (size > 20)
-      retval += "...";
-    for (int i = std::max(size - 10, l1); i < size; i++) {
-      uint8_t c = data[i];
-      uint8_t d1 = c >> 4;
-      uint8_t d2 = c & 0xf;
-      retval.push_back(to_str(d1));
-      retval.push_back(to_str(d2));
-    }
-  }
-  return retval;
-}
-
-/**
  * @brief Write data on the socket. This function returns immediatly and does
  * not wait the data to be written. Its real work is just to stack the given
  * vector on a queue and check the asio::async_write function is running. Then
@@ -178,6 +131,8 @@ int32_t tcp_connection::write(const std::vector<char>& v) {
     }
   }
 
+  log_v2::tcp()->trace("Write data: {} bytes: {}", v.size(),
+                       misc::string::from_buffer(v.data(), v.size()));
   {
     std::lock_guard<std::mutex> lck(_exposed_write_queue_m);
     _exposed_write_queue.push(v);
@@ -272,7 +227,7 @@ void tcp_connection::start_reading() {
 void tcp_connection::handle_read(const asio::error_code& ec,
                                  size_t read_bytes) {
   log_v2::tcp()->trace("Incoming data: {} bytes: {}", read_bytes,
-                       debug_buf(&_read_buffer[0], read_bytes));
+                       misc::string::from_buffer(&_read_buffer[0], read_bytes));
   if (read_bytes > 0) {
     std::lock_guard<std::mutex> lock(_read_queue_m);
     _read_queue.emplace(_read_buffer.begin(),

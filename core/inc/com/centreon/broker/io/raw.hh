@@ -42,6 +42,7 @@ class raw : public data {
   raw();
   raw(raw const& r);
   raw(std::vector<char>&& b);
+  raw(char* dataptr, size_t r);
   ~raw();
   raw& operator=(raw const& r);
   constexpr static uint32_t static_type() {

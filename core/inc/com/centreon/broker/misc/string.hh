@@ -77,6 +77,7 @@ fmt::string_view truncate(const T& str, size_t s) {
 
 size_t adjust_size_utf8(const std::string& str, size_t s);
 std::string escape(const std::string& str, size_t s);
+std::string from_buffer(const char* data, int32_t size);
 
 }  // namespace string
 }  // namespace misc

@@ -82,7 +82,6 @@ std::list<fmt::string_view> string::split_sv(std::string const& str, char sep) {
   return retval;
 }
 
-
 std::string string::base64_encode(const std::string& str) {
   static const std::string b =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -417,4 +416,52 @@ std::string string::escape(const std::string& str, size_t s) {
     }
     return ret;
   }
+}
+
+/**
+ * @brief This function is very useful to debug. It displays
+ * the data array as hex 8 bits integers in the limit of 20 values. If the array
+ * is longer, only the 10 first bytes and the 10 last bytes are displayed.
+ *
+ * @param data A const char* array.
+ * @param size The size of the data array.
+ *
+ * @return A string containing the result.
+ */
+std::string string::from_buffer(const char* data, int32_t size) {
+  auto to_str = [](uint8_t d) -> uint8_t {
+    uint8_t ret;
+    if (d < 10)
+      ret = '0' + d;
+    else
+      ret = 'a' + d - 10;
+    return ret;
+  };
+
+  std::string retval;
+  int l1;
+  if (size <= 10)
+    l1 = size;
+  else
+    l1 = 10;
+
+  for (int i = 0; i < l1; i++) {
+    uint8_t c = data[i];
+    uint8_t d1 = c >> 4;
+    uint8_t d2 = c & 0xf;
+    retval.push_back(to_str(d1));
+    retval.push_back(to_str(d2));
+  }
+  if (size > 10) {
+    if (size > 20)
+      retval += "...";
+    for (int i = std::max(size - 10, l1); i < size; i++) {
+      uint8_t c = data[i];
+      uint8_t d1 = c >> 4;
+      uint8_t d2 = c & 0xf;
+      retval.push_back(to_str(d1));
+      retval.push_back(to_str(d2));
+    }
+  }
+  return retval;
 }
