@@ -19,16 +19,12 @@
 #ifndef CCB_TLS_STREAM_HH
 #define CCB_TLS_STREAM_HH
 
-#include <gnutls/gnutls.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
-#include <string.h>
 #include <string>
-#include <vector>
 
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/misc/buffer.hh"
-#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 

@@ -18,14 +18,9 @@
 
 #include "com/centreon/broker/tls/stream.hh"
 
-#include <stdio.h>
-#include <cerrno>
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <thread>
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/misc/string.hh"

@@ -32,9 +32,6 @@ extern SSL_CTX* ctx;
 // Code.
 void destroy();
 void initialize();
-// ssize_t pull_helper(gnutls_transport_ptr_t ptr, void* data, size_t size);
-// ssize_t push_helper(gnutls_transport_ptr_t ptr, void const* data, size_t
-// size);
 }  // namespace tls
 
 CCB_END()

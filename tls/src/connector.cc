@@ -20,7 +20,6 @@
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tls/internal.hh"
-#include "com/centreon/broker/tls/params.hh"
 #include "com/centreon/broker/tls/stream.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -74,10 +73,25 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
         throw msg_fmt("Unable to allocate connector ssl object");
 
       if (!_cert.empty() && !_key.empty()) {
+        int r;
         log_v2::tls()->info("TLS: using certificates as credentials");
 
+        /* Force TLS hostname */
+        if (!_tls_hostname.empty()) {
+          r = SSL_set_tlsext_host_name(c_ssl, _tls_hostname.c_str());
+          if (r != 1)
+            throw msg_fmt("Error: cannot set tls hostname '{}'", _tls_hostname);
+        }
+
+        /* Load CA certificate */
+        if (!_ca.empty()) {
+          r = SSL_use_certificate_chain_file(c_ssl, _ca.c_str());
+          if (r <= 0)
+            throw msg_fmt("Error: cannot load trusted certificate authority's file '{}'", _ca);
+        }
+
         /* Load certificate */
-        int r = SSL_use_certificate_file(c_ssl, _cert.c_str(), SSL_FILETYPE_PEM);
+        r = SSL_use_certificate_file(c_ssl, _cert.c_str(), SSL_FILETYPE_PEM);
         if (r <= 0)
           throw msg_fmt("Error: cannot load certificate file '{}'", _cert);
 
@@ -94,8 +108,12 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
         if (!SSL_set_cipher_list(c_ssl, "HIGH"))
           throw msg_fmt("Error: cannot set the cipher list to HIGH");
       }
-      else
+      else {
         log_v2::tls()->info("TLS: using anonymous client credentials");
+        SSL_set_security_level(c_ssl, 0);
+        if (!SSL_set_cipher_list(c_ssl, "aNULL"))
+          throw msg_fmt("Error: cannot set the cipher list to HIGH");
+      }
 
       BIO *c_bio = nullptr, *client = nullptr, *c_bio_io = nullptr;
 
