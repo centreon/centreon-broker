@@ -150,6 +150,8 @@ sed -i 's/DWITH_USER/DWITH_USER_BROKER/' centreon-broker/packaging/rpm/centreon-
 sed -i 's/DWITH_GROUP/DWITH_GROUP_BROKER/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
 sed -i 's/@VERSION@/%{VERSION}/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
 
 sed -i 's/DWITH_PREFIX_LIB/DWITH_PREFIX_LIB_CLIB/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
 sed -i 's/@VERSION@/%{VERSION}/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
@@ -157,6 +159,8 @@ sed -i 's/@RELEASE@/%{RELEASE}/' centreon-clib/packaging/rpm/centreon-clib.spect
 
 sed -i 's/@VERSION@/%{VERSION}/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
+sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
+sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
 
 sed -i 's/@VERSION@/%{VERSION}/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
@@ -164,6 +168,8 @@ sed -i 's/DWITH_GROUP/DWITH_GROUP_ENGINE/' centreon-engine/packaging/rpm/centreo
 sed -i 's/DWITH_PREFIX_CONF/DWITH_PREFIX_CONF_ENGINE/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 sed -i 's/DWITH_PREFIX_LIB/DWITH_PREFIX_LIB_ENGINE/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 sed -i 's/DWITH_USER_ENGINE/DWITH_USER_ENGINE/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 
 # supression dossier centreon build
 rm -rf centreon-build
@@ -172,13 +178,16 @@ rm -rf centreon-build
 cp centreon-broker/collect/* .
 cp centreon-broker/collect/.gitignore .
 chmod 775 rpmbuild.sh
-cp rpmbuild.sh central-broker/packaging/script/
-cp rpmbuild.sh central-engine/packaging/script/
-cp rpmbuild.sh central-clib/packaging/script/
-cp rpmbuild.sh central-connectors/packaging/script/
+cp rpmbuild.sh centreon-broker/packaging/script/
+cp rpmbuild.sh centreon-engine/packaging/script/
+cp rpmbuild.sh centreon-clib/packaging/script/
+cp rpmbuild.sh centreon-connectors/packaging/script/
 rm -rf rpmbuild.sh
 sed -i 's/broker/engine/' centreon-engine/packaging/script/rpmbuild.sh
+sed -i 's/broker/engine/' centreon-engine/packaging/script/rpmbuild.sh
 sed -i 's/broker/clib/' centreon-clib/packaging/script/rpmbuild.sh
+sed -i 's/broker/clib/' centreon-clib/packaging/script/rpmbuild.sh
+sed -i 's/broker/connectors/' centreon-connectors/packaging/script/rpmbuild.sh
 sed -i 's/broker/connectors/' centreon-connectors/packaging/script/rpmbuild.sh
 
 chmod 775 cmake.sh
