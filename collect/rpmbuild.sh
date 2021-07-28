@@ -27,13 +27,14 @@ fi
 if [ ! -d /root/rpmbuild/SOURCES ] ; then
     mkdir -p /root/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 fi
-echo $pwd
-cd "$pwd/../../../"
-echo $pwd
-mkdir centreon-broker-$VERSION-$RELEASE
-cp -r centreon-broker centreon-broker-$VERSION-$RELEASE
-tar -czf centreon-broker-$VERSION-$RELEASE.tar.gz centreon-broker-$VERSION-$RELEASE cmake.sh
-mv centreon-broker-$VERSION-$RELEASE.tar.gz /root/rpmbuild/SOURCES/
-rm -rf centreon-broker-$VERSION-$RELEASE
-echo $pwd
-rpmbuild -ba centreon-broker/packaging/rpm/centreon-broker.spectemplate
+
+cd "../../../"
+
+mkdir centreon-broker-$VERSION
+cp -r centreon-broker/* centreon-broker-$VERSION
+tar -czf centreon-broker-$VERSION.tar.gz centreon-broker-$VERSION cmake.sh
+mv centreon-broker-$VERSION.tar.gz /root/rpmbuild/SOURCES/
+rm -rf centreon-broker-$VERSION
+
+rpmbuild -ba centreon-broker/packaging/rpm/centreon-broker.spectemplate -D "VERSION $VERSION" -D "RELEASE $RELEASE"
+
