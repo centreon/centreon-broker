@@ -38,8 +38,8 @@ git rm CHANGELOG.md
 git commit -m "move to collect"
 
 cd $RACINE_SOURCE/centreon-connectors/
-mkdir centreon-connectors
-git mv * -k centreon-connectors/
+mkdir centreon-connector
+git mv * -k centreon-connector/
 git rm .gitignore
 # git rm CHANGELOG.md
 git commit -m "move to collect"
@@ -67,10 +67,10 @@ git remote add centreon-engine $RACINE_SOURCE/centreon-engine/
 git pull centreon-engine master
 
 git remote add centreon-clib $RACINE_SOURCE/centreon-clib/
-git pull centreon-clib MON-10725-CTest-to-GTest
+git pull centreon-clib master
 
-git remote add centreon-connectors $RACINE_SOURCE/centreon-connectors/
-git pull centreon-connectors master
+git remote add centreon-connector $RACINE_SOURCE/centreon-connectors/
+git pull centreon-connector master
 
 git remote add centreon-tests $RACINE_SOURCE/centreon-tests/
 git pull centreon-tests master
@@ -87,11 +87,11 @@ sed -i 's/WITH_GROUP/WITH_GROUP_BROKER/' centreon-broker/CMakeLists.txt
 sed -i 's/WITH_PREFIX_LIB/WITH_PREFIX_LIB_CLIB/' centreon-clib/CMakeLists.txt
 sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-clib/test/CMakeLists.txt
 
-sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connectors/CMakeLists.txt
-sed -i 's/add_executable(ut/add_executable(ut_connectors/' centreon-connectors/CMakeLists.txt
-sed -i 's/target_link_libraries(ut/target_link_libraries(ut_connectors/' centreon-connectors/CMakeLists.txt
-sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connectors/perl/CMakeLists.txt
-sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connectors/ssh/CMakeLists.txt
+sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connector/CMakeLists.txt
+sed -i 's/add_executable(ut/add_executable(ut_connector/' centreon-connector/CMakeLists.txt
+sed -i 's/target_link_libraries(ut/target_link_libraries(ut_connector/' centreon-connector/CMakeLists.txt
+sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connector/perl/CMakeLists.txt
+sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connector/ssh/CMakeLists.txt
 
 sed -i 's/WITH_PREFIX_CONF/WITH_PREFIX_CONF_ENGINE/' centreon-engine/CMakeLists.txt
 sed -i 's/WITH_PREFIX_LIB/WITH_PREFIX_LIB_ENGINE/' centreon-engine/CMakeLists.txt
@@ -121,6 +121,7 @@ mkdir -p centreon-engine/packaging/script
 mkdir -p centreon-engine/packaging/docker
 mkdir -p centreon-engine/packaging/jenkins
 mv centreon-build/packaging/engine/21.10/centreon-engine.spectemplate centreon-engine/packaging/rpm/
+mv centreon-build/packaging/engine/centreonengine_integrate_centreon_engine2centreon.sh centreon-engine/packaging/rpm/
 
 
 
@@ -134,11 +135,11 @@ mv centreon-build/packaging/clib/centreon-clib.spectemplate centreon-clib/packag
 
 
 # connector
-mkdir -p centreon-connectors/packaging/rpm
-mkdir -p centreon-connectors/packaging/script
-mkdir -p centreon-connectors/packaging/docker
-mkdir -p centreon-connectors/packaging/jenkins
-mv centreon-build/packaging/connector/21.10/centreon-connector.spectemplate centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
+mkdir -p centreon-connector/packaging/rpm
+mkdir -p centreon-connector/packaging/script
+mkdir -p centreon-connector/packaging/docker
+mkdir -p centreon-connector/packaging/jenkins
+mv centreon-build/packaging/connector/21.10/centreon-connector.spectemplate centreon-connector/packaging/rpm/centreon-connector.spectemplate
 
 
 
@@ -157,10 +158,10 @@ sed -i 's/DWITH_PREFIX_LIB/DWITH_PREFIX_LIB_CLIB/' centreon-clib/packaging/rpm/c
 sed -i 's/@VERSION@/%{VERSION}/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
 
-sed -i 's/@VERSION@/%{VERSION}/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
-sed -i 's/@RELEASE@/%{RELEASE}/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
-sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
-sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-connectors/packaging/rpm/centreon-connectors.spectemplate
+sed -i 's/@VERSION@/%{VERSION}/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/@RELEASE@/%{RELEASE}/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
 
 sed -i 's/@VERSION@/%{VERSION}/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
@@ -181,14 +182,17 @@ chmod 775 rpmbuild.sh
 cp rpmbuild.sh centreon-broker/packaging/script/
 cp rpmbuild.sh centreon-engine/packaging/script/
 cp rpmbuild.sh centreon-clib/packaging/script/
-cp rpmbuild.sh centreon-connectors/packaging/script/
+cp rpmbuild.sh centreon-connector/packaging/script/
 rm -rf rpmbuild.sh
 sed -i 's/broker/engine/' centreon-engine/packaging/script/rpmbuild.sh
 sed -i 's/broker/engine/' centreon-engine/packaging/script/rpmbuild.sh
+sed -i 's/rpmbuild -ba/cp centreon-engine\/packaging\/rpm\/centreonengine_integrate_centreon_engine2centreon.sh \/root\/rpmbuild\/SOURCES\/\nrpmbuild -ba/' centreon-engine/packaging/script/rpmbuild.sh
+
+
 sed -i 's/broker/clib/' centreon-clib/packaging/script/rpmbuild.sh
 sed -i 's/broker/clib/' centreon-clib/packaging/script/rpmbuild.sh
-sed -i 's/broker/connectors/' centreon-connectors/packaging/script/rpmbuild.sh
-sed -i 's/broker/connectors/' centreon-connectors/packaging/script/rpmbuild.sh
+sed -i 's/broker/connector/' centreon-connector/packaging/script/rpmbuild.sh
+sed -i 's/broker/connector/' centreon-connector/packaging/script/rpmbuild.sh
 
 chmod 775 cmake.sh
 ./cmake.sh
@@ -208,7 +212,7 @@ rm -rf centreon-clib
 
 cd $RACINE_SOURCE/centreon-connectors/
 git reset --hard HEAD~1
-rm -rf centreon-connectors
+rm -rf centreon-connector
 
 cd $RACINE_SOURCE/centreon-tests/
 git reset --hard HEAD~1
@@ -222,7 +226,7 @@ rm -rf centreon-build
 cd $RACINE_SOURCE/centreon-collect/
 git remote rm centreon-broker
 git remote rm centreon-clib
-git remote rm centreon-connectors
+git remote rm centreon-connector
 git remote rm centreon-engine
 git remote rm centreon-tests
 git remote rm centreon-build
