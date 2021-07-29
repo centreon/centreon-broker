@@ -1,0 +1,49 @@
+/*
+** Variables.
+*/
+properties([buildDiscarder(logRotator(numToKeepStr: '10'))])
+def serie = '21.10'
+def maintenanceBranch = "${serie}.x"
+
+env.REF_BRANCH = 'master'
+env.PROJECT='centreon-collect'
+
+
+if (env.BRANCH_NAME.startsWith('release-')) {
+  env.BUILD = 'RELEASE'
+} else if ((env.BRANCH_NAME == env.REF_BRANCH) || (env.BRANCH_NAME == maintenanceBranch)) {
+  env.BUILD = 'REFERENCE'
+} else {
+  env.BUILD = 'CI'
+}
+
+def buildBranch = env.BRANCH_NAME
+if (env.CHANGE_BRANCH) {
+  buildBranch = env.CHANGE_BRANCH
+}
+
+/*
+** Functions
+*/
+def isStableBuild() {
+  return ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE'))
+}
+
+/*
+** Pipeline code.
+*/
+
+stage('Build') {
+  node {
+    dir('centreon-collect') {
+      checkout scm
+    }
+    def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build:1.0"
+    sh "docker pull $BUILD_COLLECT_IMAGE"
+    def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+    sh "docker cp centreon-collect '$containerid:/src'"
+    sh "docker start -a $containerid"
+    sh "docker stop $containerid"
+    sh "docker rm $containerid"
+  }
+}
