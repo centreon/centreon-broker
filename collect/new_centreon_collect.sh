@@ -176,7 +176,7 @@ sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-engine/packaging/rp
 rm -rf centreon-build
 
 # copie des fichier collect
-cp centreon-broker/collect/* .
+cp -r centreon-broker/collect/* .
 cp centreon-broker/collect/.gitignore .
 chmod 775 rpmbuild.sh
 cp rpmbuild.sh centreon-broker/packaging/script/
