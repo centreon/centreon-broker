@@ -33,17 +33,178 @@ def isStableBuild() {
 ** Pipeline code.
 */
 
-stage('Build') {
-  node {
-    dir('centreon-collect') {
-      checkout scm
+// stage('Build') {
+//   node {
+//     dir('centreon-collect') {
+//       checkout scm
+//     }
+//     def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build:1.0"
+//     sh "docker pull $BUILD_COLLECT_IMAGE"
+//     def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+//     sh "docker cp centreon-collect '$containerid:/src'"
+//     sh "docker start -a $containerid"
+//     sh "docker stop $containerid"
+//     sh "docker rm $containerid"
+//   }
+// }
+
+
+try {
+  stage('Unit tests') {
+    parallel 'centos7': {
+      node {
+        dir('centreon-collect-centos7') {
+          checkout scm
+        }
+        def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build-centos7:1.0"
+        sh "docker pull $BUILD_COLLECT_IMAGE"
+        def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+        sh "docker cp centreon-collect-centos7 '$containerid:/src/centreon-collect'"
+        sh "docker start -a $containerid"
+        sh "docker stop $containerid"
+        sh "docker rm $containerid"
+      }
+    },
+    'centos8': {
+      node {
+        dir('centreon-collect-centos8') {
+          checkout scm
+        }
+          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build-centos8:1.0"
+          sh "docker pull $BUILD_COLLECT_IMAGE"
+          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+          sh "docker cp centreon-collect-centos8 '$containerid:/src/centreon-collect'"
+          sh "docker start -a $containerid"
+          sh "docker stop $containerid"
+          sh "docker rm $containerid"
+        }
+      }
+    },
+    'debian10': {
+      node {
+        dir('centreon-collect-debian10') {
+          checkout scm
+        }
+          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build-debian10:1.0"
+          sh "docker pull $BUILD_COLLECT_IMAGE"
+          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+          sh "docker cp centreon-collect-debian10 '$containerid:/src/centreon-collect'"
+          sh "docker start -a $containerid"
+          sh "docker stop $containerid"
+          sh "docker rm $containerid"
+        }
+      }
     }
-    def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build:1.0"
-    sh "docker pull $BUILD_COLLECT_IMAGE"
-    def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
-    sh "docker cp centreon-collect '$containerid:/src'"
-    sh "docker start -a $containerid"
-    sh "docker stop $containerid"
-    sh "docker rm $containerid"
+    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+      error('Unit tests stage failure.');
+    }
+  }
+
+  // // sonarQube step to get qualityGate result
+  // stage('Quality gate') {
+  //   node {
+  //     def reportFilePath = "target/sonar/report-task.txt"
+  //     def reportTaskFileExists = fileExists "${reportFilePath}"
+  //     if (reportTaskFileExists) {
+  //       echo "Found report task file"
+  //       def taskProps = readProperties file: "${reportFilePath}"
+  //       echo "taskId[${taskProps['ceTaskId']}]"
+  //       timeout(time: 10, unit: 'MINUTES') {
+  //         while (true) {
+  //           sleep 5
+  //           def taskStatusResult    =
+  //             sh(returnStdout: true, script: "curl -s -X GET -u ${authString} \'${sonarProps['sonar.host.url']}/api/ce/task?id=${taskProps['ceTaskId']}\'")
+  //             echo "taskStatusResult[${taskStatusResult}]"
+  //             def taskStatus  = new JsonSlurper().parseText(taskStatusResult).task.status
+  //             echo "taskStatus[${taskStatus}]"
+  //             // Status can be SUCCESS, ERROR, PENDING, or IN_PROGRESS. The last two indicate it's
+  //             // not done yet.
+  //             if (taskStatus != "IN_PROGRESS" && taskStatus != "PENDING") {
+  //                 break;
+  //             }
+  //             def qualityGate = waitForQualityGate()
+  //             if (qualityGate.status != 'OK') {
+  //               currentBuild.result = 'FAIL'
+  //             }
+  //         }
+  //       }
+  //     }
+  //     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+  //       error('Quality gate failure: ${qualityGate.status}.');
+  //     }
+  //   }
+  // }
+
+  stage('Package') {
+    parallel 'centos7': {
+      node {
+        dir('centreon-collect-centos7') {
+          checkout scm
+        }
+          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-package-centos7:1.0"
+          sh "docker pull $BUILD_COLLECT_IMAGE"
+          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+          sh "docker cp centreon-collect-centos7 '$containerid:/src/centreon-collect'"
+          sh "docker start -a $containerid"
+          sh "docker stop $containerid"
+          sh "docker rm $containerid"
+        }
+      }
+    },
+    'centos8': {
+      node {
+        dir('centreon-collect') {
+          checkout scm
+        }
+          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-package-centos8:1.0"
+          sh "docker pull $BUILD_COLLECT_IMAGE"
+          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+          sh "docker cp centreon-collect-centos8 '$containerid:/src/centreon-collect'"
+          sh "docker start -a $containerid"
+          sh "docker stop $containerid"
+          sh "docker rm $containerid"
+        }
+      }
+    },
+    'debian10': {
+      node {
+        dir('centreon-collect-debian10') {
+          checkout scm
+        }
+          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-package-debian10:1.0"
+          sh "docker pull $BUILD_COLLECT_IMAGE"
+          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
+          sh "docker cp centreon-collect-debian10 '$containerid:/src/centreon-collect'"
+          sh "docker start -a $containerid"
+          sh "docker stop $containerid"
+          sh "docker rm $containerid"
+        }
+      }
+    }
+    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+      error('Package stage failure.');
+    }
+  }
+
+  // if ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE')) {
+  //   stage('Delivery') {
+  //     node {
+  //       sh 'setup_centreon_build.sh'
+  //       sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
+  //     }
+  //     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
+  //       error('Delivery stage failure.');
+  //     }
+  //   }
+
+  //   if (env.BUILD == 'REFERENCE') {
+  //     build job: "centreon-web/${env.BRANCH_NAME}", wait: false
+  //   }
+  // }
+}
+finally {
+  buildStatus = currentBuild.result ?: 'SUCCESS';
+  if ((buildStatus != 'SUCCESS') && ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE'))) {
+    slackSend channel: '#monitoring-metrology', message: "@channel Centreon Broker build ${env.BUILD_NUMBER} of branch ${env.BRANCH_NAME} was broken by ${source.COMMITTER}. Please fix it ASAP."
   }
 }
