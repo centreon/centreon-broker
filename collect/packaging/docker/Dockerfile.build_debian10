@@ -1,0 +1,6 @@
+FROM debian:buster
+RUN apt-get update -y && \
+    apt-get install -y cmake && \
+    apt-get clean all
+WORKDIR /src
+ENTRYPOINT [ "/src/centreon-collect/packaging/script/unit_test.sh"]
