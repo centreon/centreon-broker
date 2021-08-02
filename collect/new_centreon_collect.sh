@@ -111,6 +111,7 @@ mkdir -p centreon-broker/packaging/rpm
 mkdir -p centreon-broker/packaging/script
 mkdir -p centreon-broker/packaging/docker
 mkdir -p centreon-broker/packaging/jenkins
+mv centreon-build/packaging/broker/debian centreon-broker/packaging/rpm/
 mv centreon-build/packaging/broker/rpm/21.10/centreon-broker.spectemplate centreon-broker/packaging/rpm/
 
 
@@ -121,6 +122,7 @@ mkdir -p centreon-engine/packaging/script
 mkdir -p centreon-engine/packaging/docker
 mkdir -p centreon-engine/packaging/jenkins
 mv centreon-build/packaging/engine/21.10/centreon-engine.spectemplate centreon-engine/packaging/rpm/
+mv centreon-build/packaging/engine/debian centreon-engine/packaging/rpm/
 mv centreon-build/packaging/engine/centreonengine_integrate_centreon_engine2centreon.sh centreon-engine/packaging/rpm/
 
 
@@ -130,7 +132,7 @@ mkdir -p centreon-clib/packaging/rpm
 mkdir -p centreon-clib/packaging/script
 mkdir -p centreon-clib/packaging/docker
 mkdir -p centreon-clib/packaging/jenkins
-mv centreon-build/packaging/clib/centreon-clib.spectemplate centreon-clib/packaging/rpm/
+mv centreon-build/packaging/clib/* centreon-clib/packaging/rpm/
 
 
 
