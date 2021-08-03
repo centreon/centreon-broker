@@ -156,7 +156,6 @@ class mysql_connection {
   bool match_config(database_config const& db_cfg) const;
   int get_tasks_count() const;
   bool is_finished() const;
-  bool ping();
   bool is_in_error() const;
   void clear_error();
   std::string get_error_message();

@@ -462,21 +462,6 @@ bool mysql_connection::is_finished() const {
   return _finished;
 }
 
-/**
- * @brief This function checks if the connection to the database is still
- * active. It returns true in that case, false otherwise.
- *
- * @return a boolean.
- */
-bool mysql_connection::ping() {
-  int ret = mysql_ping(_conn);
-  if (ret) {
-    _finish(nullptr);
-    return false;
-  }
-  return true;
-}
-
 std::string mysql_connection::_get_stack() {
   std::string retval;
   for (std::shared_ptr<mysql_task> t : _tasks_list) {
