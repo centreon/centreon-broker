@@ -49,7 +49,7 @@ def get_header(header):
 
 host_addr = '127.0.0.1'
 host_port = 5758
-server_sni_hostname = 'localhost'
+server_sni_hostname = 'dev-dbr'
 server_cert = 'server.crt'
 client_cert = 'client.crt'
 client_key = 'client.key'

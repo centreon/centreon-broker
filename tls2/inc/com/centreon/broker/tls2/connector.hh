@@ -19,16 +19,13 @@
 #ifndef CCB_TLS_CONNECTOR_HH
 #define CCB_TLS_CONNECTOR_HH
 
-#include <string>
-
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace tls {
+namespace tls2 {
 /**
- *  @class connector connector.hh "com/centreon/broker/tls/connector.hh"
+ *  @class connector connector.hh "com/centreon/broker/tls2/connector.hh"
  *  @brief Connect to a TLS peer.
  *
  *  Use a connected TLS stream to connect to a TLS peer.
@@ -40,17 +37,17 @@ class connector : public io::endpoint {
   std::string _tls_hostname;
 
  public:
-  connector(std::string const& cert = std::string(),
-            std::string const& key = std::string(),
-            std::string const& ca = std::string(),
-            std::string const& tls_hostname = std::string());
+  connector(std::string cert = std::string(),
+            std::string key = std::string(),
+            std::string ca = std::string(),
+            std::string tls_hostname = std::string());
   ~connector() = default;
   connector(const connector&) = delete;
   connector& operator=(const connector&) = delete;
   std::unique_ptr<io::stream> open();
   std::unique_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 };
-}  // namespace tls
+}  // namespace tls2
 
 CCB_END()
 

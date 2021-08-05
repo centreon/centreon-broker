@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013, 2021 Centreon
+** Copyright 2009-2013 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,12 +20,19 @@
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tls/internal.hh"
+#include "com/centreon/broker/tls/params.hh"
 #include "com/centreon/broker/tls/stream.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 using namespace com::centreon::exceptions;
+
+/**************************************
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor
@@ -34,15 +41,15 @@ using namespace com::centreon::exceptions;
  *  @param[in] key  Key file.
  *  @param[in] ca   Trusted CA's certificate.
  */
-connector::connector(std::string cert,
-                     std::string key,
-                     std::string ca,
-                     std::string tls_hostname)
+connector::connector(std::string const& cert,
+                     std::string const& key,
+                     std::string const& ca,
+                     std::string const& tls_hostname)
     : io::endpoint(false),
-      _ca(std::move(ca)),
-      _cert(std::move(cert)),
-      _key(std::move(key)),
-      _tls_hostname(std::move(tls_hostname)) {}
+      _ca(ca),
+      _cert(cert),
+      _key(key),
+      _tls_hostname(tls_hostname) {}
 
 /**
  *  Connect to the remote TLS peer.
@@ -65,83 +72,71 @@ std::unique_ptr<io::stream> connector::open() {
  *  @return Encrypted stream.
  */
 std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
-  std::unique_ptr<stream> u;
+  std::unique_ptr<io::stream> u;
   if (lower) {
+    int ret;
+    // Load parameters.
+    params p(params::CLIENT);
+    p.set_cert(_cert, _key);
+    p.set_trusted_ca(_ca);
+    p.set_tls_hostname(_tls_hostname);
+    p.load();
+
+    gnutls_session_t* session(new gnutls_session_t);
     try {
-      SSL* c_ssl = SSL_new(tls::ctx);
-      if (c_ssl == nullptr)
-        throw msg_fmt("Unable to allocate connector ssl object");
-
-      if (!_cert.empty() && !_key.empty()) {
-        int r;
-        log_v2::tls()->info("TLS: using certificates as credentials");
-
-        /* Force TLS hostname */
-        if (!_tls_hostname.empty()) {
-          r = SSL_set_tlsext_host_name(c_ssl, _tls_hostname.c_str());
-          if (r != 1)
-            throw msg_fmt("Error: cannot set tls hostname '{}'", _tls_hostname);
-        }
-
-        /* Load CA certificate */
-        if (!_ca.empty()) {
-          r = SSL_use_certificate_chain_file(c_ssl, _ca.c_str());
-          if (r <= 0)
-            throw msg_fmt("Error: cannot load trusted certificate authority's file '{}'", _ca);
-        }
-
-        /* Load certificate */
-        r = SSL_use_certificate_file(c_ssl, _cert.c_str(), SSL_FILETYPE_PEM);
-        if (r <= 0)
-          throw msg_fmt("Error: cannot load certificate file '{}'", _cert);
-
-        /* Load private key */
-        r = SSL_use_PrivateKey_file(c_ssl, _key.c_str(), SSL_FILETYPE_PEM);
-        if (r <= 0)
-          throw msg_fmt("Error: cannot load private key file '{}'", _key);
-
-        /* Check if the private key is valid */
-        r = SSL_check_private_key(c_ssl);
-        if (r != 1)
-          throw msg_fmt("Error: checking the private key '{}' failed.", _key);
-
-        if (!SSL_set_cipher_list(c_ssl, "HIGH"))
-          throw msg_fmt("Error: cannot set the cipher list to HIGH");
-      }
-      else {
-        log_v2::tls()->info("TLS: using anonymous client credentials");
-        SSL_set_security_level(c_ssl, 0);
-        if (!SSL_set_cipher_list(c_ssl, "aNULL"))
-          throw msg_fmt("Error: cannot set the cipher list to HIGH");
+      // Initialize the TLS session
+      log_v2::tls()->debug("TLS: initializing session");
+#ifdef GNUTLS_NONBLOCK
+      ret = gnutls_init(session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
+#else
+      ret = gnutls_init(session, GNUTLS_CLIENT);
+#endif  // GNUTLS_NONBLOCK
+      if (ret != GNUTLS_E_SUCCESS) {
+        log_v2::tls()->error("TLS: cannot initialize session: {}",
+                             gnutls_strerror(ret));
+        throw msg_fmt("TLS: cannot initialize session: {} ",
+                      gnutls_strerror(ret));
       }
 
-      BIO *c_bio = nullptr, *client = nullptr, *c_bio_io = nullptr;
-
-      // size_t bufsiz = 2048; /* small buffer for testing */
-
-      if (!BIO_new_bio_pair(&client, 0 /*bufsiz*/, &c_bio_io, 0 /*bufsiz*/))
-        throw msg_fmt("Unable to build SSL pair.");
-
-      c_bio = BIO_new(BIO_f_ssl());
-      if (!c_bio)
-        throw msg_fmt("Unable to build SSL filter.");
-
-      SSL_set_connect_state(c_ssl);
-      SSL_set_bio(c_ssl, client, client);
-      (void)BIO_set_ssl(c_bio, c_ssl, BIO_NOCLOSE);
+      // Apply TLS parameters to the current session.
+      p.apply(*session);
 
       // Create stream object.
-      u = std::make_unique<stream>(c_ssl, c_bio, c_bio_io);
+      u.reset(new stream(session));
     } catch (...) {
-      // delete c_ssl;
+      gnutls_deinit(*session);
+      delete session;
       throw;
     }
     u->set_substream(lower);
 
-    /* Handshake as connector */
-    log_v2::tls()->error("tls before handshake");
-    u->handshake();
-    log_v2::tls()->error("tls after handshake");
+    // Bind the TLS session with the stream from the lower layer.
+#if GNUTLS_VERSION_NUMBER < 0x020C00
+    gnutls_transport_set_lowat(*session, 0);
+#endif  // GNU TLS < 2.12.0
+    gnutls_transport_set_pull_function(*session, pull_helper);
+    gnutls_transport_set_push_function(*session, push_helper);
+    gnutls_transport_set_ptr(*session, u.get());
+
+    // Perform the TLS handshake.
+    log_v2::tls()->debug("TLS: performing handshake");
+    do {
+      ret = gnutls_handshake(*session);
+    } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
+    if (ret != GNUTLS_E_SUCCESS) {
+      log_v2::tls()->error("TLS: handshake failed: {}", gnutls_strerror(ret));
+      throw msg_fmt("TLS: handshake failed: {}", gnutls_strerror(ret));
+    }
+
+    log_v2::tls()->debug("TLS: successful handshake");
+    gnutls_protocol_t prot = gnutls_protocol_get_version(*session);
+    gnutls_cipher_algorithm_t ciph = gnutls_cipher_get(*session);
+    log_v2::tls()->debug("TLS: protocol and cipher  {} {} used",
+                         gnutls_protocol_get_name(prot),
+                         gnutls_cipher_get_name(ciph));
+
+    // Check certificate if necessary.
+    p.validate_cert(*session);
   }
 
   return u;

@@ -17,54 +17,34 @@
 ##
 
 # Global options.
-set(INC_DIR "${PROJECT_SOURCE_DIR}/tls/inc")
-set(SRC_DIR "${PROJECT_SOURCE_DIR}/tls/src")
-set(TEST_DIR "${PROJECT_SOURCE_DIR}/tls/test")
+set(INC_DIR "${PROJECT_SOURCE_DIR}/tls2/inc")
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/tls2/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/tls2/test")
 include_directories(${INC_DIR} ${PROJECT_SOURCE_DIR}/neb/inc/)
-set(INC_DIR "${INC_DIR}/com/centreon/broker/tls")
+set(INC_DIR "${INC_DIR}/com/centreon/broker/tls2")
 
-# Find GNU TLS.
-find_file(
-  GNUTLS_FOUND
-  "gnutls.h"
-  PATHS "/usr/gnutls2/include/gnutls"
-  NO_DEFAULT_PATH)
-if (GNUTLS_FOUND)
-  set(GNUTLS_INCLUDE_DIR "/usr/gnutls2/include")
-  set(GNUTLS_LIBRARIES "/usr/gnutls2/lib/libgnutls.so")
-else ()
-  include(FindGnuTLS)
-  if (NOT GNUTLS_FOUND)
-    message(FATAL_ERROR "Could not find GNU TLS.")
-  endif ()
-endif ()
-
-include_directories("${GNUTLS_INCLUDE_DIR}")
-
-# TLS module.
-set(TLS "60-tls")
-set(TLS "${TLS}" PARENT_SCOPE)
-add_library("${TLS}" SHARED
+# TLS2 module.
+set(TLS2 "60-tls2")
+set(TLS2 "${TLS2}" PARENT_SCOPE)
+add_library("${TLS2}" SHARED
   # Sources
   "${SRC_DIR}/acceptor.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/internal.cc"
   "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/params.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
   "${INC_DIR}/acceptor.hh"
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/internal.hh"
-  "${INC_DIR}/params.hh"
   "${INC_DIR}/stream.hh"
 )
 
-target_link_libraries("${TLS}" ${GNUTLS_LIBRARIES})
+target_link_libraries("${TLS2}" ${OpenSSL_LIBS})
 
-set_target_properties("${TLS}" PROPERTIES PREFIX "")
+set_target_properties("${TLS2}" PROPERTIES PREFIX "")
 
 # Testing.
 if (WITH_TESTING)
@@ -77,11 +57,18 @@ if (WITH_TESTING)
   set(
     TESTS_LIBRARIES
     ${TESTS_LIBRARIES}
-    "${TLS}"
+    "${TLS2}"
     PARENT_SCOPE
   )
+
+  add_executable(anon-test
+      "${TEST_DIR}/anon-test.cc")
+  target_link_libraries(anon-test ${OpenSSL_LIBS} -pthread -ldl)
+  add_executable(crypt-test
+      "${TEST_DIR}/crypt-test.cc")
+  target_link_libraries(crypt-test ${OpenSSL_LIBS} -pthread -ldl ${fmt_LIBS})
 endif()
 # Install rule.
-install(TARGETS "${TLS}"
+install(TARGETS "${TLS2}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

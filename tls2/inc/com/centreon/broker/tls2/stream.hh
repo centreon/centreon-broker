@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,42 +19,54 @@
 #ifndef CCB_TLS_STREAM_HH
 #define CCB_TLS_STREAM_HH
 
-#include <gnutls/gnutls.h>
-
-#include <vector>
+#include <openssl/err.h>
+#include <openssl/ssl.h>
+#include <string>
 
 #include "com/centreon/broker/io/stream.hh"
-#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/misc/buffer.hh"
 
 CCB_BEGIN()
 
-namespace tls {
+namespace tls2 {
 /**
- *  @class stream stream.hh "com/centreon/broker/tls/stream.hh"
+ *  @class stream stream.hh "com/centreon/broker/tls2/stream.hh"
  *  @brief TLS wrapper of an underlying stream.
  *
  *  The TLS stream class wraps a lower layer stream and provides
  *  encryption (and optionnally compression) over this stream. Those
- *  functionnality are provided using the GNU TLS library
- *  (http://www.gnu.org/software/gnutls).
+ *  functionnality are provided using the OpenSSL library.
  */
 class stream : public io::stream {
-  std::vector<char> _buffer;
+  enum ssl_action { ssl_handshake, ssl_write, ssl_read };
+  bool _server;
+  bool _handshake_done;
+  int32_t _pending;
+  int32_t _ack;
   time_t _deadline;
-  gnutls_session_t* _session;
+  SSL* _ssl;
+  BIO* _bio;
+  BIO* _bio_io;
+
+  misc::buffer _rbuf;
+  misc::buffer _wbuf;
+
+  void _do_stream();
+  bool _do_read(int timeout);
+  void _manage_stream(int r, ssl_action action);
 
  public:
-  stream(gnutls_session_t* session);
+  stream(SSL* ssl, BIO* bio, BIO* bio_io, bool server);
   ~stream();
   stream(const stream&) = delete;
   stream& operator=(const stream&) = delete;
+  void handshake();
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
-  long long read_encrypted(void* buffer, long long size);
-  int32_t write(std::shared_ptr<io::data> const& d) override;
-  int32_t stop() override { return 0; }
-  long long write_encrypted(void const* buffer, long long size);
+  int32_t write(const std::shared_ptr<io::data>& d) override;
+  int32_t flush() override;
+  int32_t stop() override;
 };
-}  // namespace tls
+}  // namespace tls2
 
 CCB_END()
 

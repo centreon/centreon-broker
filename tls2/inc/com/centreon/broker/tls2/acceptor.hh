@@ -19,16 +19,13 @@
 #ifndef CCB_TLS_ACCEPTOR_HH
 #define CCB_TLS_ACCEPTOR_HH
 
-#include <string>
-
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace tls {
+namespace tls2 {
 /**
- *  @class acceptor acceptor.hh "com/centreon/broker/tls/acceptor.hh"
+ *  @class acceptor acceptor.hh "com/centreon/broker/tls2/acceptor.hh"
  *  @brief Perform TLS verification on top of another acceptor.
  *
  *  Within the process of accepting an incoming client, the TLS
@@ -45,17 +42,17 @@ class acceptor : public io::endpoint {
   std::string _tls_hostname;
 
  public:
-  acceptor(const std::string& cert = std::string(),
-           const std::string& key = std::string(),
-           const std::string& ca = std::string(),
-           const std::string& tls_hostname = std::string());
-  ~acceptor() = default;
-  acceptor(acceptor const& right) = delete;
-  acceptor& operator=(acceptor const&) = delete;
+  acceptor(std::string cert = std::string(),
+           std::string key = std::string(),
+           std::string ca = std::string(),
+           std::string tls_hostname = std::string());
+  ~acceptor() noexcept = default;
+  acceptor(const acceptor&) = delete;
+  acceptor& operator=(const acceptor&) = delete;
   std::unique_ptr<io::stream> open() override;
   std::unique_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 };
-}  // namespace tls
+}  // namespace tls2
 
 CCB_END()
 
