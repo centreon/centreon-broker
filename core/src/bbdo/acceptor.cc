@@ -29,6 +29,7 @@
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
