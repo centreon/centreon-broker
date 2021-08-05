@@ -64,13 +64,13 @@ git remote add centreon-broker $RACINE_SOURCE/centreon-broker/
 git pull centreon-broker MON-4724-Road-to-collect
 
 git remote add centreon-engine $RACINE_SOURCE/centreon-engine/
-git pull centreon-engine master
+git pull centreon-engine develop
 
 git remote add centreon-clib $RACINE_SOURCE/centreon-clib/
-git pull centreon-clib master
+git pull centreon-clib develop
 
 git remote add centreon-connector $RACINE_SOURCE/centreon-connectors/
-git pull centreon-connector master
+git pull centreon-connector develop
 
 git remote add centreon-tests $RACINE_SOURCE/centreon-tests/
 git pull centreon-tests master
@@ -90,13 +90,27 @@ sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-clib/test/CMakeLists.tx
 sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connector/CMakeLists.txt
 sed -i 's/add_executable(ut/add_executable(ut_connector/' centreon-connector/CMakeLists.txt
 sed -i 's/target_link_libraries(ut/target_link_libraries(ut_connector/' centreon-connector/CMakeLists.txt
+sed -i 's/ssh)/ssh)\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-connector/CMakeLists.txt
+sed -i 's/LIBSSH2_LIBRARIES})/LIBSSH2_LIBRARIES})\nadd_dependencies(ut_connector centreon_clib_shared)/' centreon-connector/CMakeLists.txt
+sed -i 's/${CLIB_LIBRARIES}/centreon_clib/' centreon-connector/CMakeLists.txt
 sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connector/perl/CMakeLists.txt
+sed -i 's/\/perl\/inc\/)/\/perl\/inc\/)\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-connector/perl/CMakeLists.txt
+sed -i 's/pthread)/pthread)\nadd_dependencies(centreon_connector_perl centreon_clib_shared)/' centreon-connector/perl/CMakeLists.txt
+sed -i 's/${CLIB_LIBRARIES}/centreon_clib/' centreon-connector/perl/CMakeLists.txt
 sed -i 's/CMAKE_SOURCE_DIR/PROJECT_SOURCE_DIR/' centreon-connector/ssh/CMakeLists.txt
+sed -i 's/\/ssh\/inc)/\/ssh\/inc)\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-connector/ssh/CMakeLists.txt
+sed -i 's/pthread)/pthread)\nadd_dependencies(centreon_connector_ssh centreon_clib_shared)/' centreon-connector/ssh/CMakeLists.txt
+sed -i 's/${CLIB_LIBRARIES}/centreon_clib/' centreon-connector/ssh/CMakeLists.txt
 
 sed -i 's/WITH_PREFIX_CONF/WITH_PREFIX_CONF_ENGINE/' centreon-engine/CMakeLists.txt
 sed -i 's/WITH_PREFIX_LIB/WITH_PREFIX_LIB_ENGINE/' centreon-engine/CMakeLists.txt
 sed -i 's/WITH_USER/WITH_USER_ENGINE/' centreon-engine/CMakeLists.txt
 sed -i 's/WITH_GROUP/WITH_GROUP_ENGINE/' centreon-engine/CMakeLists.txt
+sed -i 's/engine_rpc)/engine_rpc)\nadd_dependencies(cce_core centreon_clib_shared)/' centreon-engine/CMakeLists.txt
+sed -i 's/${CLIB_LIBRARIES}/centreon_clib/' centreon-engine/CMakeLists.txt
+sed -i 's/"1")/"1")\nadd_dependencies(centengine centreon_clib_shared)/' centreon-engine/CMakeLists.txt
+sed -i 's/nlohmann_json_LIB_DIRS})/nlohmann_json_LIB_DIRS})\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-engine/CMakeLists.txt
+sed -i 's/centenginestats.cc")/centenginestats.cc")\nadd_dependencies("centenginestats" centreon_clib_shared)/' centreon-engine/CMakeLists.txt
 sed -i 's/add_executable(rpc_client/add_executable(rpc_client_engine/' centreon-engine/tests/CMakeLists.txt
 sed -i 's/target_link_libraries(rpc_client/target_link_libraries(rpc_client_engine/' centreon-engine/tests/CMakeLists.txt
 sed -i 's/add_executable(ut/add_executable(ut_engine/' centreon-engine/tests/CMakeLists.txt
@@ -104,6 +118,19 @@ sed -i 's/COMMAND ut/COMMAND ut_engine/' centreon-engine/tests/CMakeLists.txt
 sed -i 's/EXECUTABLE ut/EXECUTABLE ut_engine/' centreon-engine/tests/CMakeLists.txt
 sed -i 's/DEPENDENCIES ut/DEPENDENCIES ut_engine/' centreon-engine/tests/CMakeLists.txt
 sed -i 's/target_link_libraries(ut/target_link_libraries(ut_engine/' centreon-engine/tests/CMakeLists.txt
+sed -i 's/paths.hh\")/paths.hh\")\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-engine/modules/bench/CMakeLists.txt
+sed -i 's/main.cc")/main.cc")\nadd_dependencies("centengine_bench_passive" centreon_clib_shared)/' centreon-engine/modules/bench/CMakeLists.txt
+sed -i 's/"${CLIB_LIBRARIES}"/centreon_clib/' centreon-engine/modules/bench/CMakeLists.txt
+sed -i 's/inc")/inc")\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-engine/modules/external_commands/CMakeLists.txt
+sed -i 's/with libraries./add_dependencies(externalcmd centreon_clib_shared)/' centreon-engine/modules/external_commands/CMakeLists.txt
+sed -i 's/"${CLIB_LIBRARIES}"/centreon_clib/' centreon-engine/modules/external_commands/CMakeLists.txt
+sed -i 's/PREFIX "")/PREFIX "")\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-engine/src/simumod/CMakeLists.txt
+sed -i 's/PARENT_SCOPE)/PARENT_SCOPE)\nadd_dependencies("${SIMUMOD}" centreon_clib_shared)/' centreon-engine/src/simumod/CMakeLists.txt
+sed -i 's/"${CLIB_LIBRARIES}"/centreon_clib/' centreon-engine/src/simumod/CMakeLists.txt
+sed -i 's/commands")/commands")\nlink_directories(${CMAKE_SOURCE_DIR}\/build\/centreon-clib\/)/' centreon-engine/test/commands/CMakeLists.txt
+sed -i 's/connector_test_run.cc")/connector_test_run.cc")\nadd_dependencies("bin_connector_test_run" centreon_clib_shared)/' centreon-engine/test/commands/CMakeLists.txt
+sed -i 's/bin_test_run.cc")/bin_test_run.cc")\nadd_dependencies("bin_test_run" centreon_clib_shared)/' centreon-engine/test/commands/CMakeLists.txt
+sed -i 's/${CLIB_LIBRARIES}/centreon_clib/' centreon-engine/test/commands/CMakeLists.txt
 
 # deplacement des fichier centreon build
 # broker
