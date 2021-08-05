@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013, 2021 Centreon
+** Copyright 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -173,19 +173,22 @@ std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
 
       SSL_set_info_callback(s_ssl, info_callback);
 
-      if (!_cert.empty() && !_key.empty()) {
-        //SSL_set_verify(s_ssl, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, verify_callback);
-        int r;
-        log_v2::tls()->info("TLS: using certificates as credentials");
+      if (!_tls_hostname.empty())
+        throw msg_fmt("Error: cannot set tls hostname on the acceptor side.");
 
-        /* Load CA certificate */
-        if (!_ca.empty()) {
-          r = SSL_use_certificate_chain_file(s_ssl, _ca.c_str());
-          if (r != 1)
-            throw msg_fmt(
-                "Error: cannot load trusted certificate authority's file '{}'",
-                _ca);
-        }
+      /* Load CA certificate */
+      if (!_ca.empty()) {
+        if (SSL_CTX_load_verify_locations(tls2::ctx, _ca.c_str(), nullptr) != 1)
+          throw msg_fmt(
+              "Error: cannot load trusted certificate authority's file '{}': {}",
+              _ca, ERR_reason_error_string(ERR_get_error()));
+        SSL_set_verify(s_ssl, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, verify_callback);
+      }
+      else
+        SSL_set_verify(s_ssl, SSL_VERIFY_NONE, verify_callback);
+
+      if (!_cert.empty() && !_key.empty()) {
+        log_v2::tls()->info("TLS: using certificates as credentials");
 
         /* Load private key */
         if (SSL_use_PrivateKey_file(s_ssl, _key.c_str(), SSL_FILETYPE_PEM) != 1)
@@ -203,15 +206,13 @@ std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
         if (!SSL_set_cipher_list(s_ssl, "HIGH"))
           throw msg_fmt("Error: cannot set the cipher list to HIGH");
 
-        X509_VERIFY_PARAM* ssl_params = SSL_get0_param(s_ssl);
-        X509_VERIFY_PARAM_set_hostflags(ssl_params,
-                                        X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
-
-        SSL_set_mode(s_ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER | SSL_MODE_AUTO_RETRY);
+//        X509_VERIFY_PARAM* ssl_params = SSL_get0_param(s_ssl);
+//        X509_VERIFY_PARAM_set_hostflags(ssl_params,
+//                                        X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+//
+//        SSL_set_mode(s_ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER | SSL_MODE_AUTO_RETRY);
 
         /* Force TLS hostname */
-        if (!_tls_hostname.empty())
-          throw msg_fmt("Error: cannot set tls2 hostname on the acceptor side.");
       } else {
         log_v2::tls()->info("TLS: using anonymous server credentials");
         SSL_set_security_level(s_ssl, 0);
