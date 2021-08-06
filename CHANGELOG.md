@@ -1,5 +1,14 @@
 # Changelog
 
+## 21.04.3
+
+### Fixes
+
+*bbdo*
+
+When the connection of an acceptor is reversed, if cbd is stopped when there is
+no peer, cbd does not stop. This patch fixes this issue.
+
 ## 21.04.2
 
 ### Bug fix
