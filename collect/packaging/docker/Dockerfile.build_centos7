@@ -1,6 +1,29 @@
 FROM centos:7
-RUN yum -y update && \
-    yum -y install cmake && \
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-shared-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-shared-10.5.8-1.el7.centos.x86_64.rpm
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm
+RUN yum -y upgrade && yum -y update && \
+    yum -y install make \
+    epel-release \
+    centos-release-scl \
+    python3 \
+    python3-pip \
+    ninja-build \
+    gnutls-devel \
+    lua-devel \
+    perl-Thread-Queue \
+    perl-devel \
+    perl-Data-Dumper \
+    libssh2-devel \
+    rrdtool-devel \
+    redhat-lsb \
+    libgcrypt-devel \
+    MariaDB*.rpm  && \
     yum clean all
+RUN yum-config-manager --enable rhel-server-rhscl-7-rpms
+RUN yum -y install devtoolset-9 cmake3
+RUN ln -s /usr/bin/cmake3 /usr/bin/cmake
+RUN pip3 install conan --upgrade
+COPY ./unit_test.sh /tmp
 WORKDIR /src
-ENTRYPOINT [ "/src/centreon-collect/packaging/script/unit_test.sh"]
+ENTRYPOINT ["/tmp/unit_test.sh"]
