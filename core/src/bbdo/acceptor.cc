@@ -26,6 +26,7 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
@@ -87,7 +88,8 @@ std::unique_ptr<io::stream> acceptor::open() {
     std::unique_ptr<io::stream> u;
     do {
       u = _from->open();
-    } while (_one_peer_retention_mode && !u);
+    } while (config::applier::mode != config::applier::finished &&
+             _one_peer_retention_mode && !u);
 
     // Add BBDO layer.
     if (u) {
