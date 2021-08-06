@@ -14,6 +14,8 @@ RUN yum -y upgrade && yum -y update && \
     perl-Thread-Queue \
     perl-devel \
     perl-Data-Dumper \
+    perl-ExtUtils-Embed \
+    perl-srpm-macros \
     libssh2-devel \
     rrdtool-devel \
     redhat-lsb \
