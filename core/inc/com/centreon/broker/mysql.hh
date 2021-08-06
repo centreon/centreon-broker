@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@
 #ifndef CCB_MYSQL_HH
 #define CCB_MYSQL_HH
 
-#include <atomic>
-
-#include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/mysql_connection.hh"
 
 CCB_BEGIN()

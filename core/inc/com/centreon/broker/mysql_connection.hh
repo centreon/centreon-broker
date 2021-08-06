@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018 - 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #ifndef CCB_MYSQL_CONNECTION_HH
 #define CCB_MYSQL_CONNECTION_HH
 
-#include <atomic>
 #include <condition_variable>
 #include <future>
 #include <list>
@@ -67,19 +66,19 @@ class mysql_connection {
   MYSQL* _conn;
 
   // Mutex and condition working on _tasks_list.
-  std::mutex _list_mutex;
+  mutable std::mutex _tasks_m;
   std::condition_variable _tasks_condition;
-  std::atomic<bool> _finished;
-  std::list<std::shared_ptr<database::mysql_task> > _tasks_list;
-  std::atomic_int _tasks_count;
+  std::atomic<bool> _finish_asked;
+  std::list<std::unique_ptr<database::mysql_task>> _tasks_list;
+  std::atomic_int _local_tasks_count;
   bool _need_commit;
 
   std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
   std::unordered_map<uint32_t, std::string> _stmt_query;
 
-  // Mutex and condition working on result and error_msg.
-  std::mutex _result_mutex;
-  std::condition_variable _result_condition;
+  // Mutex and condition working on start.
+  std::mutex _start_m;
+  std::condition_variable _start_condition;
 
   // Mutex to access the configuration
   mutable std::mutex _cfg_mutex;
@@ -88,7 +87,7 @@ class mysql_connection {
   std::string _pwd;
   std::string _name;
   int _port;
-  connection_state _state;
+  std::atomic<connection_state> _state;
   uint32_t _qps;
 
   /* mutex to protect the string access in _error */
@@ -110,14 +109,16 @@ class mysql_connection {
   void _statement_res(database::mysql_task* t);
   template <typename T>
   void _statement_int(database::mysql_task* t);
-  void _get_result_sync(database::mysql_task* task);
   void _fetch_row_sync(database::mysql_task* task);
-  void _finish(database::mysql_task* task);
-  void _push(std::shared_ptr<database::mysql_task> const& q);
+  void _push(std::unique_ptr<database::mysql_task>&& q);
   void _debug(MYSQL_BIND* bind, uint32_t size);
+  bool _try_to_reconnect();
 
   static void (mysql_connection::*const _task_processing_table[])(
       database::mysql_task* task);
+
+  void _prepare_connection();
+  void _clear_connection();
 
  public:
   /**************************************************************************/
@@ -145,7 +146,7 @@ class mysql_connection {
   void run_statement_and_get_int(database::mysql_stmt& stmt,
                                  std::promise<T>* promise,
                                  database::mysql_task::int_type type) {
-    _push(std::make_shared<database::mysql_task_statement_int<T> >(
+    _push(std::make_unique<database::mysql_task_statement_int<T>>(
         stmt, promise, type));
   }
 
@@ -155,7 +156,9 @@ class mysql_connection {
   int get_stmt_size() const;
   bool match_config(database_config const& db_cfg) const;
   int get_tasks_count() const;
+  bool is_finish_asked() const;
   bool is_finished() const;
+  bool ping();
   bool is_in_error() const;
   void clear_error();
   std::string get_error_message();
