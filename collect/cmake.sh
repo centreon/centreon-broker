@@ -107,6 +107,8 @@ if [ -r /etc/centos-release ] ; then
     lua-devel
     perl-Thread-Queue
     perl-devel
+    perl-ExtUtils-Embed
+    perl-srpm-macros
     libssh2-devel
     libgcrypt-devel
   )
