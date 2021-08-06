@@ -465,7 +465,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
               mysql_stmt_affected_rows(_stmt[task->statement_id]));
         else /* LAST_INSERT_ID */
           task->promise->set_value(
-              mysql_stmt_insert_id(_stmt[task->statement_id]));
+          mysql_stmt_insert_id(_stmt[task->statement_id]));
         break;
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -600,9 +600,13 @@ void mysql_connection::_run() {
       std::list<std::unique_ptr<database::mysql_task>> tasks_list;
       if (!_tasks_list.empty()) {
         std::swap(_tasks_list, tasks_list);
-        _local_tasks_count = tasks_list.size();
+        stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                          _stats, static_cast<int>(_tasks_count));
         assert(_tasks_list.empty());
       } else {
+        _tasks_count = 0;
+        stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                          _stats, static_cast<int>(_tasks_count));
         _tasks_condition.wait(lock, [this] {
           return _finish_asked || !_tasks_list.empty();
         });
@@ -613,21 +617,30 @@ void mysql_connection::_run() {
       }
       lock.unlock();
 
-        if (mysql_ping(_conn)) {
-          if (!_try_to_reconnect())
-            log_v2::sql()->error("SQL: Reconnection failed.");
-        }
-        else
-          log_v2::sql()->info("SQL: connection always alive");
+      if (mysql_ping(_conn)) {
+        if (!_try_to_reconnect())
+          log_v2::sql()->error("SQL: Reconnection failed.");
+      }
+      else
+        log_v2::sql()->info("SQL: connection always alive");
 
+      time_t start = time(nullptr);
       for (auto& task : tasks_list) {
-        --_local_tasks_count;
+        --_tasks_count;
+
         if (_task_processing_table[task->type])
           (this->*(_task_processing_table[task->type]))(task.get());
         else {
           log_v2::sql()->error("mysql_connection: Error type not managed...");
         }
+
+        if (time(nullptr) - start != 0) {
+          start = time(nullptr);
+          stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+              _stats, static_cast<int>(_tasks_count));
+        }
       }
+
       lock.lock();
     }
   }
@@ -644,6 +657,8 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
     : _conn(nullptr),
       _finish_asked(false),
       _local_tasks_count(0),
+      _ping_asked(false),
+      _tasks_count(0),
       _need_commit(false),
       _host(db_cfg.get_host()),
       _socket(db_cfg.get_socket()),
@@ -652,6 +667,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
       _name(db_cfg.get_name()),
       _port(db_cfg.get_port()),
       _state(not_started),
+      _stats{stats::center::instance().register_mysql_connection()},
       _qps(db_cfg.get_queries_per_transaction()) {
   std::unique_lock<std::mutex> lck(_start_m);
   log_v2::sql()->info("mysql_connection: starting connection");
@@ -663,6 +679,8 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
   }
   pthread_setname_np(_thread->native_handle(), "mysql_connect");
   log_v2::sql()->info("mysql_connection: connection started");
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats,
+                                   0);
 }
 
 /**
@@ -681,6 +699,7 @@ void mysql_connection::_push(std::unique_ptr<mysql_task>&& q) {
     throw msg_fmt("This connection is closed and does not accept any query");
 
   _tasks_list.push_back(std::move(q));
+  ++_tasks_count;
   _tasks_condition.notify_all();
 }
 
