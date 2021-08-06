@@ -90,7 +90,7 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     for (std::shared_ptr<mysql_connection> c : _connection) {
       // Is this thread matching what the configuration needs?
       if (c->match_config(db_cfg) && !c->is_finished() &&
-          !c->is_finish_asked() && !c->is_in_error() && c->ping()) {
+          !c->is_finish_asked() && !c->is_in_error()) {
         // Yes
         retval.push_back(c);
         ++current_connection;

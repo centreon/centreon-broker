@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018 - 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #ifndef CCB_MYSQL_CONNECTION_HH
 #define CCB_MYSQL_CONNECTION_HH
 
-#include <atomic>
 #include <condition_variable>
 #include <future>
 #include <list>
@@ -70,8 +69,6 @@ class mysql_connection {
   mutable std::mutex _tasks_m;
   std::condition_variable _tasks_condition;
   std::atomic<bool> _finish_asked;
-  std::atomic<bool> _ping_asked;
-  std::promise<bool> _ping_promise;
   std::list<std::unique_ptr<database::mysql_task>> _tasks_list;
   std::atomic_int _local_tasks_count;
   bool _need_commit;
@@ -116,9 +113,38 @@ class mysql_connection {
   void _fetch_row_sync(database::mysql_task* task);
   void _push(std::unique_ptr<database::mysql_task>&& q);
   void _debug(MYSQL_BIND* bind, uint32_t size);
+  bool _try_to_reconnect();
 
+//  template<class F, class... Args>
+//  int protected_call(F&& f, MYSQL* conn, Args... args) {
+//    int retry = 0;
+//    int ret = 0;
+//    while (retry < 2 && (ret = f(conn, std::forward<Args>(args)...)) &&
+//           _server_error(::mysql_errno(conn))) {
+//      if (!_try_to_reconnect())
+//        break;
+//      retry++;
+//    }
+//    return ret;
+//  }
+//
+//  template<class F, class... Args>
+//  int protected_call(F&& f, MYSQL_STMT* stmt, Args... args) {
+//    int retry = 0;
+//    int ret = 0;
+//    while (retry < 2 && (ret = f(stmt, std::forward<Args>(args)...)) &&
+//           _server_error(::mysql_stmt_errno(stmt))) {
+//      if (!_try_to_reconnect())
+//        break;
+//      retry++;
+//    }
+//    return ret;
+//  }
   static void (mysql_connection::*const _task_processing_table[])(
       database::mysql_task* task);
+
+  void _prepare_connection();
+  void _clear_connection();
 
  public:
   /**************************************************************************/

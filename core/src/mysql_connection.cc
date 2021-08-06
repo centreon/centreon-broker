@@ -71,6 +71,86 @@ bool mysql_connection::_server_error(int code) const {
   }
 }
 
+/**
+ * @brief Once the connection established, we set several parameters, this is
+ * done by this function.
+ */
+void mysql_connection::_prepare_connection() {
+  mysql_set_character_set(_conn, "utf8mb4");
+
+  if (_qps > 1)
+    mysql_autocommit(_conn, 0);
+  else
+    mysql_autocommit(_conn, 1);
+}
+
+/**
+ * @brief Function executed to close correctly the MYSQL connection.
+ */
+void mysql_connection::_clear_connection() {
+  for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it = _stmt.begin(),
+                                                           end = _stmt.end();
+       it != end; ++it) {
+    mysql_stmt_close(it->second);
+    it->second = nullptr;
+  }
+  _stmt.clear();
+  mysql_close(_conn);
+}
+
+/**
+ * @brief Try to reconnect to the database when a server error arised.
+ *
+ * @return True on success, false otherwise.
+ */
+bool mysql_connection::_try_to_reconnect() {
+  std::lock_guard<std::mutex> lck(_start_m);
+
+  _clear_connection();
+  log_v2::sql()->info(
+      "mysql_connection: server has gone away, attempt to reconnect");
+  _conn = mysql_init(nullptr);
+  if (!_conn) {
+    log_v2::sql()->error("mysql_connection: reconnection failed.");
+    return false;
+  }
+
+  uint32_t timeout = 10;
+  mysql_options(_conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+
+  if (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(), _pwd.c_str(),
+                          _name.c_str(), _port,
+                          (_socket == "" ? nullptr : _socket.c_str()),
+                          CLIENT_FOUND_ROWS)) {
+    log_v2::sql()->error(
+        "mysql_connection: The mysql/mariadb database seems not started.");
+    return false;
+  }
+
+  _prepare_connection();
+
+  /* Re-prepare all statements */
+  bool fail = false;
+  for (auto itq = _stmt_query.begin(), endq = _stmt_query.end(); itq != endq;
+       ++itq) {
+    MYSQL_STMT* s = mysql_stmt_init(_conn);
+    if (!s) {
+      log_v2::sql()->error(
+          "mysql_connection: impossible to reset prepared statements");
+      fail = true;
+      break;
+    } else {
+      if (mysql_stmt_prepare(s, itq->second.c_str(), itq->second.size())) {
+        log_v2::sql()->error("mysql_connection: {}", mysql_stmt_error(s));
+        fail = true;
+        break;
+      } else
+        _stmt[itq->first] = s;
+    }
+  }
+  return !fail;
+}
+
 void mysql_connection::_query(mysql_task* t) {
   mysql_task_run* task(static_cast<mysql_task_run*>(t));
   log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
@@ -201,7 +281,7 @@ void mysql_connection::_statement(mysql_task* t) {
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     std::string err_msg(::mysql_stmt_error(stmt));
     log_v2::sql()->error("mysql_connection: {}", err_msg);
-    if (task->fatal || _server_error(::mysql_stmt_errno(stmt)))
+    if (task->fatal)
       set_error_message(err_msg);
     else {
       log_v2::sql()->error(
@@ -223,7 +303,10 @@ void mysql_connection::_statement(mysql_task* t) {
             mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
 
-        mysql_commit(_conn);
+        if (mysql_commit(_conn)) {
+          set_error_message("Commit failed after execute statement");
+          break;
+        }
 
         log_v2::sql()->error("mysql_connection: {}", err_msg);
         if (++attempts >= MAX_ATTEMPTS) {
@@ -233,7 +316,6 @@ void mysql_connection::_statement(mysql_task* t) {
           break;
         }
       } else {
-        //mysql_stmt_free_result(stmt);
         _need_commit = true;
         break;
       }
@@ -277,7 +359,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
             mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
 
-        mysql_commit(_conn);
+        if (mysql_commit(_conn)) {
+          set_error_message("Commit failed after execute statement");
+          break;
+        }
 
         log_v2::sql()->error("mysql_connection: {}", err_msg);
         if (++attempts >= MAX_ATTEMPTS) {
@@ -293,8 +378,6 @@ void mysql_connection::_statement_res(mysql_task* t) {
         if (prepare_meta_result == nullptr) {
           if (mysql_stmt_errno(stmt)) {
             std::string err_msg(::mysql_stmt_error(stmt));
-            if (_server_error(mysql_stmt_errno(stmt)))
-              set_error_message(err_msg);
             msg_fmt e(err_msg);
             task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
           } else
@@ -305,8 +388,6 @@ void mysql_connection::_statement_res(mysql_task* t) {
 
           if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
             std::string err_msg(::mysql_stmt_error(stmt));
-            if (_server_error(::mysql_stmt_errno(stmt)))
-              set_error_message(err_msg);
             msg_fmt e(err_msg);
             task->promise->set_exception(std::make_exception_ptr<msg_fmt>(e));
             return;
@@ -430,27 +511,6 @@ void mysql_connection::clear_error() {
   _error.clear();
 }
 
-/**
- * @brief This function checks if the connection to the database is still
- * active. It returns true in that case, false otherwise.
- *
- * @return a boolean.
- */
-bool mysql_connection::ping() {
-  if (_state == running) {
-    if (!_ping_asked) {
-      _ping_promise = std::promise<bool>();
-      {
-        std::lock_guard<std::mutex> lck(_tasks_m);
-        _ping_asked = true;
-        _tasks_condition.notify_all();
-      }
-    }
-    return _ping_promise.get_future().get();
-  } else
-    return false;
-}
-
 std::string mysql_connection::_get_stack() {
   std::string retval;
   for (auto& t : _tasks_list) {
@@ -529,12 +589,7 @@ void mysql_connection::_run() {
     _start_condition.notify_all();
     lck.unlock();
   } else {
-    mysql_set_character_set(_conn, "utf8mb4");
-
-    if (_qps > 1)
-      mysql_autocommit(_conn, 0);
-    else
-      mysql_autocommit(_conn, 1);
+    _prepare_connection();
 
     _state = running;
     _start_condition.notify_all();
@@ -549,23 +604,22 @@ void mysql_connection::_run() {
         assert(_tasks_list.empty());
       } else {
         _tasks_condition.wait(lock, [this] {
-          return _ping_asked || _finish_asked || !_tasks_list.empty();
+          return _finish_asked || !_tasks_list.empty();
         });
-        if (_ping_asked) {
-          int ret = mysql_ping(_conn);
-          if (ret) {
-            log_v2::sql()->warn(
-                "SQL: database ping failed: Server has gone away.");
-            _ping_promise.set_value(false);
-          } else
-            _ping_promise.set_value(true);
-          _ping_asked = false;
-        } else if (_tasks_list.empty()) {
+        if (_tasks_list.empty()) {
           _state = finished;
         }
         continue;
       }
       lock.unlock();
+
+        if (mysql_ping(_conn)) {
+          if (!_try_to_reconnect())
+            log_v2::sql()->error("SQL: Reconnection failed.");
+        }
+        else
+          log_v2::sql()->info("SQL: connection always alive");
+
       for (auto& task : tasks_list) {
         --_local_tasks_count;
         if (_task_processing_table[task->type])
@@ -576,14 +630,8 @@ void mysql_connection::_run() {
       }
       lock.lock();
     }
-    for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),
-         end(_stmt.end());
-         it != end; ++it) {
-      mysql_stmt_close(it->second);
-      it->second = nullptr;
-    }
   }
-  mysql_close(_conn);
+  _clear_connection();
   mysql_thread_end();
   log_v2::core()->trace("mysql connection main loop finished.");
 }
@@ -595,7 +643,6 @@ void mysql_connection::_run() {
 mysql_connection::mysql_connection(database_config const& db_cfg)
     : _conn(nullptr),
       _finish_asked(false),
-      _ping_asked(false),
       _local_tasks_count(0),
       _need_commit(false),
       _host(db_cfg.get_host()),
