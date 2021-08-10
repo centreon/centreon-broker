@@ -205,7 +205,9 @@ void stream::_manage_stream(int r, ssl_action action) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  bool retval = _do_read(deadline);
+  bool retval;
+  try {
+    retval = _do_read(deadline);
   if (!_handshake_done) {
     retval = false;
     log_v2::tls()->trace("TLS: {} {:x} waiting - {}", pthread_self(),
@@ -230,6 +232,11 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     _manage_stream(r, ssl_read);
     assert(d || !retval);
   }
+  } catch (const std::exception& e) {
+    log_v2::tls()->error("TLS session is terminated");
+    throw msg_fmt("TLS session is terminated");
+  }
+
   assert(d || !retval);
   return retval;
 }

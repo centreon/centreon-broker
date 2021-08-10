@@ -133,37 +133,6 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
         int r;
         log_v2::tls()->info("TLS: using certificates as credentials");
 
-        if (
-#ifdef TLS1_3_VERSION
-            !SSL_set_ciphersuites(c_ssl, "HIGH") &&
-#endif
-            !SSL_set_cipher_list(c_ssl, "HIGH"))
-          throw msg_fmt("Error: cannot set the cipher list to HIGH");
-
-        /* Load CA certificate */
-        if (!_ca.empty()) {
-          r = SSL_use_certificate_chain_file(c_ssl, _ca.c_str());
-          if (r <= 0)
-            throw msg_fmt(
-                "Error: cannot load trusted certificate authority's file '{}'",
-                _ca);
-        }
-
-        /* Load certificate */
-        r = SSL_use_certificate_file(c_ssl, _cert.c_str(), SSL_FILETYPE_PEM);
-        if (r <= 0)
-          throw msg_fmt("Error: cannot load certificate file '{}'", _cert);
-
-        /* Load private key */
-        r = SSL_use_PrivateKey_file(c_ssl, _key.c_str(), SSL_FILETYPE_PEM);
-        if (r <= 0)
-          throw msg_fmt("Error: cannot load private key file '{}'", _key);
-
-        /* Check if the private key is valid */
-        r = SSL_check_private_key(c_ssl);
-        if (r != 1)
-          throw msg_fmt("Error: checking the private key '{}' failed.", _key);
-
         X509_VERIFY_PARAM* ssl_params = SSL_get0_param(c_ssl);
         X509_VERIFY_PARAM_set_hostflags(ssl_params,
                                         X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
@@ -176,14 +145,42 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
           if (!SSL_set_tlsext_host_name(c_ssl, _tls_hostname.c_str()))
             throw msg_fmt("Error: cannot set tls2 hostname '{}'", _tls_hostname);
 
-//          if (!X509_VERIFY_PARAM_set1_host(ssl_params, _tls_hostname.c_str(), _tls_hostname.size()))
-//            throw msg_fmt("Error: cannot set tls2 host name '{}' to X509 parameters", _tls_hostname);
+          if (!X509_VERIFY_PARAM_set1_host(ssl_params, _tls_hostname.c_str(), _tls_hostname.size()))
+            throw msg_fmt("Error: cannot set tls2 host name '{}' to X509 parameters", _tls_hostname);
           mode = SSL_VERIFY_PEER;
-          SSL_set_verify(c_ssl, SSL_VERIFY_PEER, verify_callback);
         }
         else
           mode = SSL_VERIFY_NONE;
         SSL_set_verify(c_ssl, mode, verify_callback);
+
+        if (
+#ifdef TLS1_3_VERSION
+            !SSL_set_ciphersuites(c_ssl, "HIGH") &&
+#endif
+            !SSL_set_cipher_list(c_ssl, "HIGH"))
+          throw msg_fmt("Error: cannot set the cipher list to HIGH");
+
+        /* Load CA certificate */
+        if (!_ca.empty()) {
+          r = SSL_use_certificate_chain_file(c_ssl, _ca.c_str());
+          if (r != 1)
+            throw msg_fmt(
+                "Error: cannot load trusted certificate authority's file '{}'",
+                _ca);
+        }
+
+        /* Load certificate */
+        if (SSL_use_certificate_file(c_ssl, _cert.c_str(), SSL_FILETYPE_PEM) != 1)
+          throw msg_fmt("Error: cannot load certificate file '{}'", _cert);
+
+        /* Load private key */
+        if (SSL_use_PrivateKey_file(c_ssl, _key.c_str(), SSL_FILETYPE_PEM) != 1)
+          throw msg_fmt("Error: cannot load private key file '{}'", _key);
+
+        /* Check if the private key is valid */
+        if (SSL_check_private_key(c_ssl) != 1)
+          throw msg_fmt("Error: checking the private key '{}' failed.", _key);
+
       } else {
         log_v2::tls()->info("TLS: using anonymous client credentials");
         SSL_set_security_level(c_ssl, 0);

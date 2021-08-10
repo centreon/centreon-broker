@@ -26,20 +26,20 @@ from datetime import datetime
 
 host_addr = '127.0.0.1'
 host_port = 4141
-#server_sni_hostname = 'dev-dbr'
+server_sni_hostname = 'saperlifragilistic'
 server_cert = '/tmp/server.crt'
 client_cert = '/tmp/client.crt'
 client_key = '/tmp/client.key'
 
-context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH) # , cafile=server_cert)
-context.check_hostname = False
-context.verify_mode = ssl.CERT_NONE
+context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=server_cert)
+context.check_hostname = True
+context.verify_mode = ssl.CERT_OPTIONAL
 context.load_cert_chain(certfile=client_cert, keyfile=client_key)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host_addr, host_port))
 
-conn = context.wrap_socket(s, server_side=False)  #, server_hostname=server_sni_hostname)
+conn = context.wrap_socket(s, server_side=False, server_hostname=server_sni_hostname)
 try:
     conn.send(b"Hello cbd")
     time.sleep(2)

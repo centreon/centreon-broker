@@ -48,7 +48,7 @@ bindsocket.listen(5)
 
 newsocket, fromaddr = bindsocket.accept()
 conn = context.wrap_socket(newsocket, server_side=True)
-#print("SSL established. Peer: {}".format(conn.getpeercert()))
+print("SSL established. Peer: {}".format(conn.getpeercert()))
 try:
     content = conn.recv(16)
     print(content)
