@@ -4,6 +4,12 @@
 
 ### Fixes
 
+*sql*
+
+When a connection to the db is lost, we try to reestablish it. This change fixes
+an error "Mysql server has gone away" we often have in the BAM availabilities
+computations.
+
 *bbdo*
 
 When the connection of an acceptor is reversed, if cbd is stopped when there is
