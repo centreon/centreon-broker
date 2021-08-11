@@ -73,7 +73,7 @@ class backend {
   void _build_header(misc::stringifier& buffer);
 
   bool _is_sync;
-  mutable std::mutex _lock;
+  mutable std::recursive_mutex _lock;
   bool _show_pid;
   time_precision _show_timestamp;
   bool _show_thread_id;
