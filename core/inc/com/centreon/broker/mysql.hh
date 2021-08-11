@@ -18,9 +18,6 @@
 #ifndef CCB_MYSQL_HH
 #define CCB_MYSQL_HH
 
-#include <atomic>
-
-#include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/mysql_connection.hh"
 
 CCB_BEGIN()
