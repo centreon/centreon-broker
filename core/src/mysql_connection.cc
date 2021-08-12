@@ -600,15 +600,14 @@ void mysql_connection::_run() {
       std::list<std::unique_ptr<database::mysql_task>> tasks_list;
       if (!_tasks_list.empty()) {
         std::swap(_tasks_list, tasks_list);
+        _local_tasks_count = tasks_list.size();
         stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
                                           _stats, static_cast<int>(_tasks_count));
-        log_v2::sql()->debug("1: _tasks_count '{}'", _tasks_count);
         assert(_tasks_list.empty());
       } else {
         _tasks_count = 0;
         stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
-                                          _stats, static_cast<int>(_tasks_count));
-        log_v2::sql()->debug("2: _tasks_count '{}'", _tasks_count);
+                                         _stats, static_cast<int>(_tasks_count));
         _tasks_condition.wait(lock, [this] {
           return _finish_asked || !_tasks_list.empty();
         });
@@ -629,6 +628,7 @@ void mysql_connection::_run() {
       time_t start = time(nullptr);
       for (auto& task : tasks_list) {
         --_tasks_count;
+        --_local_tasks_count;
 
         if (_task_processing_table[task->type])
           (this->*(_task_processing_table[task->type]))(task.get());
@@ -640,7 +640,6 @@ void mysql_connection::_run() {
           start = time(nullptr);
           stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
               _stats, static_cast<int>(_tasks_count));
-          log_v2::sql()->debug("3: _tasks_count '{}'", _tasks_count);
         }
       }
 
@@ -662,6 +661,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
       _local_tasks_count(0),
       _ping_asked(false),
       _tasks_count(0),
+      _local_tasks_count(0),
       _need_commit(false),
       _host(db_cfg.get_host()),
       _socket(db_cfg.get_socket()),
@@ -682,10 +682,11 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
   }
   pthread_setname_np(_thread->native_handle(), "mysql_connect");
   log_v2::sql()->info("mysql_connection: connection started");
+  //stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats,
+  //                                 15);
+  
   stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats,
                                    0);
-
-  log_v2::sql()->debug("0: _tasks_count '{}'", _tasks_count);
 }
 
 /**
@@ -705,7 +706,8 @@ void mysql_connection::_push(std::unique_ptr<mysql_task>&& q) {
 
   _tasks_list.push_back(std::move(q));
   ++_tasks_count;
-  log_v2::sql()->debug("4: _tasks_count '{}'", _tasks_count);
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+    _stats, static_cast<int>(_tasks_count));
   _tasks_condition.notify_all();
 }
 

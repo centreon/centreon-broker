@@ -25,7 +25,6 @@
 
 #include "broker.pb.h"
 #include "com/centreon/broker/pool.hh"
-#include "com/centreon/broker/log_v2.hh"
 
 CCB_BEGIN()
 
@@ -124,7 +123,6 @@ class center {
    */
   template <typename U, typename T>
   void update(void (U::*f)(T), U* ptr, T value) {
-    log_v2::sql()->debug("dans le update du center.hh '{}'", value);
     _strand.post([ptr, f, value] { (ptr->*f)(value); });
   }
 

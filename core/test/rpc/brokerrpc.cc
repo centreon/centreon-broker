@@ -81,7 +81,6 @@ TEST_F(BrokerRpc, GetVersion) {
   brpc.shutdown();
 }
 
-
 TEST_F(BrokerRpc, GetSqlConnectionStatsSize) {
   brokerrpc brpc("0.0.0.0", 40000, "test");
   SqlConnectionStats* _stats;
@@ -107,7 +106,6 @@ TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
   SqlConnectionStats* _stats;
   std::vector<std::string> vectests = {"3\n", "10\n", "0\n", "15\n"};
 
-
   _stats = stats::center::instance().register_mysql_connection();
   stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 3);
 
@@ -119,7 +117,6 @@ TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
 
   _stats = stats::center::instance().register_mysql_connection();
   stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 15);
-
 
   auto output = execute("GetSqlConnectionStatsValue");
 
