@@ -133,7 +133,6 @@ bool center::unregister_mysql_connection(SqlConnectionStats* connection) {
         break;
       }
     }
-
   });
   return retval.get();
 }
@@ -263,36 +262,6 @@ bool center::unregister_mysql_connection(SqlConnectionStats* connection) {
 //}
 
 /**
- * @brief To allow the mysql manager to send statistics, it has to call this
- * function to get a pointer to its statistics container.
- * It is prohibited to directly write into the returned pointer. We must use
- * the center member functions for this purpose.
- *
- * @return A pointer to the mysql_manager statistics.
- */
-/*
- MySqlManagerStats* center::register_mysql_manager() {
-  std::promise<MySqlManagerStats*> p;
-  std::future<MySqlManagerStats*> retval = p.get_future();
-  _strand.post([this, &p] {
-    auto mm = _stats.mutable_mysql_manager();
-    p.set_value(mm);
-  });
-  return retval.get();
-}
-*/
-
-// bool center::unregister_mysql_manager(void) {
-//  std::promise<bool> p;
-//  std::future<bool> retval = p.get_future();
-//  _strand.post([this, &p] {
-//    _stats.mutable_mysql_manager()->Clear();
-//    p.set_value(true);
-//  });
-//  return retval.get();
-//}
-
-/**
  * @brief To allow the conflict manager to send statistics, it has to call this
  * function to get a pointer to its statistics container.
  * It is prohibited to directly write into the returned pointer. We must use
@@ -351,20 +320,12 @@ std::string center::to_string() {
 //  done.get();
 //}
 //
+//
 void center::get_sql_connection_stats(BrokerStats* response) {
   std::promise<bool> p;
   std::future<bool> done = p.get_future();
   _strand.post([&s = this->_stats, &p, response] {
       *response->mutable_connections() = s.connections();
-      /*
-      for (auto
-             it = response->mutable_connections()->begin(),
-             end = response->mutable_connections()->end();
-             it != end; ++it) {
-        log_v2::sql()->debug("get_sql_connection_stats :taille du tableau: '{}', value '{}'", response->mutable_connections()->size(), (*it).waiting_tasks());
-      }
-      */
-
       p.set_value(true);
   });
 
