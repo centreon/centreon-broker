@@ -25,6 +25,7 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/version.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
@@ -355,6 +356,15 @@ void center::get_sql_connection_stats(BrokerStats* response) {
   std::future<bool> done = p.get_future();
   _strand.post([&s = this->_stats, &p, response] {
       *response->mutable_connections() = s.connections();
+      /*
+      for (auto
+             it = response->mutable_connections()->begin(),
+             end = response->mutable_connections()->end();
+             it != end; ++it) {
+        log_v2::sql()->debug("get_sql_connection_stats :taille du tableau: '{}', value '{}'", response->mutable_connections()->size(), (*it).waiting_tasks());
+      }
+      */
+
       p.set_value(true);
   });
 

@@ -25,6 +25,7 @@
 
 #include "broker.pb.h"
 #include "com/centreon/broker/pool.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 CCB_BEGIN()
 
@@ -73,8 +74,6 @@ class center {
   // FeederStats* register_feeder(EndpointStats* ep_stats,
   //                             const std::string& name);
   // ConflictManagerStats* register_conflict_manager();
-  // MySqlManagerStats* register_mysql_manager();
-  // MysqlConnectionStats* register_mysql_connection(ysqlManagerStats* s);
   // ModuleStats* register_modules(void);
   SqlConnectionStats* register_mysql_connection();
   bool unregister_mysql_connection(SqlConnectionStats* connection);
@@ -125,6 +124,7 @@ class center {
    */
   template <typename U, typename T>
   void update(void (U::*f)(T), U* ptr, T value) {
+    log_v2::sql()->debug("dans le update du center.hh '{}'", value);
     _strand.post([ptr, f, value] { (ptr->*f)(value); });
   }
 

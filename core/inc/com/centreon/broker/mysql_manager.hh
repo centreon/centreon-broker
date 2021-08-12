@@ -70,7 +70,6 @@ class mysql_manager {
   // last stats update timestamp
   time_t _stats_connections_timestamp;
   // stats
-  // MySqlManagerStats* _stats;
   // Number of tasks per connection
   std::vector<int> _stats_counts;
 
