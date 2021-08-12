@@ -170,7 +170,7 @@ void output<T>::update() {
  */
 template <typename T>
 int output<T>::write(std::shared_ptr<io::data> const& d) {
-  log_v2::perfdata()->debug("RRD: output::write.");
+  log_v2::rrd()->debug("RRD: output::write.");
   // Check that data exists.
   if (!validate(d, "RRD"))
     return 1;
@@ -181,9 +181,9 @@ int output<T>::write(std::shared_ptr<io::data> const& d) {
         // Debug message.
         std::shared_ptr<storage::metric> e(
             std::static_pointer_cast<storage::metric>(d));
-        log_v2::perfdata()->debug("RRD: new data for metric {} (time {}) {}",
-                                  e->metric_id, e->ctime,
-                                  e->is_for_rebuild ? "for rebuild" : "");
+        log_v2::rrd()->debug("RRD: new data for metric {} (time {}) {}",
+                             e->metric_id, e->ctime,
+                             e->is_for_rebuild ? "for rebuild" : "");
 
         // Metric path.
         std::string metric_path(
@@ -205,33 +205,32 @@ int output<T>::write(std::shared_ptr<io::data> const& d) {
           switch (e->value_type) {
             case storage::perfdata::gauge:
               oss << std::fixed << e->value;
-              log_v2::perfdata()->trace(
+              log_v2::rrd()->trace(
                   "RRD: update metric {} of type GAUGE with {}", e->metric_id,
                   oss.str());
               break;
             case storage::perfdata::counter:
               oss << static_cast<uint64_t>(e->value);
-              log_v2::perfdata()->trace(
+              log_v2::rrd()->trace(
                   "RRD: update metric {} of type COUNTER with {}", e->metric_id,
                   oss.str());
               break;
             case storage::perfdata::derive:
               oss << static_cast<int64_t>(e->value);
-              log_v2::perfdata()->trace(
+              log_v2::rrd()->trace(
                   "RRD: update metric {} of type DERIVE with {}", e->metric_id,
                   oss.str());
               break;
             case storage::perfdata::absolute:
               oss << static_cast<uint64_t>(e->value);
-              log_v2::perfdata()->trace(
+              log_v2::rrd()->trace(
                   "RRD: update metric {} of type ABSOLUTE with {}",
                   e->metric_id, oss.str());
               break;
             default:
               oss << std::fixed << e->value;
-              log_v2::perfdata()->trace(
-                  "RRD: update metric {} of type {} with {}", e->metric_id,
-                  e->value_type, oss.str());
+              log_v2::rrd()->trace("RRD: update metric {} of type {} with {}",
+                                   e->metric_id, e->value_type, oss.str());
               break;
           }
           _backend.update(e->ctime, oss.str());
@@ -245,9 +244,9 @@ int output<T>::write(std::shared_ptr<io::data> const& d) {
         // Debug message.
         std::shared_ptr<storage::status> e(
             std::static_pointer_cast<storage::status>(d));
-        log_v2::perfdata()->debug(
-            "RRD: new status data for index {} (state {}) {}", e->index_id,
-            e->state, e->is_for_rebuild ? "for rebuild" : "");
+        log_v2::rrd()->debug("RRD: new status data for index {} (state {}) {}",
+                             e->index_id, e->state,
+                             e->is_for_rebuild ? "for rebuild" : "");
 
         // Status path.
         std::string status_path(
@@ -283,9 +282,9 @@ int output<T>::write(std::shared_ptr<io::data> const& d) {
       // Debug message.
       std::shared_ptr<storage::rebuild> e(
           std::static_pointer_cast<storage::rebuild>(d));
-      log_v2::perfdata()->debug("RRD: rebuild request for {} {} {}",
-                                e->is_index ? "index" : "metric", e->id,
-                                e->end ? "(end)" : "(start)");
+      log_v2::rrd()->debug("RRD: rebuild request for {} {} {}",
+                           e->is_index ? "index" : "metric", e->id,
+                           e->end ? "(end)" : "(start)");
 
       // Generate path.
       std::string path(fmt::format(
@@ -331,8 +330,8 @@ int output<T>::write(std::shared_ptr<io::data> const& d) {
       // Debug message.
       std::shared_ptr<storage::remove_graph> e(
           std::static_pointer_cast<storage::remove_graph>(d));
-      log_v2::perfdata()->debug("RRD: remove graph request for {} {}",
-                                e->is_index ? "index" : "metric", e->id);
+      log_v2::rrd()->debug("RRD: remove graph request for {} {}",
+                           e->is_index ? "index" : "metric", e->id);
 
       // Generate path.
       std::string path(fmt::format(

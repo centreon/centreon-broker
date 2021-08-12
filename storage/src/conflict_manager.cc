@@ -406,16 +406,9 @@ void conflict_manager::_callback() {
   }
 
   do {
-    /* Are there index_data to remove? */
-    try {
-      _check_deleted_index();
-    } catch (std::exception const& e) {
-      log_v2::sql()->error(
-          "conflict_manager: error while checking deleted indexes: {}",
-          e.what());
-      _broken = true;
-      break;
-    }
+    std::chrono::system_clock::time_point time_to_deleted_index =
+        std::chrono::system_clock::now();
+
     size_t pos = 0;
     std::deque<std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>> events;
     try {
@@ -441,6 +434,19 @@ void conflict_manager::_callback() {
         std::chrono::system_clock::time_point now0 =
             std::chrono::system_clock::now();
 
+        /* Are there index_data to remove? */
+        if (now0 >= time_to_deleted_index) {
+          try {
+            _check_deleted_index();
+            time_to_deleted_index += std::chrono::minutes(5);
+          } catch (std::exception const& e) {
+            log_v2::sql()->error(
+                "conflict_manager: error while checking deleted indexes: {}",
+                e.what());
+            _broken = true;
+            break;
+          }
+        }
         int32_t count = 0;
         int32_t timeout = 0;
         int32_t timeout_limit = _loop_timeout * 1000;
