@@ -71,12 +71,6 @@ message SqlConnectionStats {
  int32 waiting_tasks = 1;
 }
 
-/*
-message MySqlManagerStats {
-  repeated MySqlConnectionStats connections_count = 1;
-}
-*/
-
 message ModuleStats {
   string name = 1;
   string size = 2;
