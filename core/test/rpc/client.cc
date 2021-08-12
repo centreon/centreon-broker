@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
     std::cout << "GetVersion: " << version.DebugString();
   }
 
-  if (strcmp(argv[1], "GetSqlConnectionStats") == 0) {
+  if (strcmp(argv[1], "GetSqlConnectionStatsSize") == 0) {
     BrokerStats response;
     status = client.GetSqlConnectionStats(&response) ? 0 : 1;
 
@@ -84,6 +84,18 @@ int main(int argc, char** argv) {
               << response.mutable_connections()->size()
               << std::endl;
   }
+
+  if (strcmp(argv[1], "GetSqlConnectionStatsValue") == 0) {
+    BrokerStats response;
+    status = client.GetSqlConnectionStats(&response) ? 0 : 1;
+    for (auto
+             it = response.mutable_connections()->begin(),
+             end = response.mutable_connections()->end();
+             it != end; ++it) {
+      std::cout << (*it).waiting_tasks() << std::endl; 
+      }
+  }
+
 
 
   exit(status);

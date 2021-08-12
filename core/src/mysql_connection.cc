@@ -602,11 +602,13 @@ void mysql_connection::_run() {
         std::swap(_tasks_list, tasks_list);
         stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
                                           _stats, static_cast<int>(_tasks_count));
+        log_v2::sql()->debug("1: _tasks_count '{}'", _tasks_count);
         assert(_tasks_list.empty());
       } else {
         _tasks_count = 0;
         stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
                                           _stats, static_cast<int>(_tasks_count));
+        log_v2::sql()->debug("2: _tasks_count '{}'", _tasks_count);
         _tasks_condition.wait(lock, [this] {
           return _finish_asked || !_tasks_list.empty();
         });
@@ -638,6 +640,7 @@ void mysql_connection::_run() {
           start = time(nullptr);
           stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
               _stats, static_cast<int>(_tasks_count));
+          log_v2::sql()->debug("3: _tasks_count '{}'", _tasks_count);
         }
       }
 
@@ -681,6 +684,8 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
   log_v2::sql()->info("mysql_connection: connection started");
   stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats,
                                    0);
+
+  log_v2::sql()->debug("0: _tasks_count '{}'", _tasks_count);
 }
 
 /**
@@ -700,6 +705,7 @@ void mysql_connection::_push(std::unique_ptr<mysql_task>&& q) {
 
   _tasks_list.push_back(std::move(q));
   ++_tasks_count;
+  log_v2::sql()->debug("4: _tasks_count '{}'", _tasks_count);
   _tasks_condition.notify_all();
 }
 
