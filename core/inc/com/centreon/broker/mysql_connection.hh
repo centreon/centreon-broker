@@ -72,7 +72,6 @@ class mysql_connection {
   std::atomic<bool> _finish_asked;
   std::list<std::unique_ptr<database::mysql_task>> _tasks_list;
   std::atomic_int _tasks_count;
-  std::atomic_int _local_tasks_count;
   bool _need_commit;
 
   std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
