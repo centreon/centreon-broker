@@ -30,6 +30,7 @@
 #include "com/centreon/broker/database/mysql_stmt.hh"
 #include "com/centreon/broker/database/mysql_task.hh"
 #include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/stats/center.hh"
 
 CCB_BEGIN()
 
@@ -70,7 +71,7 @@ class mysql_connection {
   std::condition_variable _tasks_condition;
   std::atomic<bool> _finish_asked;
   std::list<std::unique_ptr<database::mysql_task>> _tasks_list;
-  std::atomic_int _local_tasks_count;
+  std::atomic_int _tasks_count;
   bool _need_commit;
 
   std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
@@ -90,6 +91,8 @@ class mysql_connection {
   int _port;
   std::atomic<connection_state> _state;
   uint32_t _qps;
+
+  SqlConnectionStats* _stats;
 
   /* mutex to protect the string access in _error */
   mutable std::mutex _error_m;

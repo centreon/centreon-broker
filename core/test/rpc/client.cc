@@ -44,6 +44,19 @@ class BrokerRPCClient {
     }
     return true;
   }
+
+  bool GetSqlConnectionStats(BrokerStats* response) {
+    const ::google::protobuf::Empty e;
+    grpc::ClientContext context;
+    grpc::Status status = _stub->GetSqlConnectionStats(&context, e, response);
+    if (!status.ok()) {
+      std::cout << "GetVersion rpc failed." << std::endl;
+      return false;
+    }
+    return true;
+  }
+
+  
 };
 
 int main(int argc, char** argv) {
@@ -62,6 +75,28 @@ int main(int argc, char** argv) {
     status = client.GetVersion(&version) ? 0 : 1;
     std::cout << "GetVersion: " << version.DebugString();
   }
+
+  if (strcmp(argv[1], "GetSqlConnectionStatsSize") == 0) {
+    BrokerStats response;
+    status = client.GetSqlConnectionStats(&response) ? 0 : 1;
+
+    std::cout << "connection size: "
+              << response.mutable_connections()->size()
+              << std::endl;
+  }
+
+  if (strcmp(argv[1], "GetSqlConnectionStatsValue") == 0) {
+    BrokerStats response;
+    status = client.GetSqlConnectionStats(&response) ? 0 : 1;
+    for (auto
+             it = response.mutable_connections()->begin(),
+             end = response.mutable_connections()->end();
+             it != end; ++it) {
+      std::cout << (*it).waiting_tasks() << std::endl; 
+      }
+  }
+
+
 
   exit(status);
 }

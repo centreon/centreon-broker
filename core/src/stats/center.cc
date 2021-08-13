@@ -25,6 +25,7 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/version.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
@@ -108,6 +109,34 @@ EngineStats* center::register_engine() {
   });
   return retval.get();
 }
+
+SqlConnectionStats* center::register_mysql_connection() {
+  std::promise<SqlConnectionStats*> p;
+  std::future<SqlConnectionStats*> retval = p.get_future();
+  _strand.post([this, &p] {
+    auto m = _stats.add_connections();
+    p.set_value(m);
+  });
+  return retval.get();
+}
+
+bool center::unregister_mysql_connection(SqlConnectionStats* connection) {
+  std::promise<bool> p;
+  std::future<bool> retval = p.get_future();
+  _strand.post([this, &p, connection] {
+    for (auto
+             it = _stats.mutable_connections()->begin(),
+             end = _stats.mutable_connections()->end();
+             it != end; ++it) {
+      if (&(*it) == connection) {
+        _stats.mutable_connections()->erase(it);
+        break;
+      }
+    }
+  });
+  return retval.get();
+}
+
 
 /**
  * @brief When a feeder needs to write statistics, it primarily has to
@@ -233,34 +262,6 @@ EngineStats* center::register_engine() {
 //}
 
 /**
- * @brief To allow the mysql manager to send statistics, it has to call this
- * function to get a pointer to its statistics container.
- * It is prohibited to directly write into the returned pointer. We must use
- * the center member functions for this purpose.
- *
- * @return A pointer to the mysql_manager statistics.
- */
-// MysqlManagerStats* center::register_mysql_manager() {
-//  std::promise<MysqlManagerStats*> p;
-//  std::future<MysqlManagerStats*> retval = p.get_future();
-//  _strand.post([this, &p] {
-//    auto mm = _stats.mutable_mysql_manager();
-//    p.set_value(mm);
-//  });
-//  return retval.get();
-//}
-
-// bool center::unregister_mysql_manager(void) {
-//  std::promise<bool> p;
-//  std::future<bool> retval = p.get_future();
-//  _strand.post([this, &p] {
-//    _stats.mutable_mysql_manager()->Clear();
-//    p.set_value(true);
-//  });
-//  return retval.get();
-//}
-
-/**
  * @brief To allow the conflict manager to send statistics, it has to call this
  * function to get a pointer to its statistics container.
  * It is prohibited to directly write into the returned pointer. We must use
@@ -319,6 +320,19 @@ std::string center::to_string() {
 //  done.get();
 //}
 //
+//
+void center::get_sql_connection_stats(BrokerStats* response) {
+  std::promise<bool> p;
+  std::future<bool> done = p.get_future();
+  _strand.post([&s = this->_stats, &p, response] {
+      *response->mutable_connections() = s.connections();
+      p.set_value(true);
+  });
+
+  // We wait for the response.
+  done.get();
+}
+
 int center::get_json_stats_file_creation(void) {
   return _json_stats_file_creation;
 }

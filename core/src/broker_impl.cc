@@ -189,13 +189,11 @@ grpc::Status broker_impl::GetGenericStats(
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetSqlStats(grpc::ServerContext* context
+grpc::Status broker_impl::GetSqlConnectionStats(grpc::ServerContext* context
                                       __attribute__((unused)),
                                       const ::google::protobuf::Empty* request
                                       __attribute__((unused)),
-                                      GenericString* response) {
-  nlohmann::json object;
-  stats::get_mysql_stats(object);
-  response->set_str_arg(object.dump());
+                                      BrokerStats* response) {
+  stats::center::instance().get_sql_connection_stats(response);
   return grpc::Status::OK;
 }

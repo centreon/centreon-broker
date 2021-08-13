@@ -18,12 +18,15 @@
  */
 
 #include "com/centreon/broker/brokerrpc.hh"
+#include "com/centreon/broker/stats/center.hh"
+#include "com/centreon/broker/pool.hh"
 
 #include <gtest/gtest.h>
 
 #include <cstdio>
 #include <fstream>
 #include <fmt/format.h>
+#include <iostream>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/version.hh"
@@ -33,9 +36,15 @@ using namespace com::centreon::broker;
 
 class BrokerRpc : public ::testing::Test {
  public:
-  void SetUp() override {}
+  void SetUp() override {
+    pool::pool::load(0);
+    stats::center::load();
+  }
 
-  void TearDown() override {}
+  void TearDown() override {
+    stats::center::unload();
+    pool::pool::unload();
+  }
 
   std::list<std::string> execute(const std::string& command) {
     std::list<std::string> retval;
@@ -71,3 +80,50 @@ TEST_F(BrokerRpc, GetVersion) {
 #endif
   brpc.shutdown();
 }
+
+TEST_F(BrokerRpc, GetSqlConnectionStatsSize) {
+  brokerrpc brpc("0.0.0.0", 40000, "test");
+  SqlConnectionStats* _stats;
+
+  auto output = execute("GetSqlConnectionStatsSize");
+  ASSERT_EQ(output.front(), "connection size: 0\n");
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 3);
+  output = execute("GetSqlConnectionStatsSize");
+  ASSERT_EQ(output.front(), "connection size: 1\n");
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 5);
+  output = execute("GetSqlConnectionStatsSize");
+  ASSERT_EQ(output.front(), "connection size: 2\n");
+
+  brpc.shutdown();
+}
+
+TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
+  brokerrpc brpc("0.0.0.0", 40000, "test");
+  SqlConnectionStats* _stats;
+  std::vector<std::string> vectests = {"3\n", "10\n", "0\n", "15\n"};
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 3);
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 10);
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 0);
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 15);
+
+  auto output = execute("GetSqlConnectionStatsValue");
+
+  std::vector<std::string> results(output.size());
+  std::copy(output.begin(), output.end(), results.begin());
+
+  ASSERT_EQ(vectests, results);
+  brpc.shutdown();
+}
+

@@ -25,6 +25,7 @@
 
 #include "com/centreon/broker/database/mysql_error.hh"
 #include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/stats/center.hh"
 
 CCB_BEGIN()
 
@@ -66,9 +67,9 @@ CCB_BEGIN()
 class mysql_manager {
   mutable std::mutex _cfg_mutex;
   std::vector<std::shared_ptr<mysql_connection>> _connection;
-
   // last stats update timestamp
   time_t _stats_connections_timestamp;
+  // stats
   // Number of tasks per connection
   std::vector<int> _stats_counts;
 
