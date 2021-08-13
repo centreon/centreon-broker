@@ -1574,11 +1574,7 @@ void conflict_manager::_process_service(
         "description: {})",
         s.host_id, s.service_id, s.service_description);
 
-    // Processing.
-    // FixMe BAM Generate fake services, this service
-    // does not contains a display_name
-    // We should not store them in db
-    if (s.host_id && s.service_id && !s.host_name.empty()) {
+    if (s.host_id && s.service_id) {
       // Prepare queries.
       if (!_service_insupdate.prepared()) {
         query_preparator::event_unique unique;
