@@ -57,7 +57,7 @@ local custom_variables = {
 
     broker_log:info(1, "custom variables count = " .. count)
     if count ~= cv_count * host_count then
-      broker_log:info(0, "CHECK CUSTOM VARIABLES => NOT FINISHED")
+      broker_log:info(0, "CHECK CUSTOM VARIABLES => NOT FINISHED ".. count .. " != " .. (cv_count * host_count))
       retval = false
     end
     if not retval then
