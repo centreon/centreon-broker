@@ -106,7 +106,7 @@ local services = {
     local now = os.time()
     broker_log:info(0, "CHECK SERVICES")
     local retval = true
-    local cursor, error_str = conn["storage"]:execute([[SELECT service_id, host_id from services ORDER BY service_id]])
+    local cursor, error_str = conn["storage"]:execute([[SELECT service_id, host_id from services where description like 'host_%' ORDER BY service_id]])
     local row = cursor:fetch({}, "a")
     local id = 1
     local host_id = 1
