@@ -181,7 +181,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "cv.host_id = h.host_id WHERE h.instance_id={}",
       instance_id);
 
-  _finish_action(-1, actions::custom_variables | actions::hosts);
+  _finish_action(conn, actions::custom_variables | actions::hosts);
   _mysql.run_query(query, database::mysql_error::clean_customvariables, false,
                    conn);
   _add_action(conn, actions::custom_variables);
@@ -466,8 +466,7 @@ void conflict_manager::_process_custom_variable(
      * it will be updated later when the bulk query will be done:
      * conflict_manager::_update_customvariables() */
   } else {
-    int conn =
-        _mysql.choose_best_connection(neb::custom_variable::static_type());
+    int conn = special_conn::custom_variable % _mysql.connections_count();
     _finish_action(-1, actions::custom_variables);
 
     log_v2::sql()->info("SQL: disabling custom variable '{}' of ({}, {})",
@@ -524,7 +523,7 @@ void conflict_manager::_process_custom_variable_status(
 void conflict_manager::_process_downtime(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn = _mysql.choose_best_connection(neb::downtime::static_type());
+  int conn = special_conn::downtime % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::instances | actions::downtimes |
                          actions::host_parents | actions::host_dependencies |
                          actions::service_dependencies);
@@ -731,8 +730,7 @@ void conflict_manager::_process_host_check(
 void conflict_manager::_process_host_dependency(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::host_dependency::static_type());
+  int32_t conn = special_conn::host_dependency % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::host_parents |
                          actions::comments | actions::downtimes |
                          actions::host_dependencies |
@@ -787,7 +785,7 @@ void conflict_manager::_process_host_dependency(
 void conflict_manager::_process_host_group(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn = _mysql.choose_best_connection(neb::host_group::static_type());
+  int32_t conn = special_conn::host_group % _mysql.connections_count();
   _finish_action(-1, actions::hosts);
 
   // Cast object.
@@ -833,8 +831,7 @@ void conflict_manager::_process_host_group(
 void conflict_manager::_process_host_group_member(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn =
-      _mysql.choose_best_connection(neb::host_group_member::static_type());
+  int32_t conn = special_conn::host_group % _mysql.connections_count();
   _finish_action(-1, actions::hostgroups | actions::hosts);
 
   // Cast object.
@@ -930,8 +927,8 @@ void conflict_manager::_process_host(
 
   // Log message.
   log_v2::sql()->debug(
-      "SQL: processing host event (poller: {}, id: {}, name: {})", h.poller_id,
-      h.host_id, h.host_name);
+      "SQL: processing host event (poller: {}, host: {}, name: {})",
+      h.poller_id, h.host_id, h.host_name);
 
   // Processing
   if (_is_valid_poller(h.poller_id)) {
@@ -979,7 +976,7 @@ void conflict_manager::_process_host(
 void conflict_manager::_process_host_parent(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn = _mysql.choose_best_connection(neb::host_parent::static_type());
+  int32_t conn = special_conn::host_parent % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::host_dependencies |
                          actions::comments | actions::downtimes);
 
@@ -1053,7 +1050,8 @@ void conflict_manager::_process_host_status(
       !hs.next_check) {                 // - initial state
     // Apply to DB.
     log_v2::sql()->info(
-        "processing host status event (id: {}, last check: {}, state ({}, {}))",
+        "processing host status event (host: {}, last check: {}, state ({}, "
+        "{}))",
         hs.host_id, hs.last_check, hs.current_state, hs.state_type);
 
     // Prepare queries.
@@ -1348,8 +1346,7 @@ void conflict_manager::_process_service_check(
 void conflict_manager::_process_service_dependency(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::service_dependency::static_type());
+  int32_t conn = special_conn::service_dependency % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::host_parents |
                          actions::downtimes | actions::comments |
                          actions::host_dependencies |
@@ -1411,8 +1408,7 @@ void conflict_manager::_process_service_dependency(
 void conflict_manager::_process_service_group(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::service_group::static_type());
+  int32_t conn = special_conn::service_group % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::services);
 
   // Cast object.
@@ -1463,8 +1459,7 @@ void conflict_manager::_process_service_group(
 void conflict_manager::_process_service_group_member(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::service_group_member::static_type());
+  int32_t conn = special_conn::service_group % _mysql.connections_count();
   _finish_action(-1,
                  actions::hosts | actions::servicegroups | actions::services);
 
@@ -1757,7 +1752,7 @@ void conflict_manager::_update_customvariables() {
 void conflict_manager::_insert_logs() {
   if (_log_queue.empty())
     return;
-  int conn = _mysql.choose_best_connection(neb::log_entry::static_type());
+  int32_t conn = special_conn::log % _mysql.connections_count();
   auto it = _log_queue.begin();
   std::ostringstream oss;
 
