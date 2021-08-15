@@ -130,7 +130,6 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
         throw msg_fmt("Unable to allocate connector ssl object");
 
       if (!_cert.empty() && !_key.empty()) {
-        int r;
         log_v2::tls()->info("TLS: using certificates as credentials");
 
         X509_VERIFY_PARAM* ssl_params = SSL_get0_param(c_ssl);
@@ -162,11 +161,10 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
 
         /* Load CA certificate */
         if (!_ca.empty()) {
-          r = SSL_use_certificate_chain_file(c_ssl, _ca.c_str());
-          if (r != 1)
+          if (SSL_CTX_load_verify_locations(tls2::ctx, _ca.c_str(), nullptr) != 1)
             throw msg_fmt(
-                "Error: cannot load trusted certificate authority's file '{}'",
-                _ca);
+                "Error: cannot load trusted certificate authority's file '{}': {}",
+                _ca, ERR_reason_error_string(ERR_get_error()));
         }
 
         /* Load certificate */

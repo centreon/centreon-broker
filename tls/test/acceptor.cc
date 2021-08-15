@@ -391,6 +391,7 @@ TEST_F(TlsTest, TlsStreamCaError) {
   std::thread centengine([&cbd_finished] {
     auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
+    /* the name does not match with the CN of the server certificate */
     auto tls_c{std::make_unique<tls::connector>("/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", "badhostname")};
 
     /* Nominal case, centengine is connector and write on the socket */
@@ -409,12 +410,13 @@ TEST_F(TlsTest, TlsStreamCaError) {
 
 TEST_F(TlsTest, TlsStreamCaHostname) {
   /* Let's prepare certificates */
-  const static std::string hostname{"saperlifragilistic"};
-  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", hostname));
+  const static std::string s_hostname{"saperlifragilistic"};
+  const static std::string c_hostname{"foobar"};
+  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", s_hostname));
   std::cout << server_cmd << std::endl;
   system(server_cmd.c_str());
 
-  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", hostname));
+  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", c_hostname));
   std::cout << client_cmd << std::endl;
   system(client_cmd.c_str());
 
@@ -453,7 +455,7 @@ TEST_F(TlsTest, TlsStreamCaHostname) {
   std::thread centengine([&cbd_finished] {
     auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
-    auto tls_c{std::make_unique<tls::connector>("/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", hostname /*"titus"*/)};
+    auto tls_c{std::make_unique<tls::connector>("/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", s_hostname)};
 
     /* Nominal case, centengine is connector and write on the socket */
     std::shared_ptr<io::stream> u_centengine;
