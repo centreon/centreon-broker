@@ -218,7 +218,12 @@ void feeder::_callback() noexcept {
   /* We don't get back the return value of stop() because it has non sense,
    * the only interest in calling stop() is to send an acknowledgement to the
    * peer. */
-  _client->stop();
+  try {
+    _client->stop();
+  } catch (const std::exception& e) {
+    log_v2::core()->error("Failed to send stop event to client: {}", e.what());
+  }
+
   {
     misc::read_lock lock(_client_m);
     _client.reset();
