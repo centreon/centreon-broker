@@ -43,8 +43,6 @@ stream::stream(SSL* ssl, BIO* bio, BIO* bio_io, bool server)
     : io::stream("TLS"),
       _server(server),
       _handshake_done{false},
-      _pending{0},
-      _ack{0},
       _deadline((time_t)-1),
       _ssl(ssl),
       _bio(bio),
@@ -68,8 +66,10 @@ stream::~stream() {
  *
  */
 void stream::handshake() {
-  int r = SSL_do_handshake(_ssl);
-  _manage_stream(r, ssl_handshake);
+  int r;
+  while (!(r = SSL_do_handshake(_ssl)))
+    _manage_stream_error(r, ssl_handshake);
+  _handshake_done = true;
 }
 
 /**
@@ -124,10 +124,9 @@ void stream::_do_stream() {
     if (no_timeout) {
       io::raw* packet = static_cast<io::raw*>(d.get());
       _rbuf.push(packet->get_buffer());
-      log_v2::tls()->trace(
-          "TLS: {} {:x} Receiving SSL buffer '{}' of {} bytes",
-          _server ? "SERVER" : "CLIENT", pthread_self(),
-          misc::string::from_buffer(packet->data(), sz), sz);
+      log_v2::tls()->trace("TLS: {} {:x} Receiving SSL buffer '{}' of {} bytes",
+                           _server ? "SERVER" : "CLIENT", pthread_self(),
+                           misc::string::from_buffer(packet->data(), sz), sz);
     }
     if (_rbuf.size() > 0) {
       int s = std::min(_rbuf.size(), static_cast<size_t>(sz));
@@ -147,14 +146,14 @@ void stream::_do_stream() {
  * @brief In a stream we have only the half of the SSL exchange. We read/write
  *        data thanks to SSL_write/SSL_read, they are encrypted and we can get
  *        them back as encrypted from the _bio_io, but we still need to send
- *        them to the other side (or to receive them). This is a why of this
- *        _manage_stream() function. It gets the return value of
- * SSL_do_handshake(), SSL_write() or SSL_read() as parameter and does what is
- * needed.
+ *        them to the other side (or to receive them). This is why of this
+ *        _manage_stream_error() function. It gets the return value of
+ *        SSL_do_handshake(), SSL_write() or SSL_read() as parameter and does
+ *        what is needed.
  *
  * @param r The return value of an SSL_...() functions.
  */
-void stream::_manage_stream(int r, ssl_action action) {
+void stream::_manage_stream_error(int r, ssl_action action) {
   int err = SSL_get_error(_ssl, r);
   switch (err) {
     case SSL_ERROR_WANT_READ:
@@ -179,15 +178,11 @@ void stream::_manage_stream(int r, ssl_action action) {
       }
       _do_stream();
       break;
-    default:
-      {
-        log_v2::tls()->error("TLS: SSL error: {}", ERR_reason_error_string(ERR_get_error()));
-        throw msg_fmt("TLS: SSL error. See logs");
-      }
-      if (err == 5)
-        log_v2::tls()->info("SSL_ERROR_SYSCALL: {}", strerror(errno));
-      else
-        log_v2::tls()->info("SSL_ERROR {}", err);
+    default: {
+      log_v2::tls()->error("TLS: SSL error: {}",
+                           ERR_reason_error_string(ERR_get_error()));
+      throw msg_fmt("TLS: SSL error. See logs");
+    }
   }
 }
 
@@ -208,30 +203,29 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   bool retval;
   try {
     retval = _do_read(deadline);
-  if (!_handshake_done) {
-    retval = false;
-    log_v2::tls()->trace("TLS: {} {:x} waiting - {}", pthread_self(),
-                         _server ? "SERVER" : "CLIENT",
-                         SSL_state_string_long(_ssl));
-    int r = SSL_do_handshake(_ssl);
-    _manage_stream(r, ssl_handshake);
-  } else if (retval) {
-    log_v2::tls()->trace("TLS: want to read!");
-    char v[4096];
-    int r = SSL_read(_ssl, v, sizeof(v));
-    if (r > 0) {
-      log_v2::tls()->trace("TLS: {} {:x} SSL read {} bytes: '{}'",
-                           _server ? "SERVER" : "CLIENT", pthread_self(), r,
-                           misc::string::from_buffer(v, r));
-      auto packet = std::make_shared<io::raw>(v, r);
-      d = packet;
-      assert(d);
-      retval = true;
-    } else
+    if (!_handshake_done) {
       retval = false;
-    _manage_stream(r, ssl_read);
-    assert(d || !retval);
-  }
+      log_v2::tls()->trace("TLS: {} {:x} waiting - {}", pthread_self(),
+                           _server ? "SERVER" : "CLIENT",
+                           SSL_state_string_long(_ssl));
+      handshake();
+    } else if (retval) {
+      log_v2::tls()->trace("TLS: want to read!");
+      char v[4096];
+      int r = SSL_read(_ssl, v, sizeof(v));
+      if (r > 0) {
+        log_v2::tls()->trace("TLS: {} {:x} SSL read {} bytes: '{}'",
+                             _server ? "SERVER" : "CLIENT", pthread_self(), r,
+                             misc::string::from_buffer(v, r));
+        auto packet = std::make_shared<io::raw>(v, r);
+        d = packet;
+        assert(d);
+        retval = true;
+      } else
+        retval = false;
+      _manage_stream_error(r, ssl_read);
+      assert(d || !retval);
+    }
   } catch (const std::exception& e) {
     log_v2::tls()->error("TLS session is terminated");
     throw msg_fmt("TLS session is terminated");
@@ -259,25 +253,23 @@ int stream::write(const std::shared_ptr<io::data>& d) {
       misc::string::from_buffer(packet->data(), packet->size()),
       packet->size());
   _wbuf.push(packet->get_buffer());
-  _pending += packet->size();
 
   if (_handshake_done) {
     auto v{_wbuf.front()};
     int r = SSL_write(_ssl, v.first, v.second);
-    _manage_stream(r, ssl_write);
-    _ack += v.second;
-    _wbuf.pop();
+    if (r == 1) {
+      _wbuf.pop();
+      _do_stream();
+    }
+    else
+      _manage_stream_error(r, ssl_write);
   } else {
     log_v2::tls()->trace("TLS: {} {:x} waiting - {}",
                          _server ? "SERVER" : "CLIENT", pthread_self(),
                          SSL_state_string_long(_ssl));
-    int r = SSL_do_handshake(_ssl);
-    _manage_stream(r, ssl_handshake);
+    handshake();
   }
-  int32_t retval{_ack};
-  _pending -= _ack;
-  _ack = 0;
-  return retval;
+  return 1;
 }
 
 int32_t stream::flush() {
@@ -287,20 +279,17 @@ int32_t stream::flush() {
   if (_handshake_done) {
     auto v{_wbuf.front()};
     int r = SSL_write(_ssl, v.first, v.second);
-    _manage_stream(r, ssl_write);
-    _ack += v.second;
-    _wbuf.pop();
+    if (r == 1)
+      _wbuf.pop();
+    else
+      _manage_stream_error(r, ssl_write);
   } else {
     log_v2::tls()->trace("TLS: {} {:x} waiting - {}",
                          _server ? "SERVER" : "CLIENT", pthread_self(),
                          SSL_state_string_long(_ssl));
-    int r = SSL_do_handshake(_ssl);
-    _manage_stream(r, ssl_handshake);
+    handshake();
   }
-  int32_t retval{_ack};
-  _pending -= _ack;
-  _ack = 0;
-  return retval;
+  return 0;
 }
 
 int32_t stream::stop() {

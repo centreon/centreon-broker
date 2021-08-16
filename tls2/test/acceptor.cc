@@ -422,12 +422,13 @@ TEST_F(Tls2Test, TlsStreamCaError) {
 
 TEST_F(Tls2Test, TlsStreamCaHostname) {
   /* Let's prepare certificates */
-  const static std::string hostname{"saperlifragilistic"};
-  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", hostname));
+  const static std::string s_hostname{"saperlifragilistic"};
+  const static std::string c_hostname{"foobar"};
+  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", s_hostname));
   std::cout << server_cmd << std::endl;
   system(server_cmd.c_str());
 
-  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", hostname));
+  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", c_hostname));
   std::cout << client_cmd << std::endl;
   system(client_cmd.c_str());
 
@@ -468,7 +469,7 @@ TEST_F(Tls2Test, TlsStreamCaHostname) {
   std::thread centengine([&cbd_finished] {
     auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
-    auto tls_c{std::make_unique<tls2::connector>("/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", hostname /*"titus"*/)};
+    auto tls_c{std::make_unique<tls2::connector>("/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", s_hostname)};
 
     /* Nominal case, centengine is connector and write on the socket */
     std::shared_ptr<io::stream> u_centengine;
@@ -497,33 +498,62 @@ TEST_F(Tls2Test, TlsStreamCaHostname) {
   cbd.join();
 }
 
-TEST_F(Tls2Test, TlsPySrvStream) {
+TEST_F(Tls2Test, TlsStreamBigData) {
   /* Let's prepare certificates */
-  std::string hostname = misc::exec("hostname --fqdn");
-  hostname = misc::string::trim(hostname);
-  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", hostname));
+  const static std::string s_hostname{"saperlifragilistic"};
+  const static std::string c_hostname{"foobar"};
+  const static int max_limit = 1;
+  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", s_hostname));
   std::cout << server_cmd << std::endl;
   system(server_cmd.c_str());
 
-  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", hostname));
+  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", c_hostname));
   std::cout << client_cmd << std::endl;
   system(client_cmd.c_str());
 
   std::atomic_bool cbd_finished{false};
 
   std::thread cbd([&cbd_finished] {
-    std::cout << "##### python3 tls-server #####" << std::endl;
-    std::string ret = misc::exec(
-        "python3 /home/david/Projets/centreon-broker/tls2/test/tls-server.py");
-    std::cout << "##### " << ret << "#####" << std::endl;
-    ASSERT_TRUE(ret.find("b'Hello cbd'") != std::string::npos);
+    auto a{std::make_unique<tcp::acceptor>(4141, -1)};
+
+    auto tls_a{std::make_unique<tls2::acceptor>(
+        "/tmp/server.crt", "/tmp/server.key", "/tmp/client.crt", "")};
+
+    /* Nominal case, cbd is acceptor and read on the socket */
+    std::shared_ptr<io::stream> u_cbd;
+    do {
+      u_cbd = a->open();
+    } while (!u_cbd);
+
+    std::unique_ptr<io::stream> io_tls_cbd = tls_a->open(u_cbd);
+    tls2::stream* tls_cbd = static_cast<tls2::stream*>(io_tls_cbd.get());
+
+    std::vector<char> v{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                        'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+                        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+    int limit = 1;
+    do {
+      std::shared_ptr<io::data> d;
+      bool no_timeout = tls_cbd->read(d, 0);
+      if (no_timeout) {
+        io::raw* rr = static_cast<io::raw*>(d.get());
+        ASSERT_EQ(strncmp(rr->data(), v.data(), v.size()), 0);
+        limit++;
+        if (limit > max_limit)
+          break;
+        v.insert(v.end(), v.begin(), v.end());
+      }
+      std::this_thread::yield();
+    } while (true);
+
     cbd_finished = true;
   });
 
   std::thread centengine([&cbd_finished] {
     auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
 
-    auto tls_c{std::make_unique<tls2::connector>("/tmp/client.crt", "/tmp/client.key", "", "")};
+    auto tls_c{std::make_unique<tls2::connector>(
+        "/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", s_hostname)};
 
     /* Nominal case, centengine is connector and write on the socket */
     std::shared_ptr<io::stream> u_centengine;
@@ -532,81 +562,25 @@ TEST_F(Tls2Test, TlsPySrvStream) {
     } while (!u_centengine);
 
     std::unique_ptr<io::stream> io_tls_centengine{tls_c->open(u_centengine)};
-    tls2::stream* tls_centengine = static_cast<tls2::stream*>(io_tls_centengine.get());
+    tls2::stream* tls_centengine =
+        static_cast<tls2::stream*>(io_tls_centengine.get());
 
-    //tls_centengine->handshake();
-
-    std::vector<char> v{ 'H', 'e', 'l', 'l', 'o', ' ', 'c', 'b', 'd' };
-    auto packet = std::make_shared<io::raw>(std::move(v));
-
-    /* This is not representative of a real stream. Here we have to call write
-     * several times, so that the SSL library makes its work in the back */
-    try {
+    int count = 0;
     do {
-      puts("centengine write");
-      tls_centengine->write(packet);
+    std::cout << "#~#~#~#~#~#~#~#~#~#~ " << count++ << std::endl;
+
+      std::vector<char> v{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+                          'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+                          'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
+      for (int limit = 0; limit < max_limit; limit++) {
+        auto packet = std::make_shared<io::raw>(v);
+
+        tls_centengine->write(packet);
+        v.insert(v.end(), v.begin(), v.end());
+      }
       std::this_thread::yield();
     } while (!cbd_finished);
-    } catch (const std::exception& e) {
-    }
-  });
-
-  centengine.join();
-  cbd.join();
-}
-
-TEST_F(Tls2Test, TlsPySrvStreamCaHostname) {
-  /* Let's prepare certificates */
-  const std::string hostname{"saperlifragilistic"};
-  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", hostname));
-  std::cout << server_cmd << std::endl;
-//  system(server_cmd.c_str());
-
-  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", hostname));
-  std::cout << client_cmd << std::endl;
-//  system(client_cmd.c_str());
-
-  std::atomic_bool cbd_finished{false};
-
-  std::thread cbd([&cbd_finished] {
-//    std::cout << "##### python3 tls-server #####" << std::endl;
-//    std::string ret = misc::exec(
-//        "python3 /home/david/Projets/centreon-broker/tls2/test/tls-server.py");
-//    std::cout << "##### " << ret << "#####" << std::endl;
-//    ASSERT_TRUE(ret.find("b'Hello cbd'") != std::string::npos);
-      sleep(10);
-    cbd_finished = true;
-  });
-
-  std::thread centengine([&cbd_finished, &hostname] {
-    auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
-
-    auto tls_c{std::make_unique<tls2::connector>("/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", hostname)};
-
-    /* Nominal case, centengine is connector and write on the socket */
-    std::shared_ptr<io::stream> u_centengine;
-    do {
-      u_centengine = c->open();
-    } while (!u_centengine);
-
-    std::unique_ptr<io::stream> io_tls_centengine{tls_c->open(u_centengine)};
-    tls2::stream* tls_centengine = static_cast<tls2::stream*>(io_tls_centengine.get());
-
-    //tls_centengine->handshake();
-
-    std::vector<char> v{ 'H', 'e', 'l', 'l', 'o', ' ', 'c', 'b', 'd' };
-    auto packet = std::make_shared<io::raw>(std::move(v));
-
-    /* This is not representative of a real stream. Here we have to call write
-     * several times, so that the SSL library makes its work in the back */
-    try {
-    do {
-      puts("centengine write");
-      tls_centengine->write(packet);
-      std::this_thread::yield();
-    } while (true || !cbd_finished);
-    } catch (const std::exception& e) {
-    }
   });
 
   centengine.join();

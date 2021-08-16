@@ -41,6 +41,7 @@ class raw : public data {
  public:
   raw();
   raw(raw const& r);
+  raw(const std::vector<char>& b);
   raw(std::vector<char>&& b);
   raw(char* dataptr, size_t r);
   ~raw();

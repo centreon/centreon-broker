@@ -115,7 +115,12 @@ target_link_libraries(ut rokerbase roker ${TESTS_LIBRARIES} conflictmgr
 add_test(NAME tests COMMAND ut)
 
 if (WITH_COVERAGE)
-  set(COVERAGE_EXCLUDES '*/main.cc' '*/test/*' '/usr/include/*' '${CMAKE_BINARY_DIR}/*')
+  set(COVERAGE_EXCLUDES 
+      '*/main.cc'
+      '*/test/*'
+      '/usr/include/*'
+      '${CMAKE_BINARY_DIR}/*'
+      '*/.conan/*')
   SETUP_TARGET_FOR_COVERAGE(
     NAME test-coverage
     EXECUTABLE ut

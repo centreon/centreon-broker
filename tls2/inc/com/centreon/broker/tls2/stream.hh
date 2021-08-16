@@ -41,8 +41,6 @@ class stream : public io::stream {
   enum ssl_action { ssl_handshake, ssl_write, ssl_read };
   bool _server;
   bool _handshake_done;
-  int32_t _pending;
-  int32_t _ack;
   time_t _deadline;
   SSL* _ssl;
   BIO* _bio;
@@ -53,7 +51,7 @@ class stream : public io::stream {
 
   void _do_stream();
   bool _do_read(int timeout);
-  void _manage_stream(int r, ssl_action action);
+  void _manage_stream_error(int r, ssl_action action);
 
  public:
   stream(SSL* ssl, BIO* bio, BIO* bio_io, bool server);
