@@ -10,6 +10,11 @@ When a connection to the db is lost, we try to reestablish it. This change fixes
 a error "MySQL server has gone away" we often have in the BAM availabilities
 computations.
 
+*processing*
+
+When the stop event is sent by a peer, we must protect the call by try/catch to
+avoid an abortion that could appear.
+
 *bbdo*
 
 When the connection of an acceptor is reversed, if cbd is stopped when there is

@@ -353,7 +353,12 @@ void failover::_run() {
       logging::error(logging::high) << e.what();
       {
         if (_stream) {
-          int32_t ack_events = _stream->stop();
+          int32_t ack_events;
+          try {
+            ack_events = _stream->stop();
+          } catch (const std::exception& e) {
+            log_v2::core()->error("Failed to send stop event to stream: {}", e.what());
+          }
           _subscriber->get_muxer().ack_events(ack_events);
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream.reset();
@@ -371,7 +376,12 @@ void failover::_run() {
           << "software bug that should be reported to Centreon Broker "
              "developers";
       {
-        int32_t ack_events = _stream->stop();
+        int32_t ack_events;
+        try {
+        ack_events = _stream->stop();
+        } catch (const std::exception& e) {
+          log_v2::core()->error("Failed to send stop event to stream: {}", e.what());
+        }
         _subscriber->get_muxer().ack_events(ack_events);
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
@@ -388,7 +398,12 @@ void failover::_run() {
       std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
       if (_stream) {
         // If ack_events is not zero, then we will store data twice
-        int32_t ack_events = _stream->stop();
+        int32_t ack_events;
+        try {
+        ack_events = _stream->stop();
+        } catch (const std::exception& e) {
+          log_v2::core()->error("Failed to send stop event to stream: {}", e.what());
+        }
         _subscriber->get_muxer().ack_events(ack_events);
         _stream.reset();
       }
