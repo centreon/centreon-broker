@@ -67,8 +67,10 @@ stream::~stream() {
  */
 void stream::handshake() {
   int r;
-  while (!(r = SSL_do_handshake(_ssl)))
+  while ((r = SSL_do_handshake(_ssl)) != 1)
     _manage_stream_error(r, ssl_handshake);
+  log_v2::tls()->warn("{} Handshake done",
+                         _server ? "SERVER" : "CLIENT");
   _handshake_done = true;
 }
 
@@ -81,6 +83,7 @@ void stream::handshake() {
  * @return true if data have been read, false otherwise.
  */
 bool stream::_do_read(int timeout) {
+  log_v2::tls()->trace("{}: do_read()", _server ? "SERVER":"CLIENT");
   std::shared_ptr<io::data> d;
   bool no_timeout = _substream->read(d, timeout);
   if (no_timeout) {
@@ -102,12 +105,15 @@ bool stream::_do_read(int timeout) {
 }
 
 void stream::_do_stream() {
+  log_v2::tls()->trace("{}: do_stream()", _server ? "SERVER":"CLIENT");
   int sz;
   bool something_done = false;
   while ((sz = BIO_ctrl_pending(_bio_io)) > 0) {
     something_done = true;
+    log_v2::tls()->trace("{}: do_stream() -> substream write", _server ? "SERVER":"CLIENT");
     char* dataptr;
     sz = BIO_nread(_bio_io, &dataptr, sz);
+    log_v2::tls()->trace("{}: do_stream() -> BIO_nread {} bytes", _server ? "SERVER":"CLIENT", sz);
     auto packet = std::make_shared<io::raw>();
     packet->get_buffer().insert(packet->get_buffer().end(), dataptr,
                                 dataptr + sz);
@@ -118,6 +124,7 @@ void stream::_do_stream() {
   }
 
   while ((sz = BIO_ctrl_get_read_request(_bio_io)) > 0) {
+    log_v2::tls()->trace("{}: do_stream() -> substream read {} bytes wanted", _server ? "SERVER":"CLIENT", sz);
     something_done = true;
     std::shared_ptr<io::data> d;
     bool no_timeout = _substream->read(d, 0);
@@ -132,14 +139,13 @@ void stream::_do_stream() {
       int s = std::min(_rbuf.size(), static_cast<size_t>(sz));
       std::vector<char> v{_rbuf.pop(s)};
       int ss = BIO_write(_bio_io, v.data(), s);
-      log_v2::tls()->trace("TLS: {} {:x} '{}' of {} bytes added to SSL",
-                           _server ? "SERVER" : "CLIENT", pthread_self(),
-                           misc::string::from_buffer(v.data(), s), s);
+      log_v2::tls()->trace("{}: do_stream() -> BIO_write {} bytes", _server ? "SERVER":"CLIENT", ss);
     } else
       break;
   }
-  if (!something_done)
+  if (!something_done) {
     _do_read(0);
+  }
 }
 
 /**
@@ -221,9 +227,10 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
         d = packet;
         assert(d);
         retval = true;
-      } else
+      } else {
         retval = false;
-      _manage_stream_error(r, ssl_read);
+        _manage_stream_error(r, ssl_read);
+      }
       assert(d || !retval);
     }
   } catch (const std::exception& e) {
@@ -257,8 +264,13 @@ int stream::write(const std::shared_ptr<io::data>& d) {
   if (_handshake_done) {
     auto v{_wbuf.front()};
     int r = SSL_write(_ssl, v.first, v.second);
-    if (r == 1) {
-      _wbuf.pop();
+    if (r > 0) {
+      if (r == v.second)
+        _wbuf.pop();
+      else {
+        // FIXME DBR: is this a current behaviour?
+        assert(1 == 0);
+      }
       _do_stream();
     }
     else
