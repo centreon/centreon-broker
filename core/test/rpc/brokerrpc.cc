@@ -127,3 +127,13 @@ TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
   brpc.shutdown();
 }
 
+
+TEST_F(BrokerRpc, GetConflictManagerStats) {
+  brokerrpc brpc("0.0.0.0", 40000, "test");
+  ConflictManagerStats* _stats;
+
+  auto output = execute("GetConflictManagerStats");
+
+  brpc.shutdown();
+}
+

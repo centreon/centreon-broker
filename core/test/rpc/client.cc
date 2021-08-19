@@ -50,11 +50,23 @@ class BrokerRPCClient {
     grpc::ClientContext context;
     grpc::Status status = _stub->GetSqlConnectionStats(&context, e, response);
     if (!status.ok()) {
-      std::cout << "GetVersion rpc failed." << std::endl;
+      std::cout << "GetSqlConnectionStats rpc failed." << std::endl;
       return false;
     }
     return true;
   }
+
+  bool GetConflictManagerStats(BrokerStats* response) {
+    const ::google::protobuf::Empty e;
+    grpc::ClientContext context;
+    grpc::Status status = _stub->GetSqlConnectionStats(&context, e, response);
+    if (!status.ok()) {
+      std::cout << "GetConflictManager rpc failed." << std::endl;
+      return false;
+    }
+    return true;
+  }
+
 
   
 };
@@ -96,7 +108,10 @@ int main(int argc, char** argv) {
       }
   }
 
-
+  if (strcmp(argv[1], "GetConflictManagerStats") == 0) {
+    BrokerStats response;
+    status = client.GetConflictManagerStats(&response) ? 0 : 1;
+  }
 
   exit(status);
 }

@@ -72,16 +72,17 @@ class center {
   EngineStats* register_engine();
   // FeederStats* register_feeder(EndpointStats* ep_stats,
   //                             const std::string& name);
-  // ConflictManagerStats* register_conflict_manager();
   // ModuleStats* register_modules(void);
   SqlConnectionStats* register_mysql_connection();
+  ConflictManagerStats* register_conflict_manager();
   bool unregister_mysql_connection(SqlConnectionStats* connection);
   void get_sql_connection_stats(BrokerStats* response);
+  void get_conflict_manager_stats(BrokerStats* response);
   // bool unregister_endpoint(const std::string& name);
   // bool unregister_feeder(EndpointStats* ep_stats, const std::string& name);
   // bool unregister_mysql_manager(void);
+  
   int get_json_stats_file_creation(void);
-
   void get_stats(const StatsQuery* request, BrokerStats* response);
 
   /**

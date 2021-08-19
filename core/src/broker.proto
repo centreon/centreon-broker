@@ -10,6 +10,7 @@ service Broker {
   // stats
   rpc GetGenericStats(google.protobuf.Empty) returns (GenericString) {}
   rpc GetSqlConnectionStats(google.protobuf.Empty) returns (BrokerStats) {}
+  rpc GetConflictManagerStats(google.protobuf.Empty) returns (BrokerStats) {}
 
   rpc GetNumModules(google.protobuf.Empty) returns (GenericSize) {}
   rpc GetModulesStats(GenericNameOrIndex) returns (GenericString) {}
@@ -71,6 +72,10 @@ message SqlConnectionStats {
  int32 waiting_tasks = 1;
 }
 
+message ConflictManagerStats {
+ int32 events_handled = 1;
+}
+
 message ModuleStats {
   string name = 1;
   string size = 2;
@@ -91,4 +96,5 @@ message BrokerStats {
   EngineStats engine = 6;
   repeated ModuleStats modules = 7;
   repeated SqlConnectionStats connections = 8;
+  ConflictManagerStats conflict_manager = 9;
 }

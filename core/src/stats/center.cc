@@ -251,15 +251,15 @@ bool center::unregister_mysql_connection(SqlConnectionStats* connection) {
  *
  * @return A pointer to the conflict_manager statistics.
  */
-// ConflictManagerStats* center::register_conflict_manager() {
-//  std::promise<ConflictManagerStats*> p;
-//  std::future<ConflictManagerStats*> retval = p.get_future();
-//  _strand.post([this, &p] {
-//    auto cm = _stats.mutable_conflict_manager();
-//    p.set_value(cm);
-//  });
-//  return retval.get();
-//}
+ ConflictManagerStats* center::register_conflict_manager() {
+  std::promise<ConflictManagerStats*> p;
+  std::future<ConflictManagerStats*> retval = p.get_future();
+  _strand.post([this, &p] {
+    auto cm = _stats.mutable_conflict_manager();
+    p.set_value(cm);
+  });
+  return retval.get();
+}
 
 /**
  * @brief To allow the conflict manager to send statistics, it has to call this
@@ -321,11 +321,24 @@ std::string center::to_string() {
 //}
 //
 //
+//
 void center::get_sql_connection_stats(BrokerStats* response) {
   std::promise<bool> p;
   std::future<bool> done = p.get_future();
   _strand.post([&s = this->_stats, &p, response] {
       *response->mutable_connections() = s.connections();
+      p.set_value(true);
+  });
+
+  // We wait for the response.
+  done.get();
+}
+
+void center::get_conflict_manager_stats(BrokerStats* response) {
+  std::promise<bool> p;
+  std::future<bool> done = p.get_future();
+  _strand.post([&s = this->_stats, &p, response] {
+      *response->mutable_conflict_manager() = s.conflict_manager();
       p.set_value(true);
   });
 

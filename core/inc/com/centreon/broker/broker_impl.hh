@@ -37,7 +37,9 @@ class broker_impl final : public Broker::Service {
   grpc::Status GetSqlConnectionStats(grpc::ServerContext* context,
                            const ::google::protobuf::Empty* request,
                            BrokerStats* response) override;
-
+  grpc::Status GetConflictManagerStats(grpc::ServerContext* context,
+                           const ::google::protobuf::Empty* request,
+                           BrokerStats* response) override;
   grpc::Status GetNumModules(grpc::ServerContext* context,
                              const ::google::protobuf::Empty* /*request*/,
                              GenericSize* response) override;

@@ -197,3 +197,12 @@ grpc::Status broker_impl::GetSqlConnectionStats(grpc::ServerContext* context
   stats::center::instance().get_sql_connection_stats(response);
   return grpc::Status::OK;
 }
+
+grpc::Status broker_impl::GetConflictManagerStats(grpc::ServerContext* context
+                                      __attribute__((unused)),
+                                      const ::google::protobuf::Empty* request
+                                      __attribute__((unused)),
+                                      BrokerStats* response) {
+  stats::center::instance().get_conflict_manager_stats(response);
+  return grpc::Status::OK;
+}
