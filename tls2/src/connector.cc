@@ -111,6 +111,33 @@ static int verify_callback(int preverify_ok, X509_STORE_CTX* ctx) {
     return preverify_ok;
 }
 
+static void info_callback(const SSL* s, int where, int ret) {
+  const char* str1;
+
+  int w = where & ~SSL_ST_MASK;
+
+  if (w & SSL_ST_CONNECT)
+    str1 = "INFO CLIENT";
+  else if (w & SSL_ST_ACCEPT)
+    str1 = "INFO SERVER";
+  else
+    str1 = "undefined";
+
+  if (where & SSL_CB_LOOP) {
+    log_v2::tls()->info("INFO: {}:{}", str1, SSL_state_string_long(s));
+  } else if (where & SSL_CB_ALERT) {
+    const char* str = (where & SSL_CB_READ) ? "read" : "write";
+    log_v2::tls()->info("INFO: {}:SSL3 alert {}:{}:{}", str1, str,
+                        SSL_alert_type_string_long(ret),
+                        SSL_alert_desc_string_long(ret));
+  } else if (where & SSL_CB_EXIT) {
+    if (ret == 0)
+      log_v2::tls()->info("INFO: {}: failed in {}", str1, SSL_state_string_long(s));
+    else if (ret < 0) {
+      log_v2::tls()->info("INFO: {}:error in {}", str1, SSL_state_string_long(s));
+    }
+  }
+}
 /**
  *  Overload of open, using base stream.
  *
@@ -128,6 +155,8 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
       SSL* c_ssl = SSL_new(tls2::ctx);
       if (c_ssl == nullptr)
         throw msg_fmt("Unable to allocate connector ssl object");
+
+      SSL_set_info_callback(c_ssl, info_callback);
 
       if (!_cert.empty() && !_key.empty()) {
         log_v2::tls()->info("TLS: using certificates as credentials");

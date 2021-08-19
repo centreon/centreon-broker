@@ -137,7 +137,9 @@ void stream::_do_stream() {
     }
     if (_rbuf.size() > 0) {
       int s = std::min(_rbuf.size(), static_cast<size_t>(sz));
+      log_v2::tls()->trace("rbuf size {} ; bytes to pop {}", _rbuf.size(), s);
       std::vector<char> v{_rbuf.pop(s)};
+      log_v2::tls()->trace("new rbuf size {}", _rbuf.size());
       int ss = BIO_write(_bio_io, v.data(), s);
       log_v2::tls()->trace("{}: do_stream() -> BIO_write {} bytes", _server ? "SERVER":"CLIENT", ss);
     } else
@@ -207,16 +209,25 @@ void stream::_manage_stream_error(int r, ssl_action action) {
  */
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   bool retval;
+  log_v2::tls()->trace(
+      "TLS: {} {:x} read ==> {}",
+      _server ? "SERVER" : "CLIENT", pthread_self(),
+      SSL_state_string_long(_ssl));
+  log_v2::tls()->trace("read {} : rbuf size {}", _server ? "SERVER" : "CLIENT",
+                       _rbuf.size());
   try {
     retval = _do_read(deadline);
+    log_v2::tls()->trace("_do_read returned {}", retval);
     if (!_handshake_done) {
       retval = false;
-      log_v2::tls()->trace("TLS: {} {:x} waiting - {}", pthread_self(),
+      log_v2::tls()->trace("TLS: {} {:x} waiting ==> {}",
                            _server ? "SERVER" : "CLIENT",
+                           pthread_self(),
                            SSL_state_string_long(_ssl));
       handshake();
-    } else if (retval) {
-      log_v2::tls()->trace("TLS: want to read!");
+      _handshake_done = true;
+    } else {
+      //log_v2::tls()->trace("TLS: want to read!");
       char v[4096];
       int r = SSL_read(_ssl, v, sizeof(v));
       if (r > 0) {
@@ -256,15 +267,17 @@ int stream::write(const std::shared_ptr<io::data>& d) {
 
   io::raw* packet{static_cast<io::raw*>(d.get())};
   log_v2::tls()->trace(
-      "TLS: {:x} write '{}' of size {}", pthread_self(),
-      misc::string::from_buffer(packet->data(), packet->size()),
-      packet->size());
+      "TLS: {} {:x} write '{}' of size {} ==> {}",
+      _server ? "SERVER" : "CLIENT", pthread_self(),
+      misc::string::from_buffer(packet->data(), packet->size()), packet->size(),
+      SSL_state_string_long(_ssl));
   _wbuf.push(packet->get_buffer());
 
   if (_handshake_done) {
     auto v{_wbuf.front()};
     int r = SSL_write(_ssl, v.first, v.second);
     if (r > 0) {
+      log_v2::tls()->warn("SSL_write {}", r);
       if (r == v.second)
         _wbuf.pop();
       else {
@@ -280,6 +293,7 @@ int stream::write(const std::shared_ptr<io::data>& d) {
                          _server ? "SERVER" : "CLIENT", pthread_self(),
                          SSL_state_string_long(_ssl));
     handshake();
+    _handshake_done = true;
   }
   return 1;
 }

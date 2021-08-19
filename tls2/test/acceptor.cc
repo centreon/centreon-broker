@@ -22,6 +22,7 @@
 #include <fmt/format.h>
 #include <gtest/gtest.h>
 #include <openssl/ssl.h>
+#include <chrono>
 
 #include <nlohmann/json.hpp>
 
@@ -499,10 +500,12 @@ TEST_F(Tls2Test, TlsStreamCaHostname) {
 }
 
 TEST_F(Tls2Test, TlsStreamBigData) {
+  using namespace std::chrono_literals;
+
   /* Let's prepare certificates */
   const static std::string s_hostname{"saperlifragilistic"};
   const static std::string c_hostname{"foobar"};
-  const static int max_limit = 1;
+  const static int max_limit = 10;
   std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", s_hostname));
   std::cout << server_cmd << std::endl;
   system(server_cmd.c_str());
@@ -528,21 +531,35 @@ TEST_F(Tls2Test, TlsStreamBigData) {
     std::unique_ptr<io::stream> io_tls_cbd = tls_a->open(u_cbd);
     tls2::stream* tls_cbd = static_cast<tls2::stream*>(io_tls_cbd.get());
 
-    std::vector<char> v{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
-                        'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-                        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-    int limit = 1;
+    char c = 'A';
+    size_t length = 26u;
+    std::vector<char> v(length, c);
+    size_t limit = 1;
+    std::vector<char> my_vector;
     do {
+      std::cout << "server length = " << length << std::endl;
       std::shared_ptr<io::data> d;
       bool no_timeout = tls_cbd->read(d, 0);
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
-        ASSERT_EQ(strncmp(rr->data(), v.data(), v.size()), 0);
+        my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
+      }
+      if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
+        my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
+        ASSERT_TRUE(true);
+        std::cout << "GOOD " << limit << " my vector size " << my_vector.size() << "\n";
         if (limit > max_limit)
           break;
-        v.insert(v.end(), v.begin(), v.end());
+        c++;
+        length *= 2u;
+        v = std::vector<char>(length, c);
       }
+      else if (my_vector.size() >= v.size()) {
+        ASSERT_TRUE(false);
+        break;
+      }
+
       std::this_thread::yield();
     } while (true);
 
@@ -565,20 +582,22 @@ TEST_F(Tls2Test, TlsStreamBigData) {
     tls2::stream* tls_centengine =
         static_cast<tls2::stream*>(io_tls_centengine.get());
 
-    int count = 0;
+    char ch = 'A';
+    size_t length = 26u;
+    std::vector<char> v(length, ch);
+
+    for (size_t limit = 1; limit <= max_limit;) {
+      std::cout << "client length = " << length << std::endl;
+      auto packet = std::make_shared<io::raw>(v);
+
+      tls_centengine->write(packet);
+      ch++;
+      limit++;
+      //std::this_thread::sleep_for(1ms);
+      length *= 2;
+      v = std::vector<char>(length, ch);
+    }
     do {
-    std::cout << "#~#~#~#~#~#~#~#~#~#~ " << count++ << std::endl;
-
-      std::vector<char> v{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
-                          'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-                          'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-
-      for (int limit = 0; limit < max_limit; limit++) {
-        auto packet = std::make_shared<io::raw>(v);
-
-        tls_centengine->write(packet);
-        v.insert(v.end(), v.begin(), v.end());
-      }
       std::this_thread::yield();
     } while (!cbd_finished);
   });

@@ -84,17 +84,17 @@ static void info_callback(const SSL* s, int where, int ret) {
     str1 = "undefined";
 
   if (where & SSL_CB_LOOP) {
-    log_v2::tls()->info("{}:{}", str1, SSL_state_string_long(s));
+    log_v2::tls()->info("INFO: {}:{}", str1, SSL_state_string_long(s));
   } else if (where & SSL_CB_ALERT) {
     const char* str = (where & SSL_CB_READ) ? "read" : "write";
-    log_v2::tls()->info("{}:SSL3 alert {}:{}:{}", str1, str,
+    log_v2::tls()->info("INFO: {}:SSL3 alert {}:{}:{}", str1, str,
                         SSL_alert_type_string_long(ret),
                         SSL_alert_desc_string_long(ret));
   } else if (where & SSL_CB_EXIT) {
     if (ret == 0)
-      log_v2::tls()->info("{}: failed in {}", str1, SSL_state_string_long(s));
+      log_v2::tls()->info("INFO: {}: failed in {}", str1, SSL_state_string_long(s));
     else if (ret < 0) {
-      log_v2::tls()->info("{}:error in {}", str1, SSL_state_string_long(s));
+      log_v2::tls()->info("INFO: {}:error in {}", str1, SSL_state_string_long(s));
     }
   }
 }
