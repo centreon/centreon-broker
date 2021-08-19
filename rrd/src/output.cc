@@ -170,7 +170,7 @@ void output<T>::update() {
  */
 template <typename T>
 int output<T>::write(std::shared_ptr<io::data> const& d) {
-  log_v2::rrd()->debug("RRD: output::write.");
+  log_v2::rrd()->trace("RRD: output::write.");
   // Check that data exists.
   if (!validate(d, "RRD"))
     return 1;
