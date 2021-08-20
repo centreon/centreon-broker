@@ -61,8 +61,7 @@ class stream : public io::stream {
   void handshake();
   bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   int32_t write(const std::shared_ptr<io::data>& d) override;
-  int32_t flush() override;
-  int32_t stop() override;
+  int32_t stop() override { return 0; }
 };
 }  // namespace tls2
 

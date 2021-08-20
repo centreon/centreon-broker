@@ -111,6 +111,7 @@ void stream::_do_stream() {
   while ((sz = BIO_ctrl_pending(_bio_io)) > 0) {
     something_done = true;
     log_v2::tls()->trace("{}: do_stream() -> substream write", _server ? "SERVER":"CLIENT");
+    log_v2::tls()->trace("{} bytes pending to be sent", sz);
     char* dataptr;
     sz = BIO_nread(_bio_io, &dataptr, sz);
     log_v2::tls()->trace("{}: do_stream() -> BIO_nread {} bytes", _server ? "SERVER":"CLIENT", sz);
@@ -168,30 +169,20 @@ void stream::_manage_stream_error(int r, ssl_action action) {
       log_v2::tls()->trace("TLS: {} {} WANT READ",
                            _server ? "SERVER" : "CLIENT",
                            action == ssl_handshake ? "HANDSHAKE" : "");
-      _do_stream();
       break;
     case SSL_ERROR_WANT_WRITE:
       log_v2::tls()->trace("TLS: {} {} WANT WRITE",
                            _server ? "SERVER" : "CLIENT",
                            action == ssl_handshake ? "HANDSHAKE" : "");
-      _do_stream();
       break;
     case SSL_ERROR_NONE:
-      log_v2::tls()->info("SSL_ERROR_NONE");
-      if (action == ssl_handshake) {
-        _handshake_done = true;
-        log_v2::tls()->info(
-            "Encryption protocol '{}' configured with '{}' cipher",
-            SSL_get_version(_ssl), SSL_get_cipher_name(_ssl));
-      }
-      _do_stream();
       break;
-    default: {
+    default:
       log_v2::tls()->error("TLS: SSL error: {}",
                            ERR_reason_error_string(ERR_get_error()));
       throw msg_fmt("TLS: SSL error. See logs");
-    }
   }
+  _do_stream();
 }
 
 /**
@@ -225,7 +216,6 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
                            pthread_self(),
                            SSL_state_string_long(_ssl));
       handshake();
-      _handshake_done = true;
     } else {
       //log_v2::tls()->trace("TLS: want to read!");
       char v[4096];
@@ -274,50 +264,32 @@ int stream::write(const std::shared_ptr<io::data>& d) {
   _wbuf.push(packet->get_buffer());
 
   if (_handshake_done) {
-    auto v{_wbuf.front()};
-    int r = SSL_write(_ssl, v.first, v.second);
-    if (r > 0) {
-      log_v2::tls()->warn("SSL_write {}", r);
-      if (r == v.second)
-        _wbuf.pop();
-      else {
-        // FIXME DBR: is this a current behaviour?
-        assert(1 == 0);
+    while (!_wbuf.empty()) {
+      auto v{_wbuf.front()};
+      int r = SSL_write(_ssl, v.first, v.second);
+      if (r > 0) {
+        log_v2::tls()->warn("SSL_write {}", r);
+        if (r == v.second) {
+          _wbuf.pop();
+          _do_stream();
+          break;
+        }
+        else {
+          log_v2::tls()->trace("SSL_write partial {} bytes written", r);
+          _wbuf.pop(r);
+          _do_stream();
+        }
       }
-      _do_stream();
+      else {
+        _manage_stream_error(r, ssl_write);
+        break;
+      }
     }
-    else
-      _manage_stream_error(r, ssl_write);
   } else {
     log_v2::tls()->trace("TLS: {} {:x} waiting - {}",
                          _server ? "SERVER" : "CLIENT", pthread_self(),
                          SSL_state_string_long(_ssl));
     handshake();
-    _handshake_done = true;
   }
   return 1;
-}
-
-int32_t stream::flush() {
-  if (_wbuf.empty())
-    return 0;
-
-  if (_handshake_done) {
-    auto v{_wbuf.front()};
-    int r = SSL_write(_ssl, v.first, v.second);
-    if (r == 1)
-      _wbuf.pop();
-    else
-      _manage_stream_error(r, ssl_write);
-  } else {
-    log_v2::tls()->trace("TLS: {} {:x} waiting - {}",
-                         _server ? "SERVER" : "CLIENT", pthread_self(),
-                         SSL_state_string_long(_ssl));
-    handshake();
-  }
-  return 0;
-}
-
-int32_t stream::stop() {
-  return flush();
 }

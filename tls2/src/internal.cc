@@ -37,7 +37,8 @@ void tls2::initialize() {
 
   /* Set SSL_MODE_RELEASE_BUFFERS. This potentially greatly reduces memory usage
    */
-  SSL_CTX_set_mode(ctx, SSL_MODE_RELEASE_BUFFERS);
+  SSL_CTX_set_mode(ctx,
+                   SSL_MODE_RELEASE_BUFFERS | SSL_MODE_ENABLE_PARTIAL_WRITE);
 
   X509_VERIFY_PARAM* params = SSL_CTX_get0_param(ctx);
 

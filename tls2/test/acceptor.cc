@@ -381,10 +381,9 @@ TEST_F(Tls2Test, TlsStreamCaError) {
       u_cbd = a->open();
     } while (!u_cbd);
 
-    std::unique_ptr<io::stream> io_tls_cbd = tls_a->open(u_cbd);
-    tls2::stream* tls_cbd = static_cast<tls2::stream*>(io_tls_cbd.get());
-
-    //tls_cbd->handshake();
+    std::unique_ptr<io::stream> io_tls_cbd;
+    ASSERT_THROW(io_tls_cbd = tls_a->open(u_cbd), std::exception);
+/*    tls2::stream* tls_cbd = static_cast<tls2::stream*>(io_tls_cbd.get());
 
     do {
       std::shared_ptr<io::data> d;
@@ -399,7 +398,7 @@ TEST_F(Tls2Test, TlsStreamCaError) {
       }
       std::this_thread::yield();
     } while (true);
-
+*/
     cbd_finished = true;
   });
 
@@ -414,7 +413,8 @@ TEST_F(Tls2Test, TlsStreamCaError) {
       u_centengine = c->open();
     } while (!u_centengine);
 
-    std::unique_ptr<io::stream> io_tls_centengine = tls_c->open(u_centengine);
+    std::unique_ptr<io::stream> io_tls_centengine;
+    ASSERT_THROW(io_tls_centengine = tls_c->open(u_centengine), std::exception);
   });
 
   centengine.join();
@@ -505,7 +505,7 @@ TEST_F(Tls2Test, TlsStreamBigData) {
   /* Let's prepare certificates */
   const static std::string s_hostname{"saperlifragilistic"};
   const static std::string c_hostname{"foobar"};
-  const static int max_limit = 10;
+  const static int max_limit = 20;
   std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", s_hostname));
   std::cout << server_cmd << std::endl;
   system(server_cmd.c_str());
@@ -543,6 +543,7 @@ TEST_F(Tls2Test, TlsStreamBigData) {
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
+        std::cout << "my vector size " << my_vector.size() << std::endl;
       }
       if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
@@ -595,6 +596,116 @@ TEST_F(Tls2Test, TlsStreamBigData) {
       limit++;
       //std::this_thread::sleep_for(1ms);
       length *= 2;
+      v = std::vector<char>(length, ch);
+    }
+    do {
+      std::this_thread::yield();
+    } while (!cbd_finished);
+  });
+
+  centengine.join();
+  cbd.join();
+}
+
+TEST_F(Tls2Test, TlsStreamLongData) {
+  using namespace std::chrono_literals;
+
+  /* Let's prepare certificates */
+  const static std::string s_hostname{"saperlifragilistic"};
+  const static std::string c_hostname{"foobar"};
+  const static int max_limit = 20000;
+  std::string server_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/server.key -out /tmp/server.crt -subj '/CN={}'", s_hostname));
+  std::cout << server_cmd << std::endl;
+  system(server_cmd.c_str());
+
+  std::string client_cmd(fmt::format("openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /tmp/client.key -out /tmp/client.crt -subj '/CN={}'", c_hostname));
+  std::cout << client_cmd << std::endl;
+  system(client_cmd.c_str());
+
+  std::atomic_bool cbd_finished{false};
+
+  std::thread cbd([&cbd_finished] {
+    auto a{std::make_unique<tcp::acceptor>(4141, -1)};
+
+    auto tls_a{std::make_unique<tls2::acceptor>(
+        "/tmp/server.crt", "/tmp/server.key", "/tmp/client.crt", "")};
+
+    /* Nominal case, cbd is acceptor and read on the socket */
+    std::shared_ptr<io::stream> u_cbd;
+    do {
+      u_cbd = a->open();
+    } while (!u_cbd);
+
+    std::unique_ptr<io::stream> io_tls_cbd = tls_a->open(u_cbd);
+    tls2::stream* tls_cbd = static_cast<tls2::stream*>(io_tls_cbd.get());
+
+    char c = 'A';
+    size_t length = 26u;
+    std::vector<char> v(length, c);
+    size_t limit = 1;
+    std::vector<char> my_vector;
+    do {
+      std::cout << "server length = " << length << std::endl;
+      std::shared_ptr<io::data> d;
+      bool no_timeout = tls_cbd->read(d, 0);
+      if (no_timeout) {
+        io::raw* rr = static_cast<io::raw*>(d.get());
+        my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
+        std::cout << "my vector size " << my_vector.size() << std::endl;
+      }
+      if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
+        my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
+        limit++;
+        ASSERT_TRUE(true);
+        std::cout << "GOOD " << limit << " my vector size " << my_vector.size() << "\n";
+        if (limit > max_limit)
+          break;
+        c++;
+        if (c > 'z')
+          c = 'A';
+        v = std::vector<char>(length, c);
+      }
+      else if (my_vector.size() >= v.size()) {
+        ASSERT_TRUE(false);
+        break;
+      }
+
+      std::this_thread::yield();
+    } while (true);
+
+    cbd_finished = true;
+  });
+
+  std::thread centengine([&cbd_finished] {
+    auto c{std::make_unique<tcp::connector>("localhost", 4141, -1)};
+
+    auto tls_c{std::make_unique<tls2::connector>(
+        "/tmp/client.crt", "/tmp/client.key", "/tmp/server.crt", s_hostname)};
+
+    /* Nominal case, centengine is connector and write on the socket */
+    std::shared_ptr<io::stream> u_centengine;
+    do {
+      u_centengine = c->open();
+    } while (!u_centengine);
+
+    std::unique_ptr<io::stream> io_tls_centengine{tls_c->open(u_centengine)};
+    tls2::stream* tls_centengine =
+        static_cast<tls2::stream*>(io_tls_centengine.get());
+
+    char ch = 'A';
+    size_t length = 26u;
+    std::vector<char> v(length, ch);
+
+    for (size_t limit = 1; limit <= max_limit;) {
+      std::cout << "client length = " << length << std::endl;
+      auto packet = std::make_shared<io::raw>(v);
+
+      tls_centengine->write(packet);
+      ch++;
+      if (ch > 'z')
+        ch = 'A';
+      limit++;
+      //std::this_thread::sleep_for(1ms);
       v = std::vector<char>(length, ch);
     }
     do {
