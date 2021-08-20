@@ -595,3 +595,25 @@ void conflict_manager::_check_deleted_index() {
       "storage: end of DB cleanup: {} metrics and {} indices removed",
       deleted_metrics, deleted_index);
 }
+
+void conflict_manager::delete_index(int64_t metric_id, int64_t index_id) {
+  std::promise<database::mysql_result> promise;
+  int32_t conn = _mysql.choose_best_connection(-1);
+  // Delete metrics.
+
+  std::string query;
+  std::string err_msg;
+  query = fmt::format("DELETE FROM metrics WHERE metric_id={}", metric_id);
+  _mysql.run_query(query, database::mysql_error::delete_metric, false, conn);
+  _add_action(conn, actions::metrics);
+
+  // Delete index from DB.
+  query = fmt::format("DELETE FROM index_data WHERE id={}", index_id);
+  _mysql.run_query(query, database::mysql_error::delete_index, false, conn);
+  _add_action(conn, actions::index_data);
+
+  // Remove associated graph.
+  std::shared_ptr<storage::remove_graph> rg{
+      std::make_shared<storage::remove_graph>(index_id, true)};
+  multiplexing::publisher().write(rg);
+}

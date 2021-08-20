@@ -82,6 +82,7 @@ class conflict_manager {
  public:
   enum instance_state { not_started, running, finished };
   enum stream_type { sql, storage };
+  void delete_index(int64_t metric_id, int64_t index_id);
 
  private:
   enum actions {

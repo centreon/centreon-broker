@@ -16,19 +16,20 @@
  * For more information : contact@centreon.com
  *
  */
-
 #include "com/centreon/broker/broker_impl.hh"
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/stats/center.hh"
 #include "com/centreon/broker/stats/helper.hh"
 #include "com/centreon/broker/version.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::version;
-
 /**
  * @brief Return the Broker's version.
  *
@@ -178,6 +179,15 @@ grpc::Status broker_impl::GetEndpointStats(grpc::ServerContext* context
   return grpc::Status::OK;
 }
 
+grpc::Status broker_impl::DeleteGraph(grpc::ServerContext* context
+                                      __attribute__((unused)),
+                                      const Graph* request,
+                                      GenericString* response) {
+  storage::conflict_manager::delete_index(request->metric_id,
+                                          request->index_id);
+  return grpc::Status::OK;
+}
+
 grpc::Status broker_impl::GetGenericStats(
     grpc::ServerContext* context __attribute__((unused)),
     const ::google::protobuf::Empty* request __attribute__((unused)),
@@ -189,11 +199,10 @@ grpc::Status broker_impl::GetGenericStats(
   return grpc::Status::OK;
 }
 
-grpc::Status broker_impl::GetSqlConnectionStats(grpc::ServerContext* context
-                                      __attribute__((unused)),
-                                      const ::google::protobuf::Empty* request
-                                      __attribute__((unused)),
-                                      BrokerStats* response) {
+grpc::Status broker_impl::GetSqlConnectionStats(
+    grpc::ServerContext* context __attribute__((unused)),
+    const ::google::protobuf::Empty* request __attribute__((unused)),
+    BrokerStats* response) {
   stats::center::instance().get_sql_connection_stats(response);
   return grpc::Status::OK;
 }

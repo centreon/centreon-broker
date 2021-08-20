@@ -35,8 +35,8 @@ class broker_impl final : public Broker::Service {
                                GenericString* response) override;
 
   grpc::Status GetSqlConnectionStats(grpc::ServerContext* context,
-                           const ::google::protobuf::Empty* request,
-                           BrokerStats* response) override;
+                                     const ::google::protobuf::Empty* request,
+                                     BrokerStats* response) override;
 
   grpc::Status GetNumModules(grpc::ServerContext* context,
                              const ::google::protobuf::Empty* /*request*/,
@@ -53,6 +53,10 @@ class broker_impl final : public Broker::Service {
   grpc::Status GetEndpointStats(grpc::ServerContext* context,
                                 const GenericNameOrIndex* request,
                                 GenericString* response) override;
+
+  grpc::Status DeleteGraph(grpc::ServerContext* context,
+                           const Graph* request,
+                           GenericString* response) override;
 
  public:
   void set_broker_name(std::string const& s) { _broker_name = s; };

@@ -16,6 +16,7 @@ service Broker {
 
   rpc GetNumEndpoint(google.protobuf.Empty) returns (GenericSize) {}
   rpc GetEndpointStats(GenericNameOrIndex) returns (GenericString) {}
+  rpc DeleteGraph(Graph) returns (GenericString) {}
 
   rpc GetStats(StatsQuery) returns (BrokerStats) {}
 }
@@ -75,6 +76,11 @@ message ModuleStats {
   string name = 1;
   string size = 2;
   string state = 3;
+}
+
+message Graph {
+  string metric_id = 1;
+  string index_id = 2;
 }
 
 message ThreadPool {
