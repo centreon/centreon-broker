@@ -537,19 +537,16 @@ TEST_F(Tls2Test, TlsStreamBigData) {
     size_t limit = 1;
     std::vector<char> my_vector;
     do {
-      std::cout << "server length = " << length << std::endl;
       std::shared_ptr<io::data> d;
       bool no_timeout = tls_cbd->read(d, 0);
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
-        std::cout << "my vector size " << my_vector.size() << std::endl;
       }
       if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);
-        std::cout << "GOOD " << limit << " my vector size " << my_vector.size() << "\n";
         if (limit > max_limit)
           break;
         c++;
@@ -588,7 +585,6 @@ TEST_F(Tls2Test, TlsStreamBigData) {
     std::vector<char> v(length, ch);
 
     for (size_t limit = 1; limit <= max_limit;) {
-      std::cout << "client length = " << length << std::endl;
       auto packet = std::make_shared<io::raw>(v);
 
       tls_centengine->write(packet);
@@ -645,19 +641,16 @@ TEST_F(Tls2Test, TlsStreamLongData) {
     size_t limit = 1;
     std::vector<char> my_vector;
     do {
-      std::cout << "server length = " << length << std::endl;
       std::shared_ptr<io::data> d;
       bool no_timeout = tls_cbd->read(d, 0);
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
-        std::cout << "my vector size " << my_vector.size() << std::endl;
       }
       if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);
-        std::cout << "GOOD " << limit << " my vector size " << my_vector.size() << "\n";
         if (limit > max_limit)
           break;
         c++;
@@ -697,7 +690,6 @@ TEST_F(Tls2Test, TlsStreamLongData) {
     std::vector<char> v(length, ch);
 
     for (size_t limit = 1; limit <= max_limit;) {
-      std::cout << "client length = " << length << std::endl;
       auto packet = std::make_shared<io::raw>(v);
 
       tls_centengine->write(packet);

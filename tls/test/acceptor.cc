@@ -526,13 +526,11 @@ TEST_F(TlsTest, TlsStreamBigData) {
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
-        std::cout << "my vector size " << my_vector.size() << std::endl;
       }
       if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);
-        std::cout << "GOOD " << limit << " my vector size " << my_vector.size() << "\n";
         if (limit > max_limit)
           break;
         c++;
@@ -634,13 +632,11 @@ TEST_F(TlsTest, TlsStreamLongData) {
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
-        std::cout << "my vector size " << my_vector.size() << std::endl;
       }
       if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);
-        std::cout << "GOOD " << limit << " my vector size " << my_vector.size() << "\n";
         if (limit > max_limit)
           break;
         c++;

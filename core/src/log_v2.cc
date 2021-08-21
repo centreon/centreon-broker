@@ -68,8 +68,8 @@ log_v2::log_v2() {
   _tcp_log = std::make_shared<logger>("tcp", stdout_sink);
   _tls_log = std::make_shared<logger>("tls", stdout_sink);
   _bbdo_log->set_level(level::trace);
-  _tls_log->set_level(level::trace);
-  _tcp_log->set_level(level::trace);
+  _tls_log->set_level(level::warn);
+  _tcp_log->set_level(level::warn);
 }
 
 log_v2::~log_v2() {

@@ -188,7 +188,6 @@ int32_t stream::write(std::shared_ptr<io::data> const& d) {
     std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
     log_v2::tcp()->trace("TCP: write request of {} bytes to peer '{}:{}'",
                          r->size(), _host, _port);
-    log_v2::tcp()->trace("write {} bytes", r->size());
     std::error_code err;
     try {
       return _connection->write(r->get_buffer());

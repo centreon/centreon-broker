@@ -227,10 +227,6 @@ int stream::write(const std::shared_ptr<io::data>& d) {
   assert(d);
 
   io::raw* packet{static_cast<io::raw*>(d.get())};
-  log_v2::tls()->trace(
-      "TLS: {} write {} bytes",
-      _server ? "SERVER" : "CLIENT",
-      packet->size());
   _wbuf.push(packet->get_buffer());
 
   if (_handshake_done) {
@@ -238,14 +234,12 @@ int stream::write(const std::shared_ptr<io::data>& d) {
       auto v{_wbuf.front()};
       int r = SSL_write(_ssl, v.first, v.second);
       if (r > 0) {
-        log_v2::tls()->warn("SSL_write {}", r);
         if (r == v.second) {
           _wbuf.pop();
           _do_stream();
           break;
         }
         else {
-          log_v2::tls()->trace("SSL_write partial {} bytes written", r);
           _wbuf.pop(r);
           _do_stream();
         }
