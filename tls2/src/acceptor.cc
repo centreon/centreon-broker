@@ -117,7 +117,7 @@ std::unique_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
       if (s_ssl == nullptr)
         throw msg_fmt("Unable to allocate acceptor SSL object");
 
-      SSL_set_info_callback(s_ssl, info_callback);
+      //SSL_set_info_callback(s_ssl, info_callback);
 
       if (!_tls_hostname.empty())
         throw msg_fmt("Error: cannot set tls hostname on the acceptor side.");

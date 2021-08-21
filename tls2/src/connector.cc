@@ -156,7 +156,7 @@ std::unique_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
       if (c_ssl == nullptr)
         throw msg_fmt("Unable to allocate connector ssl object");
 
-      SSL_set_info_callback(c_ssl, info_callback);
+      //SSL_set_info_callback(c_ssl, info_callback);
 
       if (!_cert.empty() && !_key.empty()) {
         log_v2::tls()->info("TLS: using certificates as credentials");
