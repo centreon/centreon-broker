@@ -59,7 +59,7 @@ class BrokerRPCClient {
   bool GetConflictManagerStats(BrokerStats* response) {
     const ::google::protobuf::Empty e;
     grpc::ClientContext context;
-    grpc::Status status = _stub->GetSqlConnectionStats(&context, e, response);
+    grpc::Status status = _stub->GetConflictManagerStats(&context, e, response);
     if (!status.ok()) {
       std::cout << "GetConflictManager rpc failed." << std::endl;
       return false;
@@ -111,6 +111,9 @@ int main(int argc, char** argv) {
   if (strcmp(argv[1], "GetConflictManagerStats") == 0) {
     BrokerStats response;
     status = client.GetConflictManagerStats(&response) ? 0 : 1;
+    std::cout << "events_handled: "
+              << response.mutable_conflict_manager()->events_handled()
+              << std::endl;
   }
 
   exit(status);

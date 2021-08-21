@@ -70,10 +70,17 @@ message EngineStats {
 
 message SqlConnectionStats {
  int32 waiting_tasks = 1;
-}
+ }
 
 message ConflictManagerStats {
  int32 events_handled = 1;
+ int32 waiting_events = 2;
+ int32 max_pending_events = 3;
+ int32 sql = 4;
+ int32 storage = 5;
+ uint32 max_perfdata_events = 6;
+ uint32 loop_timeout = 7;
+ double speed = 8;
 }
 
 message ModuleStats {

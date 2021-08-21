@@ -132,8 +132,14 @@ TEST_F(BrokerRpc, GetConflictManagerStats) {
   brokerrpc brpc("0.0.0.0", 40000, "test");
   ConflictManagerStats* _stats;
 
+  _stats = stats::center::instance().register_conflict_manager();
+  stats::center::instance().update(&ConflictManagerStats::set_events_handled, _stats, 3);
+  stats::center::instance().update(&ConflictManagerStats::set_loop_timeout,
+                                         _stats, 30u);
+
   auto output = execute("GetConflictManagerStats");
 
+  std::cout << output.front();
   brpc.shutdown();
 }
 
