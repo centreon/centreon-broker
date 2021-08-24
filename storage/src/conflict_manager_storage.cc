@@ -540,8 +540,6 @@ void conflict_manager::_check_deleted_index() {
   logging::info(logging::medium) << "storage: starting DB cleanup";
   uint32_t deleted_index(0);
   uint32_t deleted_metrics(0);
-  //_update_status("status=deleting old performance data (might take a
-  // while)\n");
 
   // Fetch next index to delete.
   {
@@ -559,7 +557,7 @@ void conflict_manager::_check_deleted_index() {
         index_to_delete.insert(res.value_as_u64(0));
         metrics_to_delete.push_back(res.value_as_u64(1));
       }
-    } catch (std::exception const& e) {
+    } catch (const std::exception& e) {
       throw msg_fmt("could not query index table to get index to delete: {} ",
                     e.what());
     }

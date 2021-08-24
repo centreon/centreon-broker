@@ -1,5 +1,9 @@
 # Changelog
 
+## 21.04.4
+
+*rrd*
+add a loop to check deleted index every 5 minutes.
 ## 21.04.3
 
 ### Fixes
