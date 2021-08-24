@@ -1,5 +1,9 @@
 # Changelog
 
+## 20.10.8
+
+*rrd*
+add a loop to check deleted index every 5 minutes.
 ## 20.10.7
 
 ### Fixes
