@@ -1,4 +1,3 @@
-import groovy.json.JsonSlurper
 
 /*
 ** Variables.
