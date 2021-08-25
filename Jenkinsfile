@@ -34,7 +34,7 @@ stage('Source') {
 }
 
 try {
-  stage('Unit tests') {
+ /* stage('Unit tests') {
     parallel 'centos7': {
       node {
         sh 'setup_centreon_build.sh'
@@ -97,7 +97,7 @@ try {
         error('Quality gate failure: ${qualityGate.status}.');
       }
     }
-  }
+  }*/
 
   stage('Package') {
     parallel 'centos7': {
