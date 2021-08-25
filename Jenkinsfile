@@ -130,7 +130,7 @@ try {
       error('Package stage failure.');
     }
   }
-  ##FIXME : remove CI branches for delivery
+  #FIXME : remove CI branches for delivery
   if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA') || (env.BUILD == 'CI')) {
     stage('Delivery') {
       node {
