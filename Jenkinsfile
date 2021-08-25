@@ -6,10 +6,14 @@ import groovy.json.JsonSlurper
 properties([buildDiscarder(logRotator(numToKeepStr: '50'))])
 def serie = '21.10'
 def maintenanceBranch = "${serie}.x"
+def qaBranch = "dev-${serie}"
+
 if (env.BRANCH_NAME.startsWith('release-')) {
   env.BUILD = 'RELEASE'
 } else if ((env.BRANCH_NAME == 'master') || (env.BRANCH_NAME == maintenanceBranch)) {
   env.BUILD = 'REFERENCE'
+} else if ((env.BRANCH_NAME == 'develop') || (env.BRANCH_NAME == qaBranch)) {
+  env.BUILD = 'QA'
 } else {
   env.BUILD = 'CI'
 }
@@ -128,7 +132,7 @@ try {
     }
   }
 
-  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE')) {
+  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA')) {
     stage('Delivery') {
       node {
         sh 'setup_centreon_build.sh'
