@@ -130,8 +130,8 @@ try {
       error('Package stage failure.');
     }
   }
-
-  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA')) {
+  ##FIXME : remove CI branches for delivery
+  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA') || (env.BUILD == 'CI')) {
     stage('Delivery') {
       node {
         sh 'setup_centreon_build.sh'
