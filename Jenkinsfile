@@ -21,7 +21,7 @@ if (env.BRANCH_NAME.startsWith('release-')) {
 ** Pipeline code.
 */
 stage('Source') {
-  node {
+  node("C++") {
     sh 'setup_centreon_build.sh'
     dir('centreon-broker') {
       checkout scm
@@ -36,7 +36,7 @@ stage('Source') {
 try {
  /* stage('Unit tests') {
     parallel 'centos7': {
-      node {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos7"
         step([
@@ -54,7 +54,7 @@ try {
       }
     },
     'centos8': {
-      node {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos8"
         step([
@@ -68,7 +68,7 @@ try {
       }
     },
     'debian10': {
-      node {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
         step([
@@ -88,7 +88,7 @@ try {
 
   // sonarQube step to get qualityGate result
   stage('Quality gate') {
-    node {
+    node("C++") {
       def qualityGate = waitForQualityGate()
       if (qualityGate.status != 'OK') {
         currentBuild.result = 'FAIL'
@@ -101,19 +101,19 @@ try {
 
   stage('Package') {
     parallel 'centos7': {
-      node {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
       }
     },
     'centos8': {
-      node {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
       }
     },
     'debian10': {
-      node {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
       }
@@ -132,7 +132,7 @@ try {
   }
   if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA') || (env.BUILD == 'CI')) {
     stage('Delivery') {
-      node {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
       }
