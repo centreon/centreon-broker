@@ -53,7 +53,7 @@ try {
         }
       }
     },
-    parallel 'packaging centos7': {
+    'packaging centos7': {
       node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
