@@ -20,7 +20,7 @@ if (env.BRANCH_NAME.startsWith('release-')) {
 /*
 ** Pipeline code.
 */
-stage('Source') {
+stage('Deliver sources') {
   node("C++") {
     sh 'setup_centreon_build.sh'
     dir('centreon-broker') {
@@ -34,8 +34,8 @@ stage('Source') {
 }
 
 try {
- /* stage('Unit tests') {
-    parallel 'centos7': {
+  stage('Build // Unit tests // Packaging') {
+    parallel 'build centos7': {
       node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos7"
@@ -53,7 +53,14 @@ try {
         }
       }
     },
-    'centos8': {
+    parallel 'packaging centos7': {
+      node("C++") {
+        sh 'setup_centreon_build.sh'
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
+        stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
+      }
+    },
+    'build centos8': {
       node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos8"
@@ -67,7 +74,14 @@ try {
         ])
       }
     },
-    'debian10': {
+    'packaging centos8': {
+      node("C++") {
+        sh 'setup_centreon_build.sh'
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
+        stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
+      }
+    },
+    'build debian10': {
       node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
@@ -80,9 +94,15 @@ try {
           tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
         ])
       }
+    },
+    'packaging debian10': {
+      node("C++") {
+        sh 'setup_centreon_build.sh'
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
+      }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-      error('Unit tests stage failure.');
+      error('Build // Unit tests // Packaging.');
     }
   }
 
@@ -97,42 +117,9 @@ try {
         error('Quality gate failure: ${qualityGate.status}.');
       }
     }
-  }*/
-
-  stage('Package') {
-    parallel 'centos7': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
-        stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
-      }
-    },
-    'centos8': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
-        stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
-      }
-    },
-    'debian10': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
-      }
-/*
-    },
-    'debian10-armhf': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10-armhf"
-      }
-*/
-    }
-    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-      error('Package stage failure.');
-    }
   }
-  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA') || (env.BUILD == 'CI')) {
+
+  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA')) {
     stage('Delivery') {
       node("C++") {
         unstash 'el7-rpms'
