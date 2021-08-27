@@ -2,7 +2,7 @@
 /*
 ** Variables.
 */
-properties([buildDiscarder(logRotator(numToKeepStr: '50'))])
+properties([buildDiscarder(logRotator(numToKeepStr: '10'))])
 def serie = '21.10'
 def maintenanceBranch = "${serie}.x"
 def qaBranch = "dev-${serie}"
