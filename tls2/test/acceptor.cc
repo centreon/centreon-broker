@@ -543,7 +543,7 @@ TEST_F(Tls2Test, TlsStreamBigData) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
       }
-      if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
+      if (!my_vector.empty() && memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);
@@ -647,7 +647,7 @@ TEST_F(Tls2Test, TlsStreamLongData) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
       }
-      if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
+      if (!my_vector.empty() && memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);

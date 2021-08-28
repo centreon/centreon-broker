@@ -520,14 +520,13 @@ TEST_F(TlsTest, TlsStreamBigData) {
     size_t limit = 1;
     std::vector<char> my_vector;
     do {
-      std::cout << "server length = " << length << std::endl;
       std::shared_ptr<io::data> d;
       bool no_timeout = tls_cbd->read(d, 0);
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
       }
-      if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
+      if (!my_vector.empty() && memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);
@@ -626,14 +625,13 @@ TEST_F(TlsTest, TlsStreamLongData) {
     size_t limit = 1;
     std::vector<char> my_vector;
     do {
-      std::cout << "server length = " << length << std::endl;
       std::shared_ptr<io::data> d;
       bool no_timeout = tls_cbd->read(d, 0);
       if (no_timeout) {
         io::raw* rr = static_cast<io::raw*>(d.get());
         my_vector.insert(my_vector.end(), rr->get_buffer().begin(), rr->get_buffer().end());
       }
-      if (memcmp(my_vector.data(), v.data(), v.size()) == 0) {
+      if (!my_vector.empty() && memcmp(my_vector.data(), v.data(), v.size()) == 0) {
         my_vector.erase(my_vector.begin(), my_vector.begin() + v.size());
         limit++;
         ASSERT_TRUE(true);
