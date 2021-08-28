@@ -48,6 +48,8 @@ class endpoint {
   std::set<uint32_t> _filter;
 
  public:
+  enum protocol { none, bbdo };
+
   endpoint(bool is_accptr);
   endpoint(endpoint const& other);
   virtual ~endpoint() noexcept;

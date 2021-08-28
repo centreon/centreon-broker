@@ -102,6 +102,24 @@ io::endpoint* factory::new_endpoint(
     }
   }
 
+  io::endpoint::protocol proto;
+  {
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("protocol")};
+    if (it == cfg.params.end()) {
+      log_v2::tcp()->warn("TCP: no 'protocol' defined for endpoint '{}'",
+                          cfg.name);
+      proto = io::endpoint::none;
+    } else if (it->second == "bbdo" || it->second == "BBDO")
+      proto = io::endpoint::bbdo;
+    else {
+      log_v2::tcp()->error("TCP: unknown protocol '{}' for endpoint '{}'",
+                           it->second, cfg.name);
+      throw msg_fmt("TCP: unknown protocol '{}' for endpoint '{}'", it->second,
+                    cfg.name);
+    }
+  }
+
   int read_timeout(-1);
   {
     std::map<std::string, std::string>::const_iterator it{
@@ -114,14 +132,15 @@ io::endpoint* factory::new_endpoint(
   std::unique_ptr<io::endpoint> endp;
   if (host.empty()) {
     is_acceptor = true;
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(port, read_timeout));
+    std::unique_ptr<tcp::acceptor> a{
+        std::make_unique<tcp::acceptor>(port, read_timeout, proto)};
     endp.reset(a.release());
   }
   // Connector.
   else {
     is_acceptor = false;
-    std::unique_ptr<tcp::connector> c(
-        new tcp::connector(host, port, read_timeout));
+    std::unique_ptr<tcp::connector> c{
+        std::make_unique<tcp::connector>(host, port, read_timeout, proto)};
     endp.reset(c.release());
   }
 

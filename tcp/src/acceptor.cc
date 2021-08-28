@@ -35,7 +35,9 @@ using namespace com::centreon::broker::tcp;
  * @param port A port.
  * @param read_timeout A duration in seconds.
  */
-acceptor::acceptor(uint16_t port, int32_t read_timeout)
+acceptor::acceptor(uint16_t port,
+                   int32_t read_timeout,
+                   io::endpoint::protocol proto)
     : io::endpoint(true), _port(port), _read_timeout(read_timeout) {}
 
 /**

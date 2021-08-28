@@ -45,7 +45,7 @@ class acceptor : public io::endpoint {
   std::shared_ptr<asio::ip::tcp::acceptor> _acceptor;
 
  public:
-  acceptor(uint16_t port, int32_t read_timeout);
+  acceptor(uint16_t port, int32_t read_timeout, io::endpoint::protocol proto);
   ~acceptor() noexcept;
 
   acceptor(const acceptor&) = delete;

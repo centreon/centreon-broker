@@ -41,7 +41,8 @@ using namespace com::centreon::broker::tcp;
  */
 connector::connector(const std::string& host,
                      uint16_t port,
-                     int32_t read_timeout)
+                     int32_t read_timeout,
+                     io::endpoint::protocol proto)
     : io::endpoint(false),
       _host(host),
       _port(port),
@@ -52,7 +53,7 @@ connector::connector(const std::string& host,
 /**
  *  Destructor.
  */
-connector::~connector() {}
+connector::~connector() noexcept {}
 
 /**
  * @brief Connect to the remote host.

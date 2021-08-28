@@ -56,7 +56,7 @@ class TcpConnector : public testing::Test {
 };
 
 TEST_F(TcpConnector, Timeout) {
-  tcp::connector connector(test_addr, test_port, 1);
+  tcp::connector connector(test_addr, test_port, 1, io::endpoint::none);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::data> data{new io::raw()};
@@ -65,7 +65,7 @@ TEST_F(TcpConnector, Timeout) {
 }
 
 TEST_F(TcpConnector, Simple) {
-  tcp::connector connector(test_addr, test_port, -1);
+  tcp::connector connector(test_addr, test_port, -1, io::endpoint::none);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::raw> data{new io::raw()};
@@ -83,7 +83,7 @@ TEST_F(TcpConnector, Simple) {
 }
 
 TEST_F(TcpConnector, ReadAfterTimeout) {
-  tcp::connector connector(test_addr, test_port, -1);
+  tcp::connector connector(test_addr, test_port, -1, io::endpoint::none);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::raw> data{new io::raw()};
@@ -102,7 +102,7 @@ TEST_F(TcpConnector, ReadAfterTimeout) {
 }
 
 TEST_F(TcpConnector, MultipleSimple) {
-  tcp::connector connector(test_addr, test_port, -1);
+  tcp::connector connector(test_addr, test_port, -1, io::endpoint::none);
   std::shared_ptr<io::stream> io{connector.open()};
 
   std::shared_ptr<io::raw> data{new io::raw()};

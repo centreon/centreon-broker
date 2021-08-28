@@ -25,9 +25,9 @@
 #include <nlohmann/json.hpp>
 
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/tcp/connector.hh"
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -39,8 +39,10 @@ constexpr static uint16_t test_port(4444);
 
 class TcpAcceptor : public ::testing::Test {
  public:
-  void SetUp() override { pool::load(0);
-    tcp::tcp_async::load(); }
+  void SetUp() override {
+    pool::load(0);
+    tcp::tcp_async::load();
+  }
 
   void TearDown() override {
     log_v2::tcp()->info("TCP TearDown");
@@ -64,20 +66,21 @@ static auto try_connect =
 
 TEST_F(TcpAcceptor, BadPort) {
   if (getuid() != 0) {
-    tcp::acceptor acc(2, -1);
+    tcp::acceptor acc(2, -1, io::endpoint::none);
     ASSERT_THROW(acc.open(), std::exception);
   }
 }
 
 TEST_F(TcpAcceptor, NoConnector) {
-  tcp::acceptor acc(test_port, -1);
+  tcp::acceptor acc(test_port, -1, io::endpoint::none);
 
   ASSERT_EQ(acc.open(), std::unique_ptr<io::stream>());
 }
 
 TEST_F(TcpAcceptor, Nominal) {
   std::thread cbd([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
+    std::unique_ptr<tcp::acceptor> a(
+        new tcp::acceptor(4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(a.release());
 
     /* Nominal case, cbd is acceptor and read on the socket */
@@ -108,7 +111,7 @@ TEST_F(TcpAcceptor, Nominal) {
 
   std::thread centengine([] {
     std::unique_ptr<tcp::connector> c(
-        new tcp::connector("localhost", 4141, -1));
+        new tcp::connector("localhost", 4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(c.release());
 
     /* Nominal case, centengine is connector and write on the socket */
@@ -143,7 +146,8 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
   bool cbd_finished = false;
 
   std::thread cbd([&cbd_m, &cbd_cv, &cbd_finished] {
-    std::unique_ptr<io::endpoint> endp(std::make_unique<tcp::acceptor>(4141, -1));
+    std::unique_ptr<io::endpoint> endp(
+        new tcp::acceptor(4141, -1, io::endpoint::none));
 
     /* Nominal case, cbd is acceptor and read on the socket */
     std::unique_ptr<io::stream> u_cbd;
@@ -187,7 +191,7 @@ TEST_F(TcpAcceptor, QuestionAnswer) {
 
   std::thread centengine([&cbd_cv, &cbd_finished] {
     std::unique_ptr<tcp::connector> c(
-        new tcp::connector("localhost", 4141, -1));
+        new tcp::connector("localhost", 4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(c.release());
 
     std::unique_ptr<io::stream> u_centengine;
@@ -251,7 +255,7 @@ TEST_F(TcpAcceptor, MultiNominal) {
     {
       std::vector<std::unique_ptr<io::stream>> u_cbd(nb_poller);
       std::unique_ptr<io::endpoint> endp{
-          std::make_unique<tcp::acceptor>(4141, -1)};
+          std::make_unique<tcp::acceptor>(4141, -1, io::endpoint::none)};
 
       /* Nominal case, cbd is acceptor and read on the socket */
       bool cont = true;
@@ -309,8 +313,8 @@ TEST_F(TcpAcceptor, MultiNominal) {
 
   for (size_t i = 0; i < nb_poller; i++) {
     pollers.emplace_back([&cbd_finished, &cbd_m, &cbd_cv] {
-      std::unique_ptr<io::endpoint> endp{
-          std::make_unique<tcp::connector>("localhost", 4141, -1)};
+      std::unique_ptr<io::endpoint> endp{std::make_unique<tcp::connector>(
+          "localhost", 4141, -1, io::endpoint::none)};
 
       /* Nominal case, centengine is connector and write on the socket */
       std::unique_ptr<io::stream> u_centengine;
@@ -356,7 +360,7 @@ TEST_F(TcpAcceptor, NominalReversed) {
 
   std::thread centengine([&cbd_m, &cbd_cv, &cbd_finished] {
     std::unique_ptr<tcp::connector> c(
-        new tcp::connector("localhost", 4141, -1));
+        new tcp::connector("localhost", 4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(c.release());
 
     std::unique_ptr<io::stream> u_centengine;
@@ -389,7 +393,8 @@ TEST_F(TcpAcceptor, NominalReversed) {
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
   std::thread cbd([&cbd_m, &cbd_finished, &cbd_cv] {
-    std::unique_ptr<io::endpoint> endp(std::make_unique<tcp::acceptor>(4141, -1));
+    std::unique_ptr<io::endpoint> endp(
+        std::make_unique<tcp::acceptor>(4141, -1, io::endpoint::none));
 
     std::unique_ptr<io::stream> u_cbd;
     do {
@@ -425,7 +430,8 @@ TEST_F(TcpAcceptor, NominalReversed) {
 
 TEST_F(TcpAcceptor, OnePeer) {
   std::thread centengine([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
+    std::unique_ptr<tcp::acceptor> a(
+        new tcp::acceptor(4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(a.release());
 
     std::unique_ptr<io::stream> u_centengine;
@@ -450,7 +456,7 @@ TEST_F(TcpAcceptor, OnePeer) {
 
   std::thread cbd([] {
     std::unique_ptr<tcp::connector> c(
-        new tcp::connector("localhost", 4141, -1));
+        new tcp::connector("localhost", 4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(c.release());
 
     std::unique_ptr<io::stream> u_cbd;
@@ -485,7 +491,7 @@ TEST_F(TcpAcceptor, OnePeer) {
 TEST_F(TcpAcceptor, OnePeerReversed) {
   std::thread cbd([] {
     std::unique_ptr<tcp::connector> c(
-        new tcp::connector("localhost", 4141, -1));
+        new tcp::connector("localhost", 4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(c.release());
 
     std::unique_ptr<io::stream> u_cbd;
@@ -521,7 +527,8 @@ TEST_F(TcpAcceptor, OnePeerReversed) {
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
   std::thread centengine([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
+    std::unique_ptr<tcp::acceptor> a(
+        new tcp::acceptor(4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(a.release());
 
     std::unique_ptr<io::stream> u_centengine;
@@ -552,7 +559,8 @@ TEST_F(TcpAcceptor, MultiOnePeer) {
   const int nb_steps = 5;
 
   std::thread centengine([] {
-    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
+    std::unique_ptr<tcp::acceptor> a(
+        new tcp::acceptor(4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(a.release());
 
     std::unique_ptr<io::stream> u_centengine;
@@ -593,7 +601,7 @@ TEST_F(TcpAcceptor, MultiOnePeer) {
   for (int i = 0; i < nb_steps; i++) {
     std::thread cbd([] {
       std::unique_ptr<tcp::connector> c(
-          new tcp::connector("localhost", 4141, -1));
+          new tcp::connector("localhost", 4141, -1, io::endpoint::none));
       std::unique_ptr<io::endpoint> endp(c.release());
 
       std::unique_ptr<io::stream> u_cbd;
@@ -627,7 +635,7 @@ TEST_F(TcpAcceptor, NominalRepeated) {
 
   std::thread centengine([] {
     std::unique_ptr<tcp::connector> c(
-        new tcp::connector("localhost", 4141, -1));
+        new tcp::connector("localhost", 4141, -1, io::endpoint::none));
     std::unique_ptr<io::endpoint> endp(c.release());
 
     std::unique_ptr<io::stream> u_centengine;
@@ -674,7 +682,8 @@ TEST_F(TcpAcceptor, NominalRepeated) {
   for (int i = 0; i < nb_steps; i++) {
     std::thread cbd([i] {
       std::cout << "cbd  " << i << "\n";
-      std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141, -1));
+      std::unique_ptr<tcp::acceptor> a(
+          new tcp::acceptor(4141, -1, io::endpoint::none));
       std::cout << "cbd1 " << i << "\n";
       std::cout << "cbd2 " << i << "\n";
       std::cout << "cbd3 " << i << "\n";
@@ -714,13 +723,13 @@ TEST_F(TcpAcceptor, NominalRepeated) {
 }
 
 TEST_F(TcpAcceptor, Wait2Connect) {
-  tcp::acceptor acc(4141, -1);
+  tcp::acceptor acc(4141, -1, io::endpoint::none);
   int i = 0;
   std::shared_ptr<io::stream> st;
 
   std::thread t{[&] {
     std::this_thread::sleep_for(std::chrono::seconds{2});
-    tcp::connector con(test_addr, 4141, -1);
+    tcp::connector con(test_addr, 4141, -1, io::endpoint::none);
     std::shared_ptr<io::stream> str{try_connect(con)};
   }};
 
@@ -739,13 +748,13 @@ TEST_F(TcpAcceptor, Wait2Connect) {
 }
 
 TEST_F(TcpAcceptor, Simple) {
-  tcp::acceptor acc(test_port, -1);
+  tcp::acceptor acc(test_port, -1, io::endpoint::none);
   std::condition_variable cv;
   std::mutex m;
   bool finish = false;
 
   std::thread t([&] {
-    tcp::connector con(test_addr, test_port, -1);
+    tcp::connector con(test_addr, test_port, -1, io::endpoint::none);
     std::shared_ptr<io::stream> str{try_connect(con)};
     std::shared_ptr<io::raw> data{std::make_shared<io::raw>()};
     std::shared_ptr<io::data> data_read;
@@ -788,11 +797,11 @@ TEST_F(TcpAcceptor, Simple) {
 }
 
 TEST_F(TcpAcceptor, Multiple) {
-  tcp::acceptor acc(test_port, -1);
+  tcp::acceptor acc(test_port, -1, io::endpoint::none);
 
   {
     std::thread t{[] {
-      tcp::connector con(test_addr, test_port, -1);
+      tcp::connector con(test_addr, test_port, -1, io::endpoint::none);
       std::shared_ptr<io::stream> str{try_connect(con)};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
@@ -823,7 +832,7 @@ TEST_F(TcpAcceptor, Multiple) {
   }
   {
     std::thread t{[] {
-      tcp::connector con(test_addr, test_port, -1);
+      tcp::connector con(test_addr, test_port, -1, io::endpoint::none);
       std::shared_ptr<io::stream> str{try_connect(con)};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
@@ -855,10 +864,10 @@ TEST_F(TcpAcceptor, Multiple) {
 }
 
 TEST_F(TcpAcceptor, BigSend) {
-  tcp::acceptor acc(test_port, -1);
+  tcp::acceptor acc(test_port, -1, io::endpoint::none);
 
   std::thread t{[] {
-    tcp::connector con(test_addr, test_port, -1);
+    tcp::connector con(test_addr, test_port, -1, io::endpoint::none);
     std::shared_ptr<io::stream> str{try_connect(con)};
     std::shared_ptr<io::raw> data{new io::raw()};
     std::shared_ptr<io::data> data_read;
@@ -893,11 +902,11 @@ TEST_F(TcpAcceptor, BigSend) {
 }
 
 TEST_F(TcpAcceptor, CloseRead) {
-  tcp::acceptor acc(test_port, -1);
+  tcp::acceptor acc(test_port, -1, io::endpoint::none);
 
   std::thread t{[&] {
     {
-      tcp::connector con(test_addr, test_port, -1);
+      tcp::connector con(test_addr, test_port, -1, io::endpoint::none);
       std::shared_ptr<io::stream> str{try_connect(con)};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
@@ -929,7 +938,7 @@ TEST_F(TcpAcceptor, CloseRead) {
 }
 
 TEST_F(TcpAcceptor, ChildsAndStats) {
-  tcp::acceptor acc(test_port, -1);
+  tcp::acceptor acc(test_port, -1, io::endpoint::none);
 
   acc.add_child("child1");
   acc.add_child("child2");
@@ -948,7 +957,8 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
 
   for (int i = 0; i < nb_connections; i++) {
     cbd.emplace_back([i] {
-      std::unique_ptr<tcp::acceptor> a(new tcp::acceptor(4141 + i, -1));
+      std::unique_ptr<tcp::acceptor> a(
+          std::make_unique<tcp::acceptor>(4141 + i, -1, io::endpoint::none));
       std::unique_ptr<io::endpoint> endp(a.release());
 
       /* Nominal case, cbd is acceptor and read on the socket */
@@ -991,7 +1001,7 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
 
     centengine.emplace_back([i] {
       std::unique_ptr<tcp::connector> c(
-          new tcp::connector("localhost", 4141 + i, -1));
+          new tcp::connector("localhost", 4141 + i, -1, io::endpoint::none));
       std::unique_ptr<io::endpoint> endp(c.release());
 
       std::unique_ptr<io::stream> u_centengine;
@@ -1035,12 +1045,12 @@ TEST_F(TcpAcceptor, QuestionAnswerMultiple) {
 }
 
 TEST_F(TcpAcceptor, MultipleBigSend) {
-  tcp::acceptor acc(test_port, -1);
+  tcp::acceptor acc(test_port, -1, io::endpoint::none);
   const int32_t nb_packet = 10;
   const int32_t len = 10024;
 
   std::thread t{[nb_packet] {
-    tcp::connector con(test_addr, test_port, -1);
+    tcp::connector con(test_addr, test_port, -1, io::endpoint::none);
     std::shared_ptr<io::stream> str{try_connect(con)};
     std::shared_ptr<io::data> data_read;
     for (int k = 0; k < nb_packet; k++) {

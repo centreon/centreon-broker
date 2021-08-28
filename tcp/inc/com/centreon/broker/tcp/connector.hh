@@ -44,8 +44,11 @@ class connector : public io::endpoint {
   mutable std::time_t _is_ready_now;
 
  public:
-  connector(const std::string& host, uint16_t port, int32_t read_timeout);
-  ~connector();
+  connector(const std::string& host,
+            uint16_t port,
+            int32_t read_timeout,
+            io::endpoint::protocol proto);
+  ~connector() noexcept;
 
   connector& operator=(const connector&) = delete;
   connector(const connector&) = delete;
