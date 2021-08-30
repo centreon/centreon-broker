@@ -58,6 +58,7 @@ try {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
         stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
+        archiveArtifacts artifacts: "output/x86_64/*.rpm"
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
@@ -82,7 +83,6 @@ try {
     stage('Delivery') {
       node("C++") {
         unstash 'el7-rpms'
-        unstash 'el8-rpms'
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
       }
