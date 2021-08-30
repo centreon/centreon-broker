@@ -261,9 +261,9 @@ TEST_F(StorageParserParsePerfdata, Simple2) {
   expected.value_type(storage::perfdata::gauge);
   expected.value(18.0);
   expected.unit("%");
-  expected.warning(INFINITY);
+  expected.warning(std::numeric_limits<double>::infinity());
   expected.warning_low(15.0);
-  expected.critical(INFINITY);
+  expected.critical(std::numeric_limits<double>::infinity());
   expected.critical_low(10.0);
   expected.min(0.0);
   expected.max(100.0);
@@ -291,7 +291,7 @@ TEST_F(StorageParserParsePerfdata, Complex1) {
   expected.value_type(storage::perfdata::gauge);
   expected.value(2.45698);
   expected.unit("s");
-  expected.max(INFINITY);
+  expected.max(std::numeric_limits<double>::infinity());
   ASSERT_TRUE(expected == *it);
   ++it;
 
@@ -303,7 +303,7 @@ TEST_F(StorageParserParsePerfdata, Complex1) {
   expected.unit("B/s");
   expected.warning(5.0);
   expected.warning_low(0.0);
-  expected.min(-INFINITY);
+  expected.min(-std::numeric_limits<double>::infinity());
   ASSERT_TRUE(expected == *it);
   ++it;
 
@@ -323,7 +323,7 @@ TEST_F(StorageParserParsePerfdata, Complex1) {
   expected.value(1234.0);
   expected.warning(10.0);
   expected.warning_low(0.0);
-  expected.critical(INFINITY);
+  expected.critical(std::numeric_limits<double>::infinity());
   expected.critical_low(11.0);
   ASSERT_TRUE(expected == *it);
   ++it;
@@ -334,7 +334,7 @@ TEST_F(StorageParserParsePerfdata, Complex1) {
   expected.value_type(storage::perfdata::counter);
   expected.value(1234.0);
   expected.warning(10.0);
-  expected.warning_low(-INFINITY);
+  expected.warning_low(-std::numeric_limits<double>::infinity());
   expected.critical(30.0);
   expected.critical_low(20.0);
   ASSERT_TRUE(expected == *it);
@@ -357,10 +357,10 @@ TEST_F(StorageParserParsePerfdata, Complex1) {
   expected.value_type(storage::perfdata::gauge);
   expected.value(9.0);
   expected.unit("queries_per_second");
-  expected.warning(INFINITY);
+  expected.warning(std::numeric_limits<double>::infinity());
   expected.warning_low(10.0);
   expected.warning_mode(true);
-  expected.critical(INFINITY);
+  expected.critical(std::numeric_limits<double>::infinity());
   expected.critical_low(5.0);
   expected.critical_mode(true);
   expected.min(0.0);
@@ -493,7 +493,7 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.value_type(storage::perfdata::gauge);
   expected.value(2.45698);
   expected.unit("s");
-  expected.max(INFINITY);
+  expected.max(std::numeric_limits<double>::infinity());
   ASSERT_TRUE(expected == *it);
   ASSERT_FALSE(expected != *it);
   ++it;
@@ -506,7 +506,7 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.unit("B/s");
   expected.warning(5.0);
   expected.warning_low(0.0);
-  expected.min(-INFINITY);
+  expected.min(-std::numeric_limits<double>::infinity());
   ASSERT_TRUE(expected == *it);
   ASSERT_FALSE(expected != *it);
   ++it;
@@ -538,7 +538,7 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.value(1234.17);
   expected.warning(10.0);
   expected.warning_low(0.0);
-  expected.critical(INFINITY);
+  expected.critical(std::numeric_limits<double>::infinity());
   expected.critical_low(11.0);
   ASSERT_TRUE(expected == *it);
   ASSERT_FALSE(expected != *it);
@@ -550,7 +550,7 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.value_type(storage::perfdata::counter);
   expected.value(1234.147);
   expected.warning(10.0);
-  expected.warning_low(-INFINITY);
+  expected.warning_low(-std::numeric_limits<double>::infinity());
   expected.critical(30.0);
   expected.critical_low(20.0);
   ASSERT_TRUE(expected == *it);
