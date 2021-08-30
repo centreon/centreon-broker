@@ -16,7 +16,7 @@ BUILD_TYPE=Debug
 CONAN_REBUILD="0"
 while IFS= read -r filename; do
   if [[ $filename =~ / ]] ; then
-    if [ ! -d "~/.conan/data/$filename" ] ; then
+    if [ ! -d ~/.conan/data/"$filename" ] ; then
       echo "The package '$filename' is missing"
       CONAN_REBUILD=1
       break
