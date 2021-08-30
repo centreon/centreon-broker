@@ -12,20 +12,19 @@ This program build Centreon-broker
     -h|--help     : help
 EOF
 }
-BUILD_TYPE="Debug"
+BUILD_TYPE=Debug
 CONAN_REBUILD="0"
-for i in $(cat conanfile.txt) ; do
-  if [[ $i =~ / ]] ; then
-    if [ ! -d ~/.conan/data/$i ] ; then
-      echo "The package '$i' is missing"
-      CONAN_REBUILD="1"
+while IFS= read -r filename; do
+  if [[ $filename =~ / ]] ; then
+    if [ ! -d "~/.conan/data/$filename" ] ; then
+      echo "The package '$filename' is missing"
+      CONAN_REBUILD=1
       break
     fi
   fi
-done
+done < conanfile.txt
 
-for i in "$@"
-do
+for i in "$@" ; do
   case $i in
     -f|--force)
       force=1
@@ -52,14 +51,14 @@ done
 my_id=$(id -u)
 
 if [ -r /etc/centos-release ] ; then
-  maj="centos$(cat /etc/centos-release | awk '{print $4}' | cut -f1 -d'.')"
+  maj="centos$(awk '{print $4}' /etc/centos-release | cut -f1 -d'.')"
   v=$(cmake --version)
   if [[ $v =~ "version 3" ]] ; then
     cmake='cmake'
   else
     if rpm -q cmake3 ; then
       cmake='cmake3'
-    elif [ $maj = "centos7" ] ; then
+    elif [ "$maj" = "centos7" ] ; then
       yum -y install epel-release cmake3
       cmake='cmake3'
     else
@@ -80,7 +79,7 @@ if [ -r /etc/centos-release ] ; then
 
   good=$(gcc --version | awk '/gcc/ && ($3+0)>5.0{print 1}')
 
-  if [ ! $good ] ; then
+  if [ ! "$good" ] ; then
     yum -y install centos-release-scl
     yum-config-manager --enable rhel-server-rhscl-7-rpms
     yum -y install devtoolset-9
@@ -88,7 +87,7 @@ if [ -r /etc/centos-release ] ; then
     source /opt/rh/devtoolset-9/enable
   fi
 
-  if [ $maj = "centos7" ] ; then
+  if [ "$maj" = "centos7" ] ; then
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-shared-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-shared-10.5.8-1.el7.centos.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-common-10.5.8-1.el7.centos.x86_64.rpm
     curl https://downloads.mariadb.com/MariaDB/mariadb-10.5.8/yum/centos7-amd64/rpms/MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm --output MariaDB-compat-10.5.8-1.el7.centos.x86_64.rpm
@@ -108,26 +107,26 @@ if [ -r /etc/centos-release ] ; then
     perl-Thread-Queue
   )
   for i in "${pkgs[@]}"; do
-    if ! rpm -q $i ; then
+    if ! rpm -q "$i" ; then
       if [ $maj = 'centos7' ] ; then
-        yum install -y $i
+        yum install -y "$i"
       else
-        dnf -y --enablerepo=PowerTools install $i
+        dnf -y --enablerepo=PowerTools install "$i"
       fi
     fi
   done
 elif [ -r /etc/issue ] ; then
-  maj=$(cat /etc/issue | awk '{print $1}')
-  version=$(cat /etc/issue | awk '{print $3}')
-  if [ $version = "9" ] ; then
+  maj=$(awk '{print $1}' /etc/issue)
+  version=$(awk '{print $3}' /etc/issue)
+  if [ "$version" = "9" ] ; then
     dpkg="dpkg"
   else
     dpkg="dpkg --no-pager"
   fi
   v=$(cmake --version)
-  if [[ $v =~ "version 3" ]] ; then
+  if [[ "$v" =~ "version 3" ]] ; then
     cmake='cmake'
-  elif [ $maj = "Debian" ] ; then
+  elif [ "$maj" = "Debian" ] ; then
     if $dpkg -l cmake ; then
       echo "Bad version of cmake..."
       exit 1
@@ -135,7 +134,7 @@ elif [ -r /etc/issue ] ; then
       echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
       cmake='cmake'
     fi
-  elif [ $maj = "Raspbian" ] ; then
+  elif [ "$maj" = "Raspbian" ] ; then
     if $dpkg -l cmake ; then
       echo "Bad version of cmake..."
       exit 1
@@ -219,7 +218,7 @@ fi
 
 pip3 install conan --upgrade
 
-if [ $my_id -eq 0 ] ; then
+if [ "$my_id" -eq 0 ] ; then
   conan='/usr/local/bin/conan'
 elif which conan ; then
   conan=$(which conan)
@@ -233,14 +232,14 @@ else
   echo "'build' directory already there"
 fi
 
-if [ "$force" = "1" ] ; then
+if [ "$force" = 1 ] ; then
   rm -rf build
   mkdir build
 fi
 cd build
-if [ $maj = "centos7" ] ; then
+if [ "$maj" = centos7 ] ; then
   rm -rf ~/.conan/profiles/default
-  if [ "$CONAN_REBUILD" = "1" ] ; then
+  if [ "$CONAN_REBUILD" = 1 ] ; then
     $conan install .. -s compiler.libcxx=libstdc++11 --build="*"
   else
     $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
@@ -249,7 +248,7 @@ else
     $conan install .. -s compiler.libcxx=libstdc++11 --build=missing
 fi
 
-if [ $maj = "Raspbian" ] ; then
+if [ "$maj" = Raspbian ] ; then
   CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
 elif [ $maj = "Debian" ] ; then
   CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
