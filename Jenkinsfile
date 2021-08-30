@@ -1,15 +1,18 @@
-import groovy.json.JsonSlurper
 
 /*
 ** Variables.
 */
-properties([buildDiscarder(logRotator(numToKeepStr: '50'))])
+properties([buildDiscarder(logRotator(numToKeepStr: '10'))])
 def serie = '21.10'
 def maintenanceBranch = "${serie}.x"
+def qaBranch = "dev-${serie}"
+
 if (env.BRANCH_NAME.startsWith('release-')) {
   env.BUILD = 'RELEASE'
 } else if ((env.BRANCH_NAME == 'master') || (env.BRANCH_NAME == maintenanceBranch)) {
   env.BUILD = 'REFERENCE'
+} else if ((env.BRANCH_NAME == 'develop') || (env.BRANCH_NAME == qaBranch)) {
+  env.BUILD = 'QA'
 } else {
   env.BUILD = 'CI'
 }
@@ -17,8 +20,8 @@ if (env.BRANCH_NAME.startsWith('release-')) {
 /*
 ** Pipeline code.
 */
-stage('Source') {
-  node {
+stage('Deliver sources') {
+  node("C++") {
     sh 'setup_centreon_build.sh'
     dir('centreon-broker') {
       checkout scm
@@ -31,9 +34,9 @@ stage('Source') {
 }
 
 try {
-  stage('Unit tests') {
-    parallel 'centos7': {
-      node {
+  stage('Build // Unit tests // Packaging') {
+    parallel 'build centos7': {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos7"
         step([
@@ -50,8 +53,15 @@ try {
         }
       }
     },
-    'centos8': {
-      node {
+    'packaging centos7': {
+      node("C++") {
+        sh 'setup_centreon_build.sh'
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
+        stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
+      }
+    },
+    'build centos8': {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos8"
         step([
@@ -64,8 +74,15 @@ try {
         ])
       }
     },
-    'debian10': {
-      node {
+    'packaging centos8': {
+      node("C++") {
+        sh 'setup_centreon_build.sh'
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
+        stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
+      }
+    },
+    'build debian10': {
+      node("C++") {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
         step([
@@ -77,15 +94,21 @@ try {
           tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
         ])
       }
+    },
+    'packaging debian10': {
+      node("C++") {
+        sh 'setup_centreon_build.sh'
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
+      }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-      error('Unit tests stage failure.');
+      error('Build // Unit tests // Packaging.');
     }
   }
 
   // sonarQube step to get qualityGate result
   stage('Quality gate') {
-    node {
+    node("C++") {
       def qualityGate = waitForQualityGate()
       if (qualityGate.status != 'OK') {
         currentBuild.result = 'FAIL'
@@ -96,41 +119,11 @@ try {
     }
   }
 
-  stage('Package') {
-    parallel 'centos7': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
-      }
-    },
-    'centos8': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
-      }
-    },
-    'debian10': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
-      }
-/*
-    },
-    'debian10-armhf': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10-armhf"
-      }
-*/
-    }
-    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-      error('Package stage failure.');
-    }
-  }
-
-  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE')) {
+  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA')) {
     stage('Delivery') {
-      node {
+      node("C++") {
+        unstash 'el7-rpms'
+        unstash 'el8-rpms'
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
       }
