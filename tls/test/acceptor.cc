@@ -568,7 +568,6 @@ TEST_F(TlsTest, TlsStreamBigData) {
     std::vector<char> v(length, ch);
 
     for (size_t limit = 1; limit <= max_limit;) {
-      std::cout << "client length = " << length << std::endl;
       auto packet = std::make_shared<io::raw>(v);
 
       tls_centengine->write(packet);
@@ -674,7 +673,6 @@ TEST_F(TlsTest, TlsStreamLongData) {
     std::vector<char> v(length, ch);
 
     for (size_t limit = 1; limit <= max_limit;) {
-      std::cout << "client length = " << length << std::endl;
       auto packet = std::make_shared<io::raw>(v);
 
       tls_centengine->write(packet);
