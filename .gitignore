@@ -29,3 +29,4 @@ test-coverage
 test/python/*.crt
 test/python/*.key
 ut
+ut.xml
