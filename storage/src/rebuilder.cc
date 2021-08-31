@@ -190,7 +190,9 @@ void rebuilder::_run(asio::error_code ec) {
 
         // Set index as rebuilt or to-be-rebuild
         // if we were interrupted.
-        _set_index_rebuild(ms, index_id, (_should_exit ? 1 : 0));
+        _set_index_rebuild(
+            ms, index_id,
+            (_should_exit ? static_cast<short>(1) : static_cast<short>(0)));
 
         // Get next index to rebuild.
         _next_index_to_rebuild(info, ms);
@@ -296,9 +298,9 @@ void rebuilder::_rebuild_metric(mysql& ms,
                 host_id, service_id, metric_name, res.value_as_u32(0), interval,
                 true, metric_id, length, res.value_as_f64(1), metric_type);
         if (entry->value > FLT_MAX * 0.999)
-          entry->value = INFINITY;
+          entry->value = std::numeric_limits<double>::infinity();
         else if (entry->value < -FLT_MAX * 0.999)
-          entry->value = -INFINITY;
+          entry->value = -std::numeric_limits<double>::infinity();
         log_v2::perfdata()->trace(
             "storage(rebuilder): Sending metric with host_id {}, service_id "
             "{}, metric_name {}, ctime {}, interval {}, is_for_rebuild {}, "
