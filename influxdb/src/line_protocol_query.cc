@@ -293,7 +293,7 @@ void line_protocol_query::_compile_scheme(
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
       _append_compiled_getter(
-          &line_protocol_query::_get_member<uint32_t , storage::metric,
+          &line_protocol_query::_get_member<uint32_t, storage::metric,
                                             &storage::metric::metric_id>,
           escaper);
     } else if (macro == "$INSTANCE$")
@@ -401,14 +401,13 @@ void line_protocol_query::_get_dollar_sign(io::data const& d,
  *
  *  @return       The index id.
  */
-uint32_t line_protocol_query::_get_index_id(io::data const& d) {
+uint64_t line_protocol_query::_get_index_id(io::data const& d) {
   if (_type == status)
     return static_cast<storage::status const&>(d).index_id;
   else
     return _cache
-                ->get_metric_mapping(
-                    static_cast<storage::metric const&>(d).metric_id)
-                .index_id;
+        ->get_metric_mapping(static_cast<storage::metric const&>(d).metric_id)
+        .index_id;
 }
 
 /**
@@ -429,7 +428,8 @@ void line_protocol_query::_get_index_id(io::data const& d, std::ostream& is) {
  */
 void line_protocol_query::_get_host(io::data const& d, std::ostream& is) {
   if (_type == status)
-    is << _cache->get_host_name(_cache->get_index_mapping(_get_index_id(d)).host_id);
+    is << _cache->get_host_name(
+        _cache->get_index_mapping(_get_index_id(d)).host_id);
   else
     is << _cache->get_host_name(static_cast<storage::metric const&>(d).host_id);
 }
@@ -459,8 +459,9 @@ void line_protocol_query::_get_service(io::data const& d, std::ostream& is) {
         _cache->get_index_mapping(_get_index_id(d)));
     is << _cache->get_service_description(stm.host_id, stm.service_id);
   } else {
-    is << _cache->get_service_description(static_cast<storage::metric const&>(d).host_id,
-                                          static_cast<storage::metric const&>(d).service_id);
+    is << _cache->get_service_description(
+        static_cast<storage::metric const&>(d).host_id,
+        static_cast<storage::metric const&>(d).service_id);
   }
 }
 

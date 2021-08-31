@@ -364,7 +364,7 @@ void conflict_manager::_load_caches() {
         info.max = res.value_as_f32(11);
         info.value = res.value_as_f32(12);
         info.type = res.value_as_str(13)[0] - '0';
-        _metric_cache[{res.value_as_u32(1), res.value_as_str(2)}] = info;
+        _metric_cache[{res.value_as_u64(1), res.value_as_str(2)}] = info;
       }
     } catch (std::exception const& e) {
       throw exceptions::msg()
@@ -374,7 +374,7 @@ void conflict_manager::_load_caches() {
   }
 }
 
-void conflict_manager::update_metric_info_cache(uint32_t index_id,
+void conflict_manager::update_metric_info_cache(uint64_t index_id,
                                                 uint32_t metric_id,
                                                 std::string const& metric_name,
                                                 short metric_type) {
