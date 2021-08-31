@@ -59,6 +59,7 @@ try {
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
         stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
+        sh 'rm -rf output'
       }
     },
     'build centos8': {
@@ -81,6 +82,7 @@ try {
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
         stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
+        sh 'rm -rf output'
       }
     },
     'build debian10': {
