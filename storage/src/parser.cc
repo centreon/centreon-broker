@@ -100,7 +100,7 @@ static inline void extract_range(double* low,
   // Low threshold value.
   double low_value;
   if ('~' == **str) {
-    low_value = -INFINITY;
+    low_value = -std::numeric_limits<double>::infinity();
     ++*str;
   } else
     low_value = extract_double(str);
@@ -116,7 +116,7 @@ static inline void extract_range(double* low,
     char const* ptr(*str);
     high_value = extract_double(str);
     if (std::isnan(high_value) && ((*str == ptr) || (*str == (ptr + 1))))
-      high_value = INFINITY;
+      high_value = std::numeric_limits<double>::infinity();
   }
 
   // Set values.
