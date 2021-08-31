@@ -121,7 +121,7 @@ elif [ -r /etc/issue ] ; then
   if [ "$version" = "9" ] ; then
     dpkg="dpkg"
   else
-    dpkg="dpkg --no-pager"
+    dpkg='dpkg --no-pager'
   fi
   v=$(cmake --version)
   if [[ "$v" =~ "version 3" ]] ; then
@@ -131,16 +131,26 @@ elif [ -r /etc/issue ] ; then
       echo "Bad version of cmake..."
       exit 1
     else
-      echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
-      cmake='cmake'
+      if [ $my_id -eq 0 ] ; then
+        apt install -y cmake
+        cmake='cmake'
+      else
+        echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
+        exit 1
+      fi
     fi
   elif [ "$maj" = "Raspbian" ] ; then
     if $dpkg -l cmake ; then
       echo "Bad version of cmake..."
       exit 1
     else
-      echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
-      cmake='cmake'
+      if [ $my_id -eq 0 ] ; then
+        apt install -y cmake
+        cmake='cmake'
+      else
+        echo -e "cmake is not installed, you could enter, as root:\n\tapt install -y cmake\n\n"
+        exit 1
+      fi
     fi
   else
     echo "Bad version of cmake..."
@@ -170,7 +180,7 @@ elif [ -r /etc/issue ] ; then
         fi
       fi
     done
-  elif [ $maj = "Raspbian" ] ; then
+  elif [ "$maj" = "Raspbian" ] ; then
     pkgs=(
       gcc
       g++
