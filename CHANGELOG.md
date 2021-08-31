@@ -3,7 +3,14 @@
 ## 21.04.4
 
 *rrd*
-add a loop to check deleted index every 5 minutes.
+
+New loop to check deleted index every 5 minutes.
+
+*sql*
+
+There was still some code on index data that considered index\_id as uint32.
+This was particularly the case in the metrics cache. It is fixed now.
+
 ## 21.04.3
 
 ### Fixes

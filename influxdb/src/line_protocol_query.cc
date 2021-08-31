@@ -402,7 +402,7 @@ void line_protocol_query::_get_dollar_sign(io::data const& d,
  *
  *  @return       The index id.
  */
-uint32_t line_protocol_query::_get_index_id(io::data const& d) {
+uint64_t line_protocol_query::_get_index_id(io::data const& d) {
   if (_type == status)
     return static_cast<storage::status const&>(d).index_id;
   else
