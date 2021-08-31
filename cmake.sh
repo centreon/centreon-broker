@@ -126,7 +126,7 @@ elif [ -r /etc/issue ] ; then
   v=$(cmake --version)
   if [[ "$v" =~ "version 3" ]] ; then
     cmake='cmake'
-  elif [ "$maj" = "Debian" ] ; then
+  elif [ "$maj" = "Debian" ] || [ "$maj" = "Ubuntu" ]; then
     if $dpkg -l cmake ; then
       echo "Bad version of cmake..."
       exit 1
@@ -147,7 +147,7 @@ elif [ -r /etc/issue ] ; then
     exit 1
   fi
 
-  if [ $maj = "Debian" ] ; then
+  if [ "$maj" = "Debian" ] || [ "$maj" = "Ubuntu" ]; then
     pkgs=(
       gcc
       g++
@@ -250,7 +250,7 @@ fi
 
 if [ "$maj" = Raspbian ] ; then
   CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
-elif [ $maj = "Debian" ] ; then
+elif [ "$maj" = "Debian" ] || [ "$maj" = "Ubuntu" ]; then
   CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
 else
   CXXFLAGS="-Wall -Wextra" $cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* ..
