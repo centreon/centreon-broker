@@ -56,7 +56,15 @@ class BrokerRPCClient {
     return true;
   }
 
-  
+  bool DeleteGraph(Graph request, GenericString* response) {
+    grpc::ClientContext context;
+    grpc::Status status = _stub->DeleteGraph(&context, request, response);
+    if (!status.ok()) {
+      std::cout << "Delete Graph rpc failed." << std::endl;
+      return false;
+    }
+    return true;
+  }
 };
 
 int main(int argc, char** argv) {
@@ -80,23 +88,33 @@ int main(int argc, char** argv) {
     BrokerStats response;
     status = client.GetSqlConnectionStats(&response) ? 0 : 1;
 
-    std::cout << "connection size: "
-              << response.mutable_connections()->size()
+    std::cout << "connection size: " << response.mutable_connections()->size()
               << std::endl;
   }
 
   if (strcmp(argv[1], "GetSqlConnectionStatsValue") == 0) {
     BrokerStats response;
     status = client.GetSqlConnectionStats(&response) ? 0 : 1;
-    for (auto
-             it = response.mutable_connections()->begin(),
-             end = response.mutable_connections()->end();
-             it != end; ++it) {
-      std::cout << (*it).waiting_tasks() << std::endl; 
-      }
+    for (auto it = response.mutable_connections()->begin(),
+              end = response.mutable_connections()->end();
+         it != end; ++it) {
+      std::cout << (*it).waiting_tasks() << std::endl;
+    }
   }
 
-
+  if (strcmp(argv[1], "DeleteGraph") == 0) {
+    Graph request;
+    GenericString response;
+    request.set_metric_id(0);
+    request.set_index_id(0);
+    status = client.DeleteGraph(request, &response) ? 0 : 1;
+    // for (auto
+    //          it = response.mutable_connections()->begin(),
+    //          end = response.mutable_connections()->end();
+    //          it != end; ++it) {
+    //   std::cout << (*it).waiting_tasks() << std::endl;
+    //   }
+  }
 
   exit(status);
 }

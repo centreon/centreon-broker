@@ -82,7 +82,6 @@ class conflict_manager {
  public:
   enum instance_state { not_started, running, finished };
   enum stream_type { sql, storage };
-  void delete_index(int64_t metric_id, int64_t index_id);
 
  private:
   enum actions {
@@ -341,7 +340,7 @@ class conflict_manager {
   static conflict_manager& instance();
   int32_t unload(stream_type type);
   nlohmann::json get_statistics();
-
+  void delete_index(int64_t metric_id, int64_t index_id);
   int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
   void update_metric_info_cache(uint32_t index_id,

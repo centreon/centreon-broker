@@ -79,8 +79,8 @@ message ModuleStats {
 }
 
 message Graph {
-  string metric_id = 1;
-  string index_id = 2;
+  uint64 metric_id = 1;
+  uint64 index_id = 2;
 }
 
 message ThreadPool {

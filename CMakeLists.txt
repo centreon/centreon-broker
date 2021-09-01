@@ -60,6 +60,7 @@ endif ()
 
 include_directories("${PROJECT_SOURCE_DIR}/core/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
@@ -568,6 +569,8 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
+# add_dependencies(rokerbase nebbase)
+# add_dependencies(rokerbase 20-storage)
 set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "-fPIC")
 target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${OpenSSL_LIBS} ${mariadb-connector-c_LIBS} pthread dl berpc)
 

@@ -943,8 +943,8 @@ void conflict_manager::_process_host(
 
   // Log message.
   log_v2::sql()->debug(
-      "SQL: processing host event (poller: {}, host: {}, name: {})", h.poller_id,
-      h.host_id, h.host_name);
+      "SQL: processing host event (poller: {}, host: {}, name: {})",
+      h.poller_id, h.host_id, h.host_name);
 
   // Processing
   if (_is_valid_poller(h.poller_id)) {
@@ -1066,7 +1066,8 @@ void conflict_manager::_process_host_status(
       !hs.next_check) {                 // - initial state
     // Apply to DB.
     log_v2::sql()->info(
-        "processing host status event (host: {}, last check: {}, state ({}, {}))",
+        "processing host status event (host: {}, last check: {}, state ({}, "
+        "{}))",
         hs.host_id, hs.last_check, hs.current_state, hs.state_type);
 
     // Prepare queries.

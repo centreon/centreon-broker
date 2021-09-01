@@ -26,6 +26,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/stats/center.hh"
 #include "com/centreon/broker/stats/helper.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/version.hh"
 
 using namespace com::centreon::broker;
@@ -183,8 +184,8 @@ grpc::Status broker_impl::DeleteGraph(grpc::ServerContext* context
                                       __attribute__((unused)),
                                       const Graph* request,
                                       GenericString* response) {
-  storage::conflict_manager::delete_index(request->metric_id,
-                                          request->index_id);
+  // storage::conflict_manager::instance().delete_index(request->metric_id(),
+  //                                                    request->index_id());
   return grpc::Status::OK;
 }
 

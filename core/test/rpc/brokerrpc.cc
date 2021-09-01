@@ -18,14 +18,15 @@
  */
 
 #include "com/centreon/broker/brokerrpc.hh"
-#include "com/centreon/broker/stats/center.hh"
-#include "com/centreon/broker/pool.hh"
-
 #include <gtest/gtest.h>
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/pool.hh"
+#include "com/centreon/broker/stats/center.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 
+#include <fmt/format.h>
 #include <cstdio>
 #include <fstream>
-#include <fmt/format.h>
 #include <iostream>
 
 #include "com/centreon/broker/log_v2.hh"
@@ -71,11 +72,13 @@ TEST_F(BrokerRpc, GetVersion) {
   auto output = execute("GetVersion");
 #if CENTREON_BROKER_PATCH == 0
   ASSERT_EQ(output.size(), 2u);
-  ASSERT_EQ(output.front(), fmt::format("GetVersion: major: {}\n", version::major));
+  ASSERT_EQ(output.front(),
+            fmt::format("GetVersion: major: {}\n", version::major));
   ASSERT_EQ(output.back(), fmt::format("minor: {}\n", version::minor));
 #else
   ASSERT_EQ(output.size(), 3u);
-  ASSERT_EQ(output.front(), fmt::format("GetVersion: major: {}\n", version::major));
+  ASSERT_EQ(output.front(),
+            fmt::format("GetVersion: major: {}\n", version::major));
   ASSERT_EQ(output.back(), fmt::format("patch: {}\n", version::patch));
 #endif
   brpc.shutdown();
@@ -89,12 +92,14 @@ TEST_F(BrokerRpc, GetSqlConnectionStatsSize) {
   ASSERT_EQ(output.front(), "connection size: 0\n");
 
   _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 3);
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                   _stats, 3);
   output = execute("GetSqlConnectionStatsSize");
   ASSERT_EQ(output.front(), "connection size: 1\n");
 
   _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 5);
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                   _stats, 5);
   output = execute("GetSqlConnectionStatsSize");
   ASSERT_EQ(output.front(), "connection size: 2\n");
 
@@ -107,16 +112,20 @@ TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
   std::vector<std::string> vectests = {"3\n", "10\n", "0\n", "15\n"};
 
   _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 3);
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                   _stats, 3);
 
   _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 10);
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                   _stats, 10);
 
   _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 0);
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                   _stats, 0);
 
   _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 15);
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks,
+                                   _stats, 15);
 
   auto output = execute("GetSqlConnectionStatsValue");
 
@@ -127,3 +136,22 @@ TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
   brpc.shutdown();
 }
 
+// TEST_F(BrokerRpc, DeleteGraph) {
+//   database_config dbcfg("MySQL", "127.0.0.1", 3306, "centreon", "centreon",
+//                         "centreon_storage", 5, true, 5);
+//   uint32_t loop_timeout = 5;
+//   uint32_t instance_timeout = 5;
+
+//   ASSERT_FALSE(storage::conflict_manager::init_storage(true, 100000, 18));
+//   ASSERT_NO_THROW(storage::conflict_manager::init_sql(dbcfg, loop_timeout,
+//                                                       instance_timeout));
+//   ASSERT_TRUE(storage::conflict_manager::init_storage(true, 100000, 18));
+
+//   brokerrpc brpc("0.0.0.0", 40000, "test");
+
+//   auto output = execute("DeleteGraph");
+//   ASSERT_EQ(output.front(), "connection size: 0\n");
+
+//   brpc.shutdown();
+//   storage::conflict_manager::close();
+// }
