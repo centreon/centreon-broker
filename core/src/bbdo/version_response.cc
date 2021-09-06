@@ -35,12 +35,12 @@ version_response::version_response()
  *
  * @param extensions A string with extensions asked for.
  */
-version_response::version_response(const std::string& extensions)
+version_response::version_response(std::string extensions)
     : io::data(version_response::static_type()),
       bbdo_major(BBDO_VERSION_MAJOR),
       bbdo_minor(BBDO_VERSION_MINOR),
       bbdo_patch(BBDO_VERSION_PATCH),
-      extensions(extensions) {}
+      extensions(std::move(extensions)) {}
 
 // Mapping.
 mapping::entry const version_response::entries[] = {
@@ -51,7 +51,7 @@ mapping::entry const version_response::entries[] = {
     mapping::entry()};
 
 // Operations.
-static io::data* new_version_response() {
+static auto new_version_response() -> io::data* {
   return new version_response;
 }
 io::event_info::event_operations const version_response::operations = {

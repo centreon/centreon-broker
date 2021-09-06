@@ -46,7 +46,7 @@ class version_response : public io::data {
   std::string extensions;
 
   version_response();
-  version_response(const std::string& extensions);
+  version_response(std::string extensions);
   version_response(const version_response&) = delete;
   ~version_response() noexcept = default;
   version_response& operator=(const version_response&) = delete;
