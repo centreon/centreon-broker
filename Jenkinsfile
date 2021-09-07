@@ -37,8 +37,8 @@ stage('Deliver sources') {
 stage('Build // Unit tests // Packaging') {
   node("C++") {
     sh 'setup_centreon_build.sh'
-    sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
-    stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
+    sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
+    stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
     archiveArtifacts artifacts: "output/x86_64/*.rpm"
     sh 'rm -rf output'
   }
@@ -46,9 +46,9 @@ stage('Build // Unit tests // Packaging') {
 
 stage('Delivery') {
   node("C++") {
-    unstash 'el7-rpms'
+    unstash 'el8-rpms'
     sh "MAJOR=`echo $VERSION | cut -d . -f 1,2`"
-    sh "EL7RPMS=`echo output/x86_64/*.el7.*.rpm`"
-    putRpms "standard" "$MAJOR" "el7" "unstable" "x86_64" "broker" "centreon-broker-$VERSION-$RELEASE" $EL7RPMS
+    sh "EL7RPMS=`echo output/x86_64/*.el8.*.rpm`"
+    putRpms "standard" "$MAJOR" "el8" "unstable" "x86_64" "broker" "centreon-broker-$VERSION-$RELEASE" $EL7RPMS
   }  
 }
