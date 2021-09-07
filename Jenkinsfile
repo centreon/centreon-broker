@@ -1,3 +1,4 @@
+@Library('centreon-shared-library') _
 
 /*
 ** Variables.
@@ -33,117 +34,21 @@ stage('Deliver sources') {
   }
 }
 
-try {
-  stage('Build // Unit tests // Packaging') {
-    parallel 'build centos7': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos7"
-        step([
-          $class: 'XUnitBuilder',
-          thresholds: [
-            [$class: 'FailedThreshold', failureThreshold: '0'],
-            [$class: 'SkippedThreshold', failureThreshold: '0']
-          ],
-          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-        ])
-        // Run sonarQube analysis
-        withSonarQubeEnv('SonarQubeDev') {
-          sh "./centreon-build/jobs/broker/${serie}/mon-broker-analysis.sh"
-        }
-      }
-    },
-    'packaging centos7': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
-        stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
-        archiveArtifacts artifacts: "output/x86_64/*.rpm"
-        sh 'rm -rf output'
-      }
-    },
-    'build centos8': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos8"
-        step([
-          $class: 'XUnitBuilder',
-          thresholds: [
-            [$class: 'FailedThreshold', failureThreshold: '0'],
-            [$class: 'SkippedThreshold', failureThreshold: '0']
-          ],
-          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-        ])
-      }
-    },
-    'packaging centos8': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
-        stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
-        archiveArtifacts artifacts: "output/x86_64/*.rpm"
-        sh 'rm -rf output'
-      }
-    },
-    'build debian10': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
-        step([
-          $class: 'XUnitBuilder',
-          thresholds: [
-            [$class: 'FailedThreshold', failureThreshold: '0'],
-            [$class: 'SkippedThreshold', failureThreshold: '0']
-          ],
-          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-        ])
-      }
-    },
-    'packaging debian10': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
-      }
-    }
-    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-      error('Build // Unit tests // Packaging.');
-    }
-  }
-
-  // sonarQube step to get qualityGate result
-  stage('Quality gate') {
-    node("C++") {
-      def qualityGate = waitForQualityGate()
-      if (qualityGate.status != 'OK') {
-        currentBuild.result = 'FAIL'
-      }
-      if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-        error('Quality gate failure: ${qualityGate.status}.');
-      }
-    }
-  }
-
-  if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA')) {
-    stage('Delivery') {
-      node("C++") {
-        unstash 'el7-rpms'
-        unstash 'el8-rpms'
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
-      }
-      if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-        error('Delivery stage failure.');
-      }
-    }
-
-    if (env.BUILD == 'REFERENCE') {
-      build job: "centreon-web/${env.BRANCH_NAME}", wait: false
-    }
+stage('Build // Unit tests // Packaging') {
+  node("C++") {
+    sh 'setup_centreon_build.sh'
+    sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
+    stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
+    archiveArtifacts artifacts: "output/x86_64/*.rpm"
+    sh 'rm -rf output'
   }
 }
-finally {
-  buildStatus = currentBuild.result ?: 'SUCCESS';
-  if ((buildStatus != 'SUCCESS') && ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE'))) {
-    slackSend channel: '#monitoring-metrology', message: "@channel Centreon Broker build ${env.BUILD_NUMBER} of branch ${env.BRANCH_NAME} was broken by ${source.COMMITTER}. Please fix it ASAP."
-  }
+
+stage('Delivery') {
+  node("C++") {
+    unstash 'el7-rpms'
+    sh "MAJOR=`echo $VERSION | cut -d . -f 1,2`"
+    sh "EL7RPMS=`echo output/x86_64/*.el7.*.rpm`"
+    putRpms "standard" "$MAJOR" "el7" "unstable" "x86_64" "broker" "centreon-broker-$VERSION-$RELEASE" $EL7RPMS
+  }  
 }
