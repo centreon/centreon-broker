@@ -100,7 +100,7 @@ static void hup_handler(int signum) {
   }
 
   // Reenable SIGHUP handler.
-  signal(SIGHUP, &hup_handler);
+  signal(SIGHUP, hup_handler);
 }
 
 /**
