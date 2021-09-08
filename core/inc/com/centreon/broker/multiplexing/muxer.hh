@@ -63,6 +63,12 @@ class muxer : public io::stream {
   std::string _read_filters_str;
   std::string _write_filters_str;
 
+  void _clean();
+  void _get_event_from_file(std::shared_ptr<io::data>& event);
+  std::string _memory_file() const;
+  void _push_to_queue(std::shared_ptr<io::data> const& event);
+  std::string _queue_file() const;
+
  public:
   muxer(std::string const& name, bool persistent = false);
   muxer(const muxer&) = delete;
@@ -70,9 +76,9 @@ class muxer : public io::stream {
   ~muxer() noexcept;
   void ack_events(int count);
   static void event_queue_max_size(uint32_t max) noexcept;
-  static uint32_t event_queue_max_size() throw();
-  void publish(std::shared_ptr<io::data> const d);
-  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
+  static uint32_t event_queue_max_size() noexcept;
+  void publish(std::shared_ptr<io::data> const event);
+  bool read(std::shared_ptr<io::data>& event, time_t deadline) override;
   void set_read_filters(filters const& fltrs);
   void set_write_filters(filters const& fltrs);
   filters const& get_read_filters() const;
@@ -89,13 +95,6 @@ class muxer : public io::stream {
 
   static std::string memory_file(std::string const& name);
   static std::string queue_file(std::string const& name);
-
- private:
-  void _clean();
-  void _get_event_from_file(std::shared_ptr<io::data>& event);
-  std::string _memory_file() const;
-  void _push_to_queue(std::shared_ptr<io::data> const& event);
-  std::string _queue_file() const;
 };
 }  // namespace multiplexing
 

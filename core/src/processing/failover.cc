@@ -104,7 +104,7 @@ time_t failover::get_buffering_timeout() const noexcept {
  *
  *  @return True if the thread is initializable. That is it is read()able.
  */
-bool failover::get_initialized() const throw() {
+bool failover::get_initialized() const noexcept {
   return _initialized;
 }
 
@@ -113,7 +113,7 @@ bool failover::get_initialized() const throw() {
  *
  *  @return Failover thread retry interval.
  */
-time_t failover::get_retry_interval() const throw() {
+time_t failover::get_retry_interval() const noexcept {
   return _retry_interval;
 }
 
