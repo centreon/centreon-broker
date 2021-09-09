@@ -23,6 +23,8 @@ if [ -z $VERSION ] || [ -z $RELEASE ] ; then
    show_help
 fi
 
+ln -s /usr/bin/cmake3 /usr/bin/cmake
+
 # dossier racine du nouveau centreon collect
 if [ ! -d /root/rpmbuild/SOURCES ] ; then
     mkdir -p /root/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}

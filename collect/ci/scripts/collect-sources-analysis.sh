@@ -29,6 +29,8 @@ case $PROJECT in
 esac
 
 cd $PROJECT
+run-clang-tidy-6.0.py -checks='*' -p . -j9
+
 echo "BRANCH_NAME      -> $BRANCH_NAME"
 echo "PROJECT_TITLE    -> $PROJECT"
 echo "PROJECT_NAME     -> $PROJECT_NAME"
