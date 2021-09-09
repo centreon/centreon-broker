@@ -1,6 +1,0 @@
-FROM centos:8
-RUN yum -y update && \
-    yum -y install cmake && \
-    yum clean all
-WORKDIR /src
-ENTRYPOINT [ "/src/centreon-collect/packaging/script/packaging_centos8.sh"]

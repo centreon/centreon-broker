@@ -1,13 +1,18 @@
+@Library("centreon-shared-library")_
 /*
 ** Variables.
 */
+
 properties([buildDiscarder(logRotator(numToKeepStr: '10'))])
+env.REF_BRANCH = 'master'
+env.PROJECT='centreon-collect'
 def serie = '21.10'
 def maintenanceBranch = "${serie}.x"
 def qaBranch = "dev-${serie}.x"
-
-env.REF_BRANCH = 'master'
-env.PROJECT='centreon-collect'
+def buildBranch = env.BRANCH_NAME
+if (env.CHANGE_BRANCH) {
+  buildBranch = env.CHANGE_BRANCH
+}
 
 /*
 ** Branch management
@@ -22,111 +27,84 @@ if (env.BRANCH_NAME.startsWith('release-')) {
   env.BUILD = 'CI'
 }
 
-def buildBranch = env.BRANCH_NAME
-if (env.CHANGE_BRANCH) {
-  buildBranch = env.CHANGE_BRANCH
-}
-
-/*
-** Functions
-*/
-def isStableBuild() {
-  return ((env.BUILD == 'RELEASE') || (env.BUILD == 'REFERENCE'))
-  return ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA'))
-}
-
 /*
 ** Pipeline code.
 */
 
-stage('Unit tests') {
-  parallel 'centos7': {
-    node {
-      dir('centreon-collect-centos7') {
-        checkout scm
-        sh 'docker run -it -v "$PWD:/src" registry.centreon.com/centreon-collect-build-centos7:1.0'
-      }
-    }
-  },
-  'centos8': {
-    node {
-      dir('centreon-collect-centos8') {
-        checkout scm
-      }
-      /*def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build-centos8:1.0"
-      sh "docker pull $BUILD_COLLECT_IMAGE"
-      def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
-      sh "docker cp centreon-collect-centos8 '$containerid:/src/centreon-collect'"
-      dir('centreon-collect-centos8') {
-        sh "docker start -a $containerid"
-        sh "docker stop $containerid"
-        sh "docker rm $containerid"
-      }*/
-    }
-  },
-  'debian10': {
-    node {
-      dir('centreon-collect-debian10') {
-        checkout scm
-      }
-      /*def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-build-debian10:1.0"
-      sh "docker pull $BUILD_COLLECT_IMAGE"
-      def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
-      sh "docker cp centreon-collect-debian10 '$containerid:/src/centreon-collect'"
-      sh "docker start -a $containerid"
-      sh "docker stop $containerid"
-      sh "docker rm $containerid"*/
+stage('Deliver sources') {
+  node("C++") {
+    dir('centreon-collect-centos7') {
+      loadCommonScripts()
+      checkout scm
+      sh 'ci/scripts/collect-sources-delivery.sh centreon-broker'
+      sh 'ci/scripts/collect-sources-delivery.sh centreon-clib'
+      sh 'ci/scripts/collect-sources-delivery.sh centreon-engine'
+      sh 'ci/scripts/collect-sources-delivery.sh centreon-connector'
+      source = readProperties file: 'source.properties'
+      env.VERSION = "${source.VERSION}"
+      env.RELEASE = "${source.RELEASE}"
     }
   }
 }
 
- /* stage('Package') {
-    parallel 'centos7': {
-      node {
-        dir('centreon-collect-centos7') {
-          checkout scm
-        }
-          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-package-centos7:1.0"
-          sh "docker pull $BUILD_COLLECT_IMAGE"
-          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
-          sh "docker cp centreon-collect-centos7 '$containerid:/src/centreon-collect'"
-          sh "docker start -a $containerid"
-          sh "docker stop $containerid"
-          sh "docker rm $containerid"
-        }
-      }
-    },
-    'centos8': {
-      node {
-        dir('centreon-collect') {
-          checkout scm
-        }
-          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-package-centos8:1.0"
-          sh "docker pull $BUILD_COLLECT_IMAGE"
-          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
-          sh "docker cp centreon-collect-centos8 '$containerid:/src/centreon-collect'"
-          sh "docker start -a $containerid"
-          sh "docker stop $containerid"
-          sh "docker rm $containerid"
-        }
-      }
-    },
-    'debian10': {
-      node {
-        dir('centreon-collect-debian10') {
-          checkout scm
-        }
-          def BUILD_COLLECT_IMAGE = "registry.centreon.com/centreon-collect-package-debian10:1.0"
-          sh "docker pull $BUILD_COLLECT_IMAGE"
-          def containerid = sh(script: "docker create $BUILD_COLLECT_IMAGE /src", returnStdout: true)
-          sh "docker cp centreon-collect-debian10 '$containerid:/src/centreon-collect'"
-          sh "docker start -a $containerid"
-          sh "docker stop $containerid"
-          sh "docker rm $containerid"
+stage('Build / Unit tests // Packaging / Signing') {
+  parallel 'centos7 Build and UT': {
+    node("C++") {
+      dir('centreon-collect-centos7') {
+        checkout scm
+        sh 'docker run -i --entrypoint /src/ci/scripts/collect-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-collect-centos7-dependencies:21.10'
+        withSonarQubeEnv('SonarQubeDev') {
+          sh 'ci/scripts/collect-sources-analysis.sh centreon-broker'
+          sh 'ci/scripts/collect-sources-analysis.sh centreon-engine'
         }
       }
     }
-    if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
-      error('Package stage failure.');
+  },
+  'centos7 rpm packaging and signing': {
+    node("C++") {
+      dir('centreon-collect-centos7') {
+        checkout scm
+        sh 'docker run -i --entrypoint /src/ci/scripts/collect-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el7" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-collect-centos7-dependencies:21.10'
+        sh 'rpmsign --addsign *.rpm'
+        stash name: 'el7-rpms', includes: '*.rpm'
+        archiveArtifacts artifacts: "*.rpm"
+        sh 'rm -rf *.rpm'
+      } 
     }
-  }*/
+  },
+  'centos8 Build and UT': {
+    node("C++") {
+      dir('centreon-collect-centos8') {
+        checkout scm
+        sh 'docker run -i --entrypoint /src/ci/scripts/collect-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-collect-centos8-dependencies:21.10'
+      }
+    }
+  },
+  'centos8 rpm packaging and signing': {
+    node("C++") {
+      dir('centreon-collect-centos8') {
+        checkout scm
+        sh 'docker run -i --entrypoint /src/ci/scripts/collect-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el8" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-collect-centos8-dependencies:21.10'
+        sh 'rpmsign --addsign *.rpm'
+        stash name: 'el8-rpms', includes: '*.rpm'
+        archiveArtifacts artifacts: "*.rpm"
+        sh 'rm -rf *.rpm'
+      }
+    }
+  } 
+}
+
+if ((env.BUILD == 'RELEASE') || (env.BUILD == 'QA')) {
+  stage('Delivery') {
+    node("C++") {
+      unstash 'el8-rpms'
+      unstash 'el7-rpms'
+      dir('centreon-collect-delivery') {
+        checkout scm
+        loadCommonScripts()
+        sh 'rm -rf output && mkdir output && mv ../*.rpm output'
+        sh './ci/scripts/collect-rpm-delivery.sh'
+      }
+    }
+  }
+}
