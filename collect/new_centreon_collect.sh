@@ -62,21 +62,27 @@ git commit -m "move to collect"
 cd $RACINE_SOURCE/centreon-collect/
 git remote add centreon-broker $RACINE_SOURCE/centreon-broker/
 git pull centreon-broker MON-4724-Road-to-collect
+git commit
 
 git remote add centreon-engine $RACINE_SOURCE/centreon-engine/
 git pull centreon-engine develop
+git commit
 
 git remote add centreon-clib $RACINE_SOURCE/centreon-clib/
 git pull centreon-clib develop
+git commit
 
 git remote add centreon-connector $RACINE_SOURCE/centreon-connectors/
 git pull centreon-connector develop
+git commit
 
 git remote add centreon-tests $RACINE_SOURCE/centreon-tests/
 git pull centreon-tests master
+git commit
 
 git remote add centreon-build $RACINE_SOURCE/centreon-build/
 git pull centreon-build master
+git commit
 
 # modification des CMakeLists
 sed -i 's/WITH_PREFIX_CONF/WITH_PREFIX_CONF_BROKER/' centreon-broker/CMakeLists.txt
@@ -159,7 +165,8 @@ mkdir -p centreon-clib/packaging/rpm
 mkdir -p centreon-clib/packaging/script
 mkdir -p centreon-clib/packaging/docker
 mkdir -p centreon-clib/packaging/jenkins
-mv centreon-build/packaging/clib/* centreon-clib/packaging/rpm/
+mv centreon-build/packaging/clib/debian centreon-clib/packaging/rpm/
+mv centreon-build/packaging/clib/centreon-clib.spectemplate centreon-clib/packaging/rpm/
 
 
 
@@ -182,15 +189,38 @@ sed -i 's/@VERSION@/%{VERSION}/' centreon-broker/packaging/rpm/centreon-broker.s
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
 sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
 sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/%if 0%{?el7}//' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake3//' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/%else//' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake//' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/%endif//' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/cmake >= 2.8/cmake3 >= 3.15/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
+sed -i 's/"-DNDEBUG -g -O2 -Wno-long-long" %{cmake}/"-DNDEBUG -g -O2 -Wno-long-long" cmake3 -j9/' centreon-broker/packaging/rpm/centreon-broker.spectemplate
 
 sed -i 's/DWITH_PREFIX_LIB/DWITH_PREFIX_LIB_CLIB/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
 sed -i 's/@VERSION@/%{VERSION}/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/%build/%build\npip3 install conan --upgrade\ncpp11=$(gcc --version | awk "\/gcc\/ && ($3+0)>5.0{print 1}")\nif [ $cpp11 -eq 1 ] ; then\n  conan install . -s compiler.libcxx=libstdc++11 --build=missing\nelse\n  conan install . -s compiler.libcxx=libstdc++\nfi\n/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/%if 0%{?el7}//' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake3//' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/%else//' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake//' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/%endif//' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/cmake >= 2.8/cmake3 >= 3.15/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+sed -i 's/"-DNDEBUG -g -O2 -Wno-long-long" %{cmake}/"-DNDEBUG -g -O2 -Wno-long-long" cmake3 -j9/' centreon-clib/packaging/rpm/centreon-clib.spectemplate
+
 
 sed -i 's/@VERSION@/%{VERSION}/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
 sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
 sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/%if 0%{?el7}//' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake3//' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/%else//' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake//' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/%endif//' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/cmake >= 2.8/cmake3 >= 3.15/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
+sed -i 's/"-DNDEBUG -g -O2 -Wno-long-long" %{cmake}/"-DNDEBUG -g -O2 -Wno-long-long" cmake3 -j9/' centreon-connector/packaging/rpm/centreon-connector.spectemplate
 
 sed -i 's/@VERSION@/%{VERSION}/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 sed -i 's/@RELEASE@/%{RELEASE}/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
@@ -200,7 +230,14 @@ sed -i 's/DWITH_PREFIX_LIB/DWITH_PREFIX_LIB_ENGINE/' centreon-engine/packaging/r
 sed -i 's/DWITH_USER_ENGINE/DWITH_USER_ENGINE/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 sed -i 's/%build/%build\npip3 install conan --upgrade/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 sed -i 's/libstdc++11/libstdc++11 --build=missing/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
-
+sed -i 's/%if 0%{?el7}//' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake3//' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/%else//' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/%define cmake \/usr\/bin\/cmake//' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/%endif//' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/cmake >= 2.8/cmake3 >= 3.15/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/"-DNDEBUG -g -O2 -Wno-long-long" %{cmake}/"-DNDEBUG -g -O2 -Wno-long-long" cmake3/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
+sed -i 's/%{__make} install DESTDIR/%{__make} -j9 install DESTDIR/' centreon-engine/packaging/rpm/centreon-engine.spectemplate
 # supression dossier centreon build
 rm -rf centreon-build
 
