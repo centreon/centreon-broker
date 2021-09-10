@@ -297,7 +297,13 @@ git remote rm centreon-build
 
 
 
+echo ""
+echo ""
+echo ""
+echo "**********************************************************************************"
 echo "ne surtout pas oublier d'enlever les else et endif dans les spec template"
+echo "**********************************************************************************"
+echo ""
 #push dans centreon-collect distant
 # git add -A
 # git commit -m "road to collect"
