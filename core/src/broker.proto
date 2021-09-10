@@ -9,8 +9,9 @@ service Broker {
 
   // stats
   rpc GetGenericStats(google.protobuf.Empty) returns (GenericString) {}
-  rpc GetSqlConnectionStats(google.protobuf.Empty) returns (BrokerStats) {}
-  rpc GetConflictManagerStats(google.protobuf.Empty) returns (BrokerStats) {}
+  rpc GetSqlConnectionStats(GenericInt) returns (SqlConnectionStats) {}
+  rpc GetSqlConnectionSize(google.protobuf.Empty) returns (GenericSize) {}
+  rpc GetConflictManagerStats(google.protobuf.Empty) returns (ConflictManagerStats) {}
 
   rpc GetNumModules(google.protobuf.Empty) returns (GenericSize) {}
   rpc GetModulesStats(GenericNameOrIndex) returns (GenericString) {}
@@ -29,6 +30,10 @@ message Version {
 
 message GenericString {
   string str_arg = 1;
+}
+
+message GenericInt {
+  uint32 value = 1;
 }
 
 message GenericSize {
