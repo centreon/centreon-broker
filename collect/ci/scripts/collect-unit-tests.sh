@@ -24,12 +24,12 @@ cd ..
 cd centreon-engine
 tests/ut_engine --gtest_output=xml:engine-ut.xml
 cd ..
-#cd centreon-connector
-#./ut_connector --gtest_output=xml:/src/connector-ut.xml
-#cd .. 
-#cd centreon-clib
-#test/ut-clib --gtest_output=xml:/src/clib-ut.xml
-#cd ..
+cd centreon-connector
+./ut_connector --gtest_output=xml:/src/connector-ut.xml
+cd .. 
+cd centreon-clib
+test/ut-clib --gtest_output=xml:/src/clib-ut.xml
+cd ..
 
 # Prepare analysis step
 cmake3 -DCMAKE_EXPORT_COMPILE_COMMANDS=On centreon-broker
