@@ -156,6 +156,7 @@ void feeder::_callback() noexcept {
           misc::read_lock lock(_client_m);
           timed_out_stream = !_client->read(d, 0);
         } catch (exceptions::shutdown const& e) {
+          log_v2::processing()->error("feeder: stream read disabled on '{}'", _name);
           stream_can_read = false;
         }
         if (d) {
@@ -177,6 +178,7 @@ void feeder::_callback() noexcept {
         try {
           timed_out_muxer = !_subscriber.get_muxer().read(d, 0);
         } catch (exceptions::shutdown const& e) {
+          log_v2::processing()->error("feeder: muxer read disabled on '{}'", _name);
           muxer_can_read = false;
         }
       if (d) {

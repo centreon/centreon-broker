@@ -258,6 +258,9 @@ void failover::_run() {
             std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
             timed_out_stream = !_stream->read(d, 0);
           } catch (exceptions::shutdown const& e) {
+            log_v2::processing()->error(
+                "failover: stream of endpoint '{}' shutdown while reading: {}",
+                _name, e.what());
             log_v2::processing()->debug(
                 "failover: stream of endpoint '{}' shutdown while reading: {}",
                 _name, e.what());
@@ -290,9 +293,11 @@ void failover::_run() {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
             should_commit = should_commit || d;
           } catch (exceptions::shutdown const& e) {
+            log_v2::processing()->error(
+                "failover: muxer of endpoint '{}' shutdown while reading: {}",
+                _name, e.what());
             log_v2::processing()->debug(
-                "failover: muxer of endpoint '{}' "
-                "shutdown while reading: {}",
+                "failover: muxer of endpoint '{}' shutdown while reading: {}",
                 _name, e.what());
             muxer_can_read = false;
           }
