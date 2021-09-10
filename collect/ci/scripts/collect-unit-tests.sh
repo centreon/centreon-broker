@@ -31,9 +31,4 @@ cd centreon-clib
 test/ut-clib --gtest_output=xml:/src/clib-ut.xml
 cd ..
 
-# Prepare analysis step
-cmake3 -DCMAKE_EXPORT_COMPILE_COMMANDS=On centreon-broker
-cmake3 -DCMAKE_EXPORT_COMPILE_COMMANDS=On centreon-engine
-cmake3 -DCMAKE_EXPORT_COMPILE_COMMANDS=On centreon-clib
-cmake3 -DCMAKE_EXPORT_COMPILE_COMMANDS=On centreon-connector
 
