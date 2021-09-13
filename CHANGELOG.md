@@ -6,7 +6,7 @@
 
 *rrd*
 
-New loop to check deleted index every 5 minutes.
+New loop to check deleted index every 5 minutes and delete metric file associated.
 
 *sql*
 
