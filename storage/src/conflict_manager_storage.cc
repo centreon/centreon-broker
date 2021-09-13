@@ -573,6 +573,12 @@ void conflict_manager::_check_deleted_index() {
       _mysql.run_query(query, database::mysql_error::delete_metric, false,
                        conn);
       _add_action(conn, actions::metrics);
+
+      // Remove associated graph.
+      std::shared_ptr<storage::remove_graph> rg{
+          std::make_shared<storage::remove_graph>(i, false)};
+      multiplexing::publisher().write(rg);
+
       deleted_metrics++;
     }
 
