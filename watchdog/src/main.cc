@@ -60,7 +60,6 @@ static void print_help() {
 static void apply_new_configuration(configuration const& cfg) {
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_level(spdlog::level::warn);
-  console_sink->set_pattern("[cbwd] [%^%l%$] %v");
 
   auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
       cfg.get_log_filename(), false);
@@ -72,6 +71,7 @@ static void apply_new_configuration(configuration const& cfg) {
     logger.reset(new spdlog::logger("cbwd", {console_sink}));
 
   logger->flush_on(spdlog::level::trace);
+  logger->set_pattern("[%Y-%m-%dT%H:%M:%S.%e%z] [cbwd] [%l] %v");
 
   std::set<std::string> to_update;
   std::set<std::string> to_delete;
@@ -183,9 +183,9 @@ int main(int argc, char** argv) {
 
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_level(spdlog::level::warn);
-  console_sink->set_pattern("[cbwd] [%^%l%$] %v");
   logger.reset(new spdlog::logger("cbwd", {console_sink}));
   logger->flush_on(spdlog::level::trace);
+  logger->set_pattern("[%Y-%m-%dT%H:%M:%S.%e%z] [cbwd] [%l] %v");
 
   if (argc != 2 || ::strcmp(argv[1], "-h") == 0) {
     print_help();
