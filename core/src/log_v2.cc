@@ -167,6 +167,7 @@ void log_v2::apply(const config::state& conf) {
     *l = std::make_shared<logger>(it->first, file_sink);
     (*l)->set_level(_levels_map[it->second]);
     (*l)->flush_on(_levels_map[it->second]);
+    (*l)->set_pattern("[%Y-%m-%dT%H:%M:%S.%e%z] [%n] [%l] %v");
   }
 }
 
