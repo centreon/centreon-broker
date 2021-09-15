@@ -251,15 +251,15 @@ bool center::unregister_mysql_connection(SqlConnectionStats* connection) {
  *
  * @return A pointer to the conflict_manager statistics.
  */
-// ConflictManagerStats* center::register_conflict_manager() {
-//  std::promise<ConflictManagerStats*> p;
-//  std::future<ConflictManagerStats*> retval = p.get_future();
-//  _strand.post([this, &p] {
-//    auto cm = _stats.mutable_conflict_manager();
-//    p.set_value(cm);
-//  });
-//  return retval.get();
-//}
+ ConflictManagerStats* center::register_conflict_manager() {
+  std::promise<ConflictManagerStats*> p;
+  std::future<ConflictManagerStats*> retval = p.get_future();
+  _strand.post([this, &p] {
+    auto cm = _stats.mutable_conflict_manager();
+    p.set_value(cm);
+  });
+  return retval.get();
+}
 
 /**
  * @brief To allow the conflict manager to send statistics, it has to call this
@@ -319,13 +319,48 @@ std::string center::to_string() {
 //  // We wait for the response.
 //  done.get();
 //}
-//
-//
-void center::get_sql_connection_stats(BrokerStats* response) {
+
+void center::get_sql_connection_stats(uint32_t index, SqlConnectionStats* response) {
+  std::promise<bool> p;
+  std::future<bool> done = p.get_future();
+  _strand.post([&s = this->_stats, &p, &index, response] {
+      uint32_t i = 0;
+      for (auto it = s.connections().begin(), 
+        end = s.connections().end();
+        it != end; ++it, ++i) {
+            if (index == i) {
+              *response = (*it);  
+            }
+      }
+
+      if (i > index) {
+        log_v2::sql()->info("mysql_connection: index out of range in get sql "
+                            "connection stats");
+      }
+      p.set_value(true);
+  });
+
+  // We wait for the response.
+  done.get();
+}
+
+void center::get_sql_connection_size(GenericSize* response) {
   std::promise<bool> p;
   std::future<bool> done = p.get_future();
   _strand.post([&s = this->_stats, &p, response] {
-      *response->mutable_connections() = s.connections();
+      response->set_size(s.connections().size());
+      p.set_value(true);
+  });
+
+  // We wait for the response.
+  done.get();
+}
+
+void center::get_conflict_manager_stats(ConflictManagerStats* response) {
+  std::promise<bool> p;
+  std::future<bool> done = p.get_future();
+  _strand.post([&s = this->_stats, &p, response] {
+      *response = s.conflict_manager();
       p.set_value(true);
   });
 
