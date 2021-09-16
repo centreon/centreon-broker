@@ -199,7 +199,7 @@ void conflict_manager::_load_deleted_instances() {
     mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res))
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
-  } catch (std::exception const& e) {
+  } catch (const std::exception& e) {
     throw exceptions::msg()
         << "could not get list of deleted instances: " << e.what();
   }
