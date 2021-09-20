@@ -81,26 +81,6 @@ TEST_F(BrokerRpc, GetVersion) {
   brpc.shutdown();
 }
 
-TEST_F(BrokerRpc, GetSqlConnectionStatsSize) {
-  brokerrpc brpc("0.0.0.0", 40000, "test");
-  SqlConnectionStats* _stats;
-
-  auto output = execute("GetSqlConnectionStatsSize");
-  ASSERT_EQ(output.front(), "connection size: 0\n");
-
-  _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 3);
-  output = execute("GetSqlConnectionStatsSize");
-  ASSERT_EQ(output.front(), "connection size: 1\n");
-
-  _stats = stats::center::instance().register_mysql_connection();
-  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 5);
-  output = execute("GetSqlConnectionStatsSize");
-  ASSERT_EQ(output.front(), "connection size: 2\n");
-
-  brpc.shutdown();
-}
-
 TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
   brokerrpc brpc("0.0.0.0", 40000, "test");
   SqlConnectionStats* _stats;
@@ -118,12 +98,44 @@ TEST_F(BrokerRpc, GetSqlConnectionStatsValue) {
   _stats = stats::center::instance().register_mysql_connection();
   stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 15);
 
-  auto output = execute("GetSqlConnectionStatsValue");
+  auto output = execute("GetSqlConnectionStatsValue 4");
 
   std::vector<std::string> results(output.size());
   std::copy(output.begin(), output.end(), results.begin());
 
   ASSERT_EQ(vectests, results);
+  brpc.shutdown();
+}
+
+TEST_F(BrokerRpc, GetSqlConnectionSize) {
+  brokerrpc brpc("0.0.0.0", 40000, "test");
+  SqlConnectionStats* _stats;
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 3);
+
+  _stats = stats::center::instance().register_mysql_connection();
+  stats::center::instance().update(&SqlConnectionStats::set_waiting_tasks, _stats, 5);
+
+  auto output = execute("GetSqlConnectionSize");
+  ASSERT_EQ(output.front(), "connection array size: 2\n");
+
+  brpc.shutdown();
+}
+
+
+TEST_F(BrokerRpc, GetConflictManagerStats) {
+  brokerrpc brpc("0.0.0.0", 40000, "test");
+  ConflictManagerStats* _stats;
+
+  _stats = stats::center::instance().register_conflict_manager();
+  stats::center::instance().update(&ConflictManagerStats::set_events_handled, _stats, 3);
+  stats::center::instance().update(&ConflictManagerStats::set_loop_timeout,
+                                         _stats, 30u);
+
+  auto output = execute("GetConflictManagerStats");
+
+  std::cout << output.front();
   brpc.shutdown();
 }
 

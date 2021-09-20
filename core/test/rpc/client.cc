@@ -45,18 +45,40 @@ class BrokerRPCClient {
     return true;
   }
 
-  bool GetSqlConnectionStats(BrokerStats* response) {
-    const ::google::protobuf::Empty e;
+  bool GetSqlConnectionStats(SqlConnectionStats* response, uint32_t val) {
+    GenericInt i;
+    i.set_value(val);
     grpc::ClientContext context;
-    grpc::Status status = _stub->GetSqlConnectionStats(&context, e, response);
+    grpc::Status status = _stub->GetSqlConnectionStats(&context, i, response);
+
     if (!status.ok()) {
-      std::cout << "GetVersion rpc failed." << std::endl;
+      std::cout << "GetSqlConnectionStats rpc failed." << std::endl;
       return false;
     }
     return true;
   }
 
-  
+  bool GetSqlConnectionSize(GenericSize* response) {
+    const ::google::protobuf::Empty e;
+    grpc::ClientContext context;
+    grpc::Status status = _stub->GetSqlConnectionSize(&context, e, response);
+    if (!status.ok()) {
+      std::cout << "GetSqlConnectionStats rpc failed." << std::endl;
+      return false;
+    }
+    return true;
+  }
+
+  bool GetConflictManagerStats(ConflictManagerStats* response) {
+    const ::google::protobuf::Empty e;
+    grpc::ClientContext context;
+    grpc::Status status = _stub->GetConflictManagerStats(&context, e, response);
+    if (!status.ok()) {
+      std::cout << "GetConflictManager rpc failed." << std::endl;
+      return false;
+    }
+    return true;
+  }
 };
 
 int main(int argc, char** argv) {
@@ -76,27 +98,30 @@ int main(int argc, char** argv) {
     std::cout << "GetVersion: " << version.DebugString();
   }
 
-  if (strcmp(argv[1], "GetSqlConnectionStatsSize") == 0) {
-    BrokerStats response;
-    status = client.GetSqlConnectionStats(&response) ? 0 : 1;
+  if (strcmp(argv[1], "GetSqlConnectionStatsValue") == 0) {
+    uint32_t sz = atoi(argv[2]);
+    SqlConnectionStats response;
+    for (uint32_t i = 0; i < sz; ++i) {
+      status = client.GetSqlConnectionStats(&response, i) ? 0 : 1;
+      std::cout << response.waiting_tasks() << std::endl;
+    }
+  }
 
-    std::cout << "connection size: "
-              << response.mutable_connections()->size()
+  if (strcmp(argv[1], "GetSqlConnectionSize") == 0) {
+    GenericSize response;
+    status = client.GetSqlConnectionSize(&response) ? 0 : 1;
+    std::cout << "connection array size: "
+              << response.size()
               << std::endl;
   }
-
-  if (strcmp(argv[1], "GetSqlConnectionStatsValue") == 0) {
-    BrokerStats response;
-    status = client.GetSqlConnectionStats(&response) ? 0 : 1;
-    for (auto
-             it = response.mutable_connections()->begin(),
-             end = response.mutable_connections()->end();
-             it != end; ++it) {
-      std::cout << (*it).waiting_tasks() << std::endl; 
-      }
+  
+  if (strcmp(argv[1], "GetConflictManagerStats") == 0) {
+    ConflictManagerStats response;
+    status = client.GetConflictManagerStats(&response) ? 0 : 1;
+    std::cout << "events_handled: "
+              << response.events_handled()
+              << std::endl;
   }
-
-
 
   exit(status);
 }

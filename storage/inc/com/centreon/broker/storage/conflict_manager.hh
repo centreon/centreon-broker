@@ -168,6 +168,7 @@ class conflict_manager {
   std::thread _thread;
 
   /* Stats */
+  ConflictManagerStats* _stats;
   std::mutex _stat_m;
   int32_t _events_handled;
   float _speed;
