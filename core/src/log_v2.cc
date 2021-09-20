@@ -108,6 +108,7 @@ void log_v2::apply(const config::state& conf) {
   _core_log = std::make_shared<logger>("core", file_sink);
   _core_log->set_level(level::info);
   _core_log->flush_on(level::info);
+  _core_log->set_pattern("[%Y-%m-%dT%H:%M:%S.%e%z] [%n] [%l] %v");
   _core_log->info("{} : log started", _log_name);
 
   _bam_log = std::make_shared<logger>("bam", null_sink);
@@ -167,6 +168,7 @@ void log_v2::apply(const config::state& conf) {
     *l = std::make_shared<logger>(it->first, file_sink);
     (*l)->set_level(_levels_map[it->second]);
     (*l)->flush_on(_levels_map[it->second]);
+    (*l)->set_pattern("[%Y-%m-%dT%H:%M:%S.%e%z] [%n] [%l] %v");
   }
 }
 
