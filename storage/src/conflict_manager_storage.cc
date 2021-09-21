@@ -577,6 +577,8 @@ void conflict_manager::_check_deleted_index() {
           std::make_shared<storage::remove_graph>(i, false)};
       multiplexing::publisher().write(rg);
 
+      _metrics.erase(i);
+
       deleted_metrics++;
     }
 
