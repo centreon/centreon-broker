@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-. common.sh
+. ./common.sh
 
 ##### STARTING #####
 if [[ -z "$1" ]]; then

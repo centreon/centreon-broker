@@ -1,4 +1,5 @@
 @Library("centreon-shared-library")_
+
 /*
 ** Variables.
 */
@@ -30,12 +31,11 @@ if (env.BRANCH_NAME.startsWith('release-')) {
 /*
 ** Pipeline code.
 */
-
 stage('Deliver sources') {
   node("C++") {
     dir('centreon-collect-centos7') {
-      loadCommonScripts()
       checkout scm
+      loadCommonScripts()
       sh 'ci/scripts/collect-sources-delivery.sh centreon-broker'
       sh 'ci/scripts/collect-sources-delivery.sh centreon-clib'
       sh 'ci/scripts/collect-sources-delivery.sh centreon-engine'
@@ -55,10 +55,7 @@ stage('Build / Unit tests // Packaging / Signing') {
         sh 'docker run -i --entrypoint /src/ci/scripts/collect-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-collect-centos7-dependencies:21.10'
         sh "sudo apt-get install -y clang-tidy"
         withSonarQubeEnv('SonarQubeDev') {
-          sh 'ci/scripts/collect-sources-analysis.sh centreon-broker'
-          sh 'ci/scripts/collect-sources-analysis.sh centreon-engine'
-          //sh 'ci/scripts/collect-sources-analysis.sh centreon-clib'
-          //sh 'ci/scripts/collect-sources-analysis.sh centreon-connector'
+          sh 'ci/scripts/collect-sources-analysis.sh'
         }
       }
     }
@@ -92,6 +89,26 @@ stage('Build / Unit tests // Packaging / Signing') {
         stash name: 'el8-rpms', includes: '*.rpm'
         archiveArtifacts artifacts: "*.rpm"
         sh 'rm -rf *.rpm'
+      }
+    }
+  },
+  'debian buster Build and UT': {
+    node("C++") {
+      dir('centreon-collect-debian') {
+        checkout scm
+        sh 'docker run -i --entrypoint /src/ci/scripts/collect-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-collect-debian-dependencies:21.10'
+      }
+    }
+  },
+  'debian buster packaging and signing': {
+    node("C++") {
+      dir('centreon-collect-centos8') {
+        //checkout scm
+        //sh 'docker run -i --entrypoint /src/ci/scripts/collect-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el8" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-collect-centos8-dependencies:21.10'
+        //sh 'rpmsign --addsign *.rpm'
+        //stash name: 'el8-rpms', includes: '*.rpm'
+        //archiveArtifacts artifacts: "*.rpm"
+        //sh 'rm -rf *.rpm'
       }
     }
   } 
