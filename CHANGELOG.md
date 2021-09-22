@@ -18,6 +18,10 @@ less activity. This fixes possible deadlocks in the database.
 Errors encountered by the conflict\_manager were fatal, each time it stopped
 after one error. This is fixed now.
 
+*lua*
+
+Objects could stay on the lua exchange stack between the lua machine and C++.
+
 ## 21.04.3
 
 ### Fixes
