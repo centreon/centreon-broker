@@ -13,6 +13,17 @@ New loop to check deleted index every 5 minutes and delete metric file associate
 There was still some code on index data that considered index\_id as uint32.
 This was particularly the case in the metrics cache. It is fixed now.
 
+Hostgroups, comments and others transverse stuffs have each one now their own
+connection to the database, and we do not choose anymore the connection with
+less activity. This fixes possible deadlocks in the database.
+
+Errors encountered by the conflict\_manager were fatal, each time it stopped
+after one error. This is fixed now.
+
+*lua*
+
+Objects could stay on the lua exchange stack between the lua machine and C++.
+
 ## 20.10.7
 
 ### Fixes
