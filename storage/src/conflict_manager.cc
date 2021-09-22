@@ -143,6 +143,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_ref_count++;
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
+      pthread_setname_np(_singleton->_thread.native_handle(), "conflict_mngr");
       return true;
     }
     log_v2::sql()->info(
@@ -481,7 +482,7 @@ void conflict_manager::_callback() {
             _update_customvariables();
           }
 
-                    /* Time to send logs to database */
+          /* Time to send logs to database */
           if (std::chrono::system_clock::to_time_t(now) >= next_update_log ||
               _log_queue.size() > _max_log_queries) {
             next_update_log = std::chrono::system_clock::to_time_t(now) + 10;
@@ -507,7 +508,7 @@ void conflict_manager::_callback() {
             if (_should_exit())
               break;
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                        /* Here, just before looping, we commit. */
+            /* Here, just before looping, we commit. */
             std::chrono::system_clock::time_point now =
                 std::chrono::system_clock::now();
 

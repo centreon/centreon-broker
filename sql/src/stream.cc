@@ -20,7 +20,6 @@
 
 #include <ctime>
 #include <limits>
-#include <sstream>
 
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"

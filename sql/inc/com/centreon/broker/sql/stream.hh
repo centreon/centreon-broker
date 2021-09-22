@@ -49,7 +49,7 @@ class stream : public io::stream {
   database::mysql_stmt _issue_parent_insert;
   database::mysql_stmt _issue_parent_update;
   database::mysql_stmt _service_state_insupdate;
-  //  cleanup _cleanup_thread;
+//  cleanup _cleanup_thread;
   int _pending_events;
   bool _with_state_events;
   mutable std::mutex _stat_mutex;

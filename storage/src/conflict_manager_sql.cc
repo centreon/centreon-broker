@@ -788,7 +788,7 @@ void conflict_manager::_process_host_dependency(
 void conflict_manager::_process_host_group(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn = special_conn::host_group % _mysql.connections_count();
+  int32_t conn = special_conn::host_group % _mysql.connections_count();
   _finish_action(-1, actions::hosts);
 
   // Cast object.
@@ -1553,7 +1553,7 @@ void conflict_manager::_process_service(
                          actions::service_dependencies);
 
   // Processed object.
-  const neb::service& s(*static_cast<neb::service const*>(d.get()));
+  const neb::service& s(*static_cast<const neb::service*>(d.get()));
   if (_cache_host_instance[s.host_id]) {
     int32_t conn =
         _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);

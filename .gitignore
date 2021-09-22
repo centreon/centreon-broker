@@ -18,6 +18,7 @@ cmake_install.cmake
 core/inc/com/centreon/broker/database/table_max_size.hh
 core/inc/com/centreon/broker/vars.hh
 core/inc/com/centreon/broker/version.hh
+deps.png
 doc/_build
 doc/devel-doc
 libgtest*.a
@@ -29,3 +30,4 @@ test-coverage
 test/python/*.crt
 test/python/*.key
 ut
+ut.xml
