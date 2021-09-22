@@ -15,6 +15,9 @@ Hostgroups, comments and others transverse stuffs have each one now their own
 connection to the database, and we do not choose anymore the connection with
 less activity. This fixes possible deadlocks in the database.
 
+Errors encountered by the conflict\_manager were fatal, each time it stopped
+after one error. This is fixed now.
+
 ## 21.04.3
 
 ### Fixes
