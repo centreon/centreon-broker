@@ -188,7 +188,10 @@ class mysql_error {
   mysql_error(mysql_error&& other) = delete;
   mysql_error(char const* message) : _message(message), _active(true) {}
   mysql_error& operator=(mysql_error const& other) = delete;
-  std::string get_message() { return std::move(_message); }
+  std::string get_message() {
+    clear();
+    return std::move(_message);
+  }
 
   template <typename... Args>
   void set_message(std::string const& format, const Args&... args) {
