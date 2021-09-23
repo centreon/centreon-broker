@@ -599,6 +599,7 @@ void broker_utils::broker_utils_reg(lua_State* L) {
 
 #ifdef LUA51
   luaL_register(L, "broker", s_broker_regs);
+  lua_pop(L, 1);
 #else
   luaL_newlibtable(L, s_broker_regs);
   luaL_setfuncs(L, s_broker_regs, 0);

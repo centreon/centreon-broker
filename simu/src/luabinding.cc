@@ -115,12 +115,14 @@ void luabinding::_load_script() {
   if (!lua_isfunction(_L, lua_gettop(_L)))
     throw exceptions::msg()
         << "simu: '" << _lua_script << "' init() global function is missing";
+  lua_pop(_L, 1);
 
   // Checking for read() availability: this function is mandatory
   lua_getglobal(_L, "read");
   if (!lua_isfunction(_L, lua_gettop(_L)))
     throw exceptions::msg()
         << "simu: '" << _lua_script << "' read() global function is missing";
+  lua_pop(_L, 1);
 }
 
 /**
