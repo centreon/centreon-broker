@@ -148,7 +148,7 @@ static uint32_t set_timestamp(io::data& t,
                               mapping::entry const& member,
                               void const* data,
                               uint32_t size) {
-  if (size < 2 * sizeof(uint32_t)) {
+  if (size < sizeof(uint64_t)) {
     log_v2::bbdo()->error(
         "BBDO: cannot extract timestamp value: {} bytes left in packet", size);
     throw exceptions::msg() << "BBDO: cannot extract timestamp value: " << size
@@ -160,7 +160,7 @@ static uint32_t set_timestamp(io::data& t,
   val <<= 32;
   val |= ntohl(*ptr);
   member.set_time(t, val);
-  return 2 * sizeof(uint32_t);
+  return sizeof(uint64_t);
 }
 
 /**
@@ -942,8 +942,7 @@ void stream::_read_packet(size_t size, time_t deadline) {
         if (_packet.size() == 0) {
           _packet = std::move(new_v);
           new_v.clear();
-        }
-        else
+        } else
           _packet.insert(_packet.end(), new_v.begin(), new_v.end());
       }
     }

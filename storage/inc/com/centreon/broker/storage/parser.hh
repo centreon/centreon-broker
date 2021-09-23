@@ -39,8 +39,8 @@ class parser {
  public:
   parser() = default;
   ~parser() noexcept = default;
-  parser(parser const& p) = delete;
-  parser& operator=(parser const& p) = delete;
+  parser(parser const&) = delete;
+  parser& operator=(parser const&) = delete;
   void parse_perfdata(uint32_t host_id,
                       uint32_t service_id,
                       const char* str,
