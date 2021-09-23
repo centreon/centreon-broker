@@ -35,7 +35,7 @@ local custom_variable_status = {
     local now = os.time()
     broker_log:info(0, "CHECK CUSTOM VARIABLES STATUS")
     local retval = true
-    local cursor, error_str = conn["storage"]:execute([[SELECT host_id, name, value from customvariables WHERE type=1 ORDER BY host_id]])
+    local cursor, error_str = conn["storage"]:execute([[SELECT host_id, name, value from customvariables WHERE type=1 AND value LIKE '%new' ORDER BY host_id]])
     local row = cursor:fetch({}, "a")
     local count = 0
     while row do
@@ -57,11 +57,11 @@ local custom_variable_status = {
 
     broker_log:info(1, "custom variables count = " .. count)
     if count ~= cv_count * host_count then
-      broker_log:info(0, "CHECK CUSTOM VARIABLES => NOT FINISHED")
+      broker_log:info(0, "CHECK CUSTOM VARIABLES STATUS => NOT FINISHED " .. count .. " != " .. (cv_count * host_count))
       retval = false
     end
     if not retval then
-      broker_log:info(0, "CHECK CUSTOM VARIABLES => NOT DONE")
+      broker_log:info(0, "CHECK CUSTOM VARIABLES STATUS => NOT DONE")
     else
       broker_log:info(0, "CHECK CUSTOM VARIABLES => DONE")
     end
