@@ -623,7 +623,7 @@ void mysql_connection::_run() {
         if (!_try_to_reconnect())
           log_v2::sql()->error("SQL: Reconnection failed.");
       } else
-        log_v2::sql()->info("SQL: connection always alive");
+        log_v2::sql()->trace("SQL: connection always alive");
 
       time_t start = time(nullptr);
       for (auto& task : tasks_list) {

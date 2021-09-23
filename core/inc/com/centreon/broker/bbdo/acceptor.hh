@@ -53,7 +53,7 @@ class acceptor : public io::endpoint {
   std::list<std::shared_ptr<io::extension>> _extensions;
 
  public:
-  acceptor(std::string const& name,
+  acceptor(std::string name,
            bool negotiate,
            time_t timeout,
            bool one_peer_retention_mode = false,

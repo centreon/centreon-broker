@@ -21,7 +21,6 @@
 #include <cassert>
 #include <limits>
 #include <memory>
-#include <sstream>
 
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -53,7 +52,8 @@ muxer::muxer(std::string const& name, bool persistent)
   // Load head queue file back in memory.
   if (_persistent) {
     try {
-      std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
+      std::unique_ptr<io::stream> mf(
+          std::make_unique<persistent_file>(_memory_file()));
       std::shared_ptr<io::data> e;
       for (;;) {
         e.reset();
@@ -161,8 +161,9 @@ int32_t muxer::stop() {
  */
 void muxer::event_queue_max_size(uint32_t max) noexcept {
   if (!max)
-    max = std::numeric_limits<uint32_t>::max();
-  _event_queue_max_size = max;
+    _event_queue_max_size = std::numeric_limits<uint32_t>::max();
+  else
+    _event_queue_max_size = max;
 }
 
 /**

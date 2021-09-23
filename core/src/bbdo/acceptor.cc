@@ -50,7 +50,7 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] ack_limit               The number of event received before
  *                                     an ack needs to be sent.
  */
-acceptor::acceptor(std::string const& name,
+acceptor::acceptor(std::string name,
                    bool negotiate,
                    time_t timeout,
                    bool one_peer_retention_mode,
@@ -59,7 +59,7 @@ acceptor::acceptor(std::string const& name,
                    std::list<std::shared_ptr<io::extension>>&& extensions)
     : io::endpoint(!one_peer_retention_mode),
       _coarse(coarse),
-      _name(name),
+      _name(std::move(name)),
       _negotiate(negotiate),
       _one_peer_retention_mode(one_peer_retention_mode),
       _timeout(timeout),

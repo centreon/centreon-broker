@@ -11,6 +11,11 @@
       "event_queue_max_size": 100000,
       "command_file": "/var/lib/centreon-broker/command.sock",
       "cache_directory": "/var/lib/centreon-broker",
+      "log": {
+        "loggers": {
+          "sql": "debug"
+        }
+      },
       "logger": {
         "name": "/var/log/centreon-broker/central-broker-master.log",
         "config": true,
@@ -33,17 +38,17 @@
         {
           "type": "string",
           "name": "db_addr",
-          "value": "172.17.0.1"
+          "value": "127.0.0.1"
         },
         {
           "type": "string",
           "name": "login",
-          "value": "root"
+          "value": "centreon"
         },
         {
           "type": "string",
           "name": "password",
-          "value": "root"
+          "value": "centreon"
         }
         ]
       },
@@ -52,11 +57,11 @@
         "name": "central-broker-master-sql",
         "db_type": "mysql",
         "retry_interval": "60",
-        "db_host": "172.17.0.1",
+        "db_host": "localhost",
         "buffering_timeout": "0",
         "db_port": "3306",
-        "db_user": "root",
-        "db_password": "root",
+        "db_user": "centreon",
+        "db_password": "centreon",
         "db_name": "centreon_storage",
         "check_replication": "no",
         "type": "sql",
@@ -80,10 +85,10 @@
         "buffering_timeout": "0",
         "length": "15552000",
         "db_type": "mysql",
-        "db_host": "172.17.0.1",
+        "db_host": "localhost",
         "db_port": "3306",
-        "db_user": "root",
-        "db_password": "root",
+        "db_user": "centreon",
+        "db_password": "centreon",
         "db_name": "centreon_storage",
         "check_replication": "no",
         "store_in_data_bin": "yes",
@@ -97,9 +102,9 @@
         "cache": "yes",
         "db_name": "centreon",
         "db_type": "mysql",
-        "db_host": "172.17.0.1",
-        "db_user": "root",
-        "db_password": "root",
+        "db_host": "localhost",
+        "db_user": "centreon",
+        "db_password": "centreon",
         "db_port": "3306",
         "storage_db_name": "centreon_storage",
         "queries_per_transaction": "0",
@@ -110,9 +115,9 @@
         "type": "bam_bi",
         "db_name": "centreon_storage",
         "db_type": "mysql",
-        "db_host": "172.17.0.1",
-        "db_user": "root",
-        "db_password": "root",
+        "db_host": "localhost",
+        "db_user": "centreon",
+        "db_password": "centreon",
         "db_port": "3306",
         "queries_per_transaction": "0",
         "filters": {
