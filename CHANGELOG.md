@@ -15,6 +15,11 @@ computations.
 When the connection of an acceptor is reversed, if cbd is stopped when there is
 no peer, cbd does not stop. This patch fixes this issue.
 
+*mysql connections*
+
+All transverse events have now their own connection to use when we write to the
+database. This avoids deadlocks in MySQL server.
+
 ## 20.04.15
 
 ### Fixes

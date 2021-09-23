@@ -120,7 +120,7 @@ void mysql_manager::clear() {
     if (!conn.unique() && !conn->is_finished())
       try {
         conn->finish();
-      } catch (std::exception const& e) {
+      } catch (const std::exception& e) {
         logging::info(logging::low)
             << "mysql_manager: Unable to stop a connection: " << e.what();
       }

@@ -184,7 +184,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "cv.host_id = h.host_id WHERE h.instance_id={}",
       instance_id);
 
-  _finish_action(-1, actions::custom_variables | actions::hosts);
+  _finish_action(conn, actions::custom_variables | actions::hosts);
   _mysql.run_query(query, database::mysql_error::clean_customvariables, false,
                    conn);
   _add_action(conn, actions::custom_variables);
@@ -359,7 +359,8 @@ void conflict_manager::_process_acknowledgement(
   log_v2::sql()->info(
       "processing acknowledgement event (poller: {}, host: {}, service: {}, "
       "entry time: {}, deletion time: {})",
-      ack.poller_id, ack.service_id, ack.entry_time, ack.deletion_time);
+      ack.poller_id, ack.host_id, ack.service_id, ack.entry_time,
+      ack.deletion_time);
 
   // Processing.
   if (_is_valid_poller(ack.poller_id)) {
@@ -452,7 +453,7 @@ void conflict_manager::_process_custom_variable(
 
   // Processing.
   if (cv.enabled) {
-    _cv_queue.emplace_back(std::make_pair(
+    _cv_queue.emplace_back(
         std::get<2>(t),
         fmt::format(
             "('{}',{},{},'{}',{},{},{},'{}')",
@@ -464,13 +465,12 @@ void conflict_manager::_process_custom_variable(
                 get_customvariables_col_size(customvariables_default_value)),
             cv.modified ? 1 : 0, cv.var_type, cv.update_time,
             misc::string::escape(cv.value, get_customvariables_col_size(
-                                               customvariables_value)))));
+                                               customvariables_value))));
     /* Here, we do not update the custom variable boolean ack flag, because
      * it will be updated later when the bulk query will be done:
      * conflict_manager::_update_customvariables() */
   } else {
-    int conn =
-        _mysql.choose_best_connection(neb::custom_variable::static_type());
+    int conn = special_conn::custom_variable % _mysql.connections_count();
     _finish_action(-1, actions::custom_variables);
 
     log_v2::sql()->info("SQL: disabling custom variable '{}' of ({}, {})",
@@ -497,32 +497,23 @@ void conflict_manager::_process_custom_variable(
 void conflict_manager::_process_custom_variable_status(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn =
-      _mysql.choose_best_connection(neb::custom_variable_status::static_type());
-  _finish_action(-1, actions::custom_variables);
 
   // Cast object.
   neb::custom_variable_status const& cv{
       *static_cast<neb::custom_variable_status const*>(d.get())};
 
-  // Prepare queries.
-  if (!_custom_variable_status_insupdate.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("name");
-    unique.insert("service_id");
-    query_preparator qp(neb::custom_variable_status::static_type(), unique);
-    _custom_variable_status_insupdate = qp.prepare_insert_or_update(_mysql);
-  }
+  _cvs_queue.emplace_back(
+      std::get<2>(t),
+      fmt::format(
+          "('{}',{},{},{},{},'{}')",
+          misc::string::escape(
+              cv.name, get_customvariables_col_size(customvariables_name)),
+          cv.host_id, cv.service_id, cv.modified ? 1 : 0, cv.update_time,
+          misc::string::escape(
+              cv.value, get_customvariables_col_size(customvariables_value))));
 
-  log_v2::sql()->info("SQL: enabling custom variable '{}' of ({}, {})", cv.name,
+  log_v2::sql()->info("SQL: updating custom variable '{}' of ({}, {})", cv.name,
                       cv.host_id, cv.service_id);
-
-  _custom_variable_status_insupdate << cv;
-  _mysql.run_statement(_custom_variable_status_insupdate,
-                       database::mysql_error::store_customvariable, true, conn);
-  _add_action(conn, actions::custom_variables);
-  *std::get<2>(t) = true;
 }
 
 /**
@@ -535,7 +526,7 @@ void conflict_manager::_process_custom_variable_status(
 void conflict_manager::_process_downtime(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn = _mysql.choose_best_connection(neb::downtime::static_type());
+  int conn = special_conn::downtime % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::instances | actions::downtimes |
                          actions::host_parents | actions::host_dependencies |
                          actions::service_dependencies);
@@ -742,8 +733,7 @@ void conflict_manager::_process_host_check(
 void conflict_manager::_process_host_dependency(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::host_dependency::static_type());
+  int32_t conn = special_conn::host_dependency % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::host_parents |
                          actions::comments | actions::downtimes |
                          actions::host_dependencies |
@@ -798,7 +788,7 @@ void conflict_manager::_process_host_dependency(
 void conflict_manager::_process_host_group(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn = _mysql.choose_best_connection(neb::host_group::static_type());
+  int32_t conn = special_conn::host_group % _mysql.connections_count();
   _finish_action(-1, actions::hosts);
 
   // Cast object.
@@ -844,8 +834,7 @@ void conflict_manager::_process_host_group(
 void conflict_manager::_process_host_group_member(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int conn =
-      _mysql.choose_best_connection(neb::host_group_member::static_type());
+  int32_t conn = special_conn::host_group % _mysql.connections_count();
   _finish_action(-1, actions::hostgroups | actions::hosts);
 
   // Cast object.
@@ -941,8 +930,8 @@ void conflict_manager::_process_host(
 
   // Log message.
   log_v2::sql()->debug(
-      "SQL: processing host event (poller: {}, id: {}, name: {})", h.poller_id,
-      h.host_id, h.host_name);
+      "SQL: processing host event (poller: {}, host: {}, name: {})",
+      h.poller_id, h.host_id, h.host_name);
 
   // Processing
   if (_is_valid_poller(h.poller_id)) {
@@ -990,7 +979,7 @@ void conflict_manager::_process_host(
 void conflict_manager::_process_host_parent(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn = _mysql.choose_best_connection(neb::host_parent::static_type());
+  int32_t conn = special_conn::host_parent % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::host_dependencies |
                          actions::comments | actions::downtimes);
 
@@ -1359,8 +1348,7 @@ void conflict_manager::_process_service_check(
 void conflict_manager::_process_service_dependency(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::service_dependency::static_type());
+  int32_t conn = special_conn::service_dependency % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::host_parents |
                          actions::downtimes | actions::comments |
                          actions::host_dependencies |
@@ -1422,8 +1410,7 @@ void conflict_manager::_process_service_dependency(
 void conflict_manager::_process_service_group(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::service_group::static_type());
+  int32_t conn = special_conn::service_group % _mysql.connections_count();
   _finish_action(-1, actions::hosts | actions::services);
 
   // Cast object.
@@ -1474,8 +1461,7 @@ void conflict_manager::_process_service_group(
 void conflict_manager::_process_service_group_member(
     std::tuple<std::shared_ptr<io::data>, uint32_t, bool*>& t) {
   auto& d = std::get<0>(t);
-  int32_t conn =
-      _mysql.choose_best_connection(neb::service_group_member::static_type());
+  int32_t conn = special_conn::service_group % _mysql.connections_count();
   _finish_action(-1,
                  actions::hosts | actions::servicegroups | actions::services);
 
@@ -1567,7 +1553,7 @@ void conflict_manager::_process_service(
                          actions::service_dependencies);
 
   // Processed object.
-  const neb::service& s(*static_cast<neb::service const*>(d.get()));
+  const neb::service& s(*static_cast<const neb::service*>(d.get()));
   if (_cache_host_instance[s.host_id]) {
     int32_t conn =
         _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
@@ -1701,36 +1687,65 @@ void conflict_manager::_process_responsive_instance(
  * When we exit the function, the custom variables queue is empty.
  */
 void conflict_manager::_update_customvariables() {
-  if (_cv_queue.empty())
-    return;
-  int conn = _mysql.choose_best_connection(neb::custom_variable::static_type());
-  _finish_action(-1, actions::custom_variables);
-  auto it = _cv_queue.begin();
-  std::ostringstream oss;
-  oss << "INSERT INTO customvariables "
-         "(name,host_id,service_id,default_value,modified,type,update_time,"
-         "value) VALUES "
-      << std::get<1>(*it);
-  *std::get<0>(*it) = true;
-  for (++it; it != _cv_queue.end(); ++it)
-    oss << "," << std::get<1>(*it);
-
-  /* Building of the query */
-  oss << " ON DUPLICATE KEY UPDATE "
-         "default_value=VALUES(default_VALUE),modified=VALUES(modified),type="
-         "VALUES(type),update_time=VALUES(update_time),value=VALUES(value)";
-  std::string query(oss.str());
-  _mysql.run_query(query, database::mysql_error::update_customvariables, true,
-                   conn);
-  log_v2::sql()->debug("{} new custom variables inserted", _cv_queue.size());
-  log_v2::sql()->trace("sending query << {} >>", query);
-  _add_action(conn, actions::custom_variables);
-
-  /* Acknowledgement and cleanup */
-  while (!_cv_queue.empty()) {
+  int32_t conn = special_conn::custom_variable % _mysql.connections_count();
+  _finish_action(conn, actions::custom_variables);
+  if (!_cv_queue.empty()) {
     auto it = _cv_queue.begin();
+    std::ostringstream oss;
+    oss << "INSERT INTO customvariables "
+           "(name,host_id,service_id,default_value,modified,type,update_time,"
+           "value) VALUES "
+        << std::get<1>(*it);
     *std::get<0>(*it) = true;
-    _cv_queue.pop_front();
+    for (++it; it != _cv_queue.end(); ++it)
+      oss << "," << std::get<1>(*it);
+
+    /* Building of the query */
+    oss << " ON DUPLICATE KEY UPDATE "
+           "default_value=VALUES(default_VALUE),modified=VALUES(modified),type="
+           "VALUES(type),update_time=VALUES(update_time),value=VALUES(value)";
+    std::string query(oss.str());
+    _mysql.run_query(query, database::mysql_error::update_customvariables, true,
+                     conn);
+    log_v2::sql()->debug("{} new custom variables inserted", _cv_queue.size());
+    log_v2::sql()->trace("sending query << {} >>", query);
+    _add_action(conn, actions::custom_variables);
+
+    /* Acknowledgement and cleanup */
+    while (!_cv_queue.empty()) {
+      auto it = _cv_queue.begin();
+      *std::get<0>(*it) = true;
+      _cv_queue.pop_front();
+    }
+  }
+  if (!_cvs_queue.empty()) {
+    auto it = _cvs_queue.begin();
+    std::ostringstream oss;
+    oss << "INSERT INTO customvariables "
+           "(name,host_id,service_id,modified,update_time,value) VALUES "
+        << std::get<1>(*it);
+    *std::get<0>(*it) = true;
+    for (++it; it != _cvs_queue.end(); ++it)
+      oss << "," << std::get<1>(*it);
+
+    /* Building of the query */
+    oss << " ON DUPLICATE KEY UPDATE "
+           "modified=VALUES(modified),update_time=VALUES(update_time),value="
+           "VALUES(value)";
+    std::string query(oss.str());
+    _mysql.run_query(query, database::mysql_error::update_customvariables, true,
+                     conn);
+    log_v2::sql()->debug("{} new custom variable status inserted",
+                         _cvs_queue.size());
+    log_v2::sql()->trace("sending query << {} >>", query);
+    _add_action(conn, actions::custom_variables);
+
+    /* Acknowledgement and cleanup */
+    while (!_cvs_queue.empty()) {
+      auto it = _cvs_queue.begin();
+      *std::get<0>(*it) = true;
+      _cvs_queue.pop_front();
+    }
   }
 }
 
@@ -1743,7 +1758,7 @@ void conflict_manager::_update_customvariables() {
 void conflict_manager::_insert_logs() {
   if (_log_queue.empty())
     return;
-  int conn = _mysql.choose_best_connection(neb::log_entry::static_type());
+  int32_t conn = special_conn::log % _mysql.connections_count();
   auto it = _log_queue.begin();
   std::ostringstream oss;
 
