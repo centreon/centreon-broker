@@ -84,6 +84,17 @@ class conflict_manager {
   enum stream_type { sql, storage };
 
  private:
+  enum special_conn {
+    custom_variable,
+    downtime,
+    host_dependency,
+    host_group,
+    host_parent,
+    log,
+    service_dependency,
+    service_group,
+  };
+
   enum actions {
     none = 0,
     acknowledgements = 1 << 0,
@@ -208,6 +219,7 @@ class conflict_manager {
    * for the query and a pointer to a boolean so that we can acknowledge the
    * BBDO event when written. */
   std::deque<std::pair<bool*, std::string>> _cv_queue;
+  std::deque<std::pair<bool*, std::string>> _cvs_queue;
   std::deque<std::pair<bool*, std::string>> _log_queue;
 
   timestamp _oldest_timestamp;

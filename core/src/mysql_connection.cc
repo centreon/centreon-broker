@@ -616,8 +616,7 @@ void mysql_connection::_run() {
       if (mysql_ping(_conn)) {
         if (!_try_to_reconnect())
           log_v2::sql()->error("SQL: Reconnection failed.");
-      }
-      else
+      } else
         log_v2::sql()->trace("SQL: connection always alive");
 
       for (auto& task : tasks_list) {
