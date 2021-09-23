@@ -570,7 +570,6 @@ void conflict_manager::_check_deleted_index() {
       std::shared_ptr<storage::remove_graph> rg{
           std::make_shared<storage::remove_graph>(i, false)};
       multiplexing::publisher().write(rg);
-
       deleted_metrics++;
     }
 

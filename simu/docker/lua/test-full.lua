@@ -51,7 +51,7 @@ local step = {
 
 -- Instances                  => 18
 step[1].count = {
-  instance = 2,
+  instance = 10,
   continue = true,
 }
 
@@ -300,15 +300,30 @@ function clean_tables()
 end
 
 function init(conf)
+  broker_log:info(0, "Start")
+  for i,v in pairs(conf) do
+    broker_log:info(0, tostring(i).." => " ..tostring(v))
+  end
+  broker_log:info(0, "Start end")
   math.randomseed(os.time())
   os.remove("/tmp/simu.log")
   broker_log:set_parameters(3, simu.log_file)
   local env = mysql.mysql()
   simu.conn = {}
+  broker_log:info(0, "login: "..tostring(conf['login']))
+  broker_log:info(0, "password: "..tostring(conf['password']))
+  broker_log:info(0, "db_addr: "..tostring(conf['db_addr']))
   simu.conn["storage"] = env:connect('centreon_storage', conf['login'], conf['password'], conf['db_addr'], 3306)
   if not simu.conn["storage"] then
     broker_log:error(0, "No connection to database")
     error("No connection to database")
+  else
+    simu.conn["storage"]:setautocommit(1)
+    simu.conn["cfg"] = env:connect('centreon', conf['login'], conf['password'], conf['db_addr'], 3306)
+    if not simu.conn["cfg"] then
+      broker_log:error(0, "No connection to cfg database")
+      error("No connection to cfg database")
+    end
   end
 
   simu.conn["storage"]:setautocommit(1)
