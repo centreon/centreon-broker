@@ -23,7 +23,6 @@
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/misc/misc.hh"
-#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
