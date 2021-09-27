@@ -228,6 +228,7 @@ void feeder::_callback() noexcept {
     misc::read_lock lock(_client_m);
     _client.reset();
     set_state("disconnected");
+    log_v2::core()->info("feeder: queue files of client '{}' removed", _name);
     _subscriber.get_muxer().remove_queue_files();
   }
   log_v2::core()->info("feeder: thread of client '{}' will exit", _name);

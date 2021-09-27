@@ -49,7 +49,12 @@ bool factory::has_endpoint(config::endpoint& cfg, io::extension* ext) {
  *  Create a new endpoint from a configuration.
  *
  *  @param[in]  cfg         Endpoint configuration.
- *  @param[out] is_acceptor Set to true if the endpoint is an acceptor.
+ *  @param[out] is_acceptor Set to true if the endpoint is an acceptor. When we
+ *  enter in this function, substreams have already been checked. So this param
+ *  has already a value.
+ *  For this case (bbdo::factory), is_acceptor is set to false in case of a
+ *  tcp::stream configured as acceptor but with the one peer retention flag.
+ *  This is because "is_acceptor" in that case, means is input.
  *  @param[in]  cache       Unused.
  *
  *  @return Endpoint matching configuration.
@@ -105,6 +110,7 @@ io::endpoint* factory::new_endpoint(
       host = it->second;
   }
 
+  /* The substream is an acceptor (usually the substream a TCP acceptor */
   if (is_acceptor) {
     // This flag is just needed to know if we keep the retention or not...
     // When the connection is made to the map server, no retention is needed,

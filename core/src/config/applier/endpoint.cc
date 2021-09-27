@@ -167,9 +167,22 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       bool is_acceptor;
       std::shared_ptr<io::endpoint> e(_create_endpoint(ep, is_acceptor));
       std::unique_ptr<processing::endpoint> endp;
+      /* Input or output? */
+      /* This is tricky, one day we will make better... I hope.
+       * In case of an Engine making connection to Broker, usually Broker is an
+       * acceptor and Engine not.
+       * In case of one peer retention, each one keeps its role but the
+       * connection is reversed. To keep this behavior, Broker is still
+       * considered as the connector and Broker the acceptor, is_acceptor is
+       * then set to false.
+       * In case of Broker connected to Map, Broker is a TCP acceptor, and
+       * this flag is returned as true. And then we create an acceptor even
+       * if broker sends data to map. This is needed because a failover needs
+       * its peer to ack events to release them (and a failover is also able
+       * to write data). */
       if (is_acceptor) {
         std::unique_ptr<processing::acceptor> acceptr(
-            new processing::acceptor(e, ep.name));
+            std::make_unique<processing::acceptor>(e, ep.name));
         acceptr->set_read_filters(_filters(ep.read_filters));
         acceptr->set_write_filters(_filters(ep.write_filters));
         endp.reset(acceptr.release());
@@ -218,7 +231,12 @@ void endpoint::_discard() {
   }
 
   // Stop multiplexing.
-  multiplexing::engine::instance().stop();
+  try {
+    multiplexing::engine::instance().stop();
+  } catch (const std::exception& e) {
+    log_v2::config()->warn("multiplexing engine stop interrupted: {}",
+                           e.what());
+  }
 
   // Exit threads.
   {
@@ -373,7 +391,7 @@ processing::failover* endpoint::_create_failover(
             "endpoint applier: could not find "
             "secondary failover '{}' for endpoint '{}'",
             *failover_it, cfg.name);
-      bool is_acceptor(false);
+      bool is_acceptor{false};
       std::shared_ptr<io::endpoint> endp(_create_endpoint(*it, is_acceptor));
       if (is_acceptor) {
         log_v2::config()->error(
