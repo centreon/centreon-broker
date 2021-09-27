@@ -2,6 +2,10 @@
 
 ## 21.04.4
 
+*tcp*
+
+A keepalive is added on the acceptor side.
+
 *rrd*
 
 New loop to check deleted index every 5 minutes and delete metric file associated.
