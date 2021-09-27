@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ "$1" = "configure" ] ; then
+  usermod -a -G centreon-broker centreon-engine
+  usermod -a -G centreon-engine centreon-broker
+fi
+
+#DEBHELPER#

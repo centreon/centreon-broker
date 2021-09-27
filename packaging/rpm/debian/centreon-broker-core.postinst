@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ "$1" = "configure" ] ; then
+  adduser --system --group --home /var/lib/centreon-broker --no-create-home centreon-broker
+  usermod -a -G centreon-broker centreon
+  chown -R centreon-broker:centreon-broker /etc/centreon-broker /var/lib/centreon-broker /var/log/centreon-broker
+fi
+
+#DEBHELPER#
