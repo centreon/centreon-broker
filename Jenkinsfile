@@ -127,6 +127,7 @@ try {
       node("C++") {
         unstash 'el7-rpms'
         unstash 'el8-rpms'
+        sh 'rpmsign --addsign output/x86_64/*.rpm'
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
       }
