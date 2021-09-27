@@ -47,7 +47,7 @@ class acceptor : public io::endpoint {
   bool _coarse;
   std::string _name;
   bool _negotiate;
-  const bool _one_peer_retention_mode;
+  const bool _is_output;
   time_t _timeout;
   uint32_t _ack_limit;
   std::list<std::shared_ptr<io::extension>> _extensions;
@@ -65,7 +65,7 @@ class acceptor : public io::endpoint {
   acceptor& operator=(const acceptor&) = delete;
   std::unique_ptr<io::stream> open() override;
   void stats(nlohmann::json& tree) override;
-  bool is_one_peer_retention() const { return _one_peer_retention_mode; }
+  bool is_output() const { return _is_output; }
 
  private:
   uint32_t _negotiate_features(std::shared_ptr<io::stream> stream,
