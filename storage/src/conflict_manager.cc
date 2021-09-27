@@ -694,8 +694,8 @@ void conflict_manager::_finish_action(int32_t conn, uint32_t action) {
 /**
  *  The main goal of this method is to commit queries sent to the db.
  *  When the commit is done (all the connections commit), we count how
- *  many events can be acknowledged. So we can also update the number of pending
- *  events.
+ *  many events can be acknowledged. So we can also update the number of
+ * pending events.
  */
 void conflict_manager::_finish_actions() {
   log_v2::sql()->trace("conflict_manager: finish actions");
