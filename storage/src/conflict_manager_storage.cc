@@ -113,7 +113,9 @@ void conflict_manager::_storage_process_service_status(
     _index_cache[{host_id, service_id}] = std::move(info);
     rrd_len = _rrd_len;
     log_v2::perfdata()->debug(
-        "conflict_manager:: add_metric_in_cache: returned rrd_len {}", rrd_len);
+        "add metric in cache: (host: {}, service: {}, index: {}, returned "
+        "rrd_len {}",
+        ss.host_name, ss.service_description, index_id, rrd_len);
 
     /* Create the metric mapping. */
     std::shared_ptr<storage::index_mapping> im{
@@ -373,6 +375,8 @@ void conflict_manager::_storage_process_service_status(
               it_index_cache->second.max = pd.max();
               _metrics[it_index_cache->second.metric_id] =
                   &it_index_cache->second;
+              log_v2::perfdata()->debug("new metric with metric_id={}",
+                                        it_index_cache->second.metric_id);
             }
           }
           // std::shared_ptr<storage::metric_mapping> mm =
@@ -543,13 +547,18 @@ void conflict_manager::_check_deleted_index() {
     std::list<uint64_t> metrics_to_delete;
     try {
       _mysql.run_query_and_get_result(
-          "SELECT m.index_id,m.metric_id FROM metrics m LEFT JOIN index_data "
-          "i ON i.id=m.index_id WHERE i.to_delete=1",
+          "SELECT m.index_id,m.metric_id, m.metric_name, i.host_id, "
+          "i.service_id FROM metrics m LEFT JOIN index_data i ON "
+          "i.id=m.index_id WHERE i.to_delete=1",
           &promise, conn);
       database::mysql_result res(promise.get_future().get());
+
+      std::lock_guard<std::mutex> lock(_metric_cache_m);
       while (_mysql.fetch_row(res)) {
         index_to_delete.insert(res.value_as_u64(0));
         metrics_to_delete.push_back(res.value_as_u64(1));
+        _metric_cache.erase({res.value_as_u64(0), res.value_as_str(2)});
+        _index_cache.erase({res.value_as_u32(3), res.value_as_u32(4)});
       }
     } catch (std::exception const& e) {
       throw broker::exceptions::msg()
@@ -570,6 +579,8 @@ void conflict_manager::_check_deleted_index() {
       std::shared_ptr<storage::remove_graph> rg{
           std::make_shared<storage::remove_graph>(i, false)};
       multiplexing::publisher().write(rg);
+      _metrics.erase(i);
+      log_v2::perfdata()->debug("metrics erasing metric_id = {}", i);
       deleted_metrics++;
     }
 
