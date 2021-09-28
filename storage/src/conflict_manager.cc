@@ -99,10 +99,11 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _oldest_timestamp{std::numeric_limits<time_t>::max()} {
   log_v2::sql()->debug("conflict_manager: class instanciation");
   stats::center::instance().update(&ConflictManagerStats::set_loop_timeout,
-                                         _stats, _loop_timeout);
-  stats::center::instance().update(&ConflictManagerStats::set_max_pending_events,
-                                         _stats, _max_pending_queries);
-  }
+                                   _stats, _loop_timeout);
+  stats::center::instance().update(
+      &ConflictManagerStats::set_max_pending_events, _stats,
+      _max_pending_queries);
+}
 
 conflict_manager::~conflict_manager() {
   log_v2::sql()->debug("conflict_manager: destruction");
@@ -578,8 +579,8 @@ void conflict_manager::_callback() {
               std::lock_guard<std::mutex> lk(_stat_m);
               _speed = s / _stats_count.size();
               stats::center::instance().update(&ConflictManagerStats::set_speed,
-                                         _stats, static_cast<double>(_speed));
-
+                                               _stats,
+                                               static_cast<double>(_speed));
             }
           }
         }
@@ -601,22 +602,21 @@ void conflict_manager::_callback() {
         {
           std::lock_guard<std::mutex> lk(_stat_m);
           _events_handled = events.size();
-          stats::center::instance().update(&ConflictManagerStats::set_events_handled,
-                                         _stats, _events_handled);
           stats::center::instance().update(
-                         &ConflictManagerStats::set_max_perfdata_events,
-                         _stats, _max_perfdata_queries);
+              &ConflictManagerStats::set_events_handled, _stats,
+              _events_handled);
           stats::center::instance().update(
-                         &ConflictManagerStats::set_waiting_events,
-                         _stats, static_cast<int32_t>(_fifo.get_events().size()));
+              &ConflictManagerStats::set_max_perfdata_events, _stats,
+              _max_perfdata_queries);
           stats::center::instance().update(
-                         &ConflictManagerStats::set_sql,
-                         _stats, static_cast<int32_t>(_fifo.get_timeline(sql).size()));
+              &ConflictManagerStats::set_waiting_events, _stats,
+              static_cast<int32_t>(_fifo.get_events().size()));
           stats::center::instance().update(
-                         &ConflictManagerStats::set_storage,
-                         _stats, static_cast<int32_t>(
-                                    _fifo.get_timeline(storage).size()));
-
+              &ConflictManagerStats::set_sql, _stats,
+              static_cast<int32_t>(_fifo.get_timeline(sql).size()));
+          stats::center::instance().update(
+              &ConflictManagerStats::set_storage, _stats,
+              static_cast<int32_t>(_fifo.get_timeline(storage).size()));
         }
       }
     } catch (std::exception const& e) {
