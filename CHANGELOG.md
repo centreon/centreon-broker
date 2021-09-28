@@ -2,6 +2,12 @@
 
 ## 21.04.4
 
+*bbdo*
+
+If a broker receives bbdo message it cannot unserialize because of a missing
+module, it must be able to acknowledge it. Otherwise, this message is kept
+in retention by the peer and this can lead cbd instances to get stuck.
+
 *tcp*
 
 A keepalive is added on the acceptor side.
