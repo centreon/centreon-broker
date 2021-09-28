@@ -8,6 +8,8 @@
 
 A keepalive is added on the acceptor side.
 
+The flush() method from tcp\_connection could get stuck in cases of retention.
+
 *rrd*
 
 New loop to check deleted index every 5 minutes and delete metric file associated.
