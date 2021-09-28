@@ -33,6 +33,22 @@ namespace bbdo {
  *  @brief BBDO stream.
  *
  *  The class converts data to NEB events back and forth.
+ *
+ *  It is a little tricky around acknowledgements.
+ *  This steam is able to read, to write and to flush.
+ *  
+ *  * write() serializes an event and writes it to the substream. It returns how many events can be acknowledged.
+ *    But this count is not directly accessible, it comes from the ack message sent by the peer. So we do not have
+ *    to count how many events are serialized, sometimes, we get an ack message and here is the value.
+ *  * read() gets some buffer from the substream and unserializes it to create an event. The internal buffer
+ *    is probably not empty after a call to read since buffers are not synchronous with events.
+ *
+ *
+ *  There are also three variables to manage acknowledgements:
+ *  * _events_received_since_last_ack: It is incremented each time a data is read. If this value is equal to
+ *    the _ack_limit, an ack message is sent to the peer and this value is reset to 0. When the peer receives
+ *    this ack message, it releases the corresponding events.
+ *  * _acknowledged_events: represents the number of events correctly received by the peer after calls to write().
  */
 class stream : public io::stream {
   class buffer {
