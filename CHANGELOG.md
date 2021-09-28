@@ -4,6 +4,10 @@
 
 ### Fixes
 
+*tcp*
+
+The flush() method from tcp\_connection could get stuck in cases of retention.
+
 *sql*
 
 When a connection to the db is lost, we try to reestablish it. This change fixes
