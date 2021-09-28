@@ -38,7 +38,7 @@ class MultiplexingMuxerRead : public ::testing::Test {
   void TearDown() override { config::applier::deinit(); }
 
   void setup(std::string const& name) {
-    _m.reset(new multiplexing::muxer(name, false));
+    _m = std::make_unique<multiplexing::muxer>(name, false);
     multiplexing::muxer::filters f;
     f.insert(io::raw::static_type());
     _m->set_read_filters(f);
@@ -46,8 +46,8 @@ class MultiplexingMuxerRead : public ::testing::Test {
   }
 
   void publish_events(int count = 10000) {
-    for (int i(0); i < count; ++i) {
-      std::shared_ptr<io::raw> r(new io::raw());
+    for (int i = 0; i < count; ++i) {
+      std::shared_ptr<io::raw> r{std::make_shared<io::raw>()};
       r->resize(sizeof(i));
       memcpy(r->data(), &i, sizeof(i));
       _m->publish(r);
@@ -56,7 +56,7 @@ class MultiplexingMuxerRead : public ::testing::Test {
 
   void reread_events(int from = 0, int to = 10000) {
     std::shared_ptr<io::data> d;
-    for (int i(from); i < to; ++i) {
+    for (int i = from; i < to; ++i) {
       d.reset();
       _m->read(d, 0);
       ASSERT_FALSE(!d);

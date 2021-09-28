@@ -205,7 +205,7 @@ void muxer::publish(std::shared_ptr<io::data> const event) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
-  bool timed_out(false);
+  bool timed_out{false};
   std::unique_lock<std::mutex> lock(_mutex);
 
   // No data is directly available.
