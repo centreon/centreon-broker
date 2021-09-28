@@ -97,7 +97,7 @@ int32_t tcp_connection::flush() {
       throw exceptions::msg() << msg;
     }
   }
-  if (_write_queue_has_events && !_writing) {
+  if (!_writing) {
     _writing = true;
     // The strand is useful because of the flush() method.
     _strand.context().post(std::bind(&tcp_connection::writing, ptr()));
