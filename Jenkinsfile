@@ -37,11 +37,12 @@ stage('Deliver sources') {
       checkout scm
       loadCommonScripts()
       /* change to broker */
-      sh 'ls centreon-broker-$VERSION/'
+      
       sh 'ci/scripts/broker-sources-delivery.sh centreon-broker'
       source = readProperties file: 'source.properties'
       env.VERSION = "${source.VERSION}"
       env.RELEASE = "${source.RELEASE}"
+      sh 'ls centreon-broker-$VERSION/'
     }
   }
 }
