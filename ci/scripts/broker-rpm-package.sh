@@ -12,7 +12,6 @@ if [ ! -d /root/rpmbuild/SOURCES ] ; then
     mkdir -p /root/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 fi
 
-cd "../"
 mkdir centreon-broker-$VERSION
 cp -r centreon-broker/* centreon-broker-$VERSION
 tar -czf centreon-broker-$VERSION.tar.gz centreon-broker-$VERSION cmake.sh
