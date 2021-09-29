@@ -45,7 +45,7 @@ echo -n "#####GET $PROJECT COMMITER#####"
 COMMITTER=`git show --format='%cN <%cE>' HEAD | head -n 1`
 
 echo -n "#####ARCHIVING $PROJECT#####"
-tar czf "$PROJECT-$VERSION.tar.gz" "*"    
+tar czf "$PROJECT-$VERSION.tar.gz" *   
 
 echo -n "#####DELIVER $PROJECT SOURCES#####"
 put_internal_source "$PROJECT" "$PROJECT-$VERSION-$RELEASE" "$PROJECT-$VERSION.tar.gz"
