@@ -76,9 +76,11 @@ stream::stream(database_config const& dbcfg,
     rrd_len = 15552000;
 
   if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length,
-                                      dbcfg.get_queries_per_transaction()))
+                                      dbcfg.get_queries_per_transaction())) {
+    log_v2::sql()->error("storage stream instanciation failed");
     throw msg_fmt(
         "storage: Unable to initialize the storage connection to the database");
+  }
 }
 
 int32_t stream::stop() {
