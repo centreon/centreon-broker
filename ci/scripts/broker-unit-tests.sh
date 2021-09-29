@@ -22,7 +22,6 @@ make -j9 install
 
 #Test
 
-cd centreon-broker
 test/ut --gtest_output=xml:broker-ut.xml
 
 
