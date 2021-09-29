@@ -42,7 +42,6 @@ stage('Deliver sources') {
       source = readProperties file: 'source.properties'
       env.VERSION = "${source.VERSION}"
       env.RELEASE = "${source.RELEASE}"
-      sh 'ls centreon-broker-$VERSION/'
     }
   }
 }
