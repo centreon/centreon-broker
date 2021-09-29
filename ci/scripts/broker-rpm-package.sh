@@ -12,7 +12,6 @@ if [ ! -d /root/rpmbuild/SOURCES ] ; then
     mkdir -p /root/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 fi
 
-cd ".."
 echo "################################################## BUILDING broker $(pwd) $(ls)" 
 mkdir centreon-broker-$VERSION
 echo "################################################## BUILDING broker $(ls)"
