@@ -14,7 +14,7 @@ PROJECT=$1
 echo -n "#####The Delivered project is $PROJECT#####"
 echo -n "#####GET $PROJECT VERSION#####"
 
-cmakelists=$PROJECT/CMakeLists.txt
+cmakelists=CMakeLists.txt
 
 case $PROJECT in
 
@@ -45,7 +45,7 @@ echo -n "#####GET $PROJECT COMMITER#####"
 COMMITTER=`git show --format='%cN <%cE>' HEAD | head -n 1`
 
 echo -n "#####ARCHIVING $PROJECT#####"
-tar czf "$PROJECT-$VERSION.tar.gz" "$PROJECT"    
+tar czf "$PROJECT-$VERSION.tar.gz" *    
 
 echo -n "#####DELIVER $PROJECT SOURCES#####"
 put_internal_source "$PROJECT" "$PROJECT-$VERSION-$RELEASE" "$PROJECT-$VERSION.tar.gz"
