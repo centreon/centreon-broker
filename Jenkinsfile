@@ -38,6 +38,7 @@ stage('Deliver sources') {
       loadCommonScripts()
       /* change to broker */
       sh 'ls'
+      sh 'rm -rf centreon-broker-21.10.0.tar.gz'
       sh 'ci/scripts/broker-sources-delivery.sh centreon-broker'
       source = readProperties file: 'source.properties'
       env.VERSION = "${source.VERSION}"
