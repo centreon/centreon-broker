@@ -16,7 +16,7 @@ echo "################################################## BUILDING broker $(pwd) 
 mkdir centreon-broker-$VERSION
 echo "################################################## BUILDING broker $(ls)"
 cp -r centreon-broker/* centreon-broker-$VERSION
-tar -czf centreon-broker-$VERSION.tar.gz centreon-broker-$VERSION cmake.sh
+tar -czf centreon-broker-$VERSION.tar.gz centreon-broker-$VERSION centreon-broker/cmake.sh
 mv centreon-broker-$VERSION.tar.gz /root/rpmbuild/SOURCES/
 rm -rf centreon-broker-$VERSION
 rpmbuild -ba centreon-broker/packaging/rpm/centreon-broker.spectemplate -D "VERSION $VERSION" -D "RELEASE $RELEASE"
