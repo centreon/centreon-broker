@@ -24,7 +24,5 @@ rpmbuild -ba centreon-broker/packaging/rpm/centreon-broker.spectemplate -D "VERS
 # cleaning and according permissions to slave to delivery rpms
 pwd
 rm -rf *.rpm
-cp -r /root/rpmbuild/RPMS/x86_64/*.rpm .
 cp -r /root/rpmbuild/RPMS/x86_64/*.rpm centreon-broker
-ls -l
-chmod 777 *.rpm
+chmod 777 centreon-broker/*.rpm
