@@ -125,15 +125,15 @@ CXXFLAGS="-DNDEBUG -O2 -g -std=c++11" cmake3 -j9 \
 	-DWITH_TESTING=0 \
 	-DWITH_PREFIX=/usr \
 	-DWITH_PREFIX_BIN=%{_sbindir} \
-	-DWITH_PREFIX_CONF_BROKER=%{_sysconfdir}/centreon-broker \
+	-DWITH_PREFIX_CONF=%{_sysconfdir}/centreon-broker \
         -DWITH_PREFIX_INC=%{_includedir}/centreon-broker \
 	-DWITH_PREFIX_MODULES=%{_datadir}/centreon/lib/centreon-broker \
-	-DWITH_PREFIX_LIB_BROKER=%{_libdir}/nagios/ \
+	-DWITH_PREFIX_LIB=%{_libdir}/nagios/ \
         -DWITH_PREFIX_VAR=%{_localstatedir}/lib/centreon-broker \
 	-DWITH_STARTUP_DIR=%{_unitdir} \
 	-DWITH_STARTUP_SCRIPT=systemd \
-	-DWITH_USER_BROKER=centreon-broker \
-	-DWITH_GROUP_BROKER=centreon-broker \
+	-DWITH_USER=centreon-broker \
+	-DWITH_GROUP=centreon-broker \
 	-DWITH_DAEMONS='central-rrd;central-broker' \
 	-DWITH_CONFIG_FILES=y \
 	.
