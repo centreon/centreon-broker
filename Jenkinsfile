@@ -50,7 +50,7 @@ stage('Build / Unit tests // Packaging / Signing') {
     node("C++") {
       dir('centreon-broker-centos7') {
         checkout scm
-        sh 'docker run -i --entrypoint /src/ci/scripts/broker-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-broker-centos7-dependencies:21.10'
+        sh 'docker run -i --entrypoint /src/ci/scripts/broker-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-collect-centos7-dependencies:21.10'
         sh "sudo apt-get install -y clang-tidy"
         withSonarQubeEnv('SonarQubeDev') {
           sh 'ci/scripts/broker-sources-analysis.sh'
@@ -62,7 +62,7 @@ stage('Build / Unit tests // Packaging / Signing') {
     node("C++") {
       dir('centreon-broker-centos7') {
         checkout scm
-        sh 'docker run -i --entrypoint /src/ci/scripts/broker-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el7" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-broker-centos7-dependencies:21.10'
+        sh 'docker run -i --entrypoint /src/ci/scripts/broker-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el7" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-collect-centos7-dependencies:21.10'
         sh 'rpmsign --addsign *.rpm'
         stash name: 'el7-rpms', includes: '*.rpm'
         archiveArtifacts artifacts: "*.rpm"
@@ -74,7 +74,7 @@ stage('Build / Unit tests // Packaging / Signing') {
     node("C++") {
       dir('centreon-broker-centos8') {
         checkout scm
-        sh 'docker run -i --entrypoint /src/ci/scripts/broker-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-broker-centos8-dependencies:21.10'
+        sh 'docker run -i --entrypoint /src/ci/scripts/broker-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-collect-centos8-dependencies:21.10'
       }
     }
   },
@@ -82,7 +82,7 @@ stage('Build / Unit tests // Packaging / Signing') {
     node("C++") {
       dir('centreon-broker-centos8') {
         checkout scm
-        sh 'docker run -i --entrypoint /src/ci/scripts/broker-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el8" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-broker-centos8-dependencies:21.10'
+        sh 'docker run -i --entrypoint /src/ci/scripts/broker-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el8" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-collect-centos8-dependencies:21.10'
         sh 'rpmsign --addsign *.rpm'
         stash name: 'el8-rpms', includes: '*.rpm'
         archiveArtifacts artifacts: "*.rpm"
@@ -94,7 +94,7 @@ stage('Build / Unit tests // Packaging / Signing') {
     node("C++") {
       dir('centreon-broker-debian') {
         checkout scm
-        sh 'docker run -i --entrypoint /src/ci/scripts/broker-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-broker-debian-dependencies:21.10'
+        sh 'docker run -i --entrypoint /src/ci/scripts/broker-unit-tests.sh -v "$PWD:/src" registry.centreon.com/centreon-collect-debian-dependencies:21.10'
       }
     }
   },
@@ -102,7 +102,7 @@ stage('Build / Unit tests // Packaging / Signing') {
     node("C++") {
       dir('centreon-broker-centos8') {
         //checkout scm
-        //sh 'docker run -i --entrypoint /src/ci/scripts/broker-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el8" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-broker-centos8-dependencies:21.10'
+        //sh 'docker run -i --entrypoint /src/ci/scripts/broker-rpm-package.sh -v "$PWD:/src" -e DISTRIB="el8" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-collect-centos8-dependencies:21.10'
         //sh 'rpmsign --addsign *.rpm'
         //stash name: 'el8-rpms', includes: '*.rpm'
         //archiveArtifacts artifacts: "*.rpm"
