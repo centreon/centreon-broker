@@ -37,6 +37,7 @@ stage('Deliver sources') {
       checkout scm
       loadCommonScripts()
       /* change to broker */
+      sh 'ls centreon-broker-$VERSION/'
       sh 'ci/scripts/broker-sources-delivery.sh centreon-broker'
       source = readProperties file: 'source.properties'
       env.VERSION = "${source.VERSION}"
@@ -63,7 +64,7 @@ stage('Build / Unit tests // Packaging / Signing') {
       dir('centreon-broker-centos7') {
         checkout scm
         sh 'docker run -i --entrypoint /src/centreon-broker/ci/scripts/broker-rpm-package.sh -v "$PWD:/src/centreon-broker" -e DISTRIB="el7" -e VERSION=$VERSION -e RELEASE=$RELEASE registry.centreon.com/centreon-collect-centos7-dependencies:21.10'
-        sh 'ls centreon-broker-$VERSION'
+        sh 'ls centreon-broker-$VERSION/'
         sh 'rpmsign --addsign centreon-broker-$VERSION/*.rpm'
         stash name: 'el7-rpms', includes: '*.rpm'
         archiveArtifacts artifacts: "*.rpm"
