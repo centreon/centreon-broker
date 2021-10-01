@@ -109,7 +109,6 @@ add_library("${NEB}" SHARED
   # Main source.
   "${SRC_DIR}/broker.cc"
   "${SRC_DIR}/downtime_scheduler.cc"
-  "${SRC_DIR}/node_cache.cc"
   "${SRC_DIR}/node_id.cc"
   "${SRC_DIR}/timeperiod_serializable.cc"
   "${SRC_DIR}/downtime_serializable.cc"
@@ -117,7 +116,6 @@ add_library("${NEB}" SHARED
 
   # Inc
   "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"
-  "${INC_DIR}/com/centreon/broker/neb/node_cache.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
   "${INC_DIR}/com/centreon/broker/neb/timeperiod_serializable.hh"
   "${INC_DIR}/com/centreon/broker/neb/downtime_serializable.hh"

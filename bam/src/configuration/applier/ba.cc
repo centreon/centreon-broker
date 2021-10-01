@@ -227,6 +227,7 @@ std::shared_ptr<neb::service> applier::ba::_ba_service(
   s->host_id = host_id;
   s->service_id = service_id;
   s->service_description = fmt::format("ba_{}", ba_id);
+  s->display_name = s->service_description;
   s->last_update = time(nullptr);
   return s;
 }
