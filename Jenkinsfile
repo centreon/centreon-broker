@@ -82,20 +82,20 @@ try {
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
       }
     },
-    'build debian10': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
-        step([
-          $class: 'XUnitBuilder',
-          thresholds: [
-            [$class: 'FailedThreshold', failureThreshold: '0'],
-            [$class: 'SkippedThreshold', failureThreshold: '0']
-          ],
-          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-        ])
-      }
-    },
+//    'build debian10': {
+//      node("C++") {
+//        sh 'setup_centreon_build.sh'
+//        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
+//        step([
+//          $class: 'XUnitBuilder',
+//          thresholds: [
+//            [$class: 'FailedThreshold', failureThreshold: '0'],
+//            [$class: 'SkippedThreshold', failureThreshold: '0']
+//          ],
+//          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
+//        ])
+//      }
+//    },
     'packaging debian10': {
       node("C++") {
         sh 'setup_centreon_build.sh'
