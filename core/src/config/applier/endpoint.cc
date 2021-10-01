@@ -452,8 +452,7 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
     }
     if (7 == level && it == end)
       throw msg_fmt(
-          "endpoint applier: no matching "
-          "protocol found for endpoint '{}'",
+          "endpoint applier: no matching protocol found for endpoint '{}'",
           cfg.name);
     ++level;
   }
