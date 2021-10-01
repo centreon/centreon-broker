@@ -108,12 +108,10 @@ set(NEB "${NEB}" PARENT_SCOPE)
 add_library("${NEB}" SHARED
   # Main source.
   "${SRC_DIR}/broker.cc"
-  "${SRC_DIR}/node_cache.cc"
   "${SRC_DIR}/node_id.cc"
   "${SRC_DIR}/downtime_map.cc"
 
   # Inc
-  "${INC_DIR}/com/centreon/broker/neb/node_cache.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
   "${INC_DIR}/com/centreon/broker/neb/downtime_map.hh"
 )
