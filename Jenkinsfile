@@ -81,7 +81,7 @@ try {
         stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
       }
-    },
+//    },
 //    'build debian10': {
 //      node("C++") {
 //        sh 'setup_centreon_build.sh'
@@ -96,11 +96,11 @@ try {
 //        ])
 //      }
 //    },
-    'packaging debian10': {
-      node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
-      }
+//    'packaging debian10': {
+//      node("C++") {
+//        sh 'setup_centreon_build.sh'
+//        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
+//      }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Build // Unit tests // Packaging.');
