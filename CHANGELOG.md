@@ -4,6 +4,10 @@
 
 ### Fixes
 
+*lua*
+
+The Lua cache should no more disappear.
+
 *tcp*
 
 The flush() method from tcp\_connection could get stuck in cases of retention.
