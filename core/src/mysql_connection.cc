@@ -623,7 +623,7 @@ void mysql_connection::_run() {
         if (!_try_to_reconnect())
           log_v2::sql()->error("SQL: Reconnection failed.");
       } else
-        log_v2::sql()->info("SQL: connection always alive");
+        log_v2::sql()->trace("SQL: connection always alive");
 
       time_t start = time(nullptr);
       for (auto& task : tasks_list) {
@@ -675,6 +675,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
   _start_condition.wait(lck, [this] { return _state != not_started; });
   if (_state == finished) {
     _thread->join();
+    log_v2::sql()->error("mysql_connection: error while starting connection");
     throw msg_fmt("mysql_connection: error while starting connection");
   }
   pthread_setname_np(_thread->native_handle(), "mysql_connect");

@@ -99,10 +99,11 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _oldest_timestamp{std::numeric_limits<time_t>::max()} {
   log_v2::sql()->debug("conflict_manager: class instanciation");
   stats::center::instance().update(&ConflictManagerStats::set_loop_timeout,
-                                         _stats, _loop_timeout);
-  stats::center::instance().update(&ConflictManagerStats::set_max_pending_events,
-                                         _stats, _max_pending_queries);
-  }
+                                   _stats, _loop_timeout);
+  stats::center::instance().update(
+      &ConflictManagerStats::set_max_pending_events, _stats,
+      _max_pending_queries);
+}
 
 conflict_manager::~conflict_manager() {
   log_v2::sql()->debug("conflict_manager: destruction");
@@ -465,6 +466,43 @@ void conflict_manager::_callback() {
         time_t next_update_metrics = next_insert_perfdatas;
         time_t next_update_cv = next_insert_perfdatas;
         time_t next_update_log = next_insert_perfdatas;
+
+        auto empty_caches = [this, &next_insert_perfdatas, &next_update_metrics,
+                             &next_update_cv, &next_update_log](
+                                std::chrono::system_clock::time_point now) {
+          /* If there are too many perfdata to send, let's send them... */
+          if (std::chrono::system_clock::to_time_t(now) >=
+                  next_insert_perfdatas ||
+              _perfdata_queue.size() > _max_perfdata_queries) {
+            next_insert_perfdatas =
+                std::chrono::system_clock::to_time_t(now) + 10;
+            _insert_perfdatas();
+          }
+
+          /* If there are too many metrics to send, let's send them... */
+          if (std::chrono::system_clock::to_time_t(now) >=
+                  next_update_metrics ||
+              _metrics.size() > _max_metrics_queries) {
+            next_update_metrics =
+                std::chrono::system_clock::to_time_t(now) + 10;
+            _update_metrics();
+          }
+
+          /* Time to send customvariables to database */
+          if (std::chrono::system_clock::to_time_t(now) >= next_update_cv ||
+              _cv_queue.size() + _cvs_queue.size() > _max_cv_queries) {
+            next_update_cv = std::chrono::system_clock::to_time_t(now) + 10;
+            _update_customvariables();
+          }
+
+          /* Time to send logs to database */
+          if (std::chrono::system_clock::to_time_t(now) >= next_update_log ||
+              _log_queue.size() > _max_log_queries) {
+            next_update_log = std::chrono::system_clock::to_time_t(now) + 10;
+            _insert_logs();
+          }
+        };
+
         /* During this loop, connectors still fill the queue when they receive
          * new events.
          * The loop is hold by three conditions that are:
@@ -483,7 +521,12 @@ void conflict_manager::_callback() {
             if (_should_exit())
               break;
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            // timeout += 500;
+            /* Here, just before looping, we commit. */
+            std::chrono::system_clock::time_point now =
+                std::chrono::system_clock::now();
+
+            empty_caches(now);
+            _finish_actions();
             continue;
           }
           while (!events.empty()) {
@@ -512,37 +555,7 @@ void conflict_manager::_callback() {
             std::chrono::system_clock::time_point now1 =
                 std::chrono::system_clock::now();
 
-            /* If there are too many perfdata to send, let's send them... */
-            if (std::chrono::system_clock::to_time_t(now1) >=
-                    next_insert_perfdatas &&
-                _perfdata_queue.size() > _max_perfdata_queries) {
-              next_insert_perfdatas =
-                  std::chrono::system_clock::to_time_t(now1) + 10;
-              _insert_perfdatas();
-            }
-
-            /* If there are too many metrics to send, let's send them... */
-            if (std::chrono::system_clock::to_time_t(now1) >=
-                    next_update_metrics &&
-                _metrics.size() > _max_metrics_queries) {
-              next_update_metrics =
-                  std::chrono::system_clock::to_time_t(now1) + 10;
-              _update_metrics();
-            }
-
-            /* Time to send customvariables to database */
-            if (std::chrono::system_clock::to_time_t(now1) >= next_update_cv &&
-                _cv_queue.size() > _max_cv_queries) {
-              next_update_cv = std::chrono::system_clock::to_time_t(now1) + 10;
-              _update_customvariables();
-            }
-
-            /* Time to send logs to database */
-            if (std::chrono::system_clock::to_time_t(now1) >= next_update_log &&
-                _log_queue.size() > _max_log_queries) {
-              next_update_log = std::chrono::system_clock::to_time_t(now1) + 10;
-              _insert_logs();
-            }
+            empty_caches(now1);
 
             timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
                           now1 - now0)
@@ -566,8 +579,8 @@ void conflict_manager::_callback() {
               std::lock_guard<std::mutex> lk(_stat_m);
               _speed = s / _stats_count.size();
               stats::center::instance().update(&ConflictManagerStats::set_speed,
-                                         _stats, static_cast<double>(_speed));
-
+                                               _stats,
+                                               static_cast<double>(_speed));
             }
           }
         }
@@ -589,22 +602,21 @@ void conflict_manager::_callback() {
         {
           std::lock_guard<std::mutex> lk(_stat_m);
           _events_handled = events.size();
-          stats::center::instance().update(&ConflictManagerStats::set_events_handled,
-                                         _stats, _events_handled);
           stats::center::instance().update(
-                         &ConflictManagerStats::set_max_perfdata_events,
-                         _stats, _max_perfdata_queries);
+              &ConflictManagerStats::set_events_handled, _stats,
+              _events_handled);
           stats::center::instance().update(
-                         &ConflictManagerStats::set_waiting_events,
-                         _stats, static_cast<int32_t>(_fifo.get_events().size()));
+              &ConflictManagerStats::set_max_perfdata_events, _stats,
+              _max_perfdata_queries);
           stats::center::instance().update(
-                         &ConflictManagerStats::set_sql,
-                         _stats, static_cast<int32_t>(_fifo.get_timeline(sql).size()));
+              &ConflictManagerStats::set_waiting_events, _stats,
+              static_cast<int32_t>(_fifo.get_events().size()));
           stats::center::instance().update(
-                         &ConflictManagerStats::set_storage,
-                         _stats, static_cast<int32_t>(
-                                    _fifo.get_timeline(storage).size()));
-
+              &ConflictManagerStats::set_sql, _stats,
+              static_cast<int32_t>(_fifo.get_timeline(sql).size()));
+          stats::center::instance().update(
+              &ConflictManagerStats::set_storage, _stats,
+              static_cast<int32_t>(_fifo.get_timeline(storage).size()));
         }
       }
     } catch (std::exception const& e) {

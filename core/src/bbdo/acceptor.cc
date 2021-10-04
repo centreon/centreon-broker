@@ -50,7 +50,7 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] ack_limit               The number of event received before
  *                                     an ack needs to be sent.
  */
-acceptor::acceptor(std::string const& name,
+acceptor::acceptor(std::string name,
                    bool negotiate,
                    time_t timeout,
                    bool one_peer_retention_mode,
@@ -59,9 +59,9 @@ acceptor::acceptor(std::string const& name,
                    std::list<std::shared_ptr<io::extension>>&& extensions)
     : io::endpoint(!one_peer_retention_mode),
       _coarse(coarse),
-      _name(name),
+      _name(std::move(name)),
       _negotiate(negotiate),
-      _one_peer_retention_mode(one_peer_retention_mode),
+      _is_output(one_peer_retention_mode),
       _timeout(timeout),
       _ack_limit(ack_limit),
       _extensions{extensions} {
@@ -86,17 +86,13 @@ std::unique_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
   if (_from) {
     std::unique_ptr<io::stream> u;
-    do {
-      u = _from->open();
-    } while (config::applier::mode != config::applier::finished &&
-             _one_peer_retention_mode && !u);
+    u = _from->open();
 
     // Add BBDO layer.
     if (u) {
       assert(!_coarse);
-      // if _one_peer_retention_mode, the stream is an output
-      auto my_bbdo = std::make_unique<bbdo::stream>(!_one_peer_retention_mode,
-                                                    _extensions);
+      // if _is_output, the stream is an output
+      auto my_bbdo = std::make_unique<bbdo::stream>(!_is_output, _extensions);
       my_bbdo->set_substream(std::move(u));
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negotiate(_negotiate);
@@ -121,7 +117,7 @@ std::unique_ptr<io::stream> acceptor::open() {
  *  @param[out] tree Properties tree.
  */
 void acceptor::stats(nlohmann::json& tree) {
-  tree["one_peer_retention_mode"] = _one_peer_retention_mode;
+  tree["one_peer_retention_mode"] = _is_output;
   if (_from)
     _from->stats(tree);
 }

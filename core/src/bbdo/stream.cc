@@ -530,7 +530,7 @@ stream::stream(bool is_input,
       _negotiate{true},
       _negotiated{false},
       _timeout(5),
-      _acknowledged_events(0),
+      _acknowledged_events{0},
       _ack_limit(1000),
       _events_received_since_last_ack(0),
       _extensions{extensions} {}
@@ -842,9 +842,9 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     } else if ((event_id & 0xffff) == 2) {
       log_v2::bbdo()->info(
           "BBDO: received acknowledgement for {} events",
-          std::static_pointer_cast<ack const>(d)->acknowledged_events);
+          std::static_pointer_cast<const ack>(d)->acknowledged_events);
       acknowledge_events(
-          std::static_pointer_cast<ack const>(d)->acknowledged_events);
+          std::static_pointer_cast<const ack>(d)->acknowledged_events);
     } else if ((event_id & 0xffff) == 3) {
       log_v2::bbdo()->info("BBDO: received stop from peer");
       send_event_acknowledgement();
@@ -859,7 +859,11 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     event_id = !d ? 0 : d->type();
   }
 
-  if (!timed_out && d)
+  /* If !timed_out, then we have two possibilities:
+   *  * we get an event d
+   *  * an event has been returned but we could not unserialize it.
+   */
+  if (!timed_out)
     ++_events_received_since_last_ack;
   if (_events_received_since_last_ack >= _ack_limit)
     send_event_acknowledgement();
@@ -995,9 +999,9 @@ bool stream::_read_any(std::shared_ptr<io::data>& d, time_t deadline) {
           log_v2::bbdo()->trace("unserialized {} bytes for event of type {}",
                                 BBDO_HEADER_SIZE + packet_size, event_id);
         } else {
-          log_v2::bbdo()->error("unknown event type {} event cannot be decoded",
+          log_v2::bbdo()->warn("unknown event type {} event cannot be decoded",
                                 event_id);
-          log_v2::bbdo()->debug("discarded {} bytes",
+          log_v2::bbdo()->trace("discarded {} bytes",
                                 BBDO_HEADER_SIZE + packet_size);
         }
         return true;
@@ -1149,7 +1153,7 @@ void stream::_write(std::shared_ptr<io::data> const& d) {
 int32_t stream::write(std::shared_ptr<io::data> const& d) {
   _write(d);
 
-  int32_t retval(_acknowledged_events);
+  int32_t retval = _acknowledged_events;
   _acknowledged_events -= retval;
   return retval;
 }

@@ -83,7 +83,7 @@ try {
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
         sh 'rm -rf output'
       }
-    },
+    }/*,
     'build debian10': {
       node("C++") {
         sh 'setup_centreon_build.sh'
@@ -103,7 +103,7 @@ try {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
       }
-    }
+    }*/
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Build // Unit tests // Packaging.');
     }
@@ -127,6 +127,7 @@ try {
       node("C++") {
         unstash 'el7-rpms'
         unstash 'el8-rpms'
+        sh 'rpmsign --addsign output/x86_64/*.rpm'
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
       }

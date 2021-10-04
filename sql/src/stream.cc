@@ -83,9 +83,11 @@ stream::stream(database_config const& dbcfg,
   //  _cleanup_thread.start();
   log_v2::sql()->debug("sql stream instanciation");
   if (!storage::conflict_manager::init_sql(dbcfg, loop_timeout,
-                                           instance_timeout))
+                                           instance_timeout)) {
+    log_v2::sql()->error("sql stream instanciation failed");
     throw msg_fmt(
         "SQL: Unable to initialize the sql connection to the database");
+  }
 }
 
 int32_t stream::stop() {

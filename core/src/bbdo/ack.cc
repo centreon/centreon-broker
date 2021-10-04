@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,12 +21,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
@@ -39,17 +33,6 @@ ack::ack() : io::data(ack::static_type()), acknowledged_events(0) {}
  */
 ack::ack(uint32_t acknowledged_events)
     : io::data(ack::static_type()), acknowledged_events(acknowledged_events) {}
-
-/**
- *  Destructor.
- */
-ack::~ack() {}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const ack::entries[]{

@@ -432,34 +432,7 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
 void macro_cache::_process_instance(std::shared_ptr<io::data> const& data) {
   std::shared_ptr<neb::instance> const& in =
       std::static_pointer_cast<neb::instance>(data);
-  uint32_t poller_id = in->poller_id;
-
-  std::unordered_set<uint64_t> hosts_removed;
-  for (auto it = _hosts.begin(), end = _hosts.end(); it != end;) {
-    if (it->second->poller_id == poller_id) {
-      hosts_removed.insert(it->second->host_id);
-      it = _hosts.erase(it);
-    } else
-      ++it;
-  }
-
-  for (uint64_t id : hosts_removed) {
-    auto it(_host_group_members.lower_bound({id, 0}));
-    while (it != _host_group_members.end() && it->first.first == id) {
-      it = _host_group_members.erase(it);
-    }
-  }
-
-  std::unordered_set<std::pair<uint64_t, uint64_t> > services_removed;
-  for (auto it(_services.begin()), end(_services.end()); it != end;) {
-    if (hosts_removed.count(it->second->host_id)) {
-      services_removed.insert(it->first);
-      it = _services.erase(it);
-    } else
-      ++it;
-  }
-
-  _instances[poller_id] = in;
+  _instances[in->poller_id] = in;
 }
 
 /**
@@ -472,7 +445,10 @@ void macro_cache::_process_host(std::shared_ptr<io::data> const& data) {
       std::static_pointer_cast<neb::host>(data);
   log_v2::lua()->debug("lua: processing host '{}' of id {}", h->host_name,
                        h->host_id);
-  _hosts[h->host_id] = h;
+  if (h->enabled)
+    _hosts[h->host_id] = h;
+  else
+    _hosts.erase(h->host_id);
 }
 
 /**
@@ -517,7 +493,10 @@ void macro_cache::_process_service(std::shared_ptr<io::data> const& data) {
   auto const& s = std::static_pointer_cast<neb::service>(data);
   log_v2::lua()->debug("lua: processing service ({}, {}) (description:{})",
                        s->host_id, s->host_id, s->service_id);
-  _services[{s->host_id, s->service_id}] = s;
+  if (s->enabled)
+    _services[{s->host_id, s->service_id}] = s;
+  else
+    _services.erase({s->host_id, s->service_id});
 }
 
 /**
