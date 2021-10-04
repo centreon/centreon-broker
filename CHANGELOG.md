@@ -4,6 +4,10 @@
 
 ### Fixes
 
+*lua*
+
+The Lua cache should no more disappear.
+
 *tcp*
 
 A keepalive is added on the acceptor side.
