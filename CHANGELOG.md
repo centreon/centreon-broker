@@ -2,6 +2,10 @@
 
 ## 21.04.4
 
+*lua*
+
+The Lua cache should no more disappear.
+
 *bbdo*
 
 If a broker receives bbdo message it cannot unserialize because of a missing
