@@ -350,7 +350,7 @@ void failover::_run() {
       }
     }
     // Some real error occured.
-    catch (std::exception const& e) {
+    catch (const std::exception& e) {
       log_v2::core()->error("failover: global error: {}", e.what());
       {
         if (_stream) {

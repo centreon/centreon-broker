@@ -675,6 +675,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
   _start_condition.wait(lck, [this] { return _state != not_started; });
   if (_state == finished) {
     _thread->join();
+    log_v2::sql()->error("mysql_connection: error while starting connection");
     throw msg_fmt("mysql_connection: error while starting connection");
   }
   pthread_setname_np(_thread->native_handle(), "mysql_connect");
