@@ -1,18 +1,12 @@
 # Changelog
 
-## 20.04.16
+## 20.04.17
 
 ### Fixes
 
 *tcp*
 
 The flush() method from tcp\_connection could get stuck in cases of retention.
-
-*sql*
-
-When a connection to the db is lost, we try to reestablish it. This change fixes
-an error "Mysql server has gone away" we often have in the BAM availabilities
-computations.
 
 *bbdo*
 
@@ -23,6 +17,16 @@ no peer, cbd does not stop. This patch fixes this issue.
 
 All transverse events have now their own connection to use when we write to the
 database. This avoids deadlocks in MySQL server.
+
+## 20.04.16
+
+### Fixes
+
+*sql*
+
+When a connection to the db is lost, we try to reestablish it. This change fixes
+an error "Mysql server has gone away" we often have in the BAM availabilities
+computations.
 
 ## 20.04.15
 
