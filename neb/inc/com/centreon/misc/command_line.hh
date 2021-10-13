@@ -55,7 +55,7 @@ class command_line {
   char** _argv;
   size_t _size;
 };
-}
+}  // namespace misc
 
 CC_END()
 

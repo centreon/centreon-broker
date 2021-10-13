@@ -68,7 +68,7 @@ class file : public backend {
   FILE* _out;
   uint64_t _size;
 };
-}
+}  // namespace logging
 
 CC_END()
 
