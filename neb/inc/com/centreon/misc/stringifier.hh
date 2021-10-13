@@ -75,7 +75,7 @@ class stringifier {
   static unsigned int const _static_buffer_size = 1024;
   char _static_buffer[_static_buffer_size];
 };
-}
+}  // namespace misc
 
 CC_END()
 
