@@ -87,7 +87,7 @@ class engine {
   std::vector<backend_info*> _backends;
   unsigned long _id;
   unsigned long long _list_types[sizeof(unsigned int) * CHAR_BIT];
-  mutable std::mutex _mtx;
+  mutable std::recursive_mutex _mtx;
 };
 }  // namespace logging
 
