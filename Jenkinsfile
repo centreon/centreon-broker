@@ -16,12 +16,22 @@ if (env.BRANCH_NAME.startsWith('release-')) {
   env.BUILD = 'CI'
 }
 
+def checkoutCentreonBuild() {
+  dir('centreon-build') {
+    checkout resolveScm(source: [$class: 'GitSCMSource',
+      remote: 'https://github.com/centreon/centreon-build.git',
+      credentialsId: 'technique-ci',
+      traits: [[$class: 'jenkins.plugins.git.traits.BranchDiscoveryTrait']]],
+      targets: [BRANCH_NAME, 'master'])
+  }
+}
+
 /*
 ** Pipeline code.
 */
 stage('Deliver sources') {
   node("C++") {
-    sh 'setup_centreon_build.sh'
+    checkoutCentreonBuild()
     dir('centreon-broker') {
       checkout scm
     }
@@ -36,7 +46,7 @@ try {
   stage('Build // Unit tests // Packaging') {
     parallel 'build centos7': {
       node("C++") {
-        sh 'setup_centreon_build.sh'
+        checkoutCentreonBuild()
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos7"
         step([
           $class: 'XUnitBuilder',
@@ -54,7 +64,7 @@ try {
     },
     'packaging centos7': {
       node("C++") {
-        sh 'setup_centreon_build.sh'
+        checkoutCentreonBuild()
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
         stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
