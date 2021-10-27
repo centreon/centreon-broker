@@ -81,7 +81,7 @@ void mysql_connection::_prepare_connection() {
   /* This is to set a timeout for the mysql_ping() function that can hang
    * sometimes */
   uint32_t timeout = 5;
-  mysql_optionsv(_conn, MYSQL_OPT_READ_TIMEOUT, timeout);
+  mysql_optionsv(_conn, MYSQL_OPT_READ_TIMEOUT, (void*)&timeout);
 
   if (_qps > 1)
     mysql_autocommit(_conn, 0);
@@ -613,11 +613,13 @@ void mysql_connection::_run() {
         while (!_tasks_condition.wait_for(
             lock, std::chrono::seconds(30),
             [this] { return _finish_asked || !_tasks_list.empty(); })) {
+          lock.unlock();
           if (mysql_ping(_conn)) {
             if (!_try_to_reconnect())
               log_v2::sql()->error("SQL: Reconnection failed.");
           } else
             log_v2::sql()->trace("SQL: connection always alive");
+          lock.lock();
         }
 
         if (_tasks_list.empty()) {
