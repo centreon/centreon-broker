@@ -125,8 +125,8 @@ bool conflict_manager::init_storage(bool store_in_db,
 
   std::unique_lock<std::mutex> lk(_init_m);
 
-  for (count = 0; count < 10; count++) {
-    /* Let's wait for 10s for the conflict_manager to be initialized */
+  for (count = 0; count < 60; count++) {
+    /* Let's wait for 60s for the conflict_manager to be initialized */
     if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&] {
           return _singleton != nullptr || _state == finished;
         })) {
