@@ -1,5 +1,13 @@
 # Changelog
 
+## 20.10.10
+
+### Fixes
+
+*storage*
+
+Waiting longer for conflict manager to be connected
+
 ## 20.10.9
 
 Update the headers.
