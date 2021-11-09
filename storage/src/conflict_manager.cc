@@ -152,7 +152,7 @@ bool conflict_manager::init_storage(bool store_in_db,
         count);
   }
   log_v2::sql()->error(
-      "conflict_manager: not initialized after 10s. Probably "
+      "conflict_manager: not initialized after 60s. Probably "
       "an issue in the sql output configuration.");
   return false;
 }
