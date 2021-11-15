@@ -2,7 +2,14 @@
 
 ## 20.04.18
 
+*neb*
+
 update the headers
+
+*mysql connection"
+
+A timeout is added on mysql\_ping and this function is less called than before.
+
 ## 20.04.17
 
 ### Fixes
