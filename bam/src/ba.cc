@@ -75,8 +75,12 @@ static bool _every_kpi_in_dt(std::unordered_map<kpi*, bam::ba::impact_info>& imp
  */
 ba::ba(bool generate_virtual_status)
     : _state_source(configuration::ba::state_source_impact),
-      _computed_soft_state(ba::state::state_ok),
-      _computed_hard_state(ba::state::state_ok),
+      _computed_soft_state(source == configuration::ba::state_source_best
+                               ? ba::state::state_critical
+                               : ba::state::state_ok),
+      _computed_hard_state(source == configuration::ba::state_source_best
+                               ? ba::state::state_critical
+                               : ba::state::state_ok),
       _num_soft_critical_childs{0.f},
       _num_hard_critical_childs{0.f},
       _acknowledgement_hard(0.0),
@@ -95,7 +99,7 @@ ba::ba(bool generate_virtual_status)
       _recompute_count(0),
       _service_id(0),
       _valid(true),
-      _dt_behaviour{ configuration::ba::dt_ignore } {}
+      _dt_behaviour{configuration::ba::dt_ignore} {}
 
 /**
  *  Add impact.
