@@ -8,6 +8,12 @@
 
 Waiting longer for conflict manager to be connected
 
+*bam*
+
+A ba configured with best status was initialized in state OK. And when KPI were
+added, there status was always worst than OK (best case was OK). So even if all
+the kpi were in critical, the state appeared as OK.
+
 ## 20.10.9
 
 Update the headers.
