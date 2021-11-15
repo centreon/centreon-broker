@@ -14,6 +14,11 @@ A ba configured with best status was initialized in state OK. And when KPI were
 added, there status was always worst than OK (best case was OK). So even if all
 the kpi were in critical, the state appeared as OK.
 
+*mysql_connection*
+
+A timeout is added on mysql\_ping and this function is less called than before.
+
+
 ## 20.10.9
 
 Update the headers.
