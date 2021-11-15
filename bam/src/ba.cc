@@ -72,8 +72,12 @@ ba::ba(uint32_t id,
       _host_id(host_id),
       _service_id(service_id),
       _generate_virtual_status(generate_virtual_status),
-      _computed_soft_state(ba::state::state_ok),
-      _computed_hard_state(ba::state::state_ok),
+      _computed_soft_state(source == configuration::ba::state_source_best
+                               ? ba::state::state_critical
+                               : ba::state::state_ok),
+      _computed_hard_state(source == configuration::ba::state_source_best
+                               ? ba::state::state_critical
+                               : ba::state::state_ok),
       _num_soft_critical_childs{0.f},
       _num_hard_critical_childs{0.f},
       _acknowledgement_hard(0.0),
