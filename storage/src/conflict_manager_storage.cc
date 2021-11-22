@@ -560,6 +560,18 @@ void conflict_manager::_check_deleted_index() {
         _metric_cache.erase({res.value_as_u64(0), res.value_as_str(2)});
         _index_cache.erase({res.value_as_u32(3), res.value_as_u32(4)});
       }
+      promise = std::promise<database::mysql_result>();
+      _mysql.run_query_and_get_result(
+          "SELECT metric_id, metric_name FROM metrics WHERE to_delete=1",
+          &promise, conn);
+      res = promise.get_future().get();
+
+      while (_mysql.fetch_row(res)) {
+        metrics_to_delete.push_back(res.value_as_u64(0));
+        _metric_cache.erase({res.value_as_u64(0), res.value_as_str(1)});
+      }
+      metrics_to_delete.sort();
+      metrics_to_delete.unique();
     } catch (std::exception const& e) {
       throw broker::exceptions::msg()
           << "could not query index table to get index to delete: " << e.what();
