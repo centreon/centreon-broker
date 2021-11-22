@@ -54,7 +54,8 @@ auto _num_kpi_in_dt =
   return num;
 };
 
-static bool _every_kpi_in_dt(std::unordered_map<kpi*, bam::ba::impact_info>& imp) {
+static bool _every_kpi_in_dt(
+    std::unordered_map<kpi*, bam::ba::impact_info>& imp) {
   if (imp.empty())
     return false;
 
@@ -75,12 +76,8 @@ static bool _every_kpi_in_dt(std::unordered_map<kpi*, bam::ba::impact_info>& imp
  */
 ba::ba(bool generate_virtual_status)
     : _state_source(configuration::ba::state_source_impact),
-      _computed_soft_state(source == configuration::ba::state_source_best
-                               ? ba::state::state_critical
-                               : ba::state::state_ok),
-      _computed_hard_state(source == configuration::ba::state_source_best
-                               ? ba::state::state_critical
-                               : ba::state::state_ok),
+      _computed_soft_state(ba::state::state_ok),
+      _computed_hard_state(ba::state::state_ok),
       _num_soft_critical_childs{0.f},
       _num_hard_critical_childs{0.f},
       _acknowledgement_hard(0.0),
@@ -589,13 +586,13 @@ void ba::visit(io::stream* visitor) {
       status->latency = 0.0;
       status->max_check_attempts = 1;
       status->obsess_over = false;
-      status->output = fmt::format("BA : Business Activity {} - current_level = {}%",
-          _id, static_cast<int>(normalize(_level_hard)));
+      status->output =
+          fmt::format("BA : Business Activity {} - current_level = {}%", _id,
+                      static_cast<int>(normalize(_level_hard)));
       // status->percent_state_chagne = XXX;
-      status->perf_data = fmt::format("BA_Level={}%;{};{};0;100",
-        static_cast<int>(normalize(_level_hard)),
-            static_cast<int>(_level_warning),
-            static_cast<int>(_level_critical));
+      status->perf_data = fmt::format(
+          "BA_Level={}%;{};{};0;100", static_cast<int>(normalize(_level_hard)),
+          static_cast<int>(_level_warning), static_cast<int>(_level_critical));
       status->retry_interval = 0;
       // status->service_description = XXX;
       status->service_id = _service_id;
