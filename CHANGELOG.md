@@ -3,6 +3,9 @@
 ## 20.10.10
 
 ### Fixes
+*rrd*
+
+add query sql to check metrics to delete metric and file associated.
 
 *storage*
 
