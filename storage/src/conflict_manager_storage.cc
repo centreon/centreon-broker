@@ -96,13 +96,15 @@ void conflict_manager::_storage_process_service_status(
     if (index_id == 0) {
       throw msg_fmt(
           "storage: could not fetch index_id of newly inserted index ({}"
-          ", {})", host_id, service_id);
+          ", {})",
+          host_id, service_id);
     }
 
     /* Insert index in cache. */
     log_v2::perfdata()->info(
         "conflict_manager: add_metric_in_cache: index {}, for host_id {} and "
-        "service_id {}", index_id, host_id, service_id);
+        "service_id {}",
+        index_id, host_id, service_id);
     index_info info{.host_name = ss.host_name,
                     .index_id = index_id,
                     .locked = index_locked,
@@ -217,7 +219,8 @@ void conflict_manager::_storage_process_service_status(
       } catch (std::exception const& e) {
         throw msg_fmt(
             "storage: insertion of index ( {}, {}"
-            ") failed: {}", host_id, service_id, e.what());
+            ") failed: {}",
+            host_id, service_id, e.what());
       }
     }
   } else {
@@ -550,7 +553,7 @@ void conflict_manager::_check_deleted_index() {
     std::promise<database::mysql_result> promise;
     int32_t conn = _mysql.choose_best_connection(-1);
     std::unordered_set<uint64_t> index_to_delete;
-    std::list<uint64_t> metrics_to_delete;
+    std::set<uint64_t> metrics_to_delete;
     try {
       _mysql.run_query_and_get_result(
           "SELECT m.index_id,m.metric_id, m.metric_name, i.host_id, "
@@ -562,9 +565,19 @@ void conflict_manager::_check_deleted_index() {
       std::lock_guard<std::mutex> lock(_metric_cache_m);
       while (_mysql.fetch_row(res)) {
         index_to_delete.insert(res.value_as_u64(0));
-        metrics_to_delete.push_back(res.value_as_u64(1));
+        metrics_to_delete.insert(res.value_as_u64(1));
         _metric_cache.erase({res.value_as_u64(0), res.value_as_str(2)});
         _index_cache.erase({res.value_as_u32(3), res.value_as_u32(4)});
+      }
+      promise = std::promise<database::mysql_result>();
+      _mysql.run_query_and_get_result(
+          "SELECT metric_id, metric_name FROM metrics WHERE to_delete=1",
+          &promise, conn);
+      res = promise.get_future().get();
+
+      while (_mysql.fetch_row(res)) {
+        metrics_to_delete.insert(res.value_as_u64(0));
+        _metric_cache.erase({res.value_as_u64(0), res.value_as_str(1)});
       }
     } catch (const std::exception& e) {
       throw msg_fmt("could not query index table to get index to delete: {} ",

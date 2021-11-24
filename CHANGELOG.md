@@ -3,6 +3,9 @@
 ## 21.04.6
 
 ### fixes
+*rrd*
+
+add query sql to check metrics to delete metric and file associated.
 
 *storage*
 
