@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstring>
 
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -129,7 +130,8 @@ bool conflict_manager::init_storage(bool store_in_db,
   for (count = 0; count < 60; count++) {
     /* Let's wait for 60s for the conflict_manager to be initialized */
     if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&] {
-          return _singleton != nullptr || _state == finished;
+          return _singleton != nullptr || _state == finished ||
+                 config::applier::mode == config::applier::finished;
         })) {
       if (_state == finished)
         return false;

@@ -9,7 +9,8 @@ add query sql to check metrics to delete metric and file associated.
 
 *storage*
 
-Waiting longer for conflict manager to be connected
+Waiting longer for conflict manager to be connected without blocking if cbd
+is stopped.
 
 *bam*
 
