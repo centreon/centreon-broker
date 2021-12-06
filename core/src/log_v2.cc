@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/log_v2.hh"
 
-#include <fmt/format.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -32,16 +31,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::exceptions;
 using namespace spdlog;
 
-const std::array<std::string, 10> log_v2::loggers{
-    "bam",      "bbdo",       "config", "core", "lua",
-    "perfdata", "processing", "sql",    "tcp",  "tls"};
-
-std::map<std::string, level::level_enum> log_v2::_levels_map{
-    {"trace", level::trace}, {"debug", level::debug},
-    {"info", level::info},   {"warning", level::warn},
-    {"error", level::err},   {"critical", level::critical},
-    {"disabled", level::off}};
-
 log_v2& log_v2::instance() {
   static log_v2 instance;
   return instance;
@@ -50,6 +39,7 @@ log_v2& log_v2::instance() {
 log_v2::log_v2() {
   auto stdout_sink = std::make_shared<sinks::stdout_color_sink_mt>();
   auto null_sink = std::make_shared<sinks::null_sink_mt>();
+
   _bam_log = std::make_shared<logger>("bam", stdout_sink);
   _bbdo_log = std::make_shared<logger>("bbdo", stdout_sink);
   _config_log = std::make_shared<logger>("config", stdout_sink);
@@ -110,6 +100,10 @@ void log_v2::apply(const config::state& conf) {
   _tcp_log = std::make_shared<logger>("tcp", null_sink);
   _tls_log = std::make_shared<logger>("tls", null_sink);
 
+  const std::array<std::string, 10> loggers{
+      "bam",      "bbdo",       "config", "core", "lua",
+      "perfdata", "processing", "sql",    "tcp",  "tls"};
+
   for (auto it = log.loggers.begin(), end = log.loggers.end(); it != end;
        ++it) {
     std::shared_ptr<logger>* l;
@@ -139,9 +133,41 @@ void log_v2::apply(const config::state& conf) {
       continue;
 
     *l = std::make_shared<logger>(it->first, file_sink);
-    (*l)->set_level(_levels_map[it->second]);
-    (*l)->flush_on(_levels_map[it->second]);
+    auto lvl = level::from_str(it->second);
+    if (lvl != level::off) {
+      (*l)->set_level(lvl);
+      (*l)->flush_on(lvl);
+      (*l)->set_pattern("[%Y-%m-%dT%H:%M:%S.%e%z] [%n] [%l] %v");
+    }
   }
+}
+
+/**
+ * @brief Check if the given logger makes part of our loggers
+ *
+ * @param logger A logger name
+ *
+ * @return a boolean.
+ */
+
+bool log_v2::contains_logger(const std::string& logger) {
+  const std::array<std::string, 10> loggers{
+      "bam",      "bbdo",       "config", "core", "lua",
+      "perfdata", "processing", "sql",    "tcp",  "tls"};
+  return std::find(loggers.begin(), loggers.end(), logger) != loggers.end();
+}
+
+/**
+ * @brief Check if the given level makes part of the available levels.
+ *
+ * @param level A level as a string
+ *
+ * @return A boolean.
+ */
+
+bool log_v2::contains_level(const std::string& level) {
+  level::level_enum l = level::from_str(level);
+  return l != level::off;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::bam() {
@@ -190,11 +216,4 @@ std::shared_ptr<spdlog::logger> log_v2::tls() {
 
 const std::string& log_v2::log_name() const {
   return _log_name;
-}
-
-std::list<std::string> log_v2::levels() {
-  std::list<std::string> retval;
-  for (auto it = _levels_map.begin(); it != _levels_map.end(); ++it)
-    retval.push_back(it->first);
-  return retval;
 }

@@ -21,7 +21,6 @@
 #include <syslog.h>
 
 #include <algorithm>
-#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <streambuf>
@@ -187,14 +186,14 @@ state parser::parse(std::string const& file) {
               out.read_filters.insert("all");
               out.write_filters.insert("all");
               _parse_endpoint(node, out);
-              retval.endpoints().push_back(out);
+              retval.add_endpoint(std::move(out));
             }
           } else if (it.value().is_object()) {
             endpoint out(endpoint::io_type::output);
             out.read_filters.insert("all");
             out.write_filters.insert("all");
             _parse_endpoint(it.value(), out);
-            retval.endpoints().push_back(out);
+            retval.add_endpoint(std::move(out));
           } else
             throw msg_fmt(
                 "config parser: cannot parse key '"
@@ -207,13 +206,13 @@ state parser::parse(std::string const& file) {
               endpoint in(endpoint::io_type::input);
               in.read_filters.insert("all");
               _parse_endpoint(node, in);
-              retval.endpoints().push_back(in);
+              retval.add_endpoint(std::move(in));
             }
           } else if (it.value().is_object()) {
             endpoint in(endpoint::io_type::input);
             in.read_filters.insert("all");
             _parse_endpoint(it.value(), in);
-            retval.endpoints().push_back(in);
+            retval.add_endpoint(std::move(in));
           } else
             throw msg_fmt(
                 "config parser: cannot parse key '"
@@ -286,14 +285,10 @@ state parser::parse(std::string const& file) {
             conf.loggers.clear();
             for (auto it = conf_js["loggers"].begin();
                  it != conf_js["loggers"].end(); ++it) {
-              const auto& loggers = log_v2::loggers;
-              const auto levels = log_v2::levels();
-              if (std::find(loggers.begin(), loggers.end(), it.key()) ==
-                  loggers.end())
+              if (!log_v2::contains_logger(it.key()))
                 throw msg_fmt("'{}' is not available as logger", it.key());
               if (!it.value().is_string() ||
-                  std::find(levels.begin(), levels.end(),
-                            it.value().get<std::string>()) == levels.end())
+                  !log_v2::contains_level(it.value().get<std::string>()))
                 throw msg_fmt(
                     "The logger '{}' must contain a string among 'trace', "
                     "'debug', 'info', 'warning', 'error', 'critical', "
@@ -408,8 +403,10 @@ void parser::_parse_endpoint(json const& elem, endpoint& e) {
     if (it.value().is_string())
       e.params[it.key()] = it.value().get<std::string>();
     else
-      log_v2::config()->debug("config parser (while reading configuration file): "
-                              "for key: '{}' value is not a string.", it.key());
+      log_v2::config()->debug(
+          "config parser (while reading configuration file): "
+          "for key: '{}' value is not a string.",
+          it.key());
   }
 }
 
