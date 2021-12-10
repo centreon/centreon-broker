@@ -130,7 +130,7 @@ bool conflict_manager::init_storage(bool store_in_db,
     /* Let's wait for 60s for the conflict_manager to be initialized */
     if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&] {
           return _singleton != nullptr || _state == finished ||
-                 config::applier::mode == config::applier::finished;
+                 config::applier::state == config::applier::finished;
         })) {
       if (_state == finished)
         return false;

@@ -19,6 +19,7 @@
 
 #include "com/centreon/broker/rrd/cached.hh"
 
+#include <thread>
 #include <gtest/gtest.h>
 
 #include <asio.hpp>
