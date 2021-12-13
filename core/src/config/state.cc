@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/config/state.hh"
-
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/file.hh"
 
 using namespace com::centreon::broker::config;
@@ -219,12 +219,12 @@ std::string const& state::command_protocol() const noexcept {
 }
 
 /**
- *  Get the list of endpoints.
+ * @brief Add a new endpoint to the configuration.
  *
- *  @return Endpoint list.
+ * @param out The endpoint is moved to the configuration.
  */
-std::list<endpoint>& state::endpoints() noexcept {
-  return _endpoints;
+void state::add_endpoint(endpoint&& out) noexcept {
+  _endpoints.emplace_back(std::move(out));
 }
 
 /**
@@ -314,8 +314,8 @@ void state::log_timestamp(
  *
  *  @return Any acceptable value.
  */
-com::centreon::broker::logging::timestamp_type state::log_timestamp()
-    const noexcept {
+com::centreon::broker::logging::timestamp_type state::log_timestamp() const
+    noexcept {
   return _log_timestamp;
 }
 

@@ -90,7 +90,7 @@ class state {
   void command_protocol(std::string const& prot);
   std::string const& command_protocol() const noexcept;
   void clear();
-  std::list<endpoint>& endpoints() noexcept;
+  void add_endpoint(endpoint&& out) noexcept;
   std::list<endpoint> const& endpoints() const noexcept;
   void event_queue_max_size(int val) noexcept;
   int event_queue_max_size() const noexcept;
