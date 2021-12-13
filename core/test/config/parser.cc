@@ -23,8 +23,6 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
-#include <string>
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 
@@ -120,7 +118,7 @@ TEST(parser, endpoint) {
   ASSERT_EQ(s.endpoints().size(), 5u);
 
   // Check input #1.
-  std::list<config::endpoint>::iterator it(s.endpoints().begin());
+  std::list<config::endpoint>::const_iterator it(s.endpoints().begin());
   config::endpoint input1(*(it++));
   ASSERT_EQ(input1.name, "CentreonInput");
   ASSERT_EQ(input1.type, "tcp");

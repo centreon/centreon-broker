@@ -29,7 +29,6 @@
 CCB_BEGIN()
 
 class log_v2 {
-  static std::map<std::string, spdlog::level::level_enum> _levels_map;
   std::string _log_name;
   std::shared_ptr<spdlog::logger> _bam_log;
   std::shared_ptr<spdlog::logger> _bbdo_log;
@@ -48,8 +47,6 @@ class log_v2 {
   ~log_v2();
 
  public:
-  static const std::array<std::string, 10> loggers;
-
   static log_v2& instance();
   void apply(const config::state& conf);
   const std::string& log_name() const;
@@ -65,7 +62,8 @@ class log_v2 {
   static std::shared_ptr<spdlog::logger> sql();
   static std::shared_ptr<spdlog::logger> tcp();
   static std::shared_ptr<spdlog::logger> tls();
-  static std::list<std::string> levels();
+  static bool contains_logger(const std::string& logger);
+  static bool contains_level(const std::string& level);
 };
 
 CCB_END();
