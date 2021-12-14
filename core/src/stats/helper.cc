@@ -55,8 +55,8 @@ void com::centreon::broker::stats::get_mysql_stats(
     json11::Json::object& object) noexcept {
   std::map<std::string, std::string> stats(
       mysql_manager::instance().get_stats());
-  for (std::pair<std::string, std::string> const& p : stats)
-    object[p.first] = p.second;
+  for (auto it = stats.begin() ; it != stats.end(); ++it)
+    object[it->first] = it->second;
 }
 
 void com::centreon::broker::stats::get_loaded_module_stats(
