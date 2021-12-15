@@ -106,8 +106,8 @@ bool stats::get_endpoint_stats(std::vector<nlohmann::json>& object) {
         std::chrono::milliseconds(100)));
     try {
       if (locked)
-        for (auto it(endp_applier.endpoints_begin()),
-             end(endp_applier.endpoints_end());
+        for (auto it = endp_applier.endpoints_begin(),
+                  end = endp_applier.endpoints_end();
              it != end; ++it) {
           nlohmann::json subtree;
           subtree["name"] = it->second->get_name();
