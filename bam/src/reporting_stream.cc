@@ -34,6 +34,7 @@
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/database/table_max_size.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -60,6 +61,10 @@ reporting_stream::reporting_stream(database_config const& db_cfg)
       _mysql(db_cfg),
       _processing_dimensions(false) {
   log_v2::bam()->trace("BAM: reporting stream constructor");
+  if (!config::applier::wait_for_conflict_manager())
+    throw msg_fmt(
+        "BAM: conflict_manager not correctly started. The BAM reporting stream "
+        "cannot work correctly.");
   // Prepare queries.
   _prepare();
 

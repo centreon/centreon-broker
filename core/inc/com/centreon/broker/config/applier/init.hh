@@ -32,6 +32,8 @@ extern std::atomic<applier_state> mode;
 void deinit();
 void init(const config::state& conf);
 void init(size_t n_thread, const std::string& name);
+void set_conflict_manager_initialized(bool initialized);
+bool wait_for_conflict_manager();
 }  // namespace applier
 }  // namespace config
 

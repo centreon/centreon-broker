@@ -30,6 +30,7 @@
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -71,6 +72,11 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
       _storage_db_cfg(storage_db_cfg),
       _cache(cache) {
   log_v2::bam()->trace("BAM: monitoring_stream constructor");
+  config::applier::wait_for_conflict_manager();
+  if (!config::applier::wait_for_conflict_manager())
+    throw msg_fmt(
+        "BAM: conflict_manager not correctly started. The BAM monitoring "
+        "stream cannot work correctly.");
   // Prepare queries.
   _prepare();
 
@@ -200,7 +206,8 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       std::shared_ptr<neb::service_status> ss(
           std::static_pointer_cast<neb::service_status>(data));
       log_v2::bam()->trace(
-          "BAM: processing service status (host: {}, service: {}, hard state {}, "
+          "BAM: processing service status (host: {}, service: {}, hard state "
+          "{}, "
           "current state {})",
           ss->host_id, ss->service_id, ss->last_hard_state, ss->current_state);
       multiplexing::publisher pblshr;

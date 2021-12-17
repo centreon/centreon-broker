@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/config/applier/init.hh"
+#include <condition_variable>
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/config/applier/endpoint.hh"
@@ -40,6 +41,7 @@ std::atomic<config::applier::applier_state> config::applier::mode{not_started};
  * @param name The broker name to give to this cbd instance.
  */
 void config::applier::init(size_t n_thread, const std::string& name) {
+  set_conflict_manager_initialized(false);
   // Load singletons.
   pool::load(n_thread);
   stats::center::load();
@@ -49,6 +51,24 @@ void config::applier::init(size_t n_thread, const std::string& name) {
   io::events::load();
   config::applier::endpoint::load();
   mode = initialized;
+}
+
+static std::condition_variable conflict_manager_cv;
+static std::mutex conflict_manager_m;
+static bool conflict_manager_initialized{false};
+
+void config::applier::set_conflict_manager_initialized(bool initialized) {
+  std::unique_lock<std::mutex> lck(conflict_manager_m);
+  conflict_manager_initialized = initialized;
+  conflict_manager_cv.notify_all();
+}
+
+bool config::applier::wait_for_conflict_manager() {
+  std::unique_lock<std::mutex> lck(conflict_manager_m);
+  conflict_manager_initialized = true;
+  conflict_manager_cv.wait(
+      lck, [&] { return conflict_manager_initialized || mode == finished; });
+  return mode == initialized;
 }
 
 /**
