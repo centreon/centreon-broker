@@ -38,10 +38,10 @@ namespace bam {
  */
 class hst_svc_mapping {
  public:
-  hst_svc_mapping();
-  hst_svc_mapping(hst_svc_mapping const& other);
-  ~hst_svc_mapping();
-  hst_svc_mapping& operator=(hst_svc_mapping const& other);
+  hst_svc_mapping() = default;
+  ~hst_svc_mapping() noexcept = default;
+  hst_svc_mapping(const hst_svc_mapping&) = delete;
+  hst_svc_mapping& operator=(const hst_svc_mapping&) = delete;
   uint32_t get_host_id(std::string const& hst) const;
   std::pair<uint32_t, uint32_t> get_service_id(std::string const& hst,
                                                std::string const& svc) const;
@@ -62,8 +62,6 @@ class hst_svc_mapping {
   bool get_activated(uint32_t hst_id, uint32_t service_id) const;
 
  private:
-  void _internal_copy(hst_svc_mapping const& other);
-
   std::map<std::pair<std::string, std::string>, std::pair<uint32_t, uint32_t> >
       _mapping;
 
