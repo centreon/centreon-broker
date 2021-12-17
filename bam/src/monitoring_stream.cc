@@ -238,16 +238,6 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       _applier.book_service().update(dt, &ev_cache);
       ev_cache.commit_to(pblshr);
     } break;
-    case storage::metric::static_type(): {
-      std::shared_ptr<storage::metric> m(
-          std::static_pointer_cast<storage::metric>(data));
-      log_v2::bam()->trace("BAM: processing metric (id {}, time {}, value {})",
-                           m->metric_id, m->ctime, m->value);
-      multiplexing::publisher pblshr;
-      event_cache_visitor ev_cache;
-      _applier.book_metric().update(m, &ev_cache);
-      ev_cache.commit_to(pblshr);
-    } break;
     case bam::ba_status::static_type(): {
       ba_status* status(static_cast<ba_status*>(data.get()));
       log_v2::bam()->trace(

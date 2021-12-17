@@ -23,7 +23,6 @@
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
-#include "com/centreon/broker/bam/metric_book.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
