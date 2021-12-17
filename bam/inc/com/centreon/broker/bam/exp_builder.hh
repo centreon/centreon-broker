@@ -23,9 +23,9 @@
 #include <stack>
 
 #include "com/centreon/broker/bam/bool_call.hh"
-#include "com/centreon/broker/bam/bool_metric.hh"
 #include "com/centreon/broker/bam/bool_service.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
+#include "com/centreon/broker/bam/hst_svc_mapping.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -40,16 +40,15 @@ namespace bam {
  */
 class exp_builder {
  public:
-  typedef std::list<bool_call::ptr> list_call;
-  typedef std::list<bool_metric::ptr> list_metric;
-  typedef std::list<bool_service::ptr> list_service;
-  typedef std::pair<bool_value::ptr, std::string> any_operand;
+  using list_call = std::list<bool_call::ptr>;
+  using list_service = std::list<bool_service::ptr>;
+  using any_operand = std::pair<bool_value::ptr, std::string>;
 
   exp_builder(exp_parser::notation const& postfix,
               hst_svc_mapping const& mapping);
-  ~exp_builder();
+  exp_builder(exp_parser::notation const& postfix);
+  ~exp_builder() noexcept = default;
   list_call const& get_calls() const;
-  list_metric const& get_metrics() const;
   list_service const& get_services() const;
   bool_value::ptr get_tree() const;
 
@@ -63,7 +62,6 @@ class exp_builder {
 
   hst_svc_mapping const& _mapping;
   list_call _calls;
-  list_metric _metrics;
   list_service _services;
   std::stack<any_operand> _operands;
   bool_value::ptr _tree;

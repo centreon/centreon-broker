@@ -31,13 +31,13 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
-static double normalize(double d) {
-  if (d >= 100.0)
-    return 100.0;
-  else if (d <= 0.0)
-    return 0.0;
+auto normalize = [](double d) -> double {
+  if (d > 100.0)
+    d = 100.0;
+  else if (d < 0.0)
+    d = 0.0;
   return d;
-}
+};
 
 static bool _every_kpi_in_dt(
     std::unordered_map<kpi*, bam::ba::impact_info>& imp) {

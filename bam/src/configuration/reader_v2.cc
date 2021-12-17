@@ -67,12 +67,19 @@ reader_v2::~reader_v2() {}
  */
 void reader_v2::read(state& st) {
   try {
+    log_v2::bam()->info("loading dimensions.");
     _load_dimensions();
+    log_v2::bam()->info("loading BAs.");
     _load(st.get_bas(), st.get_ba_svc_mapping());
+    log_v2::bam()->info("loading KPIs.");
     _load(st.get_kpis());
+    log_v2::bam()->info("loading boolean expressions.");
     _load(st.get_bool_exps());
+    log_v2::bam()->info("loading mapping hosts <-> services.");
     _load(st.get_hst_svc_mapping());
+    log_v2::bam()->info("bam configuration loaded.");
   } catch (std::exception const& e) {
+    log_v2::bam()->error("Error while reading bam configuration: {}", e.what());
     st.clear();
     throw;
   }
@@ -407,26 +414,6 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
     throw;
   } catch (std::exception const& e) {
     throw reader_exception("BAM: could not retrieve host/service IDs: {}",
-                           e.what());
-  }
-
-  try {
-    std::string query(
-        "SELECT m.metric_id, m.metric_name, i.host_id, s.service_id"
-        " FROM metrics AS m INNER JOIN index_data AS i"
-        " ON m.index_id=i.id INNER JOIN services AS s"
-        " ON i.host_id=s.host_id AND i.service_id=s.service_id");
-    mysql storage_mysql(_storage_cfg);
-    std::promise<database::mysql_result> promise;
-    log_v2::bam()->trace("reader_v2: query: '{}'", query);
-    storage_mysql.run_query_and_get_result(query, &promise);
-    database::mysql_result res(promise.get_future().get());
-    while (storage_mysql.fetch_row(res)) {
-      mapping.register_metric(res.value_as_u32(0), res.value_as_str(1),
-                              res.value_as_u32(2), res.value_as_u32(3));
-    }
-  } catch (std::exception const& e) {
-    throw reader_exception("BAM: could not retrieve known metrics: {}",
                            e.what());
   }
 }
