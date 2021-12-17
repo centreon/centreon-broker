@@ -384,13 +384,9 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
 
   try {
     std::string query(
-        "SELECT m.metric_id, m.metric_name,"
-        " i.host_id,"
-        " s.service_id"
-        " FROM metrics AS m"
-        " INNER JOIN index_data AS i"
-        " ON m.index_id=i.id"
-        " INNER JOIN services AS s"
+        "SELECT m.metric_id, m.metric_name, i.host_id, s.service_id"
+        " FROM metrics AS m INNER JOIN index_data AS i"
+        " ON m.index_id=i.id INNER JOIN services AS s"
         " ON i.host_id=s.host_id AND i.service_id=s.service_id");
     mysql storage_mysql(_storage_cfg);
     std::promise<database::mysql_result> promise;
