@@ -150,12 +150,6 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   return ack;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Update status of endpoint.
  *
