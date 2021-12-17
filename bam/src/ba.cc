@@ -38,22 +38,6 @@ auto normalize = [](double d) -> double {
   return (d);
 };
 
-auto _num_kpi_in_dt =
-    [](std::unordered_map<kpi*, bam::ba::impact_info>& imp) -> bool {
-  std::size_t num{0};
-
-  for (std::unordered_map<kpi*, ba::impact_info>::const_iterator
-           it = imp.begin(),
-           end = imp.end();
-       it != end; ++it) {
-    if (!it->first->ok_state() && !it->first->in_downtime()) {
-      num++;
-    }
-  }
-
-  return num;
-};
-
 static bool _every_kpi_in_dt(
     std::unordered_map<kpi*, bam::ba::impact_info>& imp) {
   if (imp.empty())

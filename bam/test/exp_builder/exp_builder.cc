@@ -30,7 +30,6 @@ TEST(BamExpBuilder, Valid1) {
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
   ASSERT_EQ(builder.get_calls().size(), 0u);
-  ASSERT_EQ(builder.get_metrics().size(), 0u);
   ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 1);
@@ -42,7 +41,6 @@ TEST(BamExpBuilder, Valid2) {
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
   ASSERT_EQ(builder.get_calls().size(), 0u);
-  ASSERT_EQ(builder.get_metrics().size(), 0u);
   ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 0);
@@ -54,7 +52,6 @@ TEST(BamExpBuilder, Valid3) {
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
   ASSERT_EQ(builder.get_calls().size(), 0u);
-  ASSERT_EQ(builder.get_metrics().size(), 0u);
   ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 0);
@@ -66,7 +63,6 @@ TEST(BamExpBuilder, Valid4) {
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
   ASSERT_EQ(builder.get_calls().size(), 0u);
-  ASSERT_EQ(builder.get_metrics().size(), 0u);
   ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 1);
@@ -78,7 +74,6 @@ TEST(BamExpBuilder, Valid5) {
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
   ASSERT_EQ(builder.get_calls().size(), 0u);
-  ASSERT_EQ(builder.get_metrics().size(), 0u);
   ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 1);

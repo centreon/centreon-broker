@@ -33,11 +33,6 @@ bool_xor::bool_xor() {}
 bool_xor::bool_xor(bool_xor const& right) : bool_binary_operator(right) {}
 
 /**
- *  Destructor.
- */
-bool_xor::~bool_xor() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.
