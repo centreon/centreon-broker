@@ -126,8 +126,7 @@ void applier::state::apply(bam::configuration::state const& my_state) {
   // Really apply objects.
   _ba_applier.apply(my_state.get_bas(), _book_service);
   _bool_exp_applier.apply(my_state.get_bool_exps(),
-                          my_state.get_hst_svc_mapping(), _book_service,
-                          _book_metric);
+                          my_state.get_hst_svc_mapping(), _book_service);
   _kpi_applier.apply(my_state.get_kpis(), my_state.get_hst_svc_mapping(),
                      _ba_applier, _bool_exp_applier,
                      _book_service);

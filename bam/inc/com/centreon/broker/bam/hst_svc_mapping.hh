@@ -51,13 +51,6 @@ class hst_svc_mapping {
                    uint32_t host_id,
                    uint32_t service_id,
                    bool activated);
-  void register_metric(uint32_t metric_id,
-                       std::string const& metric_name,
-                       uint32_t host_id,
-                       uint32_t service_id);
-  std::set<uint32_t> get_metric_ids(std::string const& metric_name,
-                                    uint32_t host_id,
-                                    uint32_t service_id) const;
 
   bool get_activated(uint32_t hst_id, uint32_t service_id) const;
 
@@ -66,10 +59,6 @@ class hst_svc_mapping {
       _mapping;
 
   std::map<std::pair<uint32_t, uint32_t>, bool> _activated_mapping;
-
-  std::map<std::pair<uint32_t, uint32_t>, std::map<std::string, uint32_t> >
-      _metrics;
-  std::multimap<std::string, uint32_t> _metric_by_name;
 };
 }  // namespace bam
 
