@@ -35,7 +35,7 @@ namespace bam {
 class bool_or : public bool_binary_operator {
  public:
   bool_or() = default;
-  ~bool_or() noexcept = default;
+  ~bool_or() noexcept override = default;
   bool_or(const bool_or&) = delete;
   bool_or& operator=(const bool_or&) = delete;
   double value_hard() override;

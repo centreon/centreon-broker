@@ -37,11 +37,6 @@ bool_constant::bool_constant(bool_constant const& right) : bool_value(right) {
 }
 
 /**
- *  Destructor.
- */
-bool_constant::~bool_constant() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

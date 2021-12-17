@@ -38,11 +38,6 @@ bool_call::bool_call(bool_call const& right) : bool_value(right) {
 }
 
 /**
- *  Destructor.
- */
-bool_call::~bool_call() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

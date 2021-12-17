@@ -42,14 +42,14 @@ class bool_call : public bool_value {
 
   bool_call(std::string const& name);
   bool_call(bool_call const& right);
-  ~bool_call();
+  ~bool_call() noexcept override = default;
   bool_call& operator=(bool_call const& right);
-  double value_hard();
-  double value_soft();
-  bool state_known() const;
+  double value_hard() override;
+  double value_soft() override;
+  bool state_known() const override;
   std::string const& get_name() const;
   void set_expression(std::shared_ptr<bool_value> expression);
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  bool child_has_update(computable* child, io::stream* visitor = NULL) override;
 
  private:
   std::string _name;
