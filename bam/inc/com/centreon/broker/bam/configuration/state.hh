@@ -45,10 +45,10 @@ class state {
   typedef std::map<uint32_t, kpi> kpis;
   typedef std::map<uint32_t, bool_expression> bool_exps;
 
-  state();
-  state(state const& other);
-  ~state();
-  state& operator=(state const& other);
+  state() = default;
+  ~state() noexcept = default;
+  state(const state&) = delete;
+  state& operator=(const state&) = delete;
   void clear();
 
   bas const& get_bas() const;
