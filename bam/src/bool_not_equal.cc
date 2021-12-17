@@ -36,11 +36,6 @@ bool_not_equal::bool_not_equal(bool_not_equal const& other)
     : bool_binary_operator(other) {}
 
 /**
- *  Destructor.
- */
-bool_not_equal::~bool_not_equal() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] other  Object to copy.
