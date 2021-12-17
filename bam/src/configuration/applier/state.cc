@@ -133,15 +133,6 @@ void applier::state::apply(bam::configuration::state const& my_state) {
 }
 
 /**
- *  Get the book of metric listeners.
- *
- *  @return Book of metric listeners.
- */
-bam::metric_book& applier::state::book_metric() {
-  return _book_metric;
-}
-
-/**
  *  Get the book of service listeners.
  *
  *  @return Book of service listeners.
@@ -161,12 +152,6 @@ void applier::state::visit(io::stream* visitor) {
   _ba_applier.visit(visitor);
   _kpi_applier.visit(visitor);
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Circular check node constructor.
@@ -282,7 +267,6 @@ void applier::state::_circular_check(applier::state::circular_check_node& n) {
  */
 void applier::state::_internal_copy(applier::state const& other) {
   _ba_applier = other._ba_applier;
-  _book_metric = other._book_metric;
   _book_service = other._book_service;
   _kpi_applier = other._kpi_applier;
   _bool_exp_applier = other._bool_exp_applier;
