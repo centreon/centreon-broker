@@ -53,11 +53,6 @@ bool_operation::bool_operation(bool_operation const& right)
 }
 
 /**
- *  Destructor.
- */
-bool_operation::~bool_operation() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

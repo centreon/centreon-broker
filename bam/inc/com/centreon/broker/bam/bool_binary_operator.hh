@@ -43,13 +43,13 @@ class bool_binary_operator : public bool_value {
 
   bool_binary_operator();
   bool_binary_operator(bool_binary_operator const& right);
-  virtual ~bool_binary_operator();
+  ~bool_binary_operator() noexcept override = default;
   bool_binary_operator& operator=(bool_binary_operator const& right);
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  bool child_has_update(computable* child, io::stream* visitor = NULL) override;
   void set_left(std::shared_ptr<bool_value> const& left);
   void set_right(std::shared_ptr<bool_value> const& right);
-  bool state_known() const;
-  bool in_downtime() const;
+  bool state_known() const override;
+  bool in_downtime() const override;
 
  protected:
   std::shared_ptr<bool_value> _left;

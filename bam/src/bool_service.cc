@@ -45,11 +45,6 @@ bool_service::bool_service(bool_service const& right)
 }
 
 /**
- *  Destructor.
- */
-bool_service::~bool_service() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

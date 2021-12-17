@@ -36,10 +36,10 @@ class bool_and : public bool_binary_operator {
  public:
   bool_and();
   bool_and(bool_and const& right);
-  ~bool_and();
+  ~bool_and() noexcept override = default;
   bool_and& operator=(bool_and const& right);
-  double value_hard();
-  double value_soft();
+  double value_hard() override;
+  double value_soft() override;
 };
 }  // namespace bam
 
