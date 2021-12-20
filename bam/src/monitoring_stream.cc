@@ -311,12 +311,6 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   return 0;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Prepare queries.
  */

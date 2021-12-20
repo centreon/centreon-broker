@@ -36,10 +36,7 @@ using namespace com::centreon::broker::bam::configuration;
  *  Default constructor.
  */
 applier::kpi::kpi()
-    : _bas(nullptr),
-      _book(nullptr),
-      _boolexps(nullptr),
-      _mapping(nullptr) {}
+    : _bas(nullptr), _book(nullptr), _boolexps(nullptr), _mapping(nullptr) {}
 
 /**
  *  Copy constructor.
@@ -232,7 +229,8 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi_ba_id));
   if (my_ba) {
     logging::error(logging::high)
-      << "BAM: BA '" << my_ba->get_name() << "' with id " << my_ba->get_id() << " is set as invalid";
+        << "BAM: BA '" << my_ba->get_name() << "' with id " << my_ba->get_id()
+        << " is set as invalid";
     my_ba->set_valid(false);
   }
 }
@@ -278,7 +276,7 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
         << "BAM: creating new KPI " << cfg.get_id() << " of service ("
         << cfg.get_host_id() << ", " << cfg.get_service_id()
         << ") impacting BA " << cfg.get_ba_id();
-    std::shared_ptr<bam::kpi_service> obj(new bam::kpi_service);
+    auto obj{std::make_shared<bam::kpi_service>()};
     obj->set_acknowledged(cfg.is_acknowledged());
     obj->set_downtimed(cfg.is_downtimed());
     obj->set_host_id(cfg.get_host_id());
@@ -308,9 +306,9 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
   } else
     throw exceptions::config()
-          << "created KPI " << cfg.get_id()
-          << " is neither related to a service, nor a BA,"
-          << " nor a meta-service, nor a boolean expression";
+        << "created KPI " << cfg.get_id()
+        << " is neither related to a service, nor a BA,"
+        << " nor a meta-service, nor a boolean expression";
 
   my_kpi->set_id(cfg.get_id());
   my_kpi->set_ba_id(cfg.get_ba_id());
@@ -330,8 +328,7 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
   uint32_t ba_id = cfg.get_ba_id();
   std::shared_ptr<bam::ba> my_ba(_bas->find_ba(ba_id));
   if (!my_ba)
-    throw exceptions::config()
-          << "target BA " << ba_id << " does not exist";
+    throw exceptions::config() << "target BA " << ba_id << " does not exist";
 
   if (cfg.is_ba()) {
     std::shared_ptr<bam::kpi_ba> obj(
