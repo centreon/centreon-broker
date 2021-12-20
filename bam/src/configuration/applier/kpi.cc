@@ -267,7 +267,7 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     log_v2::bam()->info(
         "BAM: creating new KPI {} of service ({}, {}) impacting BA {}",
         cfg.get_id(), cfg.get_host_id(), cfg.get_service_id(), cfg.get_ba_id());
-    std::shared_ptr<bam::kpi_service> obj{std::make_shared<bam::kpi_service>(
+    auto obj{std::make_shared<bam::kpi_service>(
         cfg.get_id(), cfg.get_ba_id(), cfg.get_host_id(),
         cfg.get_service_id())};
     obj->set_acknowledged(cfg.is_acknowledged());

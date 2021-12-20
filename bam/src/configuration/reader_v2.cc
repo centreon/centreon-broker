@@ -21,6 +21,7 @@
 #include <fmt/format.h>
 
 #include <cstring>
+#include <deque>
 #include <memory>
 
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
