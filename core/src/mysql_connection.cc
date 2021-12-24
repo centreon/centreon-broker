@@ -132,6 +132,7 @@ bool mysql_connection::_try_to_reconnect() {
         "mysql_connection: The mysql/mariadb database seems not started.");
     return false;
   }
+  _last_access = std::time(nullptr);
 
   _prepare_connection();
 
@@ -227,6 +228,8 @@ void mysql_connection::_commit(mysql_task* t) {
       log_v2::sql()->error("mysql_connection: {}", err_msg);
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+    if (res == 0)
+      _last_access = std::time(nullptr);
   } else
     res = 0;
 
@@ -612,6 +615,7 @@ void mysql_connection::_run() {
       _start_condition.notify_all();
       return;
     }
+    _last_access = std::time(nullptr);
   }
 
   if (config::applier::state == config::applier::finished) {
@@ -635,20 +639,22 @@ void mysql_connection::_run() {
       } else {
         /* We are waiting for some activity, nothing to do for now it is time
          * to make some ping */
-        while (!_tasks_condition.wait_for(
-            lock, std::chrono::seconds(30),
-            [this] { return _finish_asked || !_tasks_list.empty(); })) {
+        _tasks_condition.wait(lock, [this] { return _finish_asked || !_tasks_list.empty(); });
+
+        std::time_t now = std::time(nullptr);
+        if (_tasks_list.empty())
+          _state = finished;
+        else if (now >= _last_access + 30) {
           lock.unlock();
+          log_v2::sql()->trace("SQL: performing mysql_ping.");
           if (mysql_ping(_conn)) {
             if (!_try_to_reconnect())
               log_v2::sql()->error("SQL: Reconnection failed.");
-          } else
+          } else {
             log_v2::sql()->trace("SQL: connection always alive");
+            _last_access = now;
+          }
           lock.lock();
-        }
-
-        if (_tasks_list.empty()) {
-          _state = finished;
         }
         continue;
       }
@@ -679,6 +685,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
       _finish_asked(false),
       _local_tasks_count(0),
       _need_commit(false),
+      _last_access{0},
       _host(db_cfg.get_host()),
       _user(db_cfg.get_user()),
       _pwd(db_cfg.get_password()),
