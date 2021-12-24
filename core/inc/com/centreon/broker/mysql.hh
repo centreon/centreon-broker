@@ -31,7 +31,7 @@ using my_error = database::mysql_error;
  */
 class mysql {
  public:
-  mysql(database_config const& db_cfg);
+  mysql(const database_config& db_cfg);
   ~mysql();
   void prepare_statement(database::mysql_stmt const& stmt);
   database::mysql_stmt prepare_query(

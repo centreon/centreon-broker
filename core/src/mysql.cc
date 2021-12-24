@@ -30,7 +30,7 @@ std::once_flag init_flag;
  *
  *  @param[in] db_cfg  Database configuration.
  */
-mysql::mysql(database_config const& db_cfg)
+mysql::mysql(const database_config& db_cfg)
     : _db_cfg(db_cfg), _pending_queries(0), _current_connection(0) {
   mysql_manager& mgr(mysql_manager::instance());
   _connection = mgr.get_connections(db_cfg);
@@ -178,6 +178,8 @@ int mysql::run_query_and_get_result(std::string const& query,
     // Here, we use _current_thread
     thread_id = choose_best_connection(-1);
 
+  log_v2::sql()->trace("Connection {} chosen to execute << {} >>",
+      thread_id, query);
   _connection[thread_id]->run_query_and_get_result(query, promise);
   return thread_id;
 }

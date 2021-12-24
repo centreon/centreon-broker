@@ -92,7 +92,7 @@ uint32_t bool_service::get_host_id() const {
  *  @return Service ID.
  */
 uint32_t bool_service::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**

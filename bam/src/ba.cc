@@ -219,7 +219,7 @@ uint32_t ba::get_id() {
  *  @return  An integer representing the value of this id.
  */
 uint32_t ba::get_host_id() const {
-  return (_host_id);
+  return _host_id;
 }
 
 /**
@@ -228,7 +228,7 @@ uint32_t ba::get_host_id() const {
  *  @return  An integer representing the value of this id.
  */
 uint32_t ba::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**

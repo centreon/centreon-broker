@@ -19,8 +19,8 @@
 #ifndef CCB_BAM_HST_SVC_MAPPING_HH
 #define CCB_BAM_HST_SVC_MAPPING_HH
 
-#include <map>
-#include <set>
+#include "com/centreon/broker/misc/pair.hh"
+#include <unordered_map>
 #include <string>
 #include <utility>
 
@@ -37,6 +37,11 @@ namespace bam {
  *  Allow to find an ID of a host or service by its name.
  */
 class hst_svc_mapping {
+  std::unordered_map<std::pair<std::string, std::string>, std::pair<uint32_t, uint32_t>>
+      _mapping;
+
+  std::unordered_map<std::pair<uint32_t, uint32_t>, bool> _activated_mapping;
+
  public:
   hst_svc_mapping() = default;
   ~hst_svc_mapping() noexcept = default;
@@ -53,12 +58,6 @@ class hst_svc_mapping {
                    bool activated);
 
   bool get_activated(uint32_t hst_id, uint32_t service_id) const;
-
- private:
-  std::map<std::pair<std::string, std::string>, std::pair<uint32_t, uint32_t> >
-      _mapping;
-
-  std::map<std::pair<uint32_t, uint32_t>, bool> _activated_mapping;
 };
 }  // namespace bam
 

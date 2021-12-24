@@ -342,7 +342,7 @@ void monitoring_stream::_rebuild() {
   {
     std::string query("SELECT ba_id FROM mod_bam WHERE must_be_rebuild='1'");
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(query, &promise);
+    _mysql.run_query_and_get_result(query, &promise, 0);
     try {
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))
@@ -360,9 +360,9 @@ void monitoring_stream::_rebuild() {
   logging::debug(logging::medium)
       << "BAM: rebuild asked, sending the rebuild signal";
 
-  std::shared_ptr<rebuild> r(std::make_shared<rebuild>(
-      fmt::format("{}", fmt::join(bas_to_rebuild, ", "))));
-  std::unique_ptr<io::stream> out(new multiplexing::publisher);
+  auto r{std::make_shared<rebuild>(
+      fmt::format("{}", fmt::join(bas_to_rebuild, ", ")))};
+  auto out{std::make_unique<multiplexing::publisher>()};
   out->write(r);
 
   // Set all the BAs to should not be rebuild.
