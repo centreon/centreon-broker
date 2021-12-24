@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bam/hst_svc_mapping.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker::bam;
 
@@ -43,10 +44,11 @@ uint32_t hst_svc_mapping::get_host_id(std::string const& hst) const {
 std::pair<uint32_t, uint32_t> hst_svc_mapping::get_service_id(
     std::string const& hst,
     std::string const& svc) const {
-  std::map<std::pair<std::string, std::string>,
-           std::pair<uint32_t, uint32_t> >::const_iterator
-      it(_mapping.find(std::make_pair(hst, svc)));
-  return (it != _mapping.end()) ? it->second : std::make_pair(0u, 0u);
+  auto it = _mapping.find(std::make_pair(hst, svc));
+  if (it == _mapping.end())
+    log_v2::bam()->debug("hst_svc_mapping: service id for host: {} ; service: {} not found",
+        hst, svc);
+  return it != _mapping.end() ? it->second : std::make_pair(0u, 0u);
 }
 
 /**
@@ -86,7 +88,6 @@ void hst_svc_mapping::set_service(std::string const& hst,
  */
 bool hst_svc_mapping::get_activated(uint32_t hst_id,
                                     uint32_t service_id) const {
-  std::map<std::pair<uint32_t, uint32_t>, bool>::const_iterator it(
-      _activated_mapping.find(std::make_pair(hst_id, service_id)));
+  auto it = _activated_mapping.find(std::make_pair(hst_id, service_id));
   return it == _activated_mapping.end() ? true : it->second;
 }
