@@ -18,6 +18,7 @@
 #include "com/centreon/broker/tcp/tcp_connection.hh"
 
 #include <functional>
+#include <thread>
 
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
