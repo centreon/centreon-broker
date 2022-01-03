@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/config/applier/init.hh"
-#include <condition_variable>
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/config/applier/endpoint.hh"
