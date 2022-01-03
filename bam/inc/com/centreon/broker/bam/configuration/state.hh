@@ -19,7 +19,6 @@
 #ifndef CCB_BAM_CONFIGURATION_STATE_HH
 #define CCB_BAM_CONFIGURATION_STATE_HH
 
-#include <deque>
 #include <map>
 #include "com/centreon/broker/bam/ba_svc_mapping.hh"
 #include "com/centreon/broker/bam/configuration/ba.hh"
@@ -41,14 +40,14 @@ namespace configuration {
 class state {
  public:
   /* Typedefs */
-  typedef std::map<uint32_t, ba> bas;
-  typedef std::map<uint32_t, kpi> kpis;
-  typedef std::map<uint32_t, bool_expression> bool_exps;
+  using bas = std::unordered_map<uint32_t, ba>;
+  using kpis = std::unordered_map<uint32_t, kpi>;
+  using bool_exps = std::unordered_map<uint32_t, bool_expression>;
 
-  state();
-  state(state const& other);
-  ~state();
-  state& operator=(state const& other);
+  state() = default;
+  ~state() noexcept = default;
+  state(const state&) = delete;
+  state& operator=(const state&) = delete;
   void clear();
 
   bas const& get_bas() const;

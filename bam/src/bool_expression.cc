@@ -32,7 +32,6 @@ using namespace com::centreon::broker;
  */
 bool_expression::bool_expression() : _id(0), _impact_if(true) {}
 
-
 /**
  *  Base boolean expression got updated.
  *
