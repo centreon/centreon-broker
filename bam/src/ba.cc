@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -36,22 +37,6 @@ auto normalize = [](double d) -> double {
   else if (d < 0.0)
     d = 0.0;
   return (d);
-};
-
-auto _num_kpi_in_dt =
-    [](std::unordered_map<kpi*, bam::ba::impact_info>& imp) -> bool {
-  std::size_t num{0};
-
-  for (std::unordered_map<kpi*, ba::impact_info>::const_iterator
-           it = imp.begin(),
-           end = imp.end();
-       it != end; ++it) {
-    if (!it->first->ok_state() && !it->first->in_downtime()) {
-      num++;
-    }
-  }
-
-  return num;
 };
 
 static bool _every_kpi_in_dt(
@@ -171,7 +156,7 @@ bool ba::child_has_update(computable* child, io::stream* visitor) {
     // Generate status event.
     visit(visitor);
   }
-  return (true);
+  return true;
 }
 
 /**
@@ -198,7 +183,7 @@ double ba::get_ack_impact_soft() {
  *  @return Current BA event, NULL if none is declared.
  */
 ba_event* ba::get_ba_event() {
-  return (_event.get());
+  return _event.get();
 }
 
 /**
@@ -234,7 +219,7 @@ uint32_t ba::get_id() {
  *  @return  An integer representing the value of this id.
  */
 uint32_t ba::get_host_id() const {
-  return (_host_id);
+  return _host_id;
 }
 
 /**
@@ -243,7 +228,7 @@ uint32_t ba::get_host_id() const {
  *  @return  An integer representing the value of this id.
  */
 uint32_t ba::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**
@@ -254,7 +239,7 @@ uint32_t ba::get_service_id() const {
  *  @return True if the BA is in downtime, false otherwise.
  */
 bool ba::get_in_downtime() const {
-  return (_in_downtime);
+  return _in_downtime;
 }
 
 /**
@@ -263,7 +248,7 @@ bool ba::get_in_downtime() const {
  *  @return Time at which the most recent KPI was updated.
  */
 timestamp ba::get_last_kpi_update() const {
-  return (_last_kpi_update);
+  return _last_kpi_update;
 }
 
 /**
@@ -272,7 +257,7 @@ timestamp ba::get_last_kpi_update() const {
  *  @return BA name.
  */
 std::string const& ba::get_name() const {
-  return (_name);
+  return _name;
 }
 
 /**
@@ -381,7 +366,7 @@ ba::state ba::get_state_soft() {
   else
     state = ba::state::state_unknown;  // unknown _state_source so unknown
                                        // state...*/
-  return (state);
+  return state;
 }
 
 /**
@@ -463,6 +448,7 @@ void ba::set_initial_event(ba_event const& event) {
   if (!_event) {
     _event.reset(new ba_event(event));
     _in_downtime = event.in_downtime;
+    log_v2::bam()->trace("ba initial event downtime: {}", _in_downtime);
     _last_kpi_update = _event->start_time;
     _initial_events.push_back(_event);
   }
@@ -520,14 +506,15 @@ void ba::visit(io::stream* visitor) {
     short hard_state(get_state_hard());
     bool state_changed(false);
     if (!_event) {
-      if ((_last_kpi_update.get_time_t() == (time_t)-1) ||
-          (_last_kpi_update.get_time_t() == (time_t)0))
+      if (_last_kpi_update.get_time_t() == (time_t)-1 ||
+          _last_kpi_update.get_time_t() == (time_t)0)
         _last_kpi_update = time(nullptr);
       _open_new_event(visitor, hard_state);
     }
     // If state changed, close event and open a new one.
-    else if ((_in_downtime != _event->in_downtime) ||
+    else if (_in_downtime != _event->in_downtime ||
              (hard_state != _event->status)) {
+      // assert(!_in_downtime);
       state_changed = true;
       _event->end_time = _last_kpi_update;
       visitor->write(std::static_pointer_cast<io::data>(_event));
@@ -616,15 +603,16 @@ void ba::service_update(std::shared_ptr<neb::downtime> const& dt,
   (void)visitor;
   if ((dt->host_id == _host_id) && (dt->service_id == _service_id)) {
     // Log message.
-    logging::debug(logging::low)
-        << "BAM: BA " << _id
-        << " is getting notified of a downtime on its service (" << _host_id
-        << ", " << _service_id << ")";
+    log_v2::bam()->debug(
+        "BAM: BA {} is getting notified of a downtime on its service ({}, {})",
+        _id, _host_id, _service_id);
 
     // Check if there was a change.
     bool in_downtime(dt->was_started &&
                      (dt->actual_end_time == -1 || dt->actual_end_time == 0));
+    log_v2::bam()->trace("BAM: downtime computed to {}", in_downtime);
     if (_in_downtime != in_downtime) {
+      log_v2::bam()->trace("ba: service_update downtime: {}", _in_downtime);
       _in_downtime = in_downtime;
 
       // Generate status event.
@@ -724,14 +712,16 @@ void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
  *  @param[in]  service_hard_state  Hard state of virtual BA service.
  */
 void ba::_open_new_event(io::stream* visitor, short service_hard_state) {
-  _event.reset(new ba_event);
+  log_v2::bam()->trace("new ba_event on ba {} with downtime = {}", _id,
+                       _in_downtime);
+  _event = std::make_shared<ba_event>();
   _event->ba_id = _id;
   _event->first_level = _level_hard < 0 ? 0 : _level_hard;
   _event->in_downtime = _in_downtime;
   _event->status = service_hard_state;
   _event->start_time = _last_kpi_update;
   if (visitor) {
-    std::shared_ptr<io::data> be(new ba_event(*_event));
+    std::shared_ptr<io::data> be = std::make_shared<ba_event>(*_event);
     visitor->write(be);
   }
 }
@@ -845,6 +835,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;
+    log_v2::bam()->trace("ba: inherited downtime computation downtime true");
     _in_downtime = true;
 
     if (visitor)
@@ -855,6 +846,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   //         Remove the downtime.
   else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime) {
     _inherited_downtime->in_downtime = false;
+    log_v2::bam()->trace("ba: inherited downtime computation downtime false");
     _in_downtime = false;
 
     if (visitor)

@@ -26,7 +26,7 @@ include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/storage")
 
 # conflict_manager library.
-add_library("conflictmgr" STATIC
+add_library(conflictmgr STATIC
   # Sources.
   "${SRC_DIR}/conflict_manager.cc"
   "${SRC_DIR}/conflict_manager_sql.cc"
@@ -37,7 +37,7 @@ add_library("conflictmgr" STATIC
   "${INC_DIR}/conflict_manager.hh"
   "${INC_DIR}/stored_timestamp.hh"
 )
-set(CONFLICTMGR "conflictmgr" PARENT_SCOPE)
+set(CONFLICTMGR conflictmgr PARENT_SCOPE)
 set_target_properties(conflictmgr PROPERTIES
     COMPILE_FLAGS "-fPIC")
 

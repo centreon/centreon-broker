@@ -39,7 +39,7 @@ class bool_value : public computable {
 
   bool_value();
   bool_value(bool_value const& right);
-  virtual ~bool_value();
+  ~bool_value() noexcept override = default;
   bool_value& operator=(bool_value const& right);
   virtual double value_hard() = 0;
   virtual double value_soft() = 0;

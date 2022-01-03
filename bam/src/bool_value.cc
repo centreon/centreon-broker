@@ -33,11 +33,6 @@ bool_value::bool_value() {}
 bool_value::bool_value(bool_value const& right) : computable(right) {}
 
 /**
- *  Destructor.
- */
-bool_value::~bool_value() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

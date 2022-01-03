@@ -101,8 +101,7 @@ bool ba::operator==(ba const& right) const {
           (_state_source == right._state_source) &&
           (_warning_level == right._warning_level) &&
           (_critical_level == right._critical_level) &&
-          (_event == right._event) &&
-          (_dt_behaviour == right._dt_behaviour));
+          (_event == right._event) && (_dt_behaviour == right._dt_behaviour));
 }
 
 /**
@@ -185,7 +184,7 @@ double ba::get_critical_level() const {
  *  @return  The opened event of this ba.
  */
 com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
-  return (_event);
+  return _event;
 }
 
 /**

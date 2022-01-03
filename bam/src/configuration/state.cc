@@ -22,48 +22,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
 /**
- *  Constructor.
- */
-state::state() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-state::state(state const& other)
-    : _ba_svc_mapping(other._ba_svc_mapping),
-      _bas(other._bas),
-      _kpis(other._kpis),
-      _bool_expressions(other._bool_expressions),
-      _hst_svc_mapping(other._hst_svc_mapping),
-      _meta_svc_mapping(other._meta_svc_mapping) {}
-
-/**
- *  Destructor
- */
-state::~state() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-state& state::operator=(state const& other) {
-  if (this != &other) {
-    _ba_svc_mapping = other._ba_svc_mapping;
-    _bas = other._bas;
-    _kpis = other._kpis;
-    _bool_expressions = other._bool_expressions;
-    _hst_svc_mapping = other._hst_svc_mapping;
-    _meta_svc_mapping = other._meta_svc_mapping;
-  }
-  return *this;
-}
-
-/**
  *  Clear state.
  */
 void state::clear() {

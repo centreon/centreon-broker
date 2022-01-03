@@ -33,11 +33,6 @@ bool_and::bool_and() {}
 bool_and::bool_and(bool_and const& right) : bool_binary_operator(right) {}
 
 /**
- *  Destructor.
- */
-bool_and::~bool_and() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.
@@ -46,7 +41,7 @@ bool_and::~bool_and() {}
  */
 bool_and& bool_and::operator=(bool_and const& right) {
   bool_binary_operator::operator=(right);
-  return (*this);
+  return *this;
 }
 
 /**

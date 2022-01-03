@@ -51,12 +51,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 using namespace com::centreon::broker::database;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -161,8 +155,8 @@ void monitoring_stream::update() {
     _rebuild();
     initialize();
   } catch (std::exception const& e) {
-    throw(exceptions::msg()
-          << "BAM: could not process configuration update: " << e.what());
+    throw exceptions::msg()
+        << "BAM: could not process configuration update: " << e.what();
   }
 }
 
@@ -214,16 +208,6 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       multiplexing::publisher pblshr;
       event_cache_visitor ev_cache;
       _applier.book_service().update(dt, &ev_cache);
-      ev_cache.commit_to(pblshr);
-    } break;
-    case storage::metric::static_type(): {
-      std::shared_ptr<storage::metric> m(
-          std::static_pointer_cast<storage::metric>(data));
-      log_v2::bam()->trace("BAM: processing metric (id {}, time {}, value {})",
-                           m->metric_id, m->ctime, m->value);
-      multiplexing::publisher pblshr;
-      event_cache_visitor ev_cache;
-      _applier.book_metric().update(m, &ev_cache);
       ev_cache.commit_to(pblshr);
     } break;
     case bam::ba_status::static_type(): {
@@ -321,12 +305,6 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   return 0;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Prepare queries.
  */
@@ -358,7 +336,7 @@ void monitoring_stream::_rebuild() {
   {
     std::string query("SELECT ba_id FROM mod_bam WHERE must_be_rebuild='1'");
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(query, &promise);
+    _mysql.run_query_and_get_result(query, &promise, 0);
     try {
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))
@@ -376,9 +354,9 @@ void monitoring_stream::_rebuild() {
   logging::debug(logging::medium)
       << "BAM: rebuild asked, sending the rebuild signal";
 
-  std::shared_ptr<rebuild> r(std::make_shared<rebuild>(
-      fmt::format("{}", fmt::join(bas_to_rebuild, ", "))));
-  std::unique_ptr<io::stream> out(new multiplexing::publisher);
+  auto r{std::make_shared<rebuild>(
+      fmt::format("{}", fmt::join(bas_to_rebuild, ", ")))};
+  auto out{std::make_unique<multiplexing::publisher>()};
   out->write(r);
 
   // Set all the BAs to should not be rebuild.

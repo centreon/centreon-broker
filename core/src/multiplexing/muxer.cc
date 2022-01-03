@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015-2017,2019 Centreon
+** Copyright 2009-2013,2015-2017,2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 #include <cassert>
 #include <limits>
 #include <memory>
-#include <sstream>
 
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -47,11 +46,14 @@ uint32_t muxer::_event_queue_max_size = std::numeric_limits<uint32_t>::max();
  *                         unprocessed events in a persistent storage.
  */
 muxer::muxer(std::string const& name, bool persistent)
-    : io::stream("muxer"), _events_size(0), _name(name), _persistent(persistent) {
+    : io::stream("muxer"),
+      _events_size{0},
+      _name(name),
+      _persistent(persistent) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {
-      std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
+      auto mf{std::make_unique<persistent_file>(_memory_file())};
       std::shared_ptr<io::data> e;
       for (;;) {
         e.reset();
@@ -61,7 +63,7 @@ muxer::muxer(std::string const& name, bool persistent)
           ++_events_size;
         }
       }
-    } catch (exceptions::shutdown const& e) {
+    } catch (const exceptions::shutdown& e) {
       // Memory file was properly read back in memory.
       (void)e;
     }
@@ -145,8 +147,9 @@ void muxer::ack_events(int count) {
  */
 void muxer::event_queue_max_size(uint32_t max) noexcept {
   if (!max)
-    max = std::numeric_limits<uint32_t>::max();
-  _event_queue_max_size = max;
+    _event_queue_max_size = std::numeric_limits<uint32_t>::max();
+  else
+    _event_queue_max_size = max;
 }
 
 /**
@@ -163,7 +166,7 @@ uint32_t muxer::event_queue_max_size() noexcept {
  *
  *  @param[in] event Event to add.
  */
-void muxer::publish(std::shared_ptr<io::data> const event) {
+void muxer::publish(const std::shared_ptr<io::data> event) {
   if (event) {
     std::lock_guard<std::mutex> lock(_mutex);
     // Check if we should process this event.
@@ -189,7 +192,7 @@ void muxer::publish(std::shared_ptr<io::data> const event) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
-  bool timed_out(false);
+  bool timed_out{false};
   std::unique_lock<std::mutex> lock(_mutex);
 
   // No data is directly available.
@@ -312,7 +315,7 @@ void muxer::statistics(json11::Json::object& tree) const {
 
   // Queue file mode.
   bool queue_file_enabled(_file.get());
-  tree["queue_file_enabled"] = queue_file_enabled == true;
+  tree["queue_file_enabled"] = queue_file_enabled;
   if (queue_file_enabled) {
     json11::Json::object queue_file;
     _file->statistics(queue_file);
@@ -371,12 +374,6 @@ std::string muxer::queue_file(std::string const& name) {
   return retval;
 }
 
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
 /**
  *  Release all events stored within the internal list.
  */
@@ -385,7 +382,7 @@ void muxer::_clean() {
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
-      std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
+      auto mf{std::make_unique<persistent_file>(_memory_file())};
       while (!_events.empty()) {
         mf->write(_events.front());
         _events.pop_front();

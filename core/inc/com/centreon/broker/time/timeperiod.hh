@@ -38,7 +38,7 @@ namespace time {
  */
 class timeperiod {
  public:
-  DECLARE_SHARED_PTR(timeperiod);
+  using ptr = std::shared_ptr<timeperiod>;
 
   class exclusion_backup {
    public:

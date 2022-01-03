@@ -46,27 +46,25 @@ class service_listener;
  *  Propagate updates of services to service listeners.
  */
 class service_book {
+  using multimap =
+      std::multimap<std::pair<uint32_t, uint32_t>, service_listener*>;
+  multimap _book;
+
  public:
-  service_book();
-  service_book(service_book const& other);
-  ~service_book();
-  service_book& operator=(service_book const& other);
+  service_book() = default;
+  service_book(const service_book& other);
+  ~service_book() noexcept = default;
+  service_book& operator=(const service_book& other);
   void listen(uint32_t host_id, uint32_t service_id, service_listener* listnr);
   void unlisten(uint32_t host_id,
                 uint32_t service_id,
                 service_listener* listnr);
-  void update(std::shared_ptr<neb::service_status> const& ss,
-              io::stream* visitor = NULL);
-  void update(std::shared_ptr<neb::acknowledgement> const& ack,
-              io::stream* visitor = NULL);
-  void update(std::shared_ptr<neb::downtime> const& dt,
-              io::stream* visitor = NULL);
-
- private:
-  typedef std::multimap<std::pair<uint32_t, uint32_t>, service_listener*>
-      multimap;
-
-  multimap _book;
+  void update(const std::shared_ptr<neb::service_status>& ss,
+              io::stream* visitor = nullptr);
+  void update(const std::shared_ptr<neb::acknowledgement>& ack,
+              io::stream* visitor = nullptr);
+  void update(const std::shared_ptr<neb::downtime>& dt,
+              io::stream* visitor = nullptr);
 };
 }  // namespace bam
 

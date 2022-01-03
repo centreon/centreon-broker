@@ -42,12 +42,6 @@ using namespace com::centreon::broker::config::applier;
 // Class instance.
 static state* gl_state = nullptr;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Destructor.
  */
@@ -66,20 +60,19 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   static char const* const allowed_chars(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_.");
   if (!s.poller_id() || s.poller_name().empty())
-    throw exceptions::msg()
-          << "state applier: poller information are "
-          << "not set: please fill poller_id and poller_name";
+    throw exceptions::msg() << "state applier: poller information are "
+                            << "not set: please fill poller_id and poller_name";
   if (!s.broker_id() || s.broker_name().empty())
     throw exceptions::msg()
-          << "state applier: instance information "
-          << "are not set: please fill broker_id and broker_name";
+        << "state applier: instance information "
+        << "are not set: please fill broker_id and broker_name";
   for (std::string::const_iterator it(s.broker_name().begin()),
        end(s.broker_name().end());
        it != end; ++it)
     if (!strchr(allowed_chars, *it))
       throw exceptions::msg()
-            << "state applier: broker_name is not "
-            << " valid: allowed characters are " << allowed_chars;
+          << "state applier: broker_name is not "
+          << " valid: allowed characters are " << allowed_chars;
   for (std::list<config::endpoint>::const_iterator it(s.endpoints().begin()),
        end(s.endpoints().end());
        it != end; ++it) {
@@ -91,8 +84,8 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
          it_name != end_name; ++it_name)
       if (!strchr(allowed_chars, *it_name))
         throw exceptions::msg()
-              << "state applier: endpoint name '" << *it_name
-              << "' is not valid: allowed characters are " << allowed_chars;
+            << "state applier: endpoint name '" << *it_name
+            << "' is not valid: allowed characters are " << allowed_chars;
   }
 
   // Set Broker instance ID.
@@ -133,8 +126,8 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
     first_application = false;
   else {
     uint32_t module_count(0);
-    for (modules::iterator it(modules::instance().begin()),
-         end(modules::instance().end());
+    for (modules::iterator it = modules::instance().begin(),
+                           end = modules::instance().end();
          it != end; ++it)
       ++module_count;
     if (module_count)
@@ -152,22 +145,11 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
 
   com::centreon::broker::config::state st = s;
 
-  //  // Create command file input.
-  //  if (!s.command_file().empty()) {
-  //    config::endpoint ept;
-  //    ept.name = "(external commands)";
-  //    ept.type = "extcmd";
-  //    ept.params.insert({"extcmd", s.command_file()});
-  //    ept.params.insert({"command_protocol", s.command_protocol()});
-  //    ept.read_filters.insert("all");
-  //    st.endpoints().push_back(ept);
-  //  }
-
   // Apply input and output configuration.
   endpoint::instance().apply(st.endpoints());
 
   // Create instance broadcast event.
-  std::shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  auto ib{std::make_shared<instance_broadcast>()};
   ib->broker_id = io::data::broker_id;
   ib->poller_id = _poller_id;
   ib->poller_name = _poller_name;
@@ -184,7 +166,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
  *
  *  @return Cache directory.
  */
-std::string const& state::cache_dir() const throw() {
+std::string const& state::cache_dir() const noexcept {
   return _cache_dir;
 }
 
@@ -211,7 +193,7 @@ void state::load() {
  *
  *  @return Poller ID of this Broker instance.
  */
-uint32_t state::poller_id() const throw() {
+uint32_t state::poller_id() const noexcept {
   return _poller_id;
 }
 
@@ -241,12 +223,6 @@ void state::unload() {
   delete gl_state;
   gl_state = nullptr;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
 
 /**
  *  Default constructor.

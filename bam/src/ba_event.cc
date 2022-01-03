@@ -41,11 +41,6 @@ ba_event::ba_event(ba_event const& other) : io::data(other) {
 }
 
 /**
- *  Destructor.
- */
-ba_event::~ba_event() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] other  Object to copy.

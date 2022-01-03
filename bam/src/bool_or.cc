@@ -33,11 +33,6 @@ bool_or::bool_or() {}
 bool_or::bool_or(bool_or const& right) : bool_binary_operator(right) {}
 
 /**
- *  Destructor.
- */
-bool_or::~bool_or() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

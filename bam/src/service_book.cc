@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,21 +26,11 @@
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
- */
-service_book::service_book() {}
-
-/**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
 service_book::service_book(service_book const& other) : _book(other._book) {}
-
-/**
- *  Destructor.
- */
-service_book::~service_book() {}
 
 /**
  *  Assignment operator.
@@ -52,7 +42,7 @@ service_book::~service_book() {}
 service_book& service_book::operator=(service_book const& other) {
   if (this != &other)
     _book = other._book;
-  return (*this);
+  return *this;
 }
 
 /**
@@ -66,7 +56,6 @@ void service_book::listen(uint32_t host_id,
                           uint32_t service_id,
                           service_listener* listnr) {
   _book.insert(std::make_pair(std::make_pair(host_id, service_id), listnr));
-  return;
 }
 
 /**
@@ -88,7 +77,6 @@ void service_book::unlisten(uint32_t host_id,
     }
     ++range.first;
   }
-  return;
 }
 
 /**
@@ -105,7 +93,6 @@ void service_book::update(std::shared_ptr<neb::service_status> const& ss,
     range.first->second->service_update(ss, visitor);
     ++range.first;
   }
-  return;
 }
 
 /**
@@ -123,7 +110,6 @@ void service_book::update(std::shared_ptr<neb::acknowledgement> const& ack,
     range.first->second->service_update(ack, visitor);
     ++range.first;
   }
-  return;
 }
 
 /**
@@ -141,5 +127,4 @@ void service_book::update(std::shared_ptr<neb::downtime> const& dt,
     range.first->second->service_update(dt, visitor);
     ++range.first;
   }
-  return;
 }

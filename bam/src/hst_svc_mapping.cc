@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,40 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/hst_svc_mapping.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker::bam;
-
-/**
- *  Default constructor.
- */
-hst_svc_mapping::hst_svc_mapping() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-hst_svc_mapping::hst_svc_mapping(hst_svc_mapping const& other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-hst_svc_mapping::~hst_svc_mapping() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-hst_svc_mapping& hst_svc_mapping::operator=(hst_svc_mapping const& other) {
-  if (this != &other)
-    _internal_copy(other);
-  return (*this);
-}
 
 /**
  *  Get host ID by its name.
@@ -60,7 +29,7 @@ hst_svc_mapping& hst_svc_mapping::operator=(hst_svc_mapping const& other) {
  *  @return Host ID, 0 if it was not found.
  */
 uint32_t hst_svc_mapping::get_host_id(std::string const& hst) const {
-  return (get_service_id(hst, "").first);
+  return get_service_id(hst, "").first;
 }
 
 /**
@@ -75,10 +44,11 @@ uint32_t hst_svc_mapping::get_host_id(std::string const& hst) const {
 std::pair<uint32_t, uint32_t> hst_svc_mapping::get_service_id(
     std::string const& hst,
     std::string const& svc) const {
-  std::map<std::pair<std::string, std::string>,
-           std::pair<uint32_t, uint32_t> >::const_iterator
-      it(_mapping.find(std::make_pair(hst, svc)));
-  return ((it != _mapping.end()) ? it->second : std::make_pair(0u, 0u));
+  auto it = _mapping.find(std::make_pair(hst, svc));
+  if (it == _mapping.end())
+    log_v2::bam()->debug("hst_svc_mapping: service id for host: {} ; service: {} not found",
+        hst, svc);
+  return it != _mapping.end() ? it->second : std::make_pair(0u, 0u);
 }
 
 /**
@@ -89,7 +59,6 @@ std::pair<uint32_t, uint32_t> hst_svc_mapping::get_service_id(
  */
 void hst_svc_mapping::set_host(std::string const& hst, uint32_t host_id) {
   set_service(hst, "", host_id, 0u, true);
-  return;
 }
 
 /**
@@ -107,7 +76,6 @@ void hst_svc_mapping::set_service(std::string const& hst,
                                   bool activated) {
   _mapping[std::make_pair(hst, svc)] = std::make_pair(host_id, service_id);
   _activated_mapping[std::make_pair(host_id, service_id)] = activated;
-  return;
 }
 
 /**
@@ -120,77 +88,6 @@ void hst_svc_mapping::set_service(std::string const& hst,
  */
 bool hst_svc_mapping::get_activated(uint32_t hst_id,
                                     uint32_t service_id) const {
-  std::map<std::pair<uint32_t, uint32_t>, bool>::const_iterator it(
-      _activated_mapping.find(std::make_pair(hst_id, service_id)));
-  return (it == _activated_mapping.end() ? true : it->second);
-}
-
-/**
- *  Register a metric.
- *
- *  @param[in] metric_id    The id of the metric.
- *  @param[in] metric_name  The name of the metric.
- *  @param[in] host_id      The id of the host.
- *  @param[in] service_id   The id of the service.
- */
-void hst_svc_mapping::register_metric(uint32_t metric_id,
-                                      std::string const& metric_name,
-                                      uint32_t host_id,
-                                      uint32_t service_id) {
-  _metrics[std::make_pair(host_id, service_id)][metric_name] = metric_id;
-  _metric_by_name.insert(std::make_pair(metric_name, metric_id));
-}
-
-/**
- *  Get metric ids from name/host and service ids.
- *
- *  If both host id and service id are equal to zero,
- *  will match all metric ids with the same name.
- *
- *  @param[in] metric_name   The metric name.
- *  @param[in] host_id       The host id. Can be zero.
- *  @param[in] service_id    The service id. Can be zero.
- *
- *  @return  A list of found metric ids.
- */
-std::set<uint32_t> hst_svc_mapping::get_metric_ids(
-    std::string const& metric_name,
-    uint32_t host_id,
-    uint32_t service_id) const {
-  std::set<uint32_t> retval;
-
-  if (host_id != 0 || service_id != 0) {
-    std::map<std::pair<uint32_t, uint32_t>,
-             std::map<std::string, uint32_t> >::const_iterator metrics_found =
-        _metrics.find(std::make_pair(host_id, service_id));
-    if (metrics_found == _metrics.end())
-      return (retval);
-
-    std::map<std::string, uint32_t>::const_iterator metric_found =
-        metrics_found->second.find(metric_name);
-
-    if (metric_found != metrics_found->second.end())
-      retval.insert(metric_found->second);
-  } else {
-    std::pair<std::multimap<std::string, uint32_t>::const_iterator,
-              std::multimap<std::string, uint32_t>::const_iterator>
-        found = _metric_by_name.equal_range(metric_name);
-    for (; found.first != found.second; ++found.first)
-      retval.insert(found.first->second);
-  }
-
-  return (retval);
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void hst_svc_mapping::_internal_copy(hst_svc_mapping const& other) {
-  _mapping = other._mapping;
-  _activated_mapping = other._activated_mapping;
-  _metrics = other._metrics;
-  _metric_by_name = other._metric_by_name;
-  return;
+  auto it = _activated_mapping.find(std::make_pair(hst_id, service_id));
+  return it == _activated_mapping.end() ? true : it->second;
 }

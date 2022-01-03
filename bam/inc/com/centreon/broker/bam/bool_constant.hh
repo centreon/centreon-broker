@@ -33,18 +33,17 @@ namespace bam {
  *  value (i.e '42').
  */
 class bool_constant : public bool_value {
+  double _value;
+
  public:
   bool_constant(double value);
   bool_constant(bool_constant const& right);
-  ~bool_constant();
+  ~bool_constant() noexcept override = default;
   bool_constant& operator=(bool_constant const& right);
-  bool child_has_update(computable* child, io::stream* visitor);
-  double value_hard();
-  double value_soft();
-  bool state_known() const;
-
- private:
-  double _value;
+  bool child_has_update(computable* child, io::stream* visitor) override;
+  double value_hard() override;
+  double value_soft() override;
+  bool state_known() const override;
 };
 }  // namespace bam
 

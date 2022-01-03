@@ -198,26 +198,12 @@ exp_builder::exp_builder(exp_parser::notation const& postfix,
 }
 
 /**
- *  Destructor.
- */
-exp_builder::~exp_builder() {}
-
-/**
  *  Get calls existing in the expression.
  *
  *  @return The call list.
  */
 exp_builder::list_call const& exp_builder::get_calls() const {
   return _calls;
-}
-
-/**
- *  Get metrics existing in the expression.
- *
- *  @return The metric list.
- */
-exp_builder::list_metric const& exp_builder::get_metrics() const {
-  return _metrics;
 }
 
 /**

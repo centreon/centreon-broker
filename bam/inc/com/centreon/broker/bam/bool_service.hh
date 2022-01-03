@@ -43,19 +43,19 @@ class bool_service : public bool_value, public service_listener {
 
   bool_service();
   bool_service(bool_service const& right);
-  ~bool_service();
+  ~bool_service() noexcept override = default;
   bool_service& operator=(bool_service const& right);
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  bool child_has_update(computable* child, io::stream* visitor = NULL) override;
   uint32_t get_host_id() const;
   uint32_t get_service_id() const;
   void set_host_id(uint32_t host_id);
   void set_service_id(uint32_t service_id);
   void service_update(std::shared_ptr<neb::service_status> const& status,
-                      io::stream* visitor = NULL);
-  double value_hard();
-  double value_soft();
-  bool state_known() const;
-  bool in_downtime() const;
+                      io::stream* visitor = NULL) override;
+  double value_hard() override;
+  double value_soft() override;
+  bool state_known() const override;
+  bool in_downtime() const override;
 
  private:
   void _internal_copy(bool_service const& right);
