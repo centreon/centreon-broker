@@ -212,13 +212,13 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     {
       std::string query(
           fmt::format("SELECT b.ba_id, b.name, b.state_source, b.level_w,"
-                      "       b.level_c, b.last_state_change, b.current_status,"
-                      "       b.in_downtime, b.inherit_kpi_downtimes"
-                      "  FROM mod_bam AS b"
-                      "  INNER JOIN mod_bam_poller_relations AS pr"
-                      "    ON b.ba_id=pr.ba_id"
-                      "  WHERE b.activate='1'"
-                      "    AND pr.poller_id={}",
+                      " b.level_c, b.last_state_change, b.current_status,"
+                      " b.in_downtime, b.inherit_kpi_downtimes"
+                      " FROM mod_bam AS b"
+                      " INNER JOIN mod_bam_poller_relations AS pr"
+                      " ON b.ba_id=pr.ba_id"
+                      " WHERE b.activate='1'"
+                      " AND pr.poller_id={}",
                       config::applier::state::instance().poller_id()));
       std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(query, &promise, 0);
@@ -327,13 +327,13 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
   try {
     std::string query(
         fmt::format("SELECT b.boolean_id, b.name, b.expression, b.bool_state"
-                    "  FROM mod_bam_boolean AS b"
-                    "  INNER JOIN mod_bam_kpi AS k"
-                    "    ON b.boolean_id=k.boolean_id"
-                    "  INNER JOIN mod_bam_poller_relations AS pr"
-                    "    ON k.id_ba=pr.ba_id"
-                    "  WHERE b.activate=1"
-                    "    AND pr.poller_id={}",
+                    " FROM mod_bam_boolean AS b"
+                    " INNER JOIN mod_bam_kpi AS k"
+                    " ON b.boolean_id=k.boolean_id"
+                    " INNER JOIN mod_bam_poller_relations AS pr"
+                    " ON k.id_ba=pr.ba_id"
+                    " WHERE b.activate=1"
+                    " AND pr.poller_id={}",
                     config::applier::state::instance().poller_id()));
     std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(query, &promise, 0);
@@ -364,16 +364,11 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
     // XXX : expand hostgroups and servicegroups
     std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
-        "SELECT h.host_id, s.service_id, h.host_name, s.service_description,service_activate FROM mod_bam_kpi k LEFT JOIN service s ON k.service_id=s.service_id LEFT JOIN host_service_relation AS hsr ON s.service_id=hsr.service_service_id LEFT JOIN host AS h ON hsr.host_host_id=h.host_id AND h.host_id=k.host_id WHERE k.kpi_type='0'", &promise, 0);
-//    _mysql.run_query_and_get_result(
-//        "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
-//        "   service_activate"
-//        "  FROM service AS s"
-//        "  LEFT JOIN host_service_relation AS hsr"
-//        "    ON s.service_id=hsr.service_service_id"
-//        "  LEFT JOIN host AS h"
-//        "    ON hsr.host_host_id=h.host_id",
-//        &promise);
+        "SELECT DISTINCT h.host_id, s.service_id, h.host_name, s.service_description,service_activate FROM "
+        "service s LEFT JOIN host_service_relation AS hsr ON s.service_id=hsr.service_service_id "
+        "LEFT JOIN host AS h ON hsr.host_host_id=h.host_id LEFT JOIN mod_bam_kpi k ON "
+        "h.host_id=k.host_id AND k.service_id=s.service_id WHERE k.kpi_type='0'",
+        &promise, 0);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res))
       mapping.set_service(res.value_as_str(2), res.value_as_str(3),
