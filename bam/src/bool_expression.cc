@@ -33,11 +33,6 @@ using namespace com::centreon::broker;
 bool_expression::bool_expression() : _id(0), _impact_if(true) {}
 
 /**
- *  Destructor.
- */
-bool_expression::~bool_expression() {}
-
-/**
  *  Base boolean expression got updated.
  *
  *  @param[in]  child    Expression that got updated.

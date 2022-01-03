@@ -36,16 +36,6 @@ namespace bam {
  *  mathematical operation between two bool_value.
  */
 class bool_operation : public bool_binary_operator {
- public:
-  bool_operation(std::string const& op);
-  bool_operation(bool_operation const& right);
-  ~bool_operation();
-  bool_operation& operator=(bool_operation const& right);
-  double value_hard();
-  double value_soft();
-  bool state_known() const;
-
- private:
   enum operation_type {
     addition,
     substraction,
@@ -54,6 +44,15 @@ class bool_operation : public bool_binary_operator {
     modulo
   };
   operation_type _type;
+
+ public:
+  bool_operation(std::string const& op);
+  bool_operation(bool_operation const& right);
+  ~bool_operation() noexcept override = default;
+  bool_operation& operator=(bool_operation const& right);
+  double value_hard() override;
+  double value_soft() override;
+  bool state_known() const override;
 };
 }  // namespace bam
 

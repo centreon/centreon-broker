@@ -29,12 +29,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Check if a configuration match the BAM layer.
  *

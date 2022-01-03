@@ -36,10 +36,10 @@ class bool_xor : public bool_binary_operator {
  public:
   bool_xor();
   bool_xor(bool_xor const& right);
-  ~bool_xor();
+  ~bool_xor() noexcept override = default;
   bool_xor& operator=(bool_xor const& right);
-  double value_hard();
-  double value_soft();
+  double value_hard() override;
+  double value_soft() override;
 };
 }  // namespace bam
 

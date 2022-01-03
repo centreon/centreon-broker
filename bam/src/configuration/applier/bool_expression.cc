@@ -23,7 +23,6 @@
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
-#include "com/centreon/broker/bam/metric_book.hh"
 #include "com/centreon/broker/bam/service_book.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -76,8 +75,7 @@ applier::bool_expression& applier::bool_expression::operator=(
 void applier::bool_expression::apply(
     configuration::state::bool_exps const& my_bools,
     hst_svc_mapping const& mapping,
-    service_book& book,
-    metric_book& metric_book) {
+    service_book& book) {
   //
   // DIFF
   //
@@ -154,7 +152,6 @@ void applier::bool_expression::apply(
       content.obj = new_bool_exp;
       content.svc = b.get_services();
       content.call = b.get_calls();
-      content.mtrc = b.get_metrics();
       // Resolve boolean service.
       for (std::list<bool_service::ptr>::const_iterator
                it2(content.svc.begin()),
@@ -162,18 +159,6 @@ void applier::bool_expression::apply(
            it2 != end2; ++it2)
         book.listen((*it2)->get_host_id(), (*it2)->get_service_id(),
                     it2->get());
-      // Resolve boolean metric.
-      for (std::list<bool_metric::ptr>::const_iterator
-               it2 = content.mtrc.begin(),
-               end2 = content.mtrc.end();
-           it2 != end2; ++it2) {
-        (*it2)->resolve_metrics(mapping);
-        std::set<uint32_t> const& ids = (*it2)->get_resolved_metrics();
-        for (std::set<uint32_t>::const_iterator metrics_it = ids.begin(),
-                                                    metrics_end = ids.end();
-             metrics_it != metrics_end; ++metrics_it)
-          metric_book.listen(*metrics_it, it2->get());
-      }
     } catch (std::exception const& e) {
       logging::error(logging::high)
           << "BAM: could not create boolean expression " << it->first
@@ -218,12 +203,12 @@ void applier::bool_expression::_internal_copy(
 void applier::bool_expression::_resolve_expression_calls() {
   std::map<std::string, uint32_t> _name_to_ids;
   for (std::map<uint32_t, applied>::const_iterator it = _applied.begin(),
-                                                       end = _applied.end();
+                                                   end = _applied.end();
        it != end; ++it)
     _name_to_ids[it->second.cfg.get_name()] = it->first;
 
-  for (std::map<uint32_t, applied>::iterator it = _applied.begin(),
-                                                 tmp = it, end = _applied.end();
+  for (std::map<uint32_t, applied>::iterator it = _applied.begin(), tmp = it,
+                                             end = _applied.end();
        it != end; it = tmp) {
     ++tmp;
     for (std::list<std::shared_ptr<bam::bool_call> >::iterator

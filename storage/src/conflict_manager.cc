@@ -132,8 +132,10 @@ bool conflict_manager::init_storage(bool store_in_db,
           return _singleton != nullptr || _state == finished ||
                  config::applier::state == config::applier::finished;
         })) {
-      if (_state == finished)
+      if (_state == finished) {
+        log_v2::sql()->info("Conflict manager not started because cbd stopped");
         return false;
+      }
       std::lock_guard<std::mutex> lk(_singleton->_loop_m);
       _singleton->_store_in_db = store_in_db;
       _singleton->_rrd_len = rrd_len;
@@ -146,6 +148,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_thread =
           std::move(std::thread(&conflict_manager::_callback, _singleton));
       pthread_setname_np(_singleton->_thread.native_handle(), "conflict_mngr");
+      log_v2::sql()->info("Conflict manager running");
       return true;
     }
     log_v2::sql()->info(
@@ -215,122 +218,36 @@ void conflict_manager::_load_caches() {
   _load_deleted_instances();
 
   /* get all outdated instances from the database => _stored_timestamps */
-  {
-    std::string query{"SELECT instance_id FROM instances WHERE outdated=TRUE"};
-    std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(query, &promise);
-    try {
-      mysql_result res(promise.get_future().get());
-      while (_mysql.fetch_row(res)) {
-        uint32_t instance_id = res.value_as_i32(0);
-        _stored_timestamps.insert(
-            {instance_id,
-             stored_timestamp(instance_id, stored_timestamp::unresponsive)});
-        stored_timestamp& ts = _stored_timestamps[instance_id];
-        ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
-      }
-    } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "conflict_manager: could not get the list of outdated instances: "
-          << e.what();
-    }
-  }
+  std::string query{"SELECT instance_id FROM instances WHERE outdated=TRUE"};
+  std::promise<mysql_result> promise_inst;
+  _mysql.run_query_and_get_result(query, &promise_inst);
 
   /* index_data => _index_cache */
-  {
-    // Execute query.
-    std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(
-        "SELECT "
-        "id,host_id,service_id,host_name,rrd_retention,service_description,"
-        "special,locked FROM index_data",
-        &promise);
-    try {
-      database::mysql_result res(promise.get_future().get());
-
-      // Loop through result set.
-      while (_mysql.fetch_row(res)) {
-        index_info info{.host_name = res.value_as_str(3),
-                        .index_id = res.value_as_u64(0),
-                        .locked = res.value_as_bool(7),
-                        .rrd_retention = res.value_as_u32(4)
-                                             ? res.value_as_u32(4)
-                                             : _rrd_len,
-                        .service_description = res.value_as_str(5),
-                        .special = res.value_as_u32(6) == 2};
-        uint32_t host_id(res.value_as_u32(1));
-        uint32_t service_id(res.value_as_u32(2));
-        log_v2::perfdata()->debug(
-            "storage: loaded index {} of ({}, {}) with rrd_len={}",
-            info.index_id, host_id, service_id, info.rrd_retention);
-        _index_cache[{host_id, service_id}] = std::move(info);
-
-        // Create the metric mapping.
-        std::shared_ptr<storage::index_mapping> im{
-            std::make_shared<storage::index_mapping>(info.index_id, host_id,
-                                                     service_id)};
-        multiplexing::publisher pblshr;
-        pblshr.write(im);
-      }
-    } catch (std::exception const& e) {
-      throw broker::exceptions::msg()
-          << "storage: could not fetch index list from data DB: " << e.what();
-    }
-  }
+  std::promise<database::mysql_result> promise_ind;
+  _mysql.run_query_and_get_result(
+      "SELECT id,host_id,service_id,host_name,rrd_retention,service_description,special,locked FROM index_data",
+      &promise_ind);
 
   /* hosts => _cache_host_instance */
-  {
     _cache_host_instance.clear();
 
-    std::promise<mysql_result> promise;
+    std::promise<mysql_result> promise_hst;
     _mysql.run_query_and_get_result("SELECT host_id,instance_id FROM hosts",
-                                    &promise);
-
-    try {
-      mysql_result res(promise.get_future().get());
-      while (_mysql.fetch_row(res))
-        _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
-    } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not get the list of host/instance pairs: " << e.what();
-    }
-  }
+                                    &promise_hst);
 
   /* hostgroups => _hostgroup_cache */
-  {
     _hostgroup_cache.clear();
 
-    std::promise<mysql_result> promise;
+    std::promise<mysql_result> promise_hg;
     _mysql.run_query_and_get_result("SELECT hostgroup_id FROM hostgroups",
-                                    &promise);
-
-    try {
-      mysql_result res(promise.get_future().get());
-      while (_mysql.fetch_row(res))
-        _hostgroup_cache.insert(res.value_as_u32(0));
-    } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not get the list of hostgroups id: " << e.what();
-    }
-  }
+                                    &promise_hg);
 
   /* servicegroups => _servicegroup_cache */
-  {
     _servicegroup_cache.clear();
 
-    std::promise<mysql_result> promise;
+    std::promise<mysql_result> promise_sg;
     _mysql.run_query_and_get_result("SELECT servicegroup_id FROM servicegroups",
-                                    &promise);
-
-    try {
-      mysql_result res(promise.get_future().get());
-      while (_mysql.fetch_row(res))
-        _servicegroup_cache.insert(res.value_as_u32(0));
-    } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not get the list of servicegroups id: " << e.what();
-    }
-  }
+                                    &promise_sg);
 
   _cache_svc_cmd.clear();
   _cache_hst_cmd.clear();
@@ -340,17 +257,99 @@ void conflict_manager::_load_caches() {
     std::lock_guard<std::mutex> lock(_metric_cache_m);
     _metric_cache.clear();
     _metrics.clear();
+  }
 
-    std::promise<mysql_result> promise;
+    std::promise<mysql_result> promise_met;
     _mysql.run_query_and_get_result(
-        "SELECT "
-        "metric_id,index_id,metric_name,unit_name,warn,warn_low,"
-        "warn_threshold_mode,crit,crit_low,crit_threshold_mode,min,max,"
-        "current_value,data_source_type FROM metrics",
-        &promise);
+        "SELECT metric_id,index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,crit_low,crit_threshold_mode,min,max,current_value,data_source_type FROM metrics",
+        &promise_met);
 
+
+
+  /* Result of all outdated instances */
+  try {
+    mysql_result res(promise_inst.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      uint32_t instance_id = res.value_as_i32(0);
+      _stored_timestamps.insert(
+          {instance_id,
+           stored_timestamp(instance_id, stored_timestamp::unresponsive)});
+      stored_timestamp& ts = _stored_timestamps[instance_id];
+      ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
+    }
+  } catch (std::exception const& e) {
+    throw exceptions::msg()
+        << "conflict_manager: could not get the list of outdated instances: "
+        << e.what();
+  }
+
+  /* Result of index_data => _index_cache */
+  try {
+    database::mysql_result res(promise_ind.get_future().get());
+
+    // Loop through result set.
+    while (_mysql.fetch_row(res)) {
+      index_info info{.host_name = res.value_as_str(3),
+                      .index_id = res.value_as_u64(0),
+                      .locked = res.value_as_bool(7),
+                      .rrd_retention = res.value_as_u32(4)
+                                           ? res.value_as_u32(4)
+                                           : _rrd_len,
+                      .service_description = res.value_as_str(5),
+                      .special = res.value_as_u32(6) == 2};
+      uint32_t host_id(res.value_as_u32(1));
+      uint32_t service_id(res.value_as_u32(2));
+      log_v2::perfdata()->debug(
+          "storage: loaded index {} of ({}, {}) with rrd_len={}",
+          info.index_id, host_id, service_id, info.rrd_retention);
+      _index_cache[{host_id, service_id}] = std::move(info);
+
+      // Create the metric mapping.
+      auto im{
+          std::make_shared<storage::index_mapping>(info.index_id, host_id,
+                                                   service_id)};
+      multiplexing::publisher pblshr;
+      pblshr.write(im);
+    }
+  } catch (std::exception const& e) {
+    throw broker::exceptions::msg()
+        << "storage: could not fetch index list from data DB: " << e.what();
+  }
+
+  /* Result of hosts => _cache_host_instance */
     try {
-      mysql_result res{promise.get_future().get()};
+      mysql_result res(promise_hst.get_future().get());
+      while (_mysql.fetch_row(res))
+        _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
+    } catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not get the list of host/instance pairs: " << e.what();
+    }
+
+  /* Result of hostgroups => _hostgroup_cache */
+    try {
+      mysql_result res(promise_hg.get_future().get());
+      while (_mysql.fetch_row(res))
+        _hostgroup_cache.insert(res.value_as_u32(0));
+    } catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not get the list of hostgroups id: " << e.what();
+    }
+
+  /* Result of servicegroups => _servicegroup_cache */
+    try {
+      mysql_result res(promise_sg.get_future().get());
+      while (_mysql.fetch_row(res))
+        _servicegroup_cache.insert(res.value_as_u32(0));
+    } catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not get the list of servicegroups id: " << e.what();
+    }
+
+  /* Result of metrics => _metric_cache */
+    try {
+      mysql_result res{promise_met.get_future().get()};
+      std::lock_guard<std::mutex> lock(_metric_cache_m);
       while (_mysql.fetch_row(res)) {
         metric_info info;
         info.metric_id = res.value_as_u32(0);
@@ -373,7 +372,6 @@ void conflict_manager::_load_caches() {
           << "conflict_manager: could not get the list of metrics: "
           << e.what();
     }
-  }
 }
 
 void conflict_manager::update_metric_info_cache(uint64_t index_id,

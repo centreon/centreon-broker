@@ -55,8 +55,8 @@ void com::centreon::broker::stats::get_mysql_stats(
     json11::Json::object& object) noexcept {
   std::map<std::string, std::string> stats(
       mysql_manager::instance().get_stats());
-  for (std::pair<std::string, std::string> const& p : stats)
-    object[p.first] = p.second;
+  for (auto it = stats.begin() ; it != stats.end(); ++it)
+    object[it->first] = it->second;
 }
 
 void com::centreon::broker::stats::get_loaded_module_stats(
@@ -76,6 +76,7 @@ void com::centreon::broker::stats::get_loaded_module_stats(
     object.emplace_back(subtree);
   }
 }
+
 bool stats::get_endpoint_stats(std::vector<json11::Json::object>& object) {
   // Endpoint applier.
   config::applier::endpoint& endp_applier(
@@ -87,8 +88,8 @@ bool stats::get_endpoint_stats(std::vector<json11::Json::object>& object) {
         std::chrono::milliseconds(100)));
     try {
       if (locked)
-        for (auto it(endp_applier.endpoints_begin()),
-             end(endp_applier.endpoints_end());
+        for (auto it = endp_applier.endpoints_begin(),
+                  end = endp_applier.endpoints_end();
              it != end; ++it) {
           json11::Json::object subtree;
           subtree["name"] = it->second->get_name();

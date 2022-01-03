@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class ba_status : public io::data {
  public:
   ba_status();
   ba_status(ba_status const& other);
-  ~ba_status();
+  ~ba_status() noexcept override = default;
   ba_status& operator=(ba_status const& other);
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam, bam::de_ba_status>::value;

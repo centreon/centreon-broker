@@ -37,10 +37,10 @@ class bool_not_equal : public bool_binary_operator {
  public:
   bool_not_equal();
   bool_not_equal(bool_not_equal const& other);
-  ~bool_not_equal();
+  ~bool_not_equal() noexcept override = default;
   bool_not_equal& operator=(bool_not_equal const& other);
-  double value_hard();
-  double value_soft();
+  double value_hard() override;
+  double value_soft() override;
 };
 }  // namespace bam
 

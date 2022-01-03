@@ -35,11 +35,6 @@ bool_equal::bool_equal() {}
 bool_equal::bool_equal(bool_equal const& right) : bool_binary_operator(right) {}
 
 /**
- *  Destructor.
- */
-bool_equal::~bool_equal() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

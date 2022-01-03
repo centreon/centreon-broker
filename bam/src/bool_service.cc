@@ -45,11 +45,6 @@ bool_service::bool_service(bool_service const& right)
 }
 
 /**
- *  Destructor.
- */
-bool_service::~bool_service() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.
@@ -97,7 +92,7 @@ uint32_t bool_service::get_host_id() const {
  *  @return Service ID.
  */
 uint32_t bool_service::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**
