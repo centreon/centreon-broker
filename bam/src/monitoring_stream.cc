@@ -30,7 +30,6 @@
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/rebuild.hh"
-#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -72,11 +71,6 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
       _storage_db_cfg(storage_db_cfg),
       _cache(cache) {
   log_v2::bam()->trace("BAM: monitoring_stream constructor");
-  config::applier::wait_for_conflict_manager();
-  if (!config::applier::wait_for_conflict_manager())
-    throw msg_fmt(
-        "BAM: conflict_manager not correctly started. The BAM monitoring "
-        "stream cannot work correctly.");
   // Prepare queries.
   _prepare();
 
