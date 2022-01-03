@@ -30,8 +30,6 @@ enum applier_state { not_started, initialized, finished };
 extern std::atomic<applier_state> state;
 void deinit();
 void init();
-void set_conflict_manager_initialized(bool initialized);
-bool wait_for_conflict_manager();
 }  // namespace applier
 }  // namespace config
 
