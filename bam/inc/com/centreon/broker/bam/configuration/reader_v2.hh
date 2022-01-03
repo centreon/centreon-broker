@@ -42,8 +42,8 @@ namespace configuration {
  */
 class reader_v2 {
  public:
-  reader_v2(mysql& centreon_db, database_config const& storage_cfg);
-  ~reader_v2();
+  reader_v2(mysql& centreon_db, const database_config& storage_cfg);
+  ~reader_v2() noexcept = default;
   void read(state& state_obj);
 
  private:

@@ -43,11 +43,6 @@ ba_duration_event::ba_duration_event(ba_duration_event const& other)
 }
 
 /**
- *  Destructor.
- */
-ba_duration_event::~ba_duration_event() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] other  Object to copy.

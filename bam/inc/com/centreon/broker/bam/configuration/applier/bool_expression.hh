@@ -33,9 +33,7 @@ namespace bam {
 class bool_expression;
 class bool_service;
 class bool_call;
-class bool_metric;
 class service_book;
-class metric_book;
 
 namespace configuration {
 namespace applier {
@@ -55,7 +53,6 @@ class bool_expression {
     std::shared_ptr<bam::bool_expression> obj;
     std::list<std::shared_ptr<bam::bool_service>> svc;
     std::list<std::shared_ptr<bam::bool_call>> call;
-    std::list<std::shared_ptr<bam::bool_metric>> mtrc;
   };
 
   std::map<uint32_t, applied> _applied;
@@ -71,8 +68,7 @@ class bool_expression {
   bool_expression& operator=(const bool_expression&) = delete;
   void apply(configuration::state::bool_exps const& my_bools,
              hst_svc_mapping const& mapping,
-             service_book& book,
-             metric_book& metric_book);
+             service_book& book);
   std::shared_ptr<bam::bool_expression> find_boolexp(uint32_t id);
 };
 }  // namespace applier

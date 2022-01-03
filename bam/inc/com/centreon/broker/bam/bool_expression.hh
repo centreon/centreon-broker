@@ -50,9 +50,9 @@ class bool_expression : public computable {
  public:
   bool_expression();
   bool_expression(bool_expression const& other) = delete;
-  ~bool_expression() noexcept = default;
+  ~bool_expression() noexcept override = default;
   bool_expression& operator=(bool_expression const& other) = delete;
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  bool child_has_update(computable* child, io::stream* visitor = NULL) override;
   impact_values::state get_state() const;
   bool state_known() const;
   void set_expression(std::shared_ptr<bool_value> const& expression);

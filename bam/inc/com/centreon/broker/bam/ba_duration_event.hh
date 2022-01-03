@@ -40,7 +40,7 @@ class ba_duration_event : public io::data {
  public:
   ba_duration_event();
   ba_duration_event(ba_duration_event const& other);
-  ~ba_duration_event();
+  ~ba_duration_event() noexcept override = default;
   ba_duration_event& operator=(ba_duration_event const& other);
   bool operator==(ba_duration_event const& other) const;
   constexpr static uint32_t static_type() {

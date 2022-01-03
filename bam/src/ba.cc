@@ -31,13 +31,13 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
-static double normalize(double d) {
-  if (d >= 100.0)
-    return 100.0;
-  else if (d <= 0.0)
-    return 0.0;
+auto normalize = [](double d) -> double {
+  if (d > 100.0)
+    d = 100.0;
+  else if (d < 0.0)
+    d = 0.0;
   return d;
-}
+};
 
 static bool _every_kpi_in_dt(
     std::unordered_map<kpi*, bam::ba::impact_info>& imp) {
@@ -444,6 +444,7 @@ void ba::set_initial_event(ba_event const& event) {
   if (!_event) {
     _event.reset(new ba_event(event));
     _in_downtime = event.in_downtime;
+    log_v2::bam()->trace("ba initial event downtime: {}", _in_downtime);
     _last_kpi_update = _event->start_time;
     _initial_events.push_back(_event);
   } else {
@@ -611,6 +612,7 @@ void ba::service_update(const std::shared_ptr<neb::downtime>& dt,
     // Check if there was a change.
     bool in_downtime(dt->was_started && dt->actual_end_time.is_null());
     if (_in_downtime != in_downtime) {
+      log_v2::bam()->trace("ba: service_update downtime: {}", _in_downtime);
       _in_downtime = in_downtime;
 
       // Generate status event.
@@ -709,14 +711,16 @@ void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
  *  @param[in]  service_hard_state  Hard state of virtual BA service.
  */
 void ba::_open_new_event(io::stream* visitor, short service_hard_state) {
-  _event.reset(new ba_event);
+  log_v2::bam()->trace("new ba_event on ba {} with downtime = {}", _id,
+                       _in_downtime);
+  _event = std::make_shared<ba_event>();
   _event->ba_id = _id;
   _event->first_level = _level_hard < 0 ? 0 : _level_hard;
   _event->in_downtime = _in_downtime;
   _event->status = service_hard_state;
   _event->start_time = _last_kpi_update;
   if (visitor) {
-    std::shared_ptr<io::data> be(new ba_event(*_event));
+    std::shared_ptr<io::data> be = std::make_shared<ba_event>(*_event);
     visitor->write(be);
   }
 }
@@ -836,6 +840,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;
+    log_v2::bam()->trace("ba: inherited downtime computation downtime true");
     _in_downtime = true;
 
     if (visitor)
@@ -846,6 +851,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   //         Remove the downtime.
   else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime) {
     _inherited_downtime->in_downtime = false;
+    log_v2::bam()->trace("ba: inherited downtime computation downtime false");
     _in_downtime = false;
 
     if (visitor)

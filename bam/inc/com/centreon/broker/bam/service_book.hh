@@ -46,9 +46,8 @@ class service_listener;
  *  Propagate updates of services to service listeners.
  */
 class service_book {
-  typedef std::multimap<std::pair<uint32_t, uint32_t>, service_listener*>
-      multimap;
-
+  using multimap =
+      std::multimap<std::pair<uint32_t, uint32_t>, service_listener*>;
   multimap _book;
 
  public:

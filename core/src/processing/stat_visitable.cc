@@ -65,7 +65,7 @@ void stat_visitable::stats(nlohmann::json& tree) {
  *
  *  @return  This thread name.
  */
-std::string const& stat_visitable::get_name() const {
+const std::string& stat_visitable::get_name() const {
   return _name;
 }
 

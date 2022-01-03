@@ -153,7 +153,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   endpoint::instance().apply(st.endpoints());
 
   // Create instance broadcast event.
-  std::shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  auto ib{std::make_shared<instance_broadcast>()};
   ib->broker_id = io::data::broker_id;
   ib->poller_id = _poller_id;
   ib->poller_name = _poller_name;

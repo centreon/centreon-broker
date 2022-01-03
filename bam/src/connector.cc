@@ -50,7 +50,6 @@ void connector::connect_monitoring(std::string const& ext_cmd_file,
     _storage_db_name = db_cfg.get_name();
   else
     _storage_db_name = storage_db_name;
-  return;
 }
 
 /**
@@ -62,7 +61,6 @@ void connector::connect_reporting(database_config const& db_cfg) {
   _type = bam_reporting_type;
   _db_cfg = db_cfg;
   _storage_db_name.clear();
-  return;
 }
 
 /**

@@ -42,11 +42,6 @@ bool_binary_operator::bool_binary_operator(bool_binary_operator const& right)
 }
 
 /**
- *  Destructor.
- */
-bool_binary_operator::~bool_binary_operator() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] right Object to copy.

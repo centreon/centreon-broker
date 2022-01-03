@@ -17,13 +17,12 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "com/centreon/broker/time/timerange.hh"
-#include "com/centreon/broker/time/timeperiod.hh"
+#include <gtest/gtest.h>
 #include <iostream>
+#include "com/centreon/broker/time/timeperiod.hh"
 
 using namespace com::centreon::broker::time;
-
 
 TEST(Timerange, ParseWeirdTimerange) {
   std::unique_ptr<timeperiod> tp;
