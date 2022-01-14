@@ -69,6 +69,7 @@ class muxer : public io::stream {
   void statistics(json11::Json::object& tree) const override;
   void wake();
   int write(std::shared_ptr<io::data> const& d);
+  const std::string& name() const;
 
   static std::string memory_file(std::string const& name);
   static std::string queue_file(std::string const& name);

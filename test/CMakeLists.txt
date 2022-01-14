@@ -83,10 +83,7 @@ add_executable(ut
   ${TESTS_DIR}/misc/string.cc
   ${TESTS_DIR}/misc/stringifier.cc
   ${TESTS_DIR}/modules/module.cc
-  ${TESTS_DIR}/multiplexing/engine/hook.cc
-  ${TESTS_DIR}/multiplexing/engine/hooker.cc
   ${TESTS_DIR}/multiplexing/engine/start_stop.cc
-  ${TESTS_DIR}/multiplexing/engine/unhook.cc
   ${TESTS_DIR}/multiplexing/muxer/read.cc
   ${TESTS_DIR}/multiplexing/publisher/read.cc
   ${TESTS_DIR}/multiplexing/publisher/write.cc

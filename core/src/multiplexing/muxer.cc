@@ -51,6 +51,7 @@ muxer::muxer(std::string const& name, bool persistent)
       _name(name),
       _persistent(persistent) {
   // Load head queue file back in memory.
+        std::lock_guard<std::mutex> lck(_mutex);
   if (_persistent) {
     try {
       auto mf{std::make_unique<persistent_file>(_memory_file())};
@@ -69,6 +70,7 @@ muxer::muxer(std::string const& name, bool persistent)
     }
   }
 
+  _pos = _events.begin();
   // Load queue file back in memory.
   try {
     _file.reset(new persistent_file(_queue_file()));
@@ -84,11 +86,10 @@ muxer::muxer(std::string const& name, bool persistent)
       _events.push_back(e);
       ++_events_size;
     } while (_events_size < event_queue_max_size());
-  } catch (exceptions::shutdown const& e) {
+  } catch (const exceptions::shutdown& e) {
     // Queue file was entirely read back.
     (void)e;
   }
-  _pos = _events.begin();
 
   // Log messages.
   log_v2::perfdata()->info(
@@ -100,6 +101,9 @@ muxer::muxer(std::string const& name, bool persistent)
  *  Destructor.
  */
 muxer::~muxer() noexcept {
+  std::lock_guard<std::mutex> lck(_mutex);
+  log_v2::core()->info("Destroying muxer {}: number of events in the queue: {}",
+                       _name, _events_size);
   _clean();
 }
 
@@ -176,7 +180,8 @@ void muxer::publish(const std::shared_ptr<io::data> event) {
     if (_events_size >= event_queue_max_size()) {
       // Try to create file if is necessary.
       if (!_file)
-        _file.reset(new persistent_file(_queue_file()));
+        _file = std::make_unique<persistent_file>(_queue_file());
+
       _file->write(event);
     } else
       _push_to_queue(event);
@@ -208,7 +213,6 @@ bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
     if (_pos != _events.end()) {
       event = *_pos;
       ++_pos;
-      lock.unlock();
       if (event)
         timed_out = false;
     } else
@@ -218,7 +222,6 @@ bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
   else {
     event = *_pos;
     ++_pos;
-    lock.unlock();
   }
 
   return !timed_out;
@@ -252,7 +255,7 @@ void muxer::set_write_filters(muxer::filters const& fltrs) {
  *
  *  @return  The read filters.
  */
-muxer::filters const& muxer::get_read_filters() const {
+const muxer::filters& muxer::get_read_filters() const {
   return _read_filters;
 }
 
@@ -261,7 +264,7 @@ muxer::filters const& muxer::get_read_filters() const {
  *
  *  @return  The write filters.
  */
-muxer::filters const& muxer::get_write_filters() const {
+const muxer::filters& muxer::get_write_filters() const {
   return _write_filters;
 }
 
@@ -376,9 +379,9 @@ std::string muxer::queue_file(std::string const& name) {
 
 /**
  *  Release all events stored within the internal list.
+ *  Warning: _mutex must be locked to call this function.
  */
 void muxer::_clean() {
-  std::lock_guard<std::mutex> lock(_mutex);
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
@@ -396,17 +399,18 @@ void muxer::_clean() {
   }
   _events.clear();
   _events_size = 0;
+  _pos = _events.begin();
 }
 
 /**
- *  Get event from retention file. Warning: lock _mutex before using
- *  this function.
+ *  Get event from retention file.
+ *  Warning: lock _mutex before using this function.
  *
  *  @param[out] event  Last event available. Null if none is available.
  */
 void muxer::_get_event_from_file(std::shared_ptr<io::data>& event) {
   event.reset();
-  // If file exist, try to get the last event.
+  // If file exists, try to get the last event.
   if (_file) {
     try {
       do {
@@ -464,4 +468,13 @@ void muxer::remove_queue_files() {
   /* Here _file is already destroyed */
   persistent_file file(_queue_file());
   file.remove_all_files();
+}
+
+/**
+ * @brief Muxer name accessor.
+ *
+ * @return a const string reference.
+ */
+const std::string& muxer::name() const {
+  return _name;
 }

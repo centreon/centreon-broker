@@ -1,5 +1,14 @@
 # Changelog
 
+## 20.10.12
+
+### Fixes
+
+*multiplexing*
+
+The multiplexing engine works now asynchronously compared to its muxers. This
+improves performances a lot.
+
 ## 20.10.11
 
 ### Fixes
