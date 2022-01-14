@@ -291,10 +291,11 @@ void engine::_send_to_subscribers() {
     std::swap(_kiew, kiew);
   }
 
-  std::atomic<size_t> count{_muxers.size()};
-  if (count > 0) {
+  std::atomic<int> count{static_cast<int>(_muxers.size()) - 1};
+  std::promise<void> promise;
+  if (count >= 0) {
     /* We must wait the end of the sending, so we use a promise. */
-    std::promise<void> promise;
+    auto future = promise.get_future();
 
     /* Since the sending is parallelized, we use the thread pool for this
      * purpose except for the last muxer where we use this thread. */
@@ -308,8 +309,8 @@ void engine::_send_to_subscribers() {
       pool::io_context().post([&kiew, m = *it, &count, &promise] {
         for (auto& e : kiew)
           m->publish(e);
-        --count;
-        if (count == 0)
+        if (atomic_fetch_sub_explicit(&count, 1, std::memory_order_relaxed) ==
+            0)
           promise.set_value();
       });
     }
@@ -317,12 +318,10 @@ void engine::_send_to_subscribers() {
     auto m = *it_last;
     for (auto& e : kiew)
       m->publish(e);
-    --count;
-
-    if (count == 0)
+    if (atomic_fetch_sub_explicit(&count, 1, std::memory_order_relaxed) == 0)
       promise.set_value();
 
-    promise.get_future().get();
+    future.wait();
   }
 
   /* The strand is necessary for the order of data */
