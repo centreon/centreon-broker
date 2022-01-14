@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 
 #include <cstring>
+#include <thread>
 
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -51,17 +52,16 @@ TEST_F(PublisherWrite, Write) {
     multiplexing::publisher p;
 
     // Subscriber.
-    std::unordered_set<uint32_t> filters;
-    filters.insert(io::raw::static_type());
+    std::unordered_set<uint32_t> filters{io::raw::static_type()};
     multiplexing::subscriber s("core_multiplexing_publisher_write", "");
     s.get_muxer().set_read_filters(filters);
     s.get_muxer().set_write_filters(filters);
 
     // Publish event.
     {
-      std::shared_ptr<io::raw> raw(new io::raw);
+      auto raw{std::make_shared<io::raw>()};
       raw->append(MSG1);
-      p.write(std::static_pointer_cast<io::data>(raw));
+      p.write(raw);
     }
 
     // Launch multiplexing.
@@ -69,16 +69,22 @@ TEST_F(PublisherWrite, Write) {
 
     // Publish another event.
     {
-      std::shared_ptr<io::raw> raw(new io::raw);
+      auto raw{std::make_shared<io::raw>()};
       raw->append(MSG2);
-      p.write(std::static_pointer_cast<io::data>(raw));
+      p.write(raw);
     }
 
     // Check data.
     std::array<std::string, 2> messages{MSG1, MSG2};
     for (auto& m : messages) {
       std::shared_ptr<io::data> data;
-      s.get_muxer().read(data, 0);
+      bool ret;
+      int count = 0;
+      do {
+        ret = s.get_muxer().read(data, 0);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        count++;
+      } while (!ret && count < 100);
       if (!data || data->type() != io::raw::static_type())
         retval |= 1;
       else {
