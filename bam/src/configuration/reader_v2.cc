@@ -371,14 +371,11 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
     // XXX : expand hostgroups and servicegroups
     std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
-        "SELECT DISTINCT h.host_id, s.service_id, h.host_name, "
+        "SELECT h.host_id, s.service_id, h.host_name, "
         "s.service_description,service_activate FROM "
-        "service s LEFT JOIN host_service_relation AS hsr ON "
+        "service s LEFT JOIN host_service_relation hsr ON "
         "s.service_id=hsr.service_service_id "
-        "LEFT JOIN host AS h ON hsr.host_host_id=h.host_id LEFT JOIN "
-        "mod_bam_kpi k ON "
-        "h.host_id=k.host_id AND k.service_id=s.service_id WHERE "
-        "k.kpi_type='0'",
+        "LEFT JOIN host h ON hsr.host_host_id=h.host_id",
         &promise, 0);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res))
