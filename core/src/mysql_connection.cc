@@ -238,7 +238,8 @@ void mysql_connection::_commit(mysql_task* t) {
         fmt::format("Error during commit: {}", ::mysql_error(_conn)));
     log_v2::sql()->error("mysql_connection: {}", err_msg);
     set_error_message(err_msg);
-    if (--task->count == 0)
+    int c = atomic_fetch_sub(&task->count, 1) - 1;
+    if (c == 0)
       task->promise->set_value(true);
   } else {
     /* No more queries are waiting for a commit now. */
@@ -246,7 +247,8 @@ void mysql_connection::_commit(mysql_task* t) {
 
     /* Commit is done on each connection. If task->count is 0, then we are on
      * the last one. It's time to release the future boolean. */
-    if (--task->count == 0)
+    int c = atomic_fetch_sub(&task->count, 1) - 1;
+    if (c == 0)
       task->promise->set_value(true);
   }
 }
