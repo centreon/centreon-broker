@@ -1,5 +1,14 @@
 # Changelog
 
+## 20.10.11
+
+### Fixes
+
+*bam*
+
+A ba configured with boolean expressions could not anymore load its services
+states because of a regression.
+
 ## 20.10.10
 
 ### Fixes
