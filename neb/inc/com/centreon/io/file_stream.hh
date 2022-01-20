@@ -63,7 +63,7 @@ class file_stream : public handle {
   bool _auto_close;
   FILE* _stream;
 };
-}
+}  // namespace io
 
 CC_END()
 
