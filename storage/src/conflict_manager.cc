@@ -767,16 +767,17 @@ int32_t conflict_manager::unload(stream_type type) {
     log_v2::sql()->info("conflict_manager: already unloaded.");
     return 0;
   } else {
-    uint32_t count = --_singleton->_ref_count;
+    uint32_t count = std::atomic_fetch_sub(&_singleton->_ref_count, 1) - 1;
     int retval;
     if (count == 0) {
-      __exit();
-      retval = _fifo.get_acks(type);
+      _singleton->__exit();
+      retval = _singleton->_fifo.get_acks(type);
       {
         std::lock_guard<std::mutex> lck(_init_m);
         _state = finished;
         delete _singleton;
         _singleton = nullptr;
+        _init_cv.notify_all();
       }
       log_v2::sql()->info(
           "conflict_manager: no more user of the conflict manager.");
@@ -784,10 +785,16 @@ int32_t conflict_manager::unload(stream_type type) {
       log_v2::sql()->info(
           "conflict_manager: still {} stream{} using the conflict manager.",
           count, count > 1 ? "s" : "");
-      retval = _fifo.get_acks(type);
+      retval = _singleton->_fifo.get_acks(type);
       log_v2::sql()->info(
           "conflict_manager: still {} events handled but not acknowledged.",
           retval);
+      std::unique_lock<std::mutex> lk(_init_m);
+      for (int i = 0; i < 30 && _state != finished; i++) {
+        _init_cv.wait_for(lk, std::chrono::seconds(1), [] {
+          return _state == finished;
+        });
+      }
     }
     return retval;
   }
