@@ -3,6 +3,11 @@
 ## 21.04.6
 
 ### fixes
+*multiplexing*
+
+The multiplexing engine works now asynchronously compared to its muxers. This
+improves performances a lot.
+
 *rrd*
 
 add query sql to check metrics to delete metric and file associated.

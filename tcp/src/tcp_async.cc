@@ -68,8 +68,8 @@ void tcp_async::unload() {
  * method.
  */
 tcp_async::tcp_async()
-    : _clear_available_con_running(false),
-      _strand{pool::instance().io_context()} {}
+    : _strand{pool::instance().io_context()},
+      _clear_available_con_running(false) {}
 
 /**
  * @brief Stop the timer that clears available connections.
