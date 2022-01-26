@@ -86,6 +86,7 @@ class muxer : public io::stream {
   void wake();
   int32_t write(std::shared_ptr<io::data> const& d) override;
   int32_t stop() override;
+  const std::string& name() const;
 
   static std::string memory_file(std::string const& name);
   static std::string queue_file(std::string const& name);

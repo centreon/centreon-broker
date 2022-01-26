@@ -17,11 +17,9 @@
 */
 
 #include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/log_v2.hh"
 
 #include <unistd.h>
 
-#include <fmt/format.h>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
@@ -31,37 +29,15 @@
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/pool.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
 // Class instance.
-engine* engine::_instance(nullptr);
+engine* engine::_instance{nullptr};
 std::mutex engine::_load_m;
-
-/**
- *  Clear events stored in the multiplexing engine.
- */
-void engine::clear() {
-  while (!_kiew.empty())
-    _kiew.pop();
-}
-
-/**
- *  Set a hook.
- *
- *  @param[in] h          Hook.
- *  @param[in] with_data  Write data to hook.
- */
-void engine::hook(hooker& h, bool with_data) {
-  std::lock_guard<std::mutex> lock(_engine_m);
-
-  _hooks.push_back({&h, with_data});
-  _hooks_begin = _hooks.begin();
-  _hooks_end = _hooks.end();
-}
 
 /**
  *  Get engine instance.
@@ -77,9 +53,29 @@ engine& engine::instance() {
  *  Load engine instance.
  */
 void engine::load() {
+  log_v2::core()->trace("multiplexing: loading engine");
   std::lock_guard<std::mutex> lk(_load_m);
   if (!_instance)
     _instance = new engine;
+}
+
+/**
+ *  Unload class instance.
+ */
+void engine::unload() {
+  if (!_instance)
+    return;
+  if (_instance->_state != stopped)
+    _instance->stop();
+
+  log_v2::core()->trace("multiplexing: unloading engine");
+  std::lock_guard<std::mutex> lk(_load_m);
+  // Commit the cache file, if needed.
+  if (_instance && _instance->_cache_file)
+    _instance->_cache_file->commit();
+
+  delete _instance;
+  _instance = nullptr;
 }
 
 /**
@@ -90,42 +86,62 @@ void engine::load() {
 void engine::publish(const std::shared_ptr<io::data>& e) {
   // Lock mutex.
   std::lock_guard<std::mutex> lock(_engine_m);
-  _publish(e);
+  switch (_state) {
+    case stopped:
+      _cache_file->add(e);
+      _unprocessed_events++;
+      break;
+    case not_started:
+      _kiew.push_back(e);
+      break;
+    default:
+      _kiew.push_back(e);
+      if (!_sending_to_subscribers) {
+        _sending_to_subscribers = true;
+        _strand.post(std::bind(&engine::_send_to_subscribers, this));
+      }
+      break;
+  }
 }
 
 void engine::publish(const std::list<std::shared_ptr<io::data>>& to_publish) {
   std::lock_guard<std::mutex> lock(_engine_m);
-  for (auto& e : to_publish)
-    _publish(e);
+  switch (_state) {
+    case stopped:
+      for (auto& e : to_publish) {
+        _cache_file->add(e);
+        _unprocessed_events++;
+      }
+      break;
+    case not_started:
+      for (auto& e : to_publish)
+        _kiew.push_back(e);
+      break;
+    default:
+      for (auto& e : to_publish)
+        _kiew.push_back(e);
+      if (!_sending_to_subscribers) {
+        _sending_to_subscribers = true;
+        _strand.post(std::bind(&engine::_send_to_subscribers, this));
+      }
+      break;
+  }
 }
 
 /**
- *  Send an event to all subscribers. It must be used from this class, and
- *  _engine_m must be locked previously. Otherwise use engine::publish().
- *
- *  @param[in] e  Event to publish.
- */
-void engine::_publish(std::shared_ptr<io::data> const& e) {
-  // Store object for further processing.
-  _kiew.push(e);
-  // Processing function.
-  (this->*_write_func)(e);
-}
-
-/**
- *  Start multiplexing.
+ *  Start multiplexing. This function gets back the retention content and
+ *  inserts it in front of the engine's queue. Then all this content is
+ *  published.
  */
 void engine::start() {
-  if (_write_func != &engine::_write) {
+  std::lock_guard<std::mutex> lock(_engine_m);
+  if (_state == not_started) {
     // Set writing method.
-    logging::debug(logging::high) << "multiplexing: starting";
-    _write_func = &engine::_write;
-    stats::center::instance().update(&EngineStats::set_mode, _stats,
-                                     EngineStats::WRITE);
+    log_v2::core()->debug("multiplexing: engine starting");
+    _state = running;
 
-    std::lock_guard<std::mutex> lock(_engine_m);
     // Local queue.
-    std::queue<std::shared_ptr<io::data>> kiew;
+    std::deque<std::shared_ptr<io::data>> kiew;
     // Get events from the cache file to the local queue.
     try {
       persistent_cache cache(_cache_file_path());
@@ -134,83 +150,53 @@ void engine::start() {
         cache.get(d);
         if (!d)
           break;
-        kiew.push(d);
+        kiew.push_back(d);
       }
     } catch (const std::exception& e) {
-      logging::error(logging::medium)
-          << "multiplexing: couldn't read cache file: " << e.what();
+      log_v2::core()->error("multiplexing: engine couldn't read cache file: {}",
+                            e.what());
     }
 
     // Copy global event queue to local queue.
     while (!_kiew.empty()) {
-      kiew.push(_kiew.front());
-      _kiew.pop();
+      kiew.push_back(_kiew.front());
+      _kiew.pop_front();
     }
-
-    // Notify hooks of multiplexing loop start.
-    for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
-         end(_hooks_end);
-         it != end; ++it) {
-      it->first->starting();
-
-      // Read events from hook.
-      try {
-        std::shared_ptr<io::data> d;
-        it->first->read(d);
-        while (d) {
-          _kiew.push(d);
-          it->first->read(d, 0);
-        }
-      } catch (const std::exception& e) {
-        logging::error(logging::low)
-            << "multiplexing: cannot read from hook: " << e.what();
-      }
-    }
-
-    // Process events from hooks.
-    _send_to_subscribers();
 
     // Send events queued while multiplexing was stopped.
-    while (!kiew.empty()) {
-      _publish(kiew.front());
-      kiew.pop();
+    _kiew = std::move(kiew);
+    if (!_sending_to_subscribers) {
+      _sending_to_subscribers = true;
+      _strand.post(std::bind(&engine::_send_to_subscribers, this));
     }
   }
+  log_v2::core()->info("multiplexing: engine started");
 }
 
 /**
  *  Stop multiplexing.
  */
 void engine::stop() {
-  if (_write_func != &engine::_nop) {
+  std::unique_lock<std::mutex> lock(_engine_m);
+  if (_state != stopped) {
     // Notify hooks of multiplexing loop end.
-    log_v2::core()->debug("multiplexing: stopping");
-    std::unique_lock<std::mutex> lock(_engine_m);
-    for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
-         end(_hooks_end);
-         it != end; ++it) {
-      it->first->stopping();
-
-      // Read events from hook.
-      try {
-        std::shared_ptr<io::data> d;
-        it->first->read(d);
-        while (d) {
-          _kiew.push(d);
-          it->first->read(d);
-        }
-      } catch (...) {
-      }
-    }
+    log_v2::core()->info("multiplexing: stopping engine");
 
     do {
-      // Process events from hooks.
-      _send_to_subscribers();
-
       // Make sure that no more data is available.
-      lock.unlock();
-      usleep(200000);
-      lock.lock();
+      if (!_sending_to_subscribers) {
+        log_v2::core()->info(
+            "multiplexing: sending events to muxers for the last time");
+        _sending_to_subscribers = true;
+        lock.unlock();
+        std::promise<void> promise;
+        _strand.post([this, &promise] {
+          _send_to_subscribers();
+          promise.set_value();
+        });
+        promise.get_future().get();
+        lock.lock();
+      }
     } while (!_kiew.empty());
 
     // Open the cache file and start the transaction.
@@ -221,16 +207,15 @@ void engine::stop() {
       _cache_file.reset(new persistent_cache(_cache_file_path()));
       _cache_file->transaction();
     } catch (const std::exception& e) {
-      logging::error(logging::medium)
-          << "multiplexing: could not open cache file: " << e.what();
+      log_v2::perfdata()->error("multiplexing: could not open cache file: {}",
+                                e.what());
       _cache_file.reset();
     }
 
     // Set writing method.
-    _write_func = &engine::_write_to_cache_file;
-    stats::center::instance().update(&EngineStats::set_mode, _stats,
-                                     EngineStats::WRITE_TO_CACHE_FILE);
+    _state = stopped;
   }
+  log_v2::core()->debug("multiplexing: engine stopped");
 }
 
 /**
@@ -239,38 +224,13 @@ void engine::stop() {
  *  @param[in] subscriber  Subscriber.
  */
 void engine::subscribe(muxer* subscriber) {
-  std::lock_guard<std::mutex> lock(_muxers_m);
-  _muxers.push_back(subscriber);
-}
-
-/**
- *  Remove a hook.
- *
- *  @param[in] h  Hook.
- */
-void engine::unhook(hooker& h) {
-  std::lock_guard<std::mutex> lock(_engine_m);
-  for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin);
-       it != _hooks.end();)
-    if (it->first == &h)
-      it = _hooks.erase(it);
-    else
-      ++it;
-  _hooks_begin = _hooks.begin();
-  _hooks_end = _hooks.end();
-}
-
-/**
- *  Unload class instance.
- */
-void engine::unload() {
-  std::lock_guard<std::mutex> lk(_load_m);
-  // Commit the cache file, if needed.
-  if (_instance && _instance->_cache_file.get())
-    _instance->_cache_file->commit();
-
-  delete _instance;
-  _instance = nullptr;
+  std::promise<void> promise;
+  _strand.post([this, &promise, subscriber] {
+    log_v2::core()->trace("muxer {} subscribes to engine", subscriber->name());
+    _muxers.push_back(subscriber);
+    promise.set_value();
+  });
+  promise.get_future().get();
 }
 
 /**
@@ -279,30 +239,29 @@ void engine::unload() {
  *  @param[in] subscriber  Subscriber.
  */
 void engine::unsubscribe(muxer* subscriber) {
-  std::lock_guard<std::mutex> lock(_muxers_m);
-  for (auto it = _muxers.begin(), end = _muxers.end(); it != end; ++it)
-    if (*it == subscriber) {
-      _muxers.erase(it);
-      break;
-    }
+  std::promise<void> promise;
+  _strand.post([this, &promise, subscriber] {
+    for (auto it = _muxers.begin(), end = _muxers.end(); it != end; ++it)
+      if (*it == subscriber) {
+        log_v2::core()->trace("muxer {} unsubscribes to engine",
+                              subscriber->name());
+        _muxers.erase(it);
+        break;
+      }
+    promise.set_value();
+  });
+  promise.get_future().get();
 }
 
 /**
  *  Default constructor.
  */
 engine::engine()
-    : _hooks{},
-      _hooks_begin{_hooks.begin()},
-      _hooks_end{_hooks.end()},
-      _stats{stats::center::instance().register_engine()},
-      _unprocessed_events{0u},
-      _engine_m{},
+    : _state{not_started},
+      _strand(pool::instance().io_context()),
       _muxers{},
-      _muxers_m{},
-      _write_func(&engine::_nop) {
-  stats::center::instance().update(&EngineStats::set_mode, _stats,
-                                   EngineStats::NOP);
-}
+      _unprocessed_events{0u},
+      _sending_to_subscribers{false} {}
 
 /**
  *  Generate path to the multiplexing engine cache file.
@@ -316,67 +275,62 @@ std::string engine::_cache_file_path() const {
 }
 
 /**
- *  Do nothing.
- *
- *  @param[in] d  Unused.
- */
-void engine::_nop(std::shared_ptr<io::data> const& d) {
-  (void)d;
-}
-
-/**
- *  Send queued events to subscribers.
+ *  Send queued events to subscribers. Since events are queued, we use a strand
+ *  to keep their order. But there are several muxers, so we parallelize the
+ *  sending of data to each.
  */
 void engine::_send_to_subscribers() {
   // Process all queued events.
-  std::lock_guard<std::mutex> lock(_muxers_m);
-  while (!_kiew.empty()) {
-    // Send object to every subscriber.
-    for (muxer* m : _muxers)
-      m->publish(_kiew.front());
-    _kiew.pop();
+  std::deque<std::shared_ptr<io::data>> kiew;
+  {
+    std::lock_guard<std::mutex> lck(_engine_m);
+    if (_kiew.empty()) {
+      _sending_to_subscribers = false;
+      return;
+    }
+    std::swap(_kiew, kiew);
   }
+
+  std::atomic<int> count{static_cast<int>(_muxers.size()) - 1};
+  std::promise<void> promise;
+  if (count >= 0) {
+    /* We must wait the end of the sending, so we use a promise. */
+    auto future = promise.get_future();
+
+    /* Since the sending is parallelized, we use the thread pool for this
+     * purpose except for the last muxer where we use this thread. */
+
+    /* We get an iterator to the last muxer */
+    auto it_last = --_muxers.end();
+
+    /* We use the thread pool for the muxers from the first one to the second
+     * to last */
+    for (auto it = _muxers.begin(); it != it_last; ++it) {
+      pool::io_context().post([&kiew, m = *it, &count, &promise] {
+        for (auto& e : kiew)
+          m->publish(e);
+        if (atomic_fetch_sub_explicit(&count, 1, std::memory_order_relaxed) ==
+            0)
+          promise.set_value();
+      });
+    }
+    /* The same work but by this thread for the last muxer. */
+    auto m = *it_last;
+    for (auto& e : kiew)
+      m->publish(e);
+    if (atomic_fetch_sub_explicit(&count, 1, std::memory_order_relaxed) == 0)
+      promise.set_value();
+
+    future.wait();
+  }
+
+  /* The strand is necessary for the order of data */
+  _strand.post(std::bind(&engine::_send_to_subscribers, this));
 }
 
 /**
- *  The real event publication is done here. This method is just called by
- *  the publish method. No need of a lock, it is already owned by the publish
- *  method.
- *
- *  @param[in] e  Data to publish.
+ *  Clear events stored in the multiplexing engine.
  */
-void engine::_write(std::shared_ptr<io::data> const& e) {
-  // Send object to every hook.
-  for (std::vector<std::pair<hooker*, bool>>::iterator it(_hooks_begin),
-       end(_hooks_end);
-       it != end; ++it)
-    if (it->second) {
-      it->first->write(e);
-      std::shared_ptr<io::data> d;
-      it->first->read(d);
-      while (d) {
-        _kiew.push(d);
-        it->first->read(d);
-      }
-    }
-
-  // Send events to subscribers.
-  _send_to_subscribers();
-}
-
-/**
- *  Write to a cache file that will be played back at startup.
- *
- *  @param[in] d  Data to write.
- */
-void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
-  try {
-    if (_cache_file) {
-      _cache_file->add(d);
-      _unprocessed_events++;
-    }
-  } catch (const std::exception& e) {
-    logging::error(logging::medium)
-        << "multiplexing: could not write to cache file: " << e.what();
-  }
+void engine::clear() {
+  _kiew.clear();
 }
