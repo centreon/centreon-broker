@@ -133,7 +133,8 @@ bool conflict_manager::init_storage(bool store_in_db,
           return _singleton != nullptr || _state == finished ||
                  config::applier::mode == config::applier::finished;
         })) {
-      if (_state == finished) {
+      if (_state == finished ||
+          config::applier::mode == config::applier::finished) {
         log_v2::sql()->info("Conflict manager not started because cbd stopped");
         return false;
       }
