@@ -1,5 +1,13 @@
 # Changelog
 
+## 20.10.12
+
+### Fixes
+
+*storage*
+
+An issue is fixed on sql reconnection when broker is stopped.
+
 ## 20.10.11
 
 ### Fixes
