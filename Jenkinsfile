@@ -69,7 +69,7 @@ try {
         stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
       }
-    },
+    }/*,
     'build centos8': {
       node("C++") {
         checkoutCentreonBuild()
@@ -91,27 +91,7 @@ try {
         stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
       }
-//    },
-//    'build debian10': {
-//      node("C++") {
-//        sh 'setup_centreon_build.sh'
-//        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
-//        step([
-//          $class: 'XUnitBuilder',
-//          thresholds: [
-//            [$class: 'FailedThreshold', failureThreshold: '0'],
-//            [$class: 'SkippedThreshold', failureThreshold: '0']
-//          ],
-//          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-//        ])
-//      }
-//    },
-//    'packaging debian10': {
-//      node("C++") {
-//        sh 'setup_centreon_build.sh'
-//        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
-//      }
-    }
+    }*/
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Build // Unit tests // Packaging.');
     }
@@ -136,17 +116,13 @@ try {
     stage('Delivery') {
       node("C++") {
         unstash 'el7-rpms'
-        unstash 'el8-rpms'
+        //unstash 'el8-rpms'
         checkoutCentreonBuild()
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
       }
       if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
         error('Delivery stage failure.');
       }
-    }
-
-    if (env.BUILD == 'REFERENCE') {
-      build job: "centreon-web/${env.BRANCH_NAME}", wait: false
     }
   }
 }
