@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@
 
 #include <fmt/format.h>
 #include <sys/stat.h>
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 
 #include <openssl/md5.h>
 #include <cstdlib>
@@ -464,13 +466,65 @@ static int l_broker_parse_perfdata(lua_State* L) {
   }
   lua_createtable(L, 0, pds.size());
   for (auto const& pd : pds) {
-    lua_pushstring(L, pd.name().c_str());
+    lua_pushlstring(L, pd.name().c_str(), pd.name().size());
     if (full) {
-      lua_createtable(L, 0, 3);
+      absl::string_view name{pd.name()};
+      absl::string_view metric;
+      absl::string_view fullinstance;
+      std::list<absl::string_view> subinstance;
+      lua_createtable(L, 0, 15);
+      int find_sharp = name.find("#");
+      int find_tilde = name.find("~");
+      if (find_sharp == -1) {
+        metric = pd.name();
+      } else {
+        metric = name.substr(find_sharp + 1);
+        fullinstance = name.substr(0, find_sharp);
+        subinstance = absl::StrSplit(fullinstance, '~');
+      }
+      std::list<absl::string_view> metric_fields{absl::StrSplit(metric, '.')};
+
       lua_pushnumber(L, pd.value());
       lua_setfield(L, -2, "value");
-      lua_pushstring(L, pd.unit().c_str());
+      lua_pushlstring(L, pd.unit().c_str(), pd.unit().size());
       lua_setfield(L, -2, "uom");
+      lua_pushlstring(L, metric.data(), metric.length());
+      lua_setfield(L, -2, "metric_name");
+      if (find_sharp < 1) {
+        lua_pushlstring(L, "", sizeof("") - 1);
+        lua_setfield(L, -2, "instance");
+      } else if (find_tilde == -1) {
+        lua_pushlstring(L, name.data(), name.substr(0, find_sharp).length());
+        lua_setfield(L, -2, "instance");
+      } else {
+        lua_pushlstring(L, name.data(), name.substr(0, find_tilde).length());
+        lua_setfield(L, -2, "instance");
+      }
+      int find_pts = name.find_last_of(".");
+      lua_pushlstring(L, name.substr(find_pts + 1, name.size()).data(),
+                      name.substr(find_pts + 1, name.size()).length());
+      lua_setfield(L, -2, "metric_unit");
+      lua_pushlstring(L, "metric_fields", sizeof("metric_fields") - 1);
+      lua_createtable(L, 0, 1);
+      int i = 0;
+      for (auto const& field : metric_fields) {
+        ++i;
+        lua_pushlstring(L, field.data(), field.length());
+        lua_rawseti(L, -2, i);
+      }
+      lua_settable(L, -3);
+      lua_pushlstring(L, "subinstance", sizeof("subinstance") - 1);
+      lua_createtable(L, 0, 1);
+      i = 0;
+      for (std::list<absl::string_view>::const_iterator
+               it(std::next(subinstance.begin())),
+           end(subinstance.end());
+           it != end; ++it) {
+        ++i;
+        lua_pushlstring(L, it->data(), it->length());
+        lua_rawseti(L, -2, i);
+      }
+      lua_settable(L, -3);
       lua_pushnumber(L, pd.min());
       lua_setfield(L, -2, "min");
       lua_pushnumber(L, pd.max());
@@ -481,7 +535,6 @@ static int l_broker_parse_perfdata(lua_State* L) {
       lua_setfield(L, -2, "warning_low");
       lua_pushboolean(L, pd.warning_mode());
       lua_setfield(L, -2, "warning_mode");
-
       lua_pushnumber(L, pd.critical());
       lua_setfield(L, -2, "critical_high");
       lua_pushnumber(L, pd.critical_low());

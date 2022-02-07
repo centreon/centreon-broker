@@ -1,5 +1,12 @@
 # Changelog
 
+## 21.04.7
+
+### Fixes
+
+*lua*
+
+manage new perfdata labels in Broker's perfdata parsing routine
 ## 21.04.6
 
 ### fixes

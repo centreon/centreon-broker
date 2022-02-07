@@ -1293,6 +1293,239 @@ TEST_F(LuaTest, ParsePerfdata) {
   RemoveFile("/tmp/log");
 }
 
+TEST_F(LuaTest, ParsePerfdata2) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/parse_perfdata.lua");
+  CreateScript(filename,
+               "local function test_perf(value, full)\n"
+               "  perf, err_msg = broker.parse_perfdata(value, full)\n"
+               "  if perf then\n"
+               "    broker_log:info(1, broker.json_encode(perf))\n"
+               "  else\n"
+               "    broker_log:info(1, err_msg)\n"
+               "  end \n"
+               "end\n\n"
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  test_perf(\" "
+               "'PingSDWan~vdom~ifName#azure.insights.logicaldisk.free."
+               "percentage'=94.82%;;;0;100\",true)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+  size_t pos1 = lst.find(
+      "\"PingSDWan~vdom~ifName#azure.insights.logicaldisk.free.percentage\":");
+  size_t pos2 = lst.find("\"warning_low\":nan", pos1 + 1);
+  size_t pos3 = lst.find("\"subinstance\":[\"vdom\",\"ifName\"]", pos1 + 1);
+  size_t pos4 =
+      lst.find("\"metric_name\":\"azure.insights.logicaldisk.free.percentage\"",
+               pos1 + 1);
+  size_t pos5 = lst.find("\"instance\":\"PingSDWan\"", pos1 + 1);
+  size_t pos6 = lst.find("\"warning_mode\":false", pos1 + 1);
+  size_t pos7 = lst.find("\"metric_unit\":\"percentage\"", pos1 + 1);
+  size_t pos8 = lst.find("\"critical_mode\":false", pos1 + 1);
+  size_t pos9 = lst.find("\"min\":0", pos1 + 1);
+  size_t pos10 = lst.find("\"critical_high\":nan", pos1 + 1);
+  size_t pos11 = lst.find("\"warning_high\":nan", pos1 + 1);
+  size_t pos12 = lst.find("\"critical_low\":nan", pos1 + 1);
+  size_t pos13 = lst.find("\"value\":94.82", pos1 + 1);
+  size_t pos14 = lst.find("\"max\":100", pos1 + 1);
+  size_t pos15 = lst.find(
+      "\"metric_fields\":[\"azure\",\"insights\",\"logicaldisk\",\"free\","
+      "\"percentage\"]",
+      pos1 + 1);
+  size_t pos16 = lst.find("\"uom\":\"%\"", pos1 + 1);
+
+  ASSERT_NE(pos1, std::string::npos);
+  ASSERT_NE(pos2, std::string::npos);
+  ASSERT_NE(pos3, std::string::npos);
+  ASSERT_NE(pos4, std::string::npos);
+  ASSERT_NE(pos5, std::string::npos);
+  ASSERT_NE(pos6, std::string::npos);
+  ASSERT_NE(pos7, std::string::npos);
+  ASSERT_NE(pos8, std::string::npos);
+  ASSERT_NE(pos9, std::string::npos);
+  ASSERT_NE(pos10, std::string::npos);
+  ASSERT_NE(pos11, std::string::npos);
+  ASSERT_NE(pos12, std::string::npos);
+  ASSERT_NE(pos13, std::string::npos);
+  ASSERT_NE(pos14, std::string::npos);
+  ASSERT_NE(pos15, std::string::npos);
+  ASSERT_NE(pos16, std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, ParsePerfdata3) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/parse_perfdata.lua");
+  CreateScript(filename,
+               "local function test_perf(value, full)\n"
+               "  perf, err_msg = broker.parse_perfdata(value, full)\n"
+               "  if perf then\n"
+               "    broker_log:info(1, broker.json_encode(perf))\n"
+               "  else\n"
+               "    broker_log:info(1, err_msg)\n"
+               "  end \n"
+               "end\n\n"
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  test_perf(\" "
+               "'PingSDWanvdomifName.azure.insights.logicaldisk.free."
+               "percentage'=94.82%;;;0;100\",true)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+  size_t pos1 = lst.find(
+      "\"PingSDWanvdomifName.azure.insights.logicaldisk.free.percentage\":");
+  size_t pos2 = lst.find("\"warning_low\":nan", pos1 + 1);
+  size_t pos3 = lst.find("subinstance\":[]", pos1 + 1);
+  size_t pos4 = lst.find(
+      "metric_name\":\"PingSDWanvdomifName.azure.insights.logicaldisk.free."
+      "percentage\"",
+      pos1 + 1);
+  size_t pos5 = lst.find("instance\":\"\"", pos1 + 1);
+  size_t pos6 = lst.find("\"warning_mode\":false", pos1 + 1);
+  size_t pos7 = lst.find("\"metric_unit\":\"percentage\"", pos1 + 1);
+  size_t pos8 = lst.find("\"critical_mode\":false", pos1 + 1);
+  size_t pos9 = lst.find("\"min\":0", pos1 + 1);
+  size_t pos10 = lst.find("\"critical_high\":nan", pos1 + 1);
+  size_t pos11 = lst.find("\"warning_high\":nan", pos1 + 1);
+  size_t pos12 = lst.find("\"critical_low\":nan", pos1 + 1);
+  size_t pos13 = lst.find("\"value\":94.82", pos1 + 1);
+  size_t pos14 = lst.find("\"max\":100", pos1 + 1);
+  size_t pos15 = lst.find(
+      "metric_fields\":[\"PingSDWanvdomifName\",\"azure\",\"insights\","
+      "\"logicaldisk\",\"free\",\"percentage\"]",
+      pos1 + 1);
+  size_t pos16 = lst.find("\"uom\":\"%\"", pos1 + 1);
+
+  ASSERT_NE(pos1, std::string::npos);
+  ASSERT_NE(pos2, std::string::npos);
+  ASSERT_NE(pos3, std::string::npos);
+  ASSERT_NE(pos4, std::string::npos);
+  ASSERT_NE(pos5, std::string::npos);
+  ASSERT_NE(pos6, std::string::npos);
+  ASSERT_NE(pos7, std::string::npos);
+  ASSERT_NE(pos8, std::string::npos);
+  ASSERT_NE(pos9, std::string::npos);
+  ASSERT_NE(pos10, std::string::npos);
+  ASSERT_NE(pos11, std::string::npos);
+  ASSERT_NE(pos12, std::string::npos);
+  ASSERT_NE(pos13, std::string::npos);
+  ASSERT_NE(pos14, std::string::npos);
+  ASSERT_NE(pos15, std::string::npos);
+  ASSERT_NE(pos16, std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, ParsePerfdata4) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/parse_perfdata.lua");
+  CreateScript(filename,
+               "local function test_perf(value, full)\n"
+               "  perf, err_msg = broker.parse_perfdata(value, full)\n"
+               "  if perf then\n"
+               "    broker_log:info(1, broker.json_encode(perf))\n"
+               "  else\n"
+               "    broker_log:info(1, err_msg)\n"
+               "  end \n"
+               "end\n\n"
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  test_perf(\" "
+               "'PingSDWan~vdom~ifName#azure.insights#logicaldisk~free."
+               "percentage'=94.82%;;;0;100\",true)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+  size_t pos1 = lst.find(
+      "\"PingSDWan~vdom~ifName#azure.insights#logicaldisk~free.percentage\":");
+  size_t pos2 = lst.find("\"warning_low\":nan", pos1 + 1);
+  size_t pos3 = lst.find("\"subinstance\":[\"vdom\",\"ifName\"]", pos1 + 1);
+  size_t pos4 =
+      lst.find("\"metric_name\":\"azure.insights#logicaldisk~free.percentage\"",
+               pos1 + 1);
+  size_t pos5 = lst.find("\"instance\":\"PingSDWan\"", pos1 + 1);
+  size_t pos6 = lst.find("\"warning_mode\":false", pos1 + 1);
+  size_t pos7 = lst.find("\"metric_unit\":\"percentage\"", pos1 + 1);
+  size_t pos8 = lst.find("\"critical_mode\":false", pos1 + 1);
+  size_t pos9 = lst.find("\"min\":0", pos1 + 1);
+  size_t pos10 = lst.find("\"critical_high\":nan", pos1 + 1);
+  size_t pos11 = lst.find("\"warning_high\":nan", pos1 + 1);
+  size_t pos12 = lst.find("\"critical_low\":nan", pos1 + 1);
+  size_t pos13 = lst.find("\"value\":94.82", pos1 + 1);
+  size_t pos14 = lst.find("\"max\":100", pos1 + 1);
+  size_t pos15 = lst.find(
+      "\"metric_fields\":[\"azure\",\"insights#logicaldisk~free\","
+      "\"percentage\"]",
+      pos1 + 1);
+  size_t pos16 = lst.find("\"uom\":\"%\"", pos1 + 1);
+
+  ASSERT_NE(pos1, std::string::npos);
+  ASSERT_NE(pos2, std::string::npos);
+  ASSERT_NE(pos3, std::string::npos);
+  ASSERT_NE(pos4, std::string::npos);
+  ASSERT_NE(pos5, std::string::npos);
+  ASSERT_NE(pos6, std::string::npos);
+  ASSERT_NE(pos7, std::string::npos);
+  ASSERT_NE(pos8, std::string::npos);
+  ASSERT_NE(pos9, std::string::npos);
+  ASSERT_NE(pos10, std::string::npos);
+  ASSERT_NE(pos11, std::string::npos);
+  ASSERT_NE(pos12, std::string::npos);
+  ASSERT_NE(pos13, std::string::npos);
+  ASSERT_NE(pos14, std::string::npos);
+  ASSERT_NE(pos15, std::string::npos);
+  ASSERT_NE(pos16, std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, ParsePerfdata5) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/parse_perfdata.lua");
+  CreateScript(filename,
+               "local function test_perf(value, full)\n"
+               "  perf, err_msg = broker.parse_perfdata(value, full)\n"
+               "  if perf then\n"
+               "    broker_log:info(1, broker.json_encode(perf))\n"
+               "  else\n"
+               "    broker_log:info(1, err_msg)\n"
+               "  end \n"
+               "end\n\n"
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  test_perf(\" "
+               "toto~titi~tutu~tata#a.b.c.metric1=12%;0;100;50;80\",true)\n"
+               "  test_perf(\" toto~a.b.totu=12g;0;20;10;15\",true)\n"
+               "  test_perf(\" tt#a.b=5;1;2\",true)\n"
+               "  test_perf(\" #metric~titus=3s;1;8\",true)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+  size_t pos1 = lst.find("\"subinstance\":[\"titi\",\"tutu\",\"tata\"]");
+  size_t pos2 = lst.find("\"metric_name\":\"toto~a.b.totu\"", pos1 + 1);
+  size_t pos3 = lst.find("\"instance\":\"tt\"", pos2 + 1);
+  size_t pos4 = lst.find("\"metric_unit\":\"#metric~titus\"", pos3 + 1);
+
+  ASSERT_NE(pos1, std::string::npos);
+  ASSERT_NE(pos2, std::string::npos);
+  ASSERT_NE(pos3, std::string::npos);
+  ASSERT_NE(pos4, std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
 // Given a script requiring another one with the same path.
 // When the first script call a function defined in the second one
 // Then the call works.
