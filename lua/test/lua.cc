@@ -1296,7 +1296,6 @@ TEST_F(LuaTest, ParsePerfdata) {
 TEST_F(LuaTest, ParsePerfdata2) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/parse_perfdata.lua");
-  testing::internal::CaptureStdout();
   CreateScript(filename,
                "local function test_perf(value, full)\n"
                "  perf, err_msg = broker.parse_perfdata(value, full)\n"
@@ -1327,7 +1326,7 @@ TEST_F(LuaTest, ParsePerfdata2) {
   size_t pos6 = lst.find("\"warning_mode\":false", pos1 + 1);
   size_t pos7 = lst.find("\"metric_unit\":\"percentage\"", pos1 + 1);
   size_t pos8 = lst.find("\"critical_mode\":false", pos1 + 1);
-  size_t pos9 = lst.find("\"min\":0", pos8 + 1);
+  size_t pos9 = lst.find("\"min\":0", pos1 + 1);
   size_t pos10 = lst.find("\"critical_high\":nan", pos1 + 1);
   size_t pos11 = lst.find("\"warning_high\":nan", pos1 + 1);
   size_t pos12 = lst.find("\"critical_low\":nan", pos1 + 1);
@@ -1338,9 +1337,7 @@ TEST_F(LuaTest, ParsePerfdata2) {
       "\"percentage\"]",
       pos1 + 1);
   size_t pos16 = lst.find("\"uom\":\"%\"", pos1 + 1);
-  std::string out{testing::internal::GetCapturedStdout()};
 
-  std::cout << out << std::endl;
   ASSERT_NE(pos1, std::string::npos);
   ASSERT_NE(pos2, std::string::npos);
   ASSERT_NE(pos3, std::string::npos);
@@ -1364,7 +1361,6 @@ TEST_F(LuaTest, ParsePerfdata2) {
 TEST_F(LuaTest, ParsePerfdata3) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/parse_perfdata.lua");
-  testing::internal::CaptureStdout();
   CreateScript(filename,
                "local function test_perf(value, full)\n"
                "  perf, err_msg = broker.parse_perfdata(value, full)\n"
@@ -1396,7 +1392,7 @@ TEST_F(LuaTest, ParsePerfdata3) {
   size_t pos6 = lst.find("\"warning_mode\":false", pos1 + 1);
   size_t pos7 = lst.find("\"metric_unit\":\"percentage\"", pos1 + 1);
   size_t pos8 = lst.find("\"critical_mode\":false", pos1 + 1);
-  size_t pos9 = lst.find("\"min\":0", pos8 + 1);
+  size_t pos9 = lst.find("\"min\":0", pos1 + 1);
   size_t pos10 = lst.find("\"critical_high\":nan", pos1 + 1);
   size_t pos11 = lst.find("\"warning_high\":nan", pos1 + 1);
   size_t pos12 = lst.find("\"critical_low\":nan", pos1 + 1);
@@ -1407,9 +1403,7 @@ TEST_F(LuaTest, ParsePerfdata3) {
       "\"logicaldisk\",\"free\",\"percentage\"]",
       pos1 + 1);
   size_t pos16 = lst.find("\"uom\":\"%\"", pos1 + 1);
-  std::string out{testing::internal::GetCapturedStdout()};
 
-  std::cout << out << std::endl;
   ASSERT_NE(pos1, std::string::npos);
   ASSERT_NE(pos2, std::string::npos);
   ASSERT_NE(pos3, std::string::npos);
@@ -1433,7 +1427,6 @@ TEST_F(LuaTest, ParsePerfdata3) {
 TEST_F(LuaTest, ParsePerfdata4) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/parse_perfdata.lua");
-  testing::internal::CaptureStdout();
   CreateScript(filename,
                "local function test_perf(value, full)\n"
                "  perf, err_msg = broker.parse_perfdata(value, full)\n"
@@ -1464,7 +1457,7 @@ TEST_F(LuaTest, ParsePerfdata4) {
   size_t pos6 = lst.find("\"warning_mode\":false", pos1 + 1);
   size_t pos7 = lst.find("\"metric_unit\":\"percentage\"", pos1 + 1);
   size_t pos8 = lst.find("\"critical_mode\":false", pos1 + 1);
-  size_t pos9 = lst.find("\"min\":0", pos8 + 1);
+  size_t pos9 = lst.find("\"min\":0", pos1 + 1);
   size_t pos10 = lst.find("\"critical_high\":nan", pos1 + 1);
   size_t pos11 = lst.find("\"warning_high\":nan", pos1 + 1);
   size_t pos12 = lst.find("\"critical_low\":nan", pos1 + 1);
@@ -1475,9 +1468,7 @@ TEST_F(LuaTest, ParsePerfdata4) {
       "\"percentage\"]",
       pos1 + 1);
   size_t pos16 = lst.find("\"uom\":\"%\"", pos1 + 1);
-  std::string out{testing::internal::GetCapturedStdout()};
 
-  std::cout << out << std::endl;
   ASSERT_NE(pos1, std::string::npos);
   ASSERT_NE(pos2, std::string::npos);
   ASSERT_NE(pos3, std::string::npos);
@@ -1494,6 +1485,43 @@ TEST_F(LuaTest, ParsePerfdata4) {
   ASSERT_NE(pos14, std::string::npos);
   ASSERT_NE(pos15, std::string::npos);
   ASSERT_NE(pos16, std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, ParsePerfdata5) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/parse_perfdata.lua");
+  CreateScript(filename,
+               "local function test_perf(value, full)\n"
+               "  perf, err_msg = broker.parse_perfdata(value, full)\n"
+               "  if perf then\n"
+               "    broker_log:info(1, broker.json_encode(perf))\n"
+               "  else\n"
+               "    broker_log:info(1, err_msg)\n"
+               "  end \n"
+               "end\n\n"
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  test_perf(\" "
+               "toto~titi~tutu~tata#a.b.c.metric1=12%;0;100;50;80\",true)\n"
+               "  test_perf(\" toto~a.b.totu=12g;0;20;10;15\",true)\n"
+               "  test_perf(\" tt#a.b=5;1;2\",true)\n"
+               "  test_perf(\" #metric~titus=3s;1;8\",true)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+  size_t pos1 = lst.find("\"subinstance\":[\"titi\",\"tutu\",\"tata\"]");
+  size_t pos2 = lst.find("\"metric_name\":\"toto~a.b.totu\"", pos1 + 1);
+  size_t pos3 = lst.find("\"instance\":\"tt\"", pos2 + 1);
+  size_t pos4 = lst.find("\"metric_unit\":\"#metric~titus\"", pos3 + 1);
+
+  ASSERT_NE(pos1, std::string::npos);
+  ASSERT_NE(pos2, std::string::npos);
+  ASSERT_NE(pos3, std::string::npos);
+  ASSERT_NE(pos4, std::string::npos);
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }

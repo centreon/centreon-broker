@@ -490,8 +490,11 @@ static int l_broker_parse_perfdata(lua_State* L) {
       lua_setfield(L, -2, "uom");
       lua_pushlstring(L, metric.data(), metric.length());
       lua_setfield(L, -2, "metric_name");
-      if (find_tilde == -1) {
+      if (find_sharp < 1) {
         lua_pushlstring(L, "", sizeof("") - 1);
+        lua_setfield(L, -2, "instance");
+      } else if (find_tilde == -1) {
+        lua_pushlstring(L, name.data(), name.substr(0, find_sharp).length());
         lua_setfield(L, -2, "instance");
       } else {
         lua_pushlstring(L, name.data(), name.substr(0, find_tilde).length());
