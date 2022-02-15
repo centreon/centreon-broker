@@ -162,6 +162,7 @@ add_library("${BAM}" SHARED
 )
 set_target_properties("${BAM}" PROPERTIES
     PREFIX "")
+target_link_libraries("${BAM}" ${absl_LIBS})
 
 # Testing.
 if (WITH_SQL_TESTS)

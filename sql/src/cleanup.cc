@@ -23,7 +23,6 @@
 #include <ctime>
 
 #include "com/centreon/broker/database/mysql_error.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql.hh"
 
 using namespace com::centreon::broker;

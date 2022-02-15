@@ -74,11 +74,8 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
   // Prepare queries.
   _prepare();
 
-  // Simulate a configuration update.
-  // FIXME DBR: what for? This update() call is made juste after the stream
-  // construction. I keep that in case I'm doing an error but it looks like
-  // a nonsense.
-  // update();
+  // Let's update BAs then we will be able to load the cache with inherited downtimes.
+  update();
   // Read cache.
   _read_cache();
 }
@@ -224,9 +221,9 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       std::shared_ptr<neb::downtime> dt(
           std::static_pointer_cast<neb::downtime>(data));
       log_v2::bam()->trace(
-          "BAM: processing downtime on service ({}, {}) started: {}, stopped: "
+          "BAM: processing downtime ({}) on service ({}, {}) started: {}, stopped: "
           "{}",
-          dt->host_id, dt->service_id, dt->was_started, dt->was_cancelled);
+          dt->internal_id, dt->host_id, dt->service_id, dt->was_started, dt->was_cancelled);
       multiplexing::publisher pblshr;
       event_cache_visitor ev_cache;
       _applier.book_service().update(dt, &ev_cache);
@@ -313,11 +310,10 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
             std::numeric_limits<int32_t>::max());
       else
         cmd = fmt::format(
-            "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;{};1;0;;Centreon "
+            "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;;1;0;;Centreon "
             "Broker BAM Module;Automatic downtime triggered by BA downtime "
             "inheritance",
-            now, config::applier::state::instance().poller_id(), dwn.ba_id,
-            std::numeric_limits<int32_t>::max());
+            now, config::applier::state::instance().poller_id(), dwn.ba_id);
       _write_external_command(cmd);
     } break;
     default:
@@ -433,9 +429,11 @@ void monitoring_stream::_write_external_command(std::string& cmd) {
 void monitoring_stream::_read_cache() {
   log_v2::bam()->trace("BAM: monitoring stream _read_cache");
   if (_cache == nullptr)
-    return;
-
-  _applier.load_from_cache(*_cache);
+    log_v2::bam()->debug("BAM: no cache configured");
+  else {
+    log_v2::bam()->debug("BAM: loading cache");
+    _applier.load_from_cache(*_cache);
+  }
 }
 
 /**
@@ -443,12 +441,10 @@ void monitoring_stream::_read_cache() {
  */
 void monitoring_stream::_write_cache() {
   log_v2::bam()->trace("BAM: monitoring stream _write_cache");
-  if (_cache == nullptr) {
+  if (_cache == nullptr)
     log_v2::bam()->debug("BAM: no cache configured");
-    return;
+  else {
+    log_v2::bam()->debug("BAM: saving cache");
+    _applier.save_to_cache(*_cache);
   }
-
-  log_v2::bam()->debug("BAM: loading cache");
-
-  _applier.save_to_cache(*_cache);
 }

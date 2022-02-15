@@ -389,12 +389,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/bbdo/version_response.cc
   ${SRC_DIR}/broker_impl.cc
   ${SRC_DIR}/brokerrpc.cc
-  ${SRC_DIR}/ceof/ceof_deserializer.cc
-  ${SRC_DIR}/ceof/ceof_iterator.cc
-  ${SRC_DIR}/ceof/ceof_parser.cc
-  ${SRC_DIR}/ceof/ceof_serializer.cc
-  ${SRC_DIR}/ceof/ceof_token.cc
-  ${SRC_DIR}/ceof/ceof_writer.cc
   ${SRC_DIR}/compression/factory.cc
   ${SRC_DIR}/compression/opener.cc
   ${SRC_DIR}/compression/stack_array.cc
@@ -479,14 +473,6 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/bbdo/version_response.hh
   ${INC_DIR}/broker_impl.hh
   ${INC_DIR}/brokerrpc.hh
-  ${INC_DIR}/ceof/ceof_deserializer.hh
-  ${INC_DIR}/ceof/ceof_iterator.hh
-  ${INC_DIR}/ceof/ceof_parser.hh
-  ${INC_DIR}/ceof/ceof_serializable.hh
-  ${INC_DIR}/ceof/ceof_serializer.hh
-  ${INC_DIR}/ceof/ceof_token.hh
-  ${INC_DIR}/ceof/ceof_visitor.hh
-  ${INC_DIR}/ceof/ceof_writer.hh
   ${INC_DIR}/compression/factory.hh
   ${INC_DIR}/compression/opener.hh
   ${INC_DIR}/compression/stack_array.hh

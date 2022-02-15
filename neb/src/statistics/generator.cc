@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/neb/statistics/active_host_execution_time.hh"
