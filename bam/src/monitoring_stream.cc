@@ -74,11 +74,8 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
   // Prepare queries.
   _prepare();
 
-  // Simulate a configuration update.
-  // FIXME DBR: what for? This update() call is made juste after the stream
-  // construction. I keep that in case I'm doing an error but it looks like
-  // a nonsense.
-  // update();
+  // Let's update BAs then we will be able to load the cache with inherited downtimes.
+  update();
   // Read cache.
   _read_cache();
 }
@@ -433,9 +430,11 @@ void monitoring_stream::_write_external_command(std::string& cmd) {
 void monitoring_stream::_read_cache() {
   log_v2::bam()->trace("BAM: monitoring stream _read_cache");
   if (_cache == nullptr)
-    return;
-
-  _applier.load_from_cache(*_cache);
+    log_v2::bam()->debug("BAM: no cache configured");
+  else {
+    log_v2::bam()->debug("BAM: loading cache");
+    _applier.load_from_cache(*_cache);
+  }
 }
 
 /**
@@ -443,12 +442,10 @@ void monitoring_stream::_read_cache() {
  */
 void monitoring_stream::_write_cache() {
   log_v2::bam()->trace("BAM: monitoring stream _write_cache");
-  if (_cache == nullptr) {
+  if (_cache == nullptr)
     log_v2::bam()->debug("BAM: no cache configured");
-    return;
+  else {
+    log_v2::bam()->debug("BAM: saving cache");
+    _applier.save_to_cache(*_cache);
   }
-
-  log_v2::bam()->debug("BAM: loading cache");
-
-  _applier.save_to_cache(*_cache);
 }

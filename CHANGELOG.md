@@ -35,6 +35,8 @@ the kpi were in critical, the state appeared as OK.
 The cache in bam is lighter, metrics are no
 more loaded. And queries to load the cache are parallelized.
 
+Inherited downtimes were duplicated on cbd reload. This is fixed.
+
 *mysql_connection*
 
 A timeout is added on mysql\_ping and this function is less called than before.
