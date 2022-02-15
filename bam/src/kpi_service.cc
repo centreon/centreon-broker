@@ -260,7 +260,6 @@ void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
   _downtimed = dt->was_started && dt->actual_end_time.is_null();
   if (!_event || _event->in_downtime != _downtimed) {
     _last_check = _downtimed ? dt->actual_start_time : dt->actual_end_time;
-    assert(static_cast<time_t>(_last_check) > 10);
     log_v2::bam()->trace("kpi service {} update, last check set to {}", _id,
                          _last_check);
   }
