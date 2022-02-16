@@ -221,9 +221,9 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       std::shared_ptr<neb::downtime> dt(
           std::static_pointer_cast<neb::downtime>(data));
       log_v2::bam()->trace(
-          "BAM: processing downtime on service ({}, {}) started: {}, stopped: "
+          "BAM: processing downtime ({}) on service ({}, {}) started: {}, stopped: "
           "{}",
-          dt->host_id, dt->service_id, dt->was_started, dt->was_cancelled);
+          dt->internal_id, dt->host_id, dt->service_id, dt->was_started, dt->was_cancelled);
       multiplexing::publisher pblshr;
       event_cache_visitor ev_cache;
       _applier.book_service().update(dt, &ev_cache);
@@ -310,11 +310,10 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
             std::numeric_limits<int32_t>::max());
       else
         cmd = fmt::format(
-            "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;{};1;0;;Centreon "
+            "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;;1;0;;Centreon "
             "Broker BAM Module;Automatic downtime triggered by BA downtime "
             "inheritance",
-            now, config::applier::state::instance().poller_id(), dwn.ba_id,
-            std::numeric_limits<int32_t>::max());
+            now, config::applier::state::instance().poller_id(), dwn.ba_id);
       _write_external_command(cmd);
     } break;
     default:

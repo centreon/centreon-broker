@@ -531,7 +531,7 @@ void conflict_manager::_process_downtime(
   neb::downtime const& dd = *static_cast<neb::downtime const*>(d.get());
 
   // Log message.
-  log_v2::sql()->info(
+  log_v2::bam()->info(
       "SQL: processing downtime event (poller: {}"
       ", host: {}, service: {}, start time: {}, end_time: {}"
       ", actual start time: {}"
@@ -1618,9 +1618,9 @@ void conflict_manager::_process_service_status(
     // Apply to DB.
     log_v2::sql()->info(
         "SQL: processing service status event (host: {}, service: {}, last "
-        "check: {}, state ({}, {}))",
+        "check: {}, state ({}, {}), in downtime {})",
         ss.host_id, ss.service_id, ss.last_check, ss.current_state,
-        ss.state_type);
+        ss.state_type, ss.downtime_depth);
 
     // Prepare queries.
     if (!_service_status_update.prepared()) {

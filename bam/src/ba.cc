@@ -508,6 +508,7 @@ void ba::visit(io::stream* visitor) {
     short hard_state(get_state_hard());
     bool state_changed(false);
     if (!_event) {
+      log_v2::bam()->trace("BAM: ba::visit no event => creation of one");
       if (_last_kpi_update.is_null())
         _last_kpi_update = time(nullptr);
       _open_new_event(visitor, hard_state);
@@ -515,6 +516,9 @@ void ba::visit(io::stream* visitor) {
     // If state changed, close event and open a new one.
     else if (_in_downtime != _event->in_downtime ||
              hard_state != _event->status) {
+      log_v2::bam()->trace("BAM: ba::visit event needs update downtime: {}, state: {}",
+                           _in_downtime != _event->in_downtime,
+                           hard_state != _event->status);
       state_changed = true;
       _event->end_time = _last_kpi_update;
       visitor->write(std::static_pointer_cast<io::data>(_event));
@@ -546,7 +550,7 @@ void ba::visit(io::stream* visitor) {
 
     // Generate virtual service status event.
     if (_generate_virtual_status) {
-      std::shared_ptr<neb::service_status> status(new neb::service_status);
+      auto status{std::make_shared<neb::service_status>()};
       status->active_checks_enabled = false;
       status->check_interval = 0.0;
       status->check_type = 1;  // Passive.
@@ -602,7 +606,7 @@ void ba::visit(io::stream* visitor) {
 void ba::service_update(const std::shared_ptr<neb::downtime>& dt,
                         io::stream* visitor) {
   (void)visitor;
-  if ((dt->host_id == _host_id) && (dt->service_id == _service_id)) {
+  if (dt->host_id == _host_id && dt->service_id == _service_id) {
     // Log message.
     log_v2::bam()->debug(
         "BAM: BA {} '{}' is getting notified of a downtime on its service ({}, "
@@ -821,6 +825,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   if (_dt_behaviour != configuration::ba::dt_inherit)
     return;
 
+  log_v2::bam()->trace("ba: inherit from kpi");
   // Check if every impacting child KPIs are in downtime.
   bool every_kpi_in_downtime(!_impacts.empty());
   for (std::unordered_map<kpi*, impact_info>::const_iterator
@@ -833,6 +838,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     }
   }
 
+  log_v2::bam()->trace("ba: every impacting KPIs are in downtime");
   // Case 1: state not ok, every child in downtime, no actual downtime.
   //         Put the BA in downtime.
   bool state_ok{get_state_hard() == ba::state::state_ok};
