@@ -1,5 +1,5 @@
 /*
-** Copyright 2015-2019 Centreon
+** Copyright 2015-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -79,8 +79,8 @@ class acceptor : public endpoint {
 
  public:
   acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name);
-  acceptor(acceptor const&) = delete;
-  acceptor& operator=(acceptor const&) = delete;
+  acceptor(const acceptor&) = delete;
+  acceptor& operator=(const acceptor&) = delete;
   ~acceptor();
   void accept();
   void start() override;

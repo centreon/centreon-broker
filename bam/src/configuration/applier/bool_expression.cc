@@ -24,7 +24,6 @@
 #include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
 #include "com/centreon/broker/bam/service_book.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
@@ -86,8 +85,8 @@ void applier::bool_expression::apply(
   for (std::map<uint32_t, applied>::iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
-    log_v2::bam()->info(
-        "BAM: removing boolean expression {}", it->second.cfg.get_id());
+    log_v2::bam()->info("BAM: removing boolean expression {}",
+                        it->second.cfg.get_id());
     for (std::list<bool_service::ptr>::const_iterator
              it2(it->second.svc.begin()),
          end2(it->second.svc.end());
@@ -102,8 +101,7 @@ void applier::bool_expression::apply(
   for (bam::configuration::state::bool_exps::iterator it(to_create.begin()),
        end(to_create.end());
        it != end; ++it) {
-    log_v2::bam()->info(
-        "BAM: creating new boolean expression {}", it->first);
+    log_v2::bam()->info("BAM: creating new boolean expression {}", it->first);
     std::shared_ptr<bam::bool_expression> new_bool_exp(
         new bam::bool_expression);
     try {
@@ -131,9 +129,6 @@ void applier::bool_expression::apply(
           "BAM: could not create boolean expression {} so it will be "
           "discarded: {}",
           it->first, e.what());
-      logging::error(logging::high)
-          << "BAM: could not create boolean expression " << it->first
-          << " so it will be discarded: " << e.what();
     }
     new_bool_exp->set_id(it->first);
     new_bool_exp->set_impact_if(it->second.get_impact_if());
@@ -178,11 +173,9 @@ void applier::bool_expression::_resolve_expression_calls() {
           _name_to_ids.find((*call_it)->get_name());
       if (found == _name_to_ids.end()) {
         log_v2::bam()->error(
-            "BAM: could not resolve the external boolean called '{}' for expression '{}'", (*call_it)->get_name(), it->second.cfg.get_name());
-        logging::error(logging::high)
-            << "BAM: could not resolve the external boolean called '"
-            << (*call_it)->get_name() << "' for expression '"
-            << it->second.cfg.get_name() << "'";
+            "BAM: could not resolve the external boolean called '{}' for "
+            "expression '{}'",
+            (*call_it)->get_name(), it->second.cfg.get_name());
         break;
       } else {
         (*call_it)->set_expression(

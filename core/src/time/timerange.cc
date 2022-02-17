@@ -17,10 +17,10 @@
 */
 
 #include "com/centreon/broker/time/timerange.hh"
-#include <cstring>
 #include <fmt/format.h>
-#include "com/centreon/broker/misc/string.hh"
+#include <cstring>
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::time;
@@ -192,7 +192,6 @@ bool timerange::to_time_t(struct tm const& midnight,
   return (true);
 }
 
-
 static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
   const char* endc = time_str.data() + time_str.size();
   const char* begin_str = time_str.data();
@@ -200,31 +199,38 @@ static bool _build_time_t(const fmt::string_view& time_str, uint64_t& ret) {
   char* endptr1;
 
   // move cursor while we meet blanks
-  while (std::isspace(*begin_str)) { begin_str++; }
+  while (std::isspace(*begin_str)) {
+    begin_str++;
+  }
 
   uint64_t hours = strtoull(begin_str, &endptr, 10);
-  
+
   if (endptr == begin_str || endptr + 2 >= endc || *endptr != ':') {
-    log_v2::core()->error("parser timeranges: error while reading hours '{}' at {}.",
-                          begin_str, endptr - begin_str);
+    log_v2::core()->error(
+        "parser timeranges: error while reading hours '{}' at {}.", begin_str,
+        endptr - begin_str);
     return false;
   }
 
   uint64_t minutes = strtoull(endptr + 1, &endptr1, 10);
 
   if (endptr1 == endptr + 1) {
-    log_v2::core()->error("parser timeranges: error while reading minutes '{}' at {}.",
-                          begin_str, endptr1 - begin_str);
+    log_v2::core()->error(
+        "parser timeranges: error while reading minutes '{}' at {}.", begin_str,
+        endptr1 - begin_str);
     return false;
   }
 
   // move cursor while we meet blanks
-  while (endptr1 < endc && std::isspace(*endptr1)) { endptr1++; }
+  while (endptr1 < endc && std::isspace(*endptr1)) {
+    endptr1++;
+  }
 
   if (endptr1 != endc) {
-    log_v2::core()->error("parser timeranges: error while reading end "
-                          "of your timerange '{}' at {}.", begin_str,
-                          endptr1 - begin_str);
+    log_v2::core()->error(
+        "parser timeranges: error while reading end "
+        "of your timerange '{}' at {}.",
+        begin_str, endptr1 - begin_str);
     return false;
   }
 

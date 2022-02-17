@@ -544,13 +544,10 @@ TEST_F(BamBA, KpiServiceDtInheritOneOK) {
     kpis.push_back(s);
   }
 
-  // Change KPI state as much time as needed to trigger a
-  // recomputation. Note that the loop must terminate on a odd number
-  // for the test to be correct.
-  time_t now(time(nullptr));
+  time_t now = time(nullptr);
 
-  std::shared_ptr<neb::service_status> ss(new neb::service_status);
-  std::shared_ptr<neb::downtime> dt(new neb::downtime);
+  auto ss = std::make_shared<neb::service_status>();
+  auto dt = std::make_shared<neb::downtime>();
   ss->service_id = 1;
 
   for (size_t j = 0; j < kpis.size(); j++) {

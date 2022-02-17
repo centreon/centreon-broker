@@ -23,7 +23,6 @@
 #include <cstring>
 #include <sstream>
 #include <string>
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
 

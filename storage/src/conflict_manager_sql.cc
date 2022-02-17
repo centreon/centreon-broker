@@ -155,8 +155,11 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   // Cancellation of downtimes.
   log_v2::sql()->debug("SQL: Cancellation of downtimes (instance_id: {})",
                        instance_id);
-  query = fmt::format("UPDATE downtimes SET cancelled=1 WHERE actual_end_time IS NULL AND cancelled=0 "
-      "AND instance_id={}", instance_id);
+  query = fmt::format(
+      "UPDATE downtimes SET cancelled=1 WHERE actual_end_time IS NULL AND "
+      "cancelled=0 "
+      "AND instance_id={}",
+      instance_id);
 
   _mysql.run_query(query, database::mysql_error::clean_downtimes, false, conn);
   _add_action(conn, actions::downtimes);
@@ -164,9 +167,12 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   // Remove comments.
   log_v2::sql()->debug("conflict_manager: remove comments (instance_id: {})",
                        instance_id);
-  
-  query = fmt::format("UPDATE comments SET deletion_time={} WHERE instance_id={} AND persistent=0 AND "
-      "(deletion_time IS NULL OR deletion_time=0)", time(nullptr), instance_id);
+
+  query = fmt::format(
+      "UPDATE comments SET deletion_time={} WHERE instance_id={} AND "
+      "persistent=0 AND "
+      "(deletion_time IS NULL OR deletion_time=0)",
+      time(nullptr), instance_id);
 
   _mysql.run_query(query, database::mysql_error::clean_comments, false, conn);
   _add_action(conn, actions::comments);
@@ -355,7 +361,8 @@ void conflict_manager::_process_acknowledgement(
   log_v2::sql()->info(
       "processing acknowledgement event (poller: {}, host: {}, service: {}, "
       "entry time: {}, deletion time: {})",
-      ack.poller_id, ack.host_id, ack.service_id, ack.entry_time, ack.deletion_time);
+      ack.poller_id, ack.host_id, ack.service_id, ack.entry_time,
+      ack.deletion_time);
 
   // Processing.
   if (_is_valid_poller(ack.poller_id)) {
@@ -509,7 +516,6 @@ void conflict_manager::_process_custom_variable_status(
 
   log_v2::sql()->info("SQL: updating custom variable '{}' of ({}, {})", cv.name,
                       cv.host_id, cv.service_id);
-
 }
 
 /**
@@ -1618,9 +1624,9 @@ void conflict_manager::_process_service_status(
     // Apply to DB.
     log_v2::sql()->info(
         "SQL: processing service status event (host: {}, service: {}, last "
-        "check: {}, state ({}, {}))",
+        "check: {}, state ({}, {}), in downtime {})",
         ss.host_id, ss.service_id, ss.last_check, ss.current_state,
-        ss.state_type);
+        ss.state_type, ss.downtime_depth);
 
     // Prepare queries.
     if (!_service_status_update.prepared()) {
