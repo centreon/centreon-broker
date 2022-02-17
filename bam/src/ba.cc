@@ -516,9 +516,9 @@ void ba::visit(io::stream* visitor) {
     // If state changed, close event and open a new one.
     else if (_in_downtime != _event->in_downtime ||
              hard_state != _event->status) {
-      log_v2::bam()->trace("BAM: ba::visit event needs update downtime: {}, state: {}",
-                           _in_downtime != _event->in_downtime,
-                           hard_state != _event->status);
+      log_v2::bam()->trace(
+          "BAM: ba::visit event needs update downtime: {}, state: {}",
+          _in_downtime != _event->in_downtime, hard_state != _event->status);
       state_changed = true;
       _event->end_time = _last_kpi_update;
       visitor->write(std::static_pointer_cast<io::data>(_event));
@@ -562,6 +562,7 @@ void ba::visit(io::stream* visitor) {
       status->flap_detection_enabled = false;
       status->has_been_checked = true;
       status->host_id = _host_id;
+      status->downtime_depth = _in_downtime;
       // status->host_name = XXX;
       status->is_flapping = false;
       if (_event)
@@ -649,8 +650,10 @@ void ba::save_inherited_downtime(persistent_cache& cache) const {
  *
  *  @param[in] dwn  The inherited downtime.
  */
-void ba::set_inherited_downtime(inherited_downtime const& dwn) {
+void ba::set_inherited_downtime(const inherited_downtime& dwn) {
   _inherited_downtime.reset(new inherited_downtime(dwn));
+  if (_inherited_downtime->in_downtime)
+    _in_downtime = true;
 }
 
 /**

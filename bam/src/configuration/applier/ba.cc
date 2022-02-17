@@ -84,10 +84,8 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   std::list<bam::configuration::ba> to_modify;
 
   // Iterate through configuration.
-  for (bam::configuration::state::bas::iterator it(to_create.begin()),
-       end(to_create.end());
-       it != end;) {
-    std::map<uint32_t, applied>::iterator cfg_it(to_delete.find(it->first));
+  for (auto it = to_create.begin(), end = to_create.end(); it != end;) {
+    auto cfg_it = to_delete.find(it->first);
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
@@ -220,13 +218,17 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(uint32_t host_id) {
  */
 std::shared_ptr<neb::service> applier::ba::_ba_service(uint32_t ba_id,
                                                        uint32_t host_id,
-                                                       uint32_t service_id) {
-  std::shared_ptr<neb::service> s(new neb::service);
+                                                       uint32_t service_id,
+                                                       bool in_downtime) {
+  log_v2::bam()->trace("_ba_service ba {}, service {}:{} with downtime {}",
+                       ba_id, host_id, service_id, in_downtime);
+  auto s{std::make_shared<neb::service>()};
   s->host_id = host_id;
   s->service_id = service_id;
   s->service_description = fmt::format("ba_{}", ba_id);
   s->display_name = s->service_description;
   s->last_update = time(nullptr);
+  s->downtime_depth = in_downtime ? 1 : 0;
   return s;
 }
 
@@ -282,6 +284,7 @@ void applier::ba::save_to_cache(persistent_cache& cache) {
  *  @param[in] cache  The cache.
  */
 void applier::ba::load_from_cache(persistent_cache& cache) {
+  log_v2::bam()->trace("BAM: loading inherited downtime from cache");
   std::shared_ptr<io::data> d;
   cache.get(d);
   while (d) {
@@ -294,6 +297,12 @@ void applier::ba::load_from_cache(persistent_cache& cache) {
       log_v2::bam()->debug("BAM: found an inherited downtime for BA {}",
                            found->first);
       found->second.obj->set_inherited_downtime(dwn);
+      log_v2::bam()->trace("BAM: restoring neb::service {}:{} with downtime {}",
+                           found->second.cfg.get_host_id(),
+                           found->second.cfg.get_service_id(), dwn.in_downtime);
+      auto s = _ba_service(found->first, found->second.cfg.get_host_id(),
+                           found->second.cfg.get_service_id(), dwn.in_downtime);
+      multiplexing::publisher().write(s);
     }
     cache.get(d);
   }
