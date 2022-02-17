@@ -274,7 +274,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         "    ON s.service_id=hsr.service_service_id"
         "  INNER JOIN host AS h"
         "    ON hsr.host_host_id=h.host_id"
-        "  WHERE s.service_description LIKE 'ba\_%'",
+        "  WHERE s.service_description LIKE 'ba\\_%'",
         &promise, 0);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
