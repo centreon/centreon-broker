@@ -218,7 +218,12 @@ void endpoint::_discard() {
   }
 
   // Stop multiplexing.
-  multiplexing::engine::instance().stop();
+  try {
+    multiplexing::engine::instance().stop();
+  } catch (const std::exception& e) {
+    log_v2::config()->warn("multiplexing engine stop interrupted: {}",
+                           e.what());
+  }
 
   // Exit threads.
   {
