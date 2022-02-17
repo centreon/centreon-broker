@@ -92,9 +92,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
       if (cfg_it->second.cfg != it->second)
         to_modify.push_back(it->second);
       to_delete.erase(cfg_it);
-      bam::configuration::state::bas::iterator tmp = it;
-      ++it;
-      to_create.erase(tmp);
+      it = to_create.erase(it);
     }
     // Not found = create.
     else
