@@ -24,7 +24,6 @@
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/log_v2.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -259,16 +258,18 @@ void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
   // Update information.
   _downtimed = dt->was_started && dt->actual_end_time.is_null();
   if (_downtime_ids.contains(dt->internal_id) && !dt->was_cancelled) {
-    log_v2::bam()->trace("Downtime {} already handled in this kpi service", dt->internal_id);
+    log_v2::bam()->trace("Downtime {} already handled in this kpi service",
+                         dt->internal_id);
     return;
   }
 
   if (_downtimed) {
-    log_v2::bam()->trace("adding in kpi service the impacting downtime {}", dt->internal_id);
+    log_v2::bam()->trace("adding in kpi service the impacting downtime {}",
+                         dt->internal_id);
     _downtime_ids.insert(dt->internal_id);
-  }
-  else {
-    log_v2::bam()->trace("removing from kpi service the impacting downtime {}", dt->internal_id);
+  } else {
+    log_v2::bam()->trace("removing from kpi service the impacting downtime {}",
+                         dt->internal_id);
     _downtime_ids.erase(dt->internal_id);
   }
 
@@ -280,7 +281,8 @@ void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
 
   // Log message.
   log_v2::bam()->debug(
-      "BAM: KPI {} is getting notified of a downtime ({}) on its service ({}, {}), "
+      "BAM: KPI {} is getting notified of a downtime ({}) on its service ({}, "
+      "{}), "
       "in "
       "downtime: {} at {}",
       _id, dt->internal_id, _host_id, _service_id, _downtimed, _last_check);
@@ -385,7 +387,8 @@ void kpi_service::visit(io::stream* visitor) {
       // If no event was cached, create one.
       if (!_event) {
         if (!_last_check.is_null()) {
-          log_v2::bam()->trace("BAM: kpi_service::visit no event => creation of one");
+          log_v2::bam()->trace(
+              "BAM: kpi_service::visit no event => creation of one");
           _open_new_event(visitor, hard_values);
         }
       }
@@ -393,9 +396,10 @@ void kpi_service::visit(io::stream* visitor) {
       else if (_last_check >= _event->start_time &&
                (_downtimed != _event->in_downtime ||
                 _state_hard != _event->status)) {
-        log_v2::bam()->trace("BAM: kpi_service::visit event needs update downtime: {}, state: {}",
-                             _downtimed != _event->in_downtime,
-                             _state_hard != _event->status);
+        log_v2::bam()->trace(
+            "BAM: kpi_service::visit event needs update downtime: {}, state: "
+            "{}",
+            _downtimed != _event->in_downtime, _state_hard != _event->status);
         _event->end_time = _last_check;
         visitor->write(std::static_pointer_cast<io::data>(_event));
         _open_new_event(visitor, hard_values);

@@ -46,7 +46,8 @@ bool bool_expression::child_has_update(computable* child, io::stream* visitor) {
   // class, as the bool_* classes already cache most of them.
   if (child == _expression.get()) {
     // Logging.
-    log_v2::bam()->debug("BAM: boolean expression {} is getting notified of child update", _id);
+    log_v2::bam()->debug(
+        "BAM: boolean expression {} is getting notified of child update", _id);
   }
   return true;
 }
@@ -58,8 +59,8 @@ bool bool_expression::child_has_update(computable* child, io::stream* visitor) {
  */
 impact_values::state bool_expression::get_state() const {
   return (_expression->value_hard() == _impact_if)
-              ? bool_expression::state::state_critical
-              : bool_expression::state::state_ok;
+             ? bool_expression::state::state_critical
+             : bool_expression::state::state_ok;
 }
 
 /**

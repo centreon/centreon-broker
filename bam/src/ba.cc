@@ -828,7 +828,6 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   if (_dt_behaviour != configuration::ba::dt_inherit)
     return;
 
-  log_v2::bam()->trace("ba: inherit from kpi");
   // Check if every impacting child KPIs are in downtime.
   bool every_kpi_in_downtime(!_impacts.empty());
   for (std::unordered_map<kpi*, impact_info>::const_iterator
@@ -841,7 +840,6 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     }
   }
 
-  log_v2::bam()->trace("ba: every impacting KPIs are in downtime");
   // Case 1: state not ok, every child in downtime, no actual downtime.
   //         Put the BA in downtime.
   bool state_ok{get_state_hard() == ba::state::state_ok};
