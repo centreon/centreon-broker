@@ -120,8 +120,7 @@ static void parse_file(char const* filename, options& opt) {
       for (std::vector<std::shared_ptr<time::timeperiod> >::iterator
                it(opt.period.begin()),
            end(opt.period.end());
-           it != end;
-           ++it)
+           it != end; ++it)
         if ((*it)->get_name() == value) {
           current_tp->add_excluded(*it);
           break;
@@ -144,13 +143,9 @@ static void parse_file(char const* filename, options& opt) {
 
 class BamTime : public ::testing::Test {
  public:
-  void SetUp() override {
-    config::applier::init();
-  }
+  void SetUp() override { config::applier::init(); }
 
-  void TearDown() override {
-    config::applier::deinit();
-  }
+  void TearDown() override { config::applier::deinit(); }
 };
 
 bool checkPeriod(char const* file) {

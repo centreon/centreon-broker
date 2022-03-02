@@ -30,40 +30,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
 /**
- *  Default constructor.
- */
-applier::bool_expression::bool_expression() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-applier::bool_expression::bool_expression(
-    applier::bool_expression const& other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-applier::bool_expression::~bool_expression() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Object to copy.
- *
- *  @return This object.
- */
-applier::bool_expression& applier::bool_expression::operator=(
-    applier::bool_expression const& other) {
-  if (this != &other)
-    _internal_copy(other);
-  return (*this);
-}
-
-/**
  *  Apply boolean expressions.
  *
  *  @param[in]     my_bools Boolean expressions.
@@ -169,7 +135,6 @@ void applier::bool_expression::apply(
   }
 
   _resolve_expression_calls();
-  return;
 }
 
 /**
@@ -184,17 +149,6 @@ std::shared_ptr<bam::bool_expression> applier::bool_expression::find_boolexp(
   std::map<uint32_t, applied>::iterator it(_applied.find(id));
   return ((it != _applied.end()) ? it->second.obj
                                  : std::shared_ptr<bam::bool_expression>());
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void applier::bool_expression::_internal_copy(
-    applier::bool_expression const& other) {
-  _applied = other._applied;
-  return;
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -43,13 +43,13 @@ class bool_operation : public bool_binary_operator {
     division,
     modulo
   };
-  operation_type _type;
+  const operation_type _type;
 
  public:
   bool_operation(std::string const& op);
-  bool_operation(bool_operation const& right);
   ~bool_operation() noexcept override = default;
-  bool_operation& operator=(bool_operation const& right);
+  bool_operation(bool_operation const&) = delete;
+  bool_operation& operator=(bool_operation const&) = delete;
   double value_hard() override;
   double value_soft() override;
   bool state_known() const override;

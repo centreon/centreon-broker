@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ bool bool_expression::child_has_update(computable* child, io::stream* visitor) {
     logging::debug(logging::low) << "BAM: boolean expression " << _id
                                  << " is getting notified of child update";
   }
-  return (true);
+  return true;
 }
 
 /**
@@ -58,9 +58,9 @@ bool bool_expression::child_has_update(computable* child, io::stream* visitor) {
  *  @return Either OK (0) or CRITICAL (2).
  */
 impact_values::state bool_expression::get_state() const {
-  return ((_expression->value_hard() == _impact_if)
-              ? bool_expression::state::state_critical
-              : bool_expression::state::state_ok);
+  return (_expression->value_hard() == _impact_if)
+             ? bool_expression::state::state_critical
+             : bool_expression::state::state_ok;
 }
 
 /**
@@ -69,7 +69,7 @@ impact_values::state bool_expression::get_state() const {
  *  @return  True if the state is known.
  */
 bool bool_expression::state_known() const {
-  return (_expression->state_known());
+  return _expression->state_known();
 }
 
 /**
@@ -78,7 +78,7 @@ bool bool_expression::state_known() const {
  *  @return  True if the boolean expression is in downtime.
  */
 bool bool_expression::in_downtime() const {
-  return (_expression->in_downtime());
+  return _expression->in_downtime();
 }
 
 /**
@@ -87,7 +87,7 @@ bool bool_expression::in_downtime() const {
  *  @return  The expression.
  */
 std::shared_ptr<bool_value> bool_expression::get_expression() const {
-  return (_expression);
+  return _expression;
 }
 
 /**
@@ -98,7 +98,6 @@ std::shared_ptr<bool_value> bool_expression::get_expression() const {
 void bool_expression::set_expression(
     std::shared_ptr<bool_value> const& expression) {
   _expression = expression;
-  return;
 }
 
 /**
@@ -108,7 +107,6 @@ void bool_expression::set_expression(
  */
 void bool_expression::set_id(uint32_t id) {
   _id = id;
-  return;
 }
 
 /**
@@ -119,5 +117,4 @@ void bool_expression::set_id(uint32_t id) {
  */
 void bool_expression::set_impact_if(bool impact_if) {
   _impact_if = impact_if;
-  return;
 }

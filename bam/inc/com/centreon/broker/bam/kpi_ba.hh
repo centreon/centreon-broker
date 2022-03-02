@@ -60,14 +60,13 @@ class kpi_ba : public kpi {
                        timestamp event_start_time);
 
  public:
-  kpi_ba();
-  ~kpi_ba();
-  kpi_ba(kpi_ba const& right) = delete;
-  kpi_ba& operator=(kpi_ba const& right) = delete;
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  kpi_ba(uint32_t kpi_id, uint32_t ba_id);
+  ~kpi_ba() noexcept = default;
+  kpi_ba(const kpi_ba&) = delete;
+  kpi_ba& operator=(const kpi_ba&) = delete;
+  bool child_has_update(computable* child, io::stream* visitor = nullptr);
   double get_impact_critical() const;
   double get_impact_warning() const;
-  double get_impact_unknown() const;
   void impact_hard(impact_values& hard_impact);
   void impact_soft(impact_values& soft_impact);
   void link_ba(std::shared_ptr<ba>& my_ba);

@@ -17,10 +17,10 @@
 */
 
 #include "com/centreon/broker/bam/kpi_boolexp.hh"
-
 #include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -29,12 +29,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-kpi_boolexp::kpi_boolexp() {}
-
-/**
- *  Destructor.
- */
-kpi_boolexp::~kpi_boolexp() {}
+kpi_boolexp::kpi_boolexp(uint32_t kpi_id, uint32_t ba_id)
+    : kpi(kpi_id, ba_id) {}
 
 /**
  *  Base boolean expression got updated.
@@ -49,13 +45,16 @@ bool kpi_boolexp::child_has_update(computable* child, io::stream* visitor) {
   // this class, as the bool_expression class already cache most of them.
   if (child == _boolexp.get()) {
     // Logging.
+    log_v2::bam()->debug(
+        "BAM: boolean expression KPI {} is getting notified of child update",
+        _id);
     logging::debug(logging::low) << "BAM: boolean expression KPI " << _id
                                  << " is getting notified of child update";
 
     // Generate status event.
     visit(visitor);
   }
-  return (true);
+  return true;
 }
 
 /**
@@ -65,8 +64,8 @@ bool kpi_boolexp::child_has_update(computable* child, io::stream* visitor) {
  */
 bool kpi_boolexp::in_downtime() const {
   if (_boolexp)
-    return (_boolexp->in_downtime());
-  return (false);
+    return _boolexp->in_downtime();
+  return false;
 }
 
 /**
@@ -75,7 +74,7 @@ bool kpi_boolexp::in_downtime() const {
  *  @return Impact if the boolean expression is triggered.
  */
 double kpi_boolexp::get_impact() const {
-  return (_impact);
+  return _impact;
 }
 
 /**
@@ -85,7 +84,6 @@ double kpi_boolexp::get_impact() const {
  */
 void kpi_boolexp::impact_hard(impact_values& hard_impact) {
   _fill_impact(hard_impact);
-  return;
 }
 
 /**
@@ -95,7 +93,6 @@ void kpi_boolexp::impact_hard(impact_values& hard_impact) {
  */
 void kpi_boolexp::impact_soft(impact_values& soft_impact) {
   _fill_impact(soft_impact);
-  return;
 }
 
 /**
@@ -106,7 +103,6 @@ void kpi_boolexp::impact_soft(impact_values& soft_impact) {
  */
 void kpi_boolexp::link_boolexp(std::shared_ptr<bool_expression>& my_boolexp) {
   _boolexp = my_boolexp;
-  return;
 }
 
 /**
@@ -116,7 +112,6 @@ void kpi_boolexp::link_boolexp(std::shared_ptr<bool_expression>& my_boolexp) {
  */
 void kpi_boolexp::set_impact(double impact) {
   _impact = impact;
-  return;
 }
 
 /**
@@ -157,8 +152,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
 
     // Generate status event.
     {
-      std::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
+      std::shared_ptr<kpi_status> status(std::make_shared<kpi_status>(_id));
       status->in_downtime = in_downtime();
       status->level_acknowledgement_hard = values.get_acknowledgement();
       status->level_acknowledgement_soft = values.get_acknowledgement();
@@ -192,7 +186,6 @@ void kpi_boolexp::_fill_impact(impact_values& impact) {
   impact.set_acknowledgement(0.0);
   impact.set_downtime(0.0);
   impact.set_state(state);
-  return;
 }
 
 /**
@@ -205,20 +198,15 @@ void kpi_boolexp::_fill_impact(impact_values& impact) {
 void kpi_boolexp::_open_new_event(io::stream* visitor,
                                   int impact,
                                   kpi_boolexp::state state) {
-  _event.reset(new kpi_event);
-  _event->kpi_id = _id;
-  _event->ba_id = _ba_id;
+  _event = std::make_shared<kpi_event>(_id, _ba_id, ::time(nullptr));
   _event->impact_level = impact;
   _event->in_downtime = false;
   _event->output = "BAM boolean expression computed by Centreon Broker";
   _event->perfdata = "";
-  _event->start_time = time(nullptr);
   _event->status = state;
   if (visitor) {
-    std::shared_ptr<io::data> ke(new kpi_event(*_event));
-    visitor->write(ke);
+    visitor->write(_event);
   }
-  return;
 }
 
 /**
@@ -232,12 +220,12 @@ void kpi_boolexp::_open_new_event(io::stream* visitor,
  */
 kpi_boolexp::state kpi_boolexp::_get_state() const {
   if (_boolexp->state_known())
-    return (_boolexp->get_state());
+    return _boolexp->get_state();
   else {
     if (_event)
-      return (static_cast<kpi_boolexp::state>(_event->status));
+      return static_cast<kpi_boolexp::state>(_event->status);
     else
-      return (_boolexp->get_state());
+      return _boolexp->get_state();
   }
 }
 
@@ -247,5 +235,5 @@ kpi_boolexp::state kpi_boolexp::_get_state() const {
  *  @return  True if this KPI is in an ok state.
  */
 bool kpi_boolexp::ok_state() const {
-  return (_get_state() == 0);
+  return _get_state() == 0;
 }

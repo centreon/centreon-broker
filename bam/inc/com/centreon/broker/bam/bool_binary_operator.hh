@@ -38,6 +38,16 @@ namespace bam {
  *  Provides common methods to binary operators.
  */
 class bool_binary_operator : public bool_value {
+ protected:
+  std::shared_ptr<bool_value> _left;
+  double _left_hard;
+  double _left_soft;
+  std::shared_ptr<bool_value> _right;
+  double _right_hard;
+  double _right_soft;
+  bool _state_known;
+  bool _in_downtime;
+
  public:
   typedef std::shared_ptr<bool_binary_operator> ptr;
 
@@ -50,16 +60,6 @@ class bool_binary_operator : public bool_value {
   void set_right(std::shared_ptr<bool_value> const& right);
   bool state_known() const override;
   bool in_downtime() const override;
-
- protected:
-  std::shared_ptr<bool_value> _left;
-  double _left_hard;
-  double _left_soft;
-  std::shared_ptr<bool_value> _right;
-  double _right_hard;
-  double _right_soft;
-  bool _state_known;
-  bool _in_downtime;
 
  private:
   void _internal_copy(bool_binary_operator const& right);

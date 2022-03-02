@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -27,12 +27,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-event_cache_visitor::event_cache_visitor() : io::stream("event_cache_visitor") {}
-
-/**
- *  Destructor.
- */
-event_cache_visitor::~event_cache_visitor() {}
+event_cache_visitor::event_cache_visitor()
+    : io::stream("event_cache_visitor") {}
 
 /**
  *  Commit all the event cache to another stream.

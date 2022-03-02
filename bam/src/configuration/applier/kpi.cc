@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -46,11 +46,6 @@ applier::kpi::kpi()
 applier::kpi::kpi(applier::kpi const& other) {
   _internal_copy(other);
 }
-
-/**
- *  Destructor.
- */
-applier::kpi::~kpi() {}
 
 /**
  *  Assignment operator.
@@ -191,8 +186,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
 void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   // Set KPI as invalid.
   {
-    auto ks(std::make_shared<kpi_status>());
-    ks->kpi_id = kpi.get_id();
+    std::shared_ptr<kpi_status> ks{std::make_shared<kpi_status>(kpi.get_id())};
     ks->state_hard = 3;
     ks->state_soft = 3;
     ks->level_acknowledgement_hard = 0.0;
@@ -276,14 +270,14 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
         << "BAM: creating new KPI " << cfg.get_id() << " of service ("
         << cfg.get_host_id() << ", " << cfg.get_service_id()
         << ") impacting BA " << cfg.get_ba_id();
-    auto obj{std::make_shared<bam::kpi_service>()};
+    auto obj{std::make_shared<bam::kpi_service>(cfg.get_id(), cfg.get_ba_id(),
+                                                cfg.get_host_id(),
+                                                cfg.get_service_id())};
     obj->set_acknowledged(cfg.is_acknowledged());
     obj->set_downtimed(cfg.is_downtimed());
-    obj->set_host_id(cfg.get_host_id());
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_unknown(cfg.get_impact_unknown());
     obj->set_impact_warning(cfg.get_impact_warning());
-    obj->set_service_id(cfg.get_service_id());
     obj->set_state_hard(static_cast<bam::kpi_service::state>(cfg.get_status()));
     obj->set_state_type(cfg.get_state_type());
     _book->listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
@@ -292,7 +286,8 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     logging::config(logging::medium)
         << "BAM: creating new KPI " << cfg.get_id() << " of BA "
         << cfg.get_indicator_ba_id() << " impacting BA " << cfg.get_ba_id();
-    std::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
+    std::shared_ptr<bam::kpi_ba> obj(
+        std::make_shared<bam::kpi_ba>(cfg.get_id(), cfg.get_ba_id()));
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_unknown(cfg.get_impact_unknown());
     obj->set_impact_warning(cfg.get_impact_warning());
@@ -301,7 +296,8 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     logging::config(logging::medium)
         << "BAM: creating new KPI " << cfg.get_id() << " of boolean expression "
         << cfg.get_boolexp_id() << " impacting BA " << cfg.get_ba_id();
-    std::shared_ptr<bam::kpi_boolexp> obj(new bam::kpi_boolexp);
+    std::shared_ptr<bam::kpi_boolexp> obj(
+        std::make_shared<bam::kpi_boolexp>(cfg.get_id(), cfg.get_ba_id()));
     obj->set_impact(cfg.get_impact_critical());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
   } else
@@ -309,10 +305,6 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
         << "created KPI " << cfg.get_id()
         << " is neither related to a service, nor a BA,"
         << " nor a meta-service, nor a boolean expression";
-
-  my_kpi->set_id(cfg.get_id());
-  my_kpi->set_ba_id(cfg.get_ba_id());
-
   return my_kpi;
 }
 
@@ -338,7 +330,7 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
       throw(exceptions::config()
             << "could not find source BA " << cfg.get_indicator_ba_id());
     obj->link_ba(target);
-    target->add_parent(std::static_pointer_cast<bam::computable>(obj));
+    target->add_parent(obj);
     logging::config(logging::medium)
         << "BAM: Resolve KPI " << kpi->get_id() << " connections to its BA";
   } else if (cfg.is_boolexp()) {
@@ -350,7 +342,7 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
       throw(exceptions::config() << "could not find source boolean expression "
                                  << cfg.get_boolexp_id());
     obj->link_boolexp(target);
-    target->add_parent(std::static_pointer_cast<bam::computable>(obj));
+    target->add_parent(obj);
     logging::config(logging::medium)
         << "BAM: Resolve KPI " << kpi->get_id()
         << " connections to its boolean expression";
@@ -360,8 +352,8 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
   if (cfg.get_opened_event().kpi_id != 0)
     kpi->set_initial_event(cfg.get_opened_event());
 
-  my_ba->add_impact(std::static_pointer_cast<bam::kpi>(kpi));
-  kpi->add_parent(std::static_pointer_cast<bam::computable>(my_ba));
+  my_ba->add_impact(kpi);
+  kpi->add_parent(my_ba);
 }
 
 /**
