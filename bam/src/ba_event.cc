@@ -64,8 +64,8 @@ ba_event& ba_event::operator=(ba_event const& other) {
  */
 bool ba_event::operator==(ba_event const& other) const {
   return ba_id == other.ba_id && first_level == other.first_level &&
-          end_time == other.end_time && in_downtime == other.in_downtime &&
-          start_time == other.start_time && status == other.status;
+         end_time == other.end_time && in_downtime == other.in_downtime &&
+         start_time == other.start_time && status == other.status;
 }
 
 /**

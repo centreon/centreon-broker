@@ -143,13 +143,9 @@ static void parse_file(char const* filename, options& opt) {
 
 class BamTime : public ::testing::Test {
  public:
-  void SetUp() override {
-    config::applier::init();
-  }
+  void SetUp() override { config::applier::init(); }
 
-  void TearDown() override {
-    config::applier::deinit();
-  }
+  void TearDown() override { config::applier::deinit(); }
 };
 
 bool checkPeriod(char const* file) {

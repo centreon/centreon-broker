@@ -602,7 +602,7 @@ TEST_F(KpiBA, KpiBaWorstImpact) {
   _visitor->print_events();
 
   std::cout << "ba state: " << test_ba->get_state_hard() << std::endl;
-  std::cout << "ba hard impact: " << test_ba->get_downtime_impact_hard() << std::endl;
+  std::cout << "ba hard impact: " << test_ba->get_downtime_impact_hard()
+            << std::endl;
   std::cout << "ba perfdata: " << test_ba->get_perfdata() << std::endl;
-
 }
