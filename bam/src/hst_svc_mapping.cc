@@ -46,8 +46,9 @@ std::pair<uint32_t, uint32_t> hst_svc_mapping::get_service_id(
     std::string const& svc) const {
   auto it = _mapping.find(std::make_pair(hst, svc));
   if (it == _mapping.end())
-    log_v2::bam()->debug("hst_svc_mapping: service id for host: {} ; service: {} not found",
-        hst, svc);
+    log_v2::bam()->debug(
+        "hst_svc_mapping: service id for host: {} ; service: {} not found", hst,
+        svc);
   return it != _mapping.end() ? it->second : std::make_pair(0u, 0u);
 }
 

@@ -48,9 +48,9 @@ namespace applier {
 class state {
  public:
   state();
-  state(state const& other);
   ~state();
-  state& operator=(state const& other);
+  state(state const& other) = delete;
+  state& operator=(state const& other) = delete;
   void apply(configuration::state const& my_state);
   service_book& book_service();
   void visit(io::stream* visitor);

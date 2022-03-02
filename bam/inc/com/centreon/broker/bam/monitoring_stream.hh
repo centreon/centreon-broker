@@ -50,7 +50,6 @@ class monitoring_stream : public io::stream {
   mysql _mysql;
   database::mysql_stmt _ba_update;
   database::mysql_stmt _kpi_update;
-  database::mysql_stmt _meta_service_update;
   int32_t _pending_events;
   database_config _storage_db_cfg;
   std::shared_ptr<persistent_cache> _cache;
@@ -61,21 +60,21 @@ class monitoring_stream : public io::stream {
                     database_config const& storage_db_cfg,
                     std::shared_ptr<persistent_cache> cache);
   ~monitoring_stream();
-  int flush();
+  monitoring_stream(const monitoring_stream&) = delete;
+  monitoring_stream& operator=(const monitoring_stream&) = delete;
+  int32_t flush() override;
   void initialize();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
   void statistics(json11::Json::object& tree) const override;
-  void update();
-  int write(std::shared_ptr<io::data> const& d);
+  void update() override final;
+  int write(std::shared_ptr<io::data> const& d) override;
 
  private:
-  monitoring_stream(monitoring_stream const& other);
-  monitoring_stream& operator=(monitoring_stream const& other);
   void _check_replication();
   void _prepare();
   void _rebuild();
   void _update_status(std::string const& status);
-  void _write_external_command(std::string cmd);
+  void _write_external_command(std::string& cmd);
 
   void _read_cache();
   void _write_cache();

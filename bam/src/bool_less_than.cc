@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -28,42 +28,12 @@ using namespace com::centreon::broker::bam;
 bool_less_than::bool_less_than(bool strict) : _strict(strict) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-bool_less_than::bool_less_than(bool_less_than const& right)
-    : bool_binary_operator(right) {
-  _strict = right._strict;
-}
-
-/**
- *  Destructor.
- */
-bool_less_than::~bool_less_than() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-bool_less_than& bool_less_than::operator=(bool_less_than const& right) {
-  bool_binary_operator::operator=(right);
-  if (this != &right) {
-    _strict = right._strict;
-  }
-  return (*this);
-}
-
-/**
  *  Get the hard value.
  *
  *  @return Evaluation of the expression with hard values.
  */
 double bool_less_than::value_hard() {
-  return (_strict ? _left_hard < _right_hard : _left_hard <= _right_hard);
+  return _strict ? _left_hard < _right_hard : _left_hard <= _right_hard;
 }
 
 /**
@@ -72,5 +42,5 @@ double bool_less_than::value_hard() {
  *  @return Evaluation of the expression with soft values.
  */
 double bool_less_than::value_soft() {
-  return (_strict ? _left_soft < _right_soft : _left_soft <= _right_soft);
+  return _strict ? _left_soft < _right_soft : _left_soft <= _right_soft;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2015, 2020-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 **
 ** For more information : contact@centreon.com
 */
-
 #include "com/centreon/broker/bam/ba_duration_event.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/ba_status.hh"
@@ -137,6 +136,5 @@ void broker_module_init(void const* arg) {
                                                   "inherited_downtime");
     }
   }
-  return;
 }
 }

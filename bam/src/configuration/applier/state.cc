@@ -25,12 +25,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
-/**************************************
- *                                     *
- *            Static Objects           *
- *                                     *
- **************************************/
-
 /**
  *  Get BA identifier for circular path search.
  *
@@ -76,43 +70,15 @@ static std::string service_node_id(uint32_t host_id, uint32_t service_id) {
   return fmt::format("service ({}, {})", host_id, service_id);
 }
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Default constructor.
  */
 applier::state::state() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-applier::state::state(applier::state const& other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 applier::state::~state() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-applier::state& applier::state::operator=(applier::state const& other) {
-  if (this != &other)
-    _internal_copy(other);
-  return *this;
-}
 
 /**
  *  Apply configuration.
@@ -128,8 +94,7 @@ void applier::state::apply(bam::configuration::state const& my_state) {
   _bool_exp_applier.apply(my_state.get_bool_exps(),
                           my_state.get_hst_svc_mapping(), _book_service);
   _kpi_applier.apply(my_state.get_kpis(), my_state.get_hst_svc_mapping(),
-                     _ba_applier, _bool_exp_applier,
-                     _book_service);
+                     _ba_applier, _bool_exp_applier, _book_service);
 }
 
 /**
@@ -181,6 +146,7 @@ void applier::state::_circular_check(configuration::state const& my_state) {
     n.targets.insert(
         service_node_id(it->second.get_host_id(), it->second.get_service_id()));
   }
+
   // Add boolean expressions.
   for (configuration::state::bool_exps::const_iterator
            it(my_state.get_bool_exps().begin()),
@@ -258,18 +224,6 @@ void applier::state::_circular_check(applier::state::circular_check_node& n) {
     n.visited = true;
     n.in_visit = false;
   }
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void applier::state::_internal_copy(applier::state const& other) {
-  _ba_applier = other._ba_applier;
-  _book_service = other._book_service;
-  _kpi_applier = other._kpi_applier;
-  _bool_exp_applier = other._bool_exp_applier;
 }
 
 /**

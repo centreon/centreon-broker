@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -28,12 +29,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-kpi_ba::kpi_ba() {}
-
-/**
- *  Destructor.
- */
-kpi_ba::~kpi_ba() {}
+kpi_ba::kpi_ba(uint32_t kpi_id, uint32_t ba_id) : kpi(kpi_id, ba_id) {}
 
 /**
  *  Base BA got updated.
@@ -63,7 +59,7 @@ bool kpi_ba::child_has_update(computable* child, io::stream* visitor) {
  *  @return Impact if BA is CRITICAL.
  */
 double kpi_ba::get_impact_critical() const {
-  return (_impact_critical);
+  return _impact_critical;
 }
 
 /**
@@ -72,7 +68,7 @@ double kpi_ba::get_impact_critical() const {
  *  @return Impact if BA is WARNING.
  */
 double kpi_ba::get_impact_warning() const {
-  return (_impact_warning);
+  return _impact_warning;
 }
 
 /**
@@ -101,6 +97,8 @@ void kpi_ba::impact_soft(impact_values& soft_impact) {
  *  @param[in] my_ba Linked BA.
  */
 void kpi_ba::link_ba(std::shared_ptr<ba>& my_ba) {
+  log_v2::bam()->trace("kpi ba ({}, {}) linked to ba {} {}", _id, _ba_id,
+                       my_ba->get_name(), my_ba->get_id());
   _ba = my_ba;
 }
 
@@ -135,6 +133,8 @@ void kpi_ba::set_impact_unknown(double impact) {
  *  Unlink from BA.
  */
 void kpi_ba::unlink_ba() {
+  log_v2::bam()->trace("kpi ba ({}, {}) unlinked from ba {} {}", _id, _ba_id,
+                       _ba->get_name(), _ba->get_id());
   _ba.reset();
 }
 
@@ -165,14 +165,13 @@ void kpi_ba::visit(io::stream* visitor) {
 
       // If no event was cached, create one.
       if (!_event) {
-        if ((last_ba_update.get_time_t() != (time_t)-1) &&
-            (last_ba_update.get_time_t() != (time_t)0))
+        if (!last_ba_update.is_null())
           _open_new_event(visitor, hard_values.get_nominal(), ba_state,
                           last_ba_update);
       }
       // If state changed, close event and open a new one.
-      else if ((_ba->get_in_downtime() != _event->in_downtime) ||
-               (ba_state != _event->status)) {
+      else if (_ba->get_in_downtime() != _event->in_downtime ||
+               ba_state != _event->status) {
         _event->end_time = last_ba_update;
         visitor->write(std::static_pointer_cast<io::data>(_event));
         _event.reset();
@@ -183,8 +182,9 @@ void kpi_ba::visit(io::stream* visitor) {
 
     // Generate status event.
     {
-      std::shared_ptr<kpi_status> status(new kpi_status);
-      status->kpi_id = _id;
+      log_v2::bam()->debug("Generating kpi status {} for BA {}", _id, _ba_id);
+      std::shared_ptr<kpi_status> status{std::make_shared<kpi_status>(_id)};
+      status->in_downtime = in_downtime();
       status->level_acknowledgement_hard = hard_values.get_acknowledgement();
       status->level_acknowledgement_soft = soft_values.get_acknowledgement();
       status->level_downtime_hard = hard_values.get_downtime();
@@ -259,19 +259,14 @@ void kpi_ba::_open_new_event(io::stream* visitor,
                              int impact,
                              kpi_ba::state ba_state,
                              timestamp event_start_time) {
-  _event.reset(new kpi_event);
-  _event->kpi_id = _id;
-  _event->ba_id = _ba_id;
+  _event = std::make_shared<kpi_event>(_id, _ba_id, event_start_time);
   _event->impact_level = impact;
   _event->in_downtime = _ba->get_in_downtime();
   _event->output = _ba->get_output();
   _event->perfdata = _ba->get_perfdata();
-  _event->start_time = event_start_time;
   _event->status = ba_state;
-  if (visitor) {
-    std::shared_ptr<io::data> ke(new kpi_event(*_event));
-    visitor->write(ke);
-  }
+  if (visitor)
+    visitor->write(std::make_shared<kpi_event>(*_event));
 }
 
 /**
@@ -280,7 +275,7 @@ void kpi_ba::_open_new_event(io::stream* visitor,
  *  @return  True if this KPI is in an ok state.
  */
 bool kpi_ba::ok_state() const {
-  return (_ba->get_state_hard() == 0);
+  return _ba->get_state_hard() == 0;
 }
 
 /**
@@ -289,5 +284,5 @@ bool kpi_ba::ok_state() const {
  *  @return  True if this KPI is in downtime.
  */
 bool kpi_ba::in_downtime() const {
-  return (_ba->get_in_downtime());
+  return _ba->get_in_downtime();
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2017 Centreon
+** Copyright 2014-2017, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <fmt/format.h>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/host.hh"
@@ -85,19 +86,15 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   std::list<bam::configuration::ba> to_modify;
 
   // Iterate through configuration.
-  for (bam::configuration::state::bas::iterator it(to_create.begin()),
-       end(to_create.end());
-       it != end;) {
-    std::map<uint32_t, applied>::iterator cfg_it(to_delete.find(it->first));
+  for (auto it = to_create.begin(), end = to_create.end(); it != end;) {
+    auto cfg_it = to_delete.find(it->first);
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
       if (cfg_it->second.cfg != it->second)
         to_modify.push_back(it->second);
       to_delete.erase(cfg_it);
-      bam::configuration::state::bas::iterator tmp = it;
-      ++it;
-      to_create.erase(tmp);
+      it = to_create.erase(it);
     }
     // Not found = create.
     else
@@ -125,8 +122,8 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   to_delete.clear();
 
   // Create new objects.
-  for (bam::configuration::state::bas::iterator it(to_create.begin()),
-       end(to_create.end());
+  for (bam::configuration::state::bas::iterator it = to_create.begin(),
+                                                end = to_create.end();
        it != end; ++it) {
     logging::config(logging::medium) << "BAM: creating BA " << it->first
                                      << " ('" << it->second.get_name() << "')";
@@ -219,16 +216,19 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(uint32_t host_id) {
  *
  *  @return Virtual BA service.
  */
-std::shared_ptr<neb::service> applier::ba::_ba_service(
-    uint32_t ba_id,
-    uint32_t host_id,
-    uint32_t service_id) {
-  std::shared_ptr<neb::service> s(new neb::service);
+std::shared_ptr<neb::service> applier::ba::_ba_service(uint32_t ba_id,
+                                                       uint32_t host_id,
+                                                       uint32_t service_id,
+                                                       bool in_downtime) {
+  log_v2::bam()->trace("_ba_service ba {}, service {}:{} with downtime {}",
+                       ba_id, host_id, service_id, in_downtime);
+  auto s{std::make_shared<neb::service>()};
   s->host_id = host_id;
   s->service_id = service_id;
   s->service_description = fmt::format("ba_{}", ba_id);
   s->display_name = s->service_description;
   s->last_update = time(nullptr);
+  s->downtime_depth = in_downtime ? 1 : 0;
   return s;
 }
 
@@ -250,12 +250,10 @@ void applier::ba::_internal_copy(applier::ba const& other) {
  */
 std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
                                               service_book& book) {
-  std::shared_ptr<bam::ba> obj(new bam::ba(false));
-  obj->set_id(cfg.get_id());
-  obj->set_host_id(cfg.get_host_id());
-  obj->set_service_id(cfg.get_service_id());
+  std::shared_ptr<bam::ba> obj{std::make_shared<bam::ba>(
+      cfg.get_id(), cfg.get_host_id(), cfg.get_service_id(),
+      cfg.get_state_source(), false)};
   obj->set_name(cfg.get_name());
-  obj->set_state_source(cfg.get_state_source());
   obj->set_level_warning(cfg.get_warning_level());
   obj->set_level_critical(cfg.get_critical_level());
   obj->set_downtime_behaviour(cfg.get_downtime_behaviour());
@@ -273,7 +271,7 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
 void applier::ba::save_to_cache(persistent_cache& cache) {
   cache.transaction();
   for (std::map<uint32_t, applied>::const_iterator it = _applied.begin(),
-                                                       end = _applied.end();
+                                                   end = _applied.end();
        it != end; ++it) {
     it->second.obj->save_inherited_downtime(cache);
   }
@@ -298,6 +296,9 @@ void applier::ba::load_from_cache(persistent_cache& cache) {
       logging::debug(logging::medium)
           << "BAM: found an inherited downtime for BA " << found->first;
       found->second.obj->set_inherited_downtime(dwn);
+      auto s = _ba_service(found->first, found->second.cfg.get_host_id(),
+                           found->second.cfg.get_service_id(), dwn.in_downtime);
+      multiplexing::publisher().write(s);
     }
     cache.get(d);
   }

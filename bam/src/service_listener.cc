@@ -62,7 +62,6 @@ void service_listener::service_update(
     io::stream* visitor) {
   (void)status;
   (void)visitor;
-  return;
 }
 
 /**
@@ -76,7 +75,6 @@ void service_listener::service_update(
     io::stream* visitor) {
   (void)ack;
   (void)visitor;
-  return;
 }
 
 /**
@@ -89,5 +87,4 @@ void service_listener::service_update(std::shared_ptr<neb::downtime> const& dt,
                                       io::stream* visitor) {
   (void)dt;
   (void)visitor;
-  return;
 }

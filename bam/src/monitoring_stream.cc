@@ -70,10 +70,11 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
       _pending_events(0),
       _storage_db_cfg(storage_db_cfg),
       _cache(cache) {
+  log_v2::bam()->trace("BAM: monitoring_stream constructor");
   // Prepare queries.
   _prepare();
 
-  // Simulate a configuration update.
+  // Let's update BAs then we will be able to load the cache with inherited downtimes.
   update();
   // Read cache.
   _read_cache();
@@ -84,11 +85,11 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
  */
 monitoring_stream::~monitoring_stream() {
   // save cache
+  log_v2::bam()->trace("BAM: monitoring_stream destructor");
   try {
     _write_cache();
   } catch (std::exception const& e) {
-    logging::error(logging::medium)
-        << "BAM: can't save cache: '" << e.what() << "'";
+    log_v2::bam()->error("BAM: can't save cache: '{}'", e.what());
   }
   log_v2::sql()->debug("bam: monitoring_stream destruction");
 }
@@ -98,9 +99,10 @@ monitoring_stream::~monitoring_stream() {
  *
  *  @return Number of acknowledged events.
  */
-int monitoring_stream::flush() {
+int32_t monitoring_stream::flush() {
   _mysql.commit();
   int retval = _pending_events;
+  log_v2::bam()->trace("BAM: monitoring_stream flush: {} events", retval);
   _pending_events = 0;
   return retval;
 }
@@ -109,6 +111,7 @@ int monitoring_stream::flush() {
  *  Generate default state.
  */
 void monitoring_stream::initialize() {
+  log_v2::bam()->trace("BAM: monitoring_stream initialize");
   multiplexing::publisher pblshr;
   event_cache_visitor ev_cache;
   _applier.visit(&ev_cache);
@@ -145,6 +148,7 @@ void monitoring_stream::statistics(json11::Json::object& tree) const {
  *  Rebuild index and metrics cache.
  */
 void monitoring_stream::update() {
+  log_v2::bam()->trace("BAM: monitoring_stream update");
   try {
     configuration::state s;
     configuration::reader_v2 r(_mysql, _storage_db_cfg);
@@ -168,6 +172,7 @@ void monitoring_stream::update() {
  *  @return Number of events acknowledged.
  */
 int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
+  log_v2::bam()->trace("BAM: monitoring_stream write");
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, get_name()))
@@ -181,7 +186,8 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       std::shared_ptr<neb::service_status> ss(
           std::static_pointer_cast<neb::service_status>(data));
       log_v2::bam()->trace(
-          "BAM: processing service status (host {}, service {}, hard state {}, "
+          "BAM: processing service status (host: {}, service: {}, hard state "
+          "{}, "
           "current state {})",
           ss->host_id, ss->service_id, ss->last_hard_state, ss->current_state);
       multiplexing::publisher pblshr;
@@ -193,7 +199,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       std::shared_ptr<neb::acknowledgement> ack(
           std::static_pointer_cast<neb::acknowledgement>(data));
       log_v2::bam()->trace(
-          "BAM: processing acknowledgement (host {}, service {})", ack->host_id,
+          "BAM: processing acknowledgement on service ({}, {})", ack->host_id,
           ack->service_id);
       multiplexing::publisher pblshr;
       event_cache_visitor ev_cache;
@@ -203,8 +209,10 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
     case neb::downtime::static_type(): {
       std::shared_ptr<neb::downtime> dt(
           std::static_pointer_cast<neb::downtime>(data));
-      log_v2::bam()->trace("BAM: processing downtime (host {}, service {})",
-                           dt->host_id, dt->service_id);
+      log_v2::bam()->trace(
+          "BAM: processing downtime ({}) on service ({}, {}) started: {}, stopped: "
+          "{}",
+          dt->internal_id, dt->host_id, dt->service_id, dt->was_started, dt->was_cancelled);
       multiplexing::publisher pblshr;
       event_cache_visitor ev_cache;
       _applier.book_service().update(dt, &ev_cache);
@@ -221,8 +229,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       _ba_update.bind_value_as_f64(1, status->level_acknowledgement);
       _ba_update.bind_value_as_f64(2, status->level_downtime);
       _ba_update.bind_value_as_u32(6, status->ba_id);
-      if (status->last_state_change == (time_t)-1 ||
-          status->last_state_change == 0)
+      if (status->last_state_change.is_null())
         _ba_update.bind_value_as_null(3);
       else
         _ba_update.bind_value_as_u64(3, status->last_state_change.get_time_t());
@@ -261,8 +268,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       _kpi_update.bind_value_as_f64(2, status->level_downtime_hard);
       _kpi_update.bind_value_as_f64(3, status->level_nominal_hard);
       _kpi_update.bind_value_as_i32(4, 1 + 1);
-      if (status->last_state_change == (time_t)-1 ||
-          status->last_state_change == 0)
+      if (status->last_state_change.is_null())
         _kpi_update.bind_value_as_null(5);
       else
         _kpi_update.bind_value_as_u64(5,
@@ -280,6 +286,9 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       timestamp now = timestamp::now();
       inherited_downtime const& dwn =
           *std::static_pointer_cast<inherited_downtime const>(data);
+      log_v2::bam()->trace(
+          "BAM: processing inherited downtime (ba id {}, now {}", dwn.ba_id,
+          now);
       if (dwn.in_downtime)
         cmd = fmt::format(
             "[{}] "
@@ -290,11 +299,10 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
             std::numeric_limits<int32_t>::max());
       else
         cmd = fmt::format(
-            "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;{};1;0;;Centreon "
+            "[{}] DEL_SVC_DOWNTIME_FULL;_Module_BAM_{};ba_{};;;1;0;;Centreon "
             "Broker BAM Module;Automatic downtime triggered by BA downtime "
             "inheritance",
-            now, config::applier::state::instance().poller_id(), dwn.ba_id,
-            std::numeric_limits<int32_t>::max());
+            now, config::applier::state::instance().poller_id(), dwn.ba_id);
       _write_external_command(cmd);
     } break;
     default:
@@ -309,6 +317,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
  *  Prepare queries.
  */
 void monitoring_stream::_prepare() {
+  log_v2::bam()->trace("BAM: monitoring stream _prepare");
   // BA status.
   {
     std::string query(
@@ -331,6 +340,7 @@ void monitoring_stream::_prepare() {
  *  Rebuilds BA durations/availibities from BA events.
  */
 void monitoring_stream::_rebuild() {
+  log_v2::bam()->trace("BAM: monitoring stream _rebuild");
   // Get the list of the BAs that should be rebuild.
   std::vector<uint32_t> bas_to_rebuild;
   {
@@ -372,6 +382,7 @@ void monitoring_stream::_rebuild() {
  *  @param[in] status New status.
  */
 void monitoring_stream::_update_status(std::string const& status) {
+  log_v2::bam()->trace("BAM: monitoring stream _update_status");
   std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
 }
@@ -381,7 +392,8 @@ void monitoring_stream::_update_status(std::string const& status) {
  *
  *  @param[in] cmd  Command to write to the external command pipe.
  */
-void monitoring_stream::_write_external_command(std::string cmd) {
+void monitoring_stream::_write_external_command(std::string& cmd) {
+  log_v2::bam()->trace("BAM: monitoring stream _write_external_command");
   cmd.append("\n");
   std::ofstream ofs;
   ofs.open(_ext_cmd_file.c_str());
@@ -406,22 +418,24 @@ void monitoring_stream::_write_external_command(std::string cmd) {
  *  Get inherited downtime from the cache.
  */
 void monitoring_stream::_read_cache() {
+  log_v2::bam()->trace("BAM: monitoring stream _read_cache");
   if (_cache == nullptr)
-    return;
-
-  _applier.load_from_cache(*_cache);
+    log_v2::bam()->debug("BAM: no cache configured");
+  else {
+    log_v2::bam()->debug("BAM: loading cache");
+    _applier.load_from_cache(*_cache);
+  }
 }
 
 /**
  *  Save inherited downtime to the cache.
  */
 void monitoring_stream::_write_cache() {
-  if (_cache == nullptr) {
-    logging::debug(logging::medium) << "BAM: no cache configured";
-    return;
+  log_v2::bam()->trace("BAM: monitoring stream _write_cache");
+  if (_cache == nullptr)
+    log_v2::bam()->debug("BAM: no cache configured");
+  else {
+    log_v2::bam()->debug("BAM: saving cache");
+    _applier.save_to_cache(*_cache);
   }
-
-  logging::debug(logging::medium) << "BAM: loading cache";
-
-  _applier.save_to_cache(*_cache);
 }
