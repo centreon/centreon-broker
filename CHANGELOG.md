@@ -1,5 +1,14 @@
 # Changelog
 
+## 20.10.12
+
+### Fixes
+
+*bam*
+
+Inherited downtimes are no more duplicated and are correctly stopped when
+related downtimes are deleted.
+
 ## 20.10.11
 
 ### Fixes
