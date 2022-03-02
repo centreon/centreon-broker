@@ -19,31 +19,12 @@
 #include "com/centreon/broker/bam/service_book.hh"
 
 #include "com/centreon/broker/bam/service_listener.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 using namespace com::centreon::broker::bam;
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-service_book::service_book(service_book const& other) : _book(other._book) {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other Object to copy.
- *
- *  @return This object.
- */
-service_book& service_book::operator=(service_book const& other) {
-  if (this != &other)
-    _book = other._book;
-  return *this;
-}
 
 /**
  *  Make a service listener listen to service updates.
@@ -55,6 +36,8 @@ service_book& service_book::operator=(service_book const& other) {
 void service_book::listen(uint32_t host_id,
                           uint32_t service_id,
                           service_listener* listnr) {
+  log_v2::bam()->trace("BAM: service ({}, {}) added to service book", host_id,
+                       service_id);
   _book.insert(std::make_pair(std::make_pair(host_id, service_id), listnr));
 }
 
@@ -75,56 +58,6 @@ void service_book::unlisten(uint32_t host_id,
       _book.erase(range.first);
       break;
     }
-    ++range.first;
-  }
-}
-
-/**
- *  Update all service listeners related to the service.
- *
- *  @param[in]  ss       Service status.
- *  @param[out] visitor  Object that will receive events.
- */
-void service_book::update(std::shared_ptr<neb::service_status> const& ss,
-                          io::stream* visitor) {
-  std::pair<multimap::iterator, multimap::iterator> range(
-      _book.equal_range(std::make_pair(ss->host_id, ss->service_id)));
-  while (range.first != range.second) {
-    range.first->second->service_update(ss, visitor);
-    ++range.first;
-  }
-}
-
-/**
- *  Update all service listeners related to the service on which the
- *  acknowledgement applies.
- *
- *  @param[in]  ack      Acknowledgement.
- *  @param[out] visitor  Object that will receive events.
- */
-void service_book::update(std::shared_ptr<neb::acknowledgement> const& ack,
-                          io::stream* visitor) {
-  std::pair<multimap::iterator, multimap::iterator> range(
-      _book.equal_range(std::make_pair(ack->host_id, ack->service_id)));
-  while (range.first != range.second) {
-    range.first->second->service_update(ack, visitor);
-    ++range.first;
-  }
-}
-
-/**
- *  Update all service listeners related to the service on which the
- *  downtime applies.
- *
- *  @param[in]  dt       Downtime.
- *  @param[out] visitor  Object that will receive events.
- */
-void service_book::update(std::shared_ptr<neb::downtime> const& dt,
-                          io::stream* visitor) {
-  std::pair<multimap::iterator, multimap::iterator> range(
-      _book.equal_range(std::make_pair(dt->host_id, dt->service_id)));
-  while (range.first != range.second) {
-    range.first->second->service_update(dt, visitor);
     ++range.first;
   }
 }

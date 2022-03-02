@@ -4,9 +4,10 @@
 
 ### Fixes
 
-*storage*
+*bam*
 
-An issue is fixed on sql reconnection when broker is stopped.
+Inherited downtimes are no more duplicated and are correctly stopped when
+related downtimes are deleted.
 
 ## 20.10.11
 

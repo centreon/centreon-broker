@@ -49,7 +49,7 @@ class kpi {
  public:
   kpi();
   kpi(kpi const& other);
-  ~kpi();
+  ~kpi() noexcept = default;
   kpi& operator=(kpi const& other);
   void apply(configuration::state::kpis const& my_kpis,
              hst_svc_mapping const& mapping,

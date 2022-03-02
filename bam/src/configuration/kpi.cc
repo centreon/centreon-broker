@@ -56,7 +56,8 @@ kpi::kpi(uint32_t id,
       _ignore_acknowledgement(ignore_acknowledgement),
       _impact_warning(warning),
       _impact_critical(critical),
-      _impact_unknown(unknown) {}
+      _impact_unknown(unknown),
+      _event(_id, _ba_id, ::time(nullptr)) {}
 
 /**
  *  Copy constructor.
@@ -116,7 +117,7 @@ kpi& kpi::operator=(kpi const& other) {
     _impact_unknown = other._impact_unknown;
     _event = other._event;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -127,20 +128,18 @@ kpi& kpi::operator=(kpi const& other) {
  *  @return True if both objects are equal.
  */
 bool kpi::operator==(kpi const& other) const {
-  return ((_id == other._id) && (_state_type == other._state_type) &&
-          (_host_id == other._host_id) && (_service_id == other._service_id) &&
-          (_ba_id == other._ba_id) &&
-          (_indicator_ba_id == other._indicator_ba_id) &&
-          (_meta_id == other._meta_id) && (_boolexp_id == other._boolexp_id) &&
-          (_status == other._status) && (_last_level == other._last_level) &&
-          (_downtimed == other._downtimed) &&
-          (_acknowledged == other._acknowledged) &&
-          (_ignore_downtime == other._ignore_downtime) &&
-          (_ignore_acknowledgement == other._ignore_acknowledgement) &&
-          (_impact_warning == other._impact_warning) &&
-          (_impact_critical == other._impact_critical) &&
-          (_impact_unknown == other._impact_unknown) &&
-          (_event == other._event));
+  return _id == other._id && _state_type == other._state_type &&
+         _host_id == other._host_id && _service_id == other._service_id &&
+         _ba_id == other._ba_id && _indicator_ba_id == other._indicator_ba_id &&
+         _meta_id == other._meta_id && _boolexp_id == other._boolexp_id &&
+         _status == other._status && _last_level == other._last_level &&
+         _downtimed == other._downtimed &&
+         _acknowledged == other._acknowledged &&
+         _ignore_downtime == other._ignore_downtime &&
+         _ignore_acknowledgement == other._ignore_acknowledgement &&
+         _impact_warning == other._impact_warning &&
+         _impact_critical == other._impact_critical &&
+         _impact_unknown == other._impact_unknown && _event == other._event;
 }
 
 /**
@@ -151,7 +150,7 @@ bool kpi::operator==(kpi const& other) const {
  *  @return True if both objects are inequal.
  */
 bool kpi::operator!=(kpi const& other) const {
-  return (!operator==(other));
+  return !operator==(other);
 }
 
 /**
@@ -160,7 +159,7 @@ bool kpi::operator!=(kpi const& other) const {
  *  @return  The id value.
  */
 unsigned kpi::get_id() const {
-  return (_id);
+  return _id;
 }
 
 /**
@@ -178,7 +177,7 @@ void kpi::set_id(uint32_t id) {
  *  @return  The state type.
  */
 short kpi::get_state_type() const {
-  return (_state_type);
+  return _state_type;
 }
 
 /**
@@ -187,7 +186,7 @@ short kpi::get_state_type() const {
  *  @return  The host id.
  */
 uint32_t kpi::get_host_id() const {
-  return (_host_id);
+  return _host_id;
 }
 
 /**
@@ -196,7 +195,7 @@ uint32_t kpi::get_host_id() const {
  *  @return  The service id.
  */
 uint32_t kpi::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**
@@ -205,7 +204,7 @@ uint32_t kpi::get_service_id() const {
  *  @return Whether this is a service or not.
  */
 bool kpi::is_service() const {
-  return (_service_id != 0);
+  return _service_id != 0;
 }
 
 /**
@@ -214,7 +213,7 @@ bool kpi::is_service() const {
  *  @return Whether this is a business activity abstraction or not.
  */
 bool kpi::is_ba() const {
-  return (_indicator_ba_id != 0);
+  return _indicator_ba_id != 0;
 }
 
 /**
@@ -223,7 +222,7 @@ bool kpi::is_ba() const {
  *  @return True if this KPI is a meta-service.
  */
 bool kpi::is_meta() const {
-  return (_meta_id != 0);
+  return _meta_id != 0;
 }
 
 /**
@@ -232,7 +231,7 @@ bool kpi::is_meta() const {
  *  @return True if this KPI is a boolean expression.
  */
 bool kpi::is_boolexp() const {
-  return (_boolexp_id != 0);
+  return _boolexp_id != 0;
 }
 
 /**
@@ -241,7 +240,7 @@ bool kpi::is_boolexp() const {
  *  @return The id of the business activity.
  */
 uint32_t kpi::get_ba_id() const {
-  return (_ba_id);
+  return _ba_id;
 }
 
 /**
@@ -250,7 +249,7 @@ uint32_t kpi::get_ba_id() const {
  *  @return The ID of the BA attached to this KPI.
  */
 uint32_t kpi::get_indicator_ba_id() const {
-  return (_indicator_ba_id);
+  return _indicator_ba_id;
 }
 
 /**
@@ -259,7 +258,7 @@ uint32_t kpi::get_indicator_ba_id() const {
  *  @return Meta-ID of this KPI.
  */
 uint32_t kpi::get_meta_id() const {
-  return (_meta_id);
+  return _meta_id;
 }
 
 /**
@@ -268,7 +267,7 @@ uint32_t kpi::get_meta_id() const {
  *  @return Boolean expression ID of this KPI.
  */
 uint32_t kpi::get_boolexp_id() const {
-  return (_boolexp_id);
+  return _boolexp_id;
 }
 
 /**
@@ -277,7 +276,7 @@ uint32_t kpi::get_boolexp_id() const {
  *  @return The status.
  */
 short kpi::get_status() const {
-  return (_status);
+  return _status;
 }
 
 /**
@@ -286,7 +285,7 @@ short kpi::get_status() const {
  *  @return The last level of this kpi.
  */
 short kpi::get_last_level() const {
-  return (_last_level);
+  return _last_level;
 }
 
 /**
@@ -295,7 +294,7 @@ short kpi::get_last_level() const {
  *  @return Has this business interest been downtimed?
  */
 bool kpi::is_downtimed() const {
-  return (_downtimed);
+  return _downtimed;
 }
 
 /**
@@ -304,7 +303,7 @@ bool kpi::is_downtimed() const {
  *  @return Whether it has been acknowledged.
  */
 bool kpi::is_acknowledged() const {
-  return (_acknowledged);
+  return _acknowledged;
 }
 
 /**
@@ -313,7 +312,7 @@ bool kpi::is_acknowledged() const {
  *  @return Whether or not the downtime is relevant.
  */
 bool kpi::ignore_downtime() const {
-  return (_ignore_downtime);
+  return _ignore_downtime;
 }
 
 /**
@@ -322,7 +321,7 @@ bool kpi::ignore_downtime() const {
  *  @return Whether or not the acknowledgements are applicable.
  */
 bool kpi::ignore_acknowledgement() const {
-  return (_ignore_acknowledgement);
+  return _ignore_acknowledgement;
 }
 
 /**
@@ -331,7 +330,7 @@ bool kpi::ignore_acknowledgement() const {
  *  @return The get business impact of a warning at this level.
  */
 double kpi::get_impact_warning() const {
-  return (_impact_warning);
+  return _impact_warning;
 }
 
 /**
@@ -340,7 +339,7 @@ double kpi::get_impact_warning() const {
  *  @return The get business impact of a criticality at this level.
  */
 double kpi::get_impact_critical() const {
-  return (_impact_critical);
+  return _impact_critical;
 }
 
 /**
@@ -349,7 +348,7 @@ double kpi::get_impact_critical() const {
  *  @return The get business impact of an unknown status at this level.
  */
 double kpi::get_impact_unknown() const {
-  return (_impact_unknown);
+  return _impact_unknown;
 }
 
 /**
@@ -358,7 +357,7 @@ double kpi::get_impact_unknown() const {
  *  @return  The opened event associated with this kpi.
  */
 com::centreon::broker::bam::kpi_event const& kpi::get_opened_event() const {
-  return (_event);
+  return _event;
 }
 
 /**

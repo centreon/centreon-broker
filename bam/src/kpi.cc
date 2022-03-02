@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,14 +26,9 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**
- *  Default constructor.
+ *  Constructor.
  */
-kpi::kpi() : _id(0) {}
-
-/**
- *  Destructor.
- */
-kpi::~kpi() {}
+kpi::kpi(uint32_t kpi_id, uint32_t ba_id) : _id(kpi_id), _ba_id(ba_id) {}
 
 /**
  *  Get KPI ID.
@@ -41,7 +36,7 @@ kpi::~kpi() {}
  *  @return KPI ID.
  */
 uint32_t kpi::get_id() const {
-  return (_id);
+  return _id;
 }
 
 /**
@@ -50,7 +45,7 @@ uint32_t kpi::get_id() const {
  *  @return BA ID.
  */
 uint32_t kpi::get_ba_id() const {
-  return (_ba_id);
+  return _ba_id;
 }
 
 /**
@@ -59,27 +54,7 @@ uint32_t kpi::get_ba_id() const {
  *  @return Last state change.
  */
 timestamp kpi::get_last_state_change() const {
-  return (_event ? _event->start_time : timestamp(time(nullptr)));
-}
-
-/**
- *  Set KPI ID.
- *
- *  @param[in] id KPI ID.
- */
-void kpi::set_id(uint32_t id) {
-  _id = id;
-  return;
-}
-
-/**
- *  Set BA id impacted by KPI.
- *
- *  @param[in] id KPI ID.
- */
-void kpi::set_ba_id(uint32_t id) {
-  _ba_id = id;
-  return;
+  return _event ? _event->start_time : timestamp::now();
 }
 
 /**
@@ -87,9 +62,9 @@ void kpi::set_ba_id(uint32_t id) {
  *
  *  @param[in] e  The kpi event.
  */
-void kpi::set_initial_event(kpi_event const& e) {
+void kpi::set_initial_event(const kpi_event& e) {
   if (!_event) {
-    _event.reset(new kpi_event(e));
+    _event = std::make_shared<kpi_event>(e);
     impact_values impacts;
     impact_hard(impacts);
     double new_impact_level =
@@ -99,10 +74,10 @@ void kpi::set_initial_event(kpi_event const& e) {
     if (new_impact_level != _event->impact_level &&
         _event->impact_level != -1) {
       time_t now = ::time(nullptr);
-      std::shared_ptr<kpi_event> new_event(new kpi_event(e));
+      std::shared_ptr<kpi_event> new_event = std::make_shared<kpi_event>(e);
       new_event->end_time = now;
       _initial_events.push_back(new_event);
-      new_event = std::shared_ptr<kpi_event>(new kpi_event(e));
+      new_event = std::make_shared<kpi_event>(e);
       new_event->start_time = now;
       _initial_events.push_back(new_event);
       _event = new_event;
@@ -127,7 +102,7 @@ void kpi::commit_initial_events(io::stream* visitor) {
              it(_initial_events.begin()),
          end(_initial_events.end());
          it != end; ++it)
-      visitor->write(std::shared_ptr<io::data>(new kpi_event(**it)));
+      visitor->write(std::make_shared<kpi_event>(**it));
   }
   _initial_events.clear();
 }
@@ -138,5 +113,5 @@ void kpi::commit_initial_events(io::stream* visitor) {
  *  @return  Default value: false.
  */
 bool kpi::in_downtime() const {
-  return (false);
+  return false;
 }

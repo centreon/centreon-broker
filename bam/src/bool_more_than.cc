@@ -32,30 +32,10 @@ bool_more_than::bool_more_than(bool strict) : _strict(strict) {}
  *
  *  @param[in] right Object to copy.
  */
-bool_more_than::bool_more_than(bool_more_than const& right)
-    : bool_binary_operator(right) {
-  _strict = right._strict;
-}
-
-/**
- *  Destructor.
- */
-bool_more_than::~bool_more_than() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-bool_more_than& bool_more_than::operator=(bool_more_than const& right) {
-  bool_binary_operator::operator=(right);
-  if (this != &right) {
-    _strict = right._strict;
-  }
-  return (*this);
-}
+// bool_more_than::bool_more_than(bool_more_than const& right)
+//    : bool_binary_operator(right) {
+//  _strict = right._strict;
+//}
 
 /**
  *  Get the hard value.
