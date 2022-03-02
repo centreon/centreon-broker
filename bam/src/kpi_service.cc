@@ -440,7 +440,7 @@ void kpi_service::_fill_impact(impact_values& impact,
                                kpi_service::state state) {
   if (state < 0 || static_cast<size_t>(state) >= _impacts.size())
     throw exceptions::msg()
-      << "BAM: could not get impact introduced by state " << state;
+        << "BAM: could not get impact introduced by state " << state;
   double nominal{_impacts[state]};
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);

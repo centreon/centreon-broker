@@ -19,8 +19,8 @@
 #ifndef CCB_BAM_KPI_SERVICE_HH
 #define CCB_BAM_KPI_SERVICE_HH
 
-#include <array>
 #include <absl/container/flat_hash_set.h>
+#include <array>
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/service_listener.hh"
@@ -61,7 +61,10 @@ class kpi_service : public service_listener, public kpi {
   short _state_type;
 
  public:
-  kpi_service(uint32_t kpi_id, uint32_t ba_id, uint32_t host_id, uint32_t service_id);
+  kpi_service(uint32_t kpi_id,
+              uint32_t ba_id,
+              uint32_t host_id,
+              uint32_t service_id);
   ~kpi_service() noexcept = default;
   kpi_service(const kpi_service&) = delete;
   kpi_service& operator=(const kpi_service&) = delete;
