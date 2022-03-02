@@ -55,11 +55,11 @@ class kpi_boolexp : public kpi {
                        kpi_boolexp::state state);
 
  public:
-  kpi_boolexp();
-  ~kpi_boolexp();
-  kpi_boolexp(kpi_boolexp const& other) = delete;
-  kpi_boolexp& operator=(kpi_boolexp const& other) = delete;
-  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  kpi_boolexp(uint32_t kpi_id, uint32_t ba_id);
+  ~kpi_boolexp() noexcept = default;
+  kpi_boolexp(const kpi_boolexp&) = delete;
+  kpi_boolexp& operator=(const kpi_boolexp&) = delete;
+  bool child_has_update(computable* child, io::stream* visitor = nullptr);
   bool in_downtime() const;
   double get_impact() const;
   void impact_hard(impact_values& hard_impact);

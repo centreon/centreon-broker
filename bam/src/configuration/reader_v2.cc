@@ -147,11 +147,8 @@ void reader_v2::_load(state::kpis& kpis) {
 
         // KPI state.
         if (!res.value_is_null(17)) {
-          kpi_event e;
-          e.kpi_id = kpi_id;
-          e.ba_id = res.value_as_u32(4);
+          kpi_event e(kpi_id, res.value_as_u32(4), res.value_as_u64(17));
           e.status = res.value_as_i32(8);
-          e.start_time = res.value_as_u64(17);
           e.in_downtime = res.value_as_bool(18);
           e.impact_level = res.value_is_null(19) ? -1 : res.value_as_f64(19);
           kpis[kpi_id].set_opened_event(e);
@@ -270,7 +267,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         "    ON s.service_id=hsr.service_service_id"
         "  INNER JOIN host AS h"
         "    ON hsr.host_host_id=h.host_id"
-        "  WHERE s.service_description LIKE 'ba_%'",
+        "  WHERE s.service_description LIKE 'ba\\_%'",
         &promise, 0);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
@@ -578,8 +575,7 @@ void reader_v2::_load_dimensions() {
     database::mysql_result res(promise_kpi.get_future().get());
 
     while (_mysql.fetch_row(res)) {
-      auto k(std::make_shared<dimension_kpi_event>());
-      k->kpi_id = res.value_as_u32(0);
+      auto k{std::make_shared<dimension_kpi_event>(res.value_as_u32(0))};
       k->host_id = res.value_as_u32(2);
       k->service_id = res.value_as_u32(3);
       k->ba_id = res.value_as_u32(4);

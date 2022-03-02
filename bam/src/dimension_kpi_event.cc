@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015,2019-2020 Centreon
+** Copyright 2014-2015,2019-2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_kpi_event::dimension_kpi_event()
+dimension_kpi_event::dimension_kpi_event(uint32_t kpi_id)
     : io::data(dimension_kpi_event::static_type()),
-      kpi_id(0),
+      kpi_id(kpi_id),
       ba_id(0),
       host_id(0),
       service_id(0),
@@ -45,30 +45,23 @@ dimension_kpi_event::dimension_kpi_event()
  *  @param[in] other  Object to copy.
  */
 dimension_kpi_event::dimension_kpi_event(dimension_kpi_event const& other)
-    : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-dimension_kpi_event::~dimension_kpi_event() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-dimension_kpi_event& dimension_kpi_event::operator=(
-    dimension_kpi_event const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return *this;
-}
+    : io::data(other),
+      kpi_id(other.kpi_id),
+      ba_id(other.ba_id),
+      ba_name(other.ba_name),
+      host_id(other.host_id),
+      host_name(other.host_name),
+      service_id(other.service_id),
+      service_description(other.service_description),
+      kpi_ba_id(other.kpi_ba_id),
+      kpi_ba_name(other.kpi_ba_name),
+      meta_service_id(other.meta_service_id),
+      meta_service_name(other.meta_service_name),
+      boolean_id(other.boolean_id),
+      boolean_name(other.boolean_name),
+      impact_warning(other.impact_warning),
+      impact_critical(other.impact_critical),
+      impact_unknown(other.impact_unknown) {}
 
 /**
  *  Equality test operator.
@@ -78,51 +71,19 @@ dimension_kpi_event& dimension_kpi_event::operator=(
  *  @return  True if the two objects are equal.
  */
 bool dimension_kpi_event::operator==(dimension_kpi_event const& other) const {
-  return ((kpi_id == other.kpi_id) && (ba_id == other.ba_id) &&
-          (ba_name == other.ba_name) && (host_id == other.host_id) &&
-          (host_name == other.host_name) && (service_id == other.service_id) &&
-          (service_description == other.service_description) &&
-          (kpi_ba_id == other.kpi_ba_id) &&
-          (kpi_ba_name == other.kpi_ba_name) &&
-          (meta_service_id == other.meta_service_id) &&
-          (meta_service_name == other.meta_service_name) &&
-          (boolean_id == other.boolean_id) &&
-          (boolean_name == other.boolean_name) &&
-          (impact_warning == other.impact_warning) &&
-          (impact_critical == other.impact_critical) &&
-          (impact_unknown == other.impact_unknown));
+  return (kpi_id == other.kpi_id) && (ba_id == other.ba_id) &&
+         (ba_name == other.ba_name) && (host_id == other.host_id) &&
+         (host_name == other.host_name) && (service_id == other.service_id) &&
+         (service_description == other.service_description) &&
+         (kpi_ba_id == other.kpi_ba_id) && (kpi_ba_name == other.kpi_ba_name) &&
+         (meta_service_id == other.meta_service_id) &&
+         (meta_service_name == other.meta_service_name) &&
+         (boolean_id == other.boolean_id) &&
+         (boolean_name == other.boolean_name) &&
+         (impact_warning == other.impact_warning) &&
+         (impact_critical == other.impact_critical) &&
+         (impact_unknown == other.impact_unknown);
 }
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void dimension_kpi_event::_internal_copy(dimension_kpi_event const& other) {
-  kpi_id = other.kpi_id;
-  ba_id = other.ba_id;
-  ba_name = other.ba_name;
-  host_id = other.host_id;
-  host_name = other.host_name;
-  service_id = other.service_id;
-  service_description = other.service_description;
-  kpi_ba_id = other.kpi_ba_id;
-  kpi_ba_name = other.kpi_ba_name;
-  meta_service_id = other.meta_service_id;
-  meta_service_name = other.meta_service_name;
-  boolean_id = other.boolean_id;
-  boolean_name = other.boolean_name;
-  impact_warning = other.impact_warning;
-  impact_critical = other.impact_critical;
-  impact_unknown = other.impact_unknown;
-  return;
-}
-
-/**************************************
- *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
 
 // Mapping.
 mapping::entry const dimension_kpi_event::entries[] = {
@@ -181,7 +142,7 @@ mapping::entry const dimension_kpi_event::entries[] = {
 
 // Operations.
 static io::data* new_dimension_kpi_event() {
-  return new dimension_kpi_event;
+  return new dimension_kpi_event(0);
 }
 io::event_info::event_operations const dimension_kpi_event::operations = {
     &new_dimension_kpi_event};

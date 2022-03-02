@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015, 2021 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -43,23 +43,21 @@ class impact_values;
  */
 class kpi : public computable {
  protected:
-  uint32_t _id;
-  uint32_t _ba_id;
+  const uint32_t _id;
+  const uint32_t _ba_id;
   std::shared_ptr<kpi_event> _event;
-  std::vector<std::shared_ptr<kpi_event> > _initial_events;
+  std::vector<std::shared_ptr<kpi_event>> _initial_events;
 
  public:
-  kpi();
-  virtual ~kpi();
-  kpi& operator=(kpi const& right) = delete;
-  kpi(kpi const& right) = delete;
+  kpi(uint32_t kpi_id, uint32_t ba_id);
+  virtual ~kpi() noexcept = default;
+  kpi& operator=(const kpi&) = delete;
+  kpi(const kpi&) = delete;
   uint32_t get_id() const;
   uint32_t get_ba_id() const;
   timestamp get_last_state_change() const;
   virtual void impact_hard(impact_values& hard_impact) = 0;
   virtual void impact_soft(impact_values& soft_impact) = 0;
-  void set_id(uint32_t id);
-  void set_ba_id(uint32_t id);
   virtual void set_initial_event(kpi_event const& e);
   virtual void visit(io::stream* visitor) = 0;
   virtual bool in_downtime() const;
