@@ -59,11 +59,11 @@ try {
         stash name: 'el7-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
       }
-    }/*,
-    'build centos8': {
+    },
+    'build alma8': {
       node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh centos8"
+        checkoutCentreonBuild()
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh alma8"
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -74,14 +74,14 @@ try {
         ])
       }
     },
-    'packaging centos8': {
+    'packaging alma8': {
       node("C++") {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos8"
-        stash name: 'el8-rpms', includes: "output/x86_64/*.rpm"
+        checkoutCentreonBuild()
+        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh alma8"
+        stash name: 'alma8-rpms', includes: "output/x86_64/*.rpm"
         archiveArtifacts artifacts: "output/x86_64/*.rpm"
       }
-    }*/
+    }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Build // Unit tests // Packaging.');
     }
@@ -106,8 +106,8 @@ try {
     stage('Delivery') {
       node("C++") {
         unstash 'el7-rpms'
-        //unstash 'el8-rpms'
-        sh 'setup_centreon_build.sh'
+        unstash 'alma8-rpms'
+        checkoutCentreonBuild()
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-delivery.sh"
       }
       if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
