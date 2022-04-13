@@ -134,8 +134,8 @@ void log_v2::apply(const config::state& conf) {
 
     *l = std::make_shared<logger>(it->first, file_sink);
     auto lvl = level::from_str(it->second);
+    (*l)->set_level(lvl);
     if (lvl != level::off) {
-      (*l)->set_level(lvl);
       (*l)->flush_on(lvl);
       (*l)->set_pattern("[%Y-%m-%dT%H:%M:%S.%e%z] [%n] [%l] %v");
     }
@@ -166,6 +166,10 @@ bool log_v2::contains_logger(const std::string& logger) {
  */
 
 bool log_v2::contains_level(const std::string& level) {
+  /* spdlog wants 'off' to disable a log but we tolerate 'disabled' */
+  if (level == "disabled" || level == "off")
+    return true;
+
   level::level_enum l = level::from_str(level);
   return l != level::off;
 }
