@@ -1,5 +1,12 @@
 # Changelog
 
+## 21.04.8
+
+*log*
+
+If a logger was at the 'off'/'disabled' state, then broker did not start.
+
+
 ## 21.04.7
 
 ### Fixes
