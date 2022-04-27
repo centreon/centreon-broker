@@ -1,5 +1,13 @@
 # Changelog
 
+## 20.10.13
+
+### Fixes
+
+*mysql_connection*
+
+Issue with concurrent accesses fixed.
+
 ## 20.10.12
 
 ### Fixes
