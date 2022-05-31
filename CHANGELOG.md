@@ -6,6 +6,9 @@
 
 If a logger was at the 'off'/'disabled' state, then broker did not start.
 
+*mysql*
+
+Connections are correctly closed now.
 
 ## 21.04.7
 
