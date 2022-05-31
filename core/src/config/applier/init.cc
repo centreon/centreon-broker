@@ -25,6 +25,7 @@
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
 
@@ -43,6 +44,7 @@ void config::applier::init(size_t n_thread, const std::string& name) {
   // Load singletons.
   pool::load(n_thread);
   stats::center::load();
+  mysql_manager::load();
   config::applier::state::load();
   multiplexing::engine::load();
   io::protocols::load();
@@ -62,6 +64,7 @@ void config::applier::deinit() {
   config::applier::state::unload();
   io::events::unload();
   io::protocols::unload();
+  mysql_manager::unload();
   stats::center::unload();
   pool::unload();
 }

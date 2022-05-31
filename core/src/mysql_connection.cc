@@ -101,6 +101,7 @@ void mysql_connection::_clear_connection() {
   }
   _stmt.clear();
   mysql_close(_conn);
+  _conn = nullptr;
 }
 
 /**
@@ -616,7 +617,8 @@ void mysql_connection::_run() {
       } else {
         /* We are waiting for some activity, nothing to do for now it is time
          * to make some ping */
-        _tasks_condition.wait(lock, [this] { return _finish_asked || !_tasks_list.empty(); });
+        _tasks_condition.wait(
+            lock, [this] { return _finish_asked || !_tasks_list.empty(); });
 
         std::time_t now = std::time(nullptr);
         if (_tasks_list.empty())

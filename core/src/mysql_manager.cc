@@ -27,14 +27,34 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
+mysql_manager* mysql_manager::_instance{nullptr};
+
 /**
  * @brief The function to use to call the unique instance of mysql_manager.
  *
  * @return A reference to the mysql_manager object.
  */
 mysql_manager& mysql_manager::instance() {
-  static mysql_manager _singleton;
-  return _singleton;
+  assert(_instance);
+  return *_instance;
+}
+
+/**
+ * @brief Load the instance of mysql_manager
+ */
+void mysql_manager::load() {
+  if (!_instance)
+    _instance = new mysql_manager();
+}
+
+/**
+ * @brief Unload the instance of mysql_manager
+ */
+void mysql_manager::unload() {
+  if (_instance) {
+    delete _instance;
+    _instance = nullptr;
+  }
 }
 
 /**
@@ -87,7 +107,7 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   {
     uint32_t current_connection{0};
     std::lock_guard<std::mutex> lock(_cfg_mutex);
-    for (std::shared_ptr<mysql_connection> c : _connection) {
+    for (auto c : _connection) {
       // Is this thread matching what the configuration needs?
       if (c->match_config(db_cfg) && !c->is_finished() &&
           !c->is_finish_asked() && !c->is_in_error()) {
@@ -123,7 +143,7 @@ void mysql_manager::clear() {
         conn->finish();
       } catch (const std::exception& e) {
         log_v2::sql()->info("mysql_manager: Unable to stop a connection: {}",
-            e.what());
+                            e.what());
       }
   }
   log_v2::sql()->debug("mysql_manager: clear finished");
