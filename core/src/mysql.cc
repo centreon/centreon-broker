@@ -24,8 +24,6 @@ using namespace com::centreon::exceptions;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
-std::once_flag init_flag;
-
 /**
  *  Constructor.
  *
@@ -179,8 +177,8 @@ int mysql::run_query_and_get_result(std::string const& query,
     // Here, we use _current_thread
     thread_id = choose_best_connection(-1);
 
-  log_v2::sql()->trace("Connection {} chosen to execute << {} >>",
-      thread_id, query);
+  log_v2::sql()->trace("Connection {} chosen to execute << {} >>", thread_id,
+                       query);
   _connection[thread_id]->run_query_and_get_result(query, promise);
   return thread_id;
 }
