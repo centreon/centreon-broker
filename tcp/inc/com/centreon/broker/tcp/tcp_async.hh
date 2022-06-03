@@ -19,9 +19,9 @@
 #define CENTREON_BROKER_TCP_INC_COM_CENTREON_BROKER_TCP_TCP_ASYNC_HH_
 
 #include <list>
+#include <map>
 #include <queue>
 #include <thread>
-#include <unordered_map>
 
 #include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/tcp/tcp_connection.hh"
@@ -68,8 +68,8 @@ class tcp_async {
 
   /* Connections opened by acceptors not already got by streams */
   mutable asio::io_context::strand _strand;
-  std::unordered_multimap<asio::ip::tcp::acceptor*,
-                          std::pair<tcp_connection::pointer, time_t>>
+  std::multimap<asio::ip::tcp::acceptor*,
+                       std::pair<tcp_connection::pointer, time_t>>
       _acceptor_available_con;
 
   std::unique_ptr<asio::steady_timer> _timer;

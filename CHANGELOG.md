@@ -51,6 +51,9 @@ Inherited downtimes were duplicated on cbd reload. This is fixed.
 
 A timeout is added on mysql\_ping and this function is less called than before.
 
+*tcp*
+
+Opened connections and handled connections are managed in the same order now.
 
 ## 21.04.5
 
