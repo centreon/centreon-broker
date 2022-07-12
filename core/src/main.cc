@@ -137,6 +137,7 @@ int main(int argc, char* argv[]) {
   int opt, option_index = 0, n_thread = 0;
   std::string broker_name{"unknown"};
   uint16_t default_port{51000};
+  std::string default_listen_address{"localhost"};
 
   // Set configuration update handler.
   if (signal(SIGHUP, hup_handler) == SIG_ERR) {
@@ -301,12 +302,15 @@ int main(int argc, char* argv[]) {
         gl_state = conf;
       }
 
+      if (!gl_state.listen_address().empty())
+        default_listen_address = gl_state.listen_address();
+
       if (gl_state.rpc_port() == 0)
         default_port += gl_state.broker_id();
       else
         default_port = gl_state.rpc_port();
       std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)> > rpc(
-          new brokerrpc("0.0.0.0", default_port, broker_name),
+          new brokerrpc(default_listen_address, default_port, broker_name),
           [](brokerrpc* rpc) {
             rpc->shutdown();
             delete rpc;

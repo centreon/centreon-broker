@@ -130,10 +130,27 @@ state parser::parse(std::string const& file) {
                                       &json::is_number, &json::get<int>))
           ;
         else if (it.key() == "grpc" && it.value().is_object()) {
-          if (json_document["centreonBroker"]["grpc"]["rpc_port"].is_number()) {
-            retval.rpc_port(static_cast<uint16_t>(
-                json_document["centreonBroker"]["grpc"]["rpc_port"]
-                    .get<int>()));
+          if (json_document["centreonBroker"]["grpc"].contains("rpc_port")) {
+            if (json_document["centreonBroker"]["grpc"]["rpc_port"]
+                    .is_number()) {
+              retval.rpc_port(static_cast<uint16_t>(
+                  json_document["centreonBroker"]["grpc"]["rpc_port"]
+                      .get<int>()));
+            } else
+              throw msg_fmt(
+                  "The rpc_port value in the grpc object should be an integer");
+          }
+          if (json_document["centreonBroker"]["grpc"].contains(
+                  "listen_address")) {
+            if (json_document["centreonBroker"]["grpc"]["listen_address"]
+                    .is_string()) {
+              retval.listen_address(
+                  json_document["centreonBroker"]["grpc"]["listen_address"]
+                      .get<std::string>());
+            } else
+              throw msg_fmt(
+                  "The listen_address value in the grpc object should be a "
+                  "string");
           }
         } else if (get_conf<state>({it.key(), it.value()}, "broker_name",
                                    retval, &state::broker_name,

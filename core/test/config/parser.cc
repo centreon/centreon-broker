@@ -640,3 +640,112 @@ TEST(parser, logWithNullLoggers) {
   // Remove temporary file.
   ::remove(config_file.c_str());
 }
+
+TEST(parser, grpc_full) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/etc\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/tmp\",\n"
+      "     \"log\": {\n"
+      "       \"directory\": \"/tmp\"\n"
+      "     },\n"
+      "     \"grpc\": {\n"
+      "       \"rpc_port\": 51001,\n"
+      "       \"listen_address\": \"10.0.2.26\"\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  config::state s{p.parse(config_file)};
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+
+  // Check global params
+  ASSERT_EQ(s.rpc_port(), 51001);
+  ASSERT_EQ(s.listen_address(), std::string("10.0.2.26"));
+  ASSERT_EQ(s.broker_id(), 1);
+  ASSERT_EQ(s.broker_name(), "central-broker-master");
+  ASSERT_EQ(s.poller_id(), 1);
+  ASSERT_EQ(s.module_directory(), "/etc");
+  ASSERT_EQ(s.event_queue_max_size(), 100000);
+  ASSERT_EQ(s.command_file(), "/var/lib/centreon-broker/command.sock");
+  ASSERT_EQ(s.cache_directory(), "/tmp/");
+  ASSERT_EQ(s.log_conf().directory, "/tmp");
+  ASSERT_EQ(s.log_conf().max_size, 0u);
+}
+
+TEST(parser, grpc_in_error) {
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+    throw msg_fmt("could not open '{}'", config_file);
+  // Data.
+  std::string data;
+  data =
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/etc\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/tmp\",\n"
+      "     \"log\": {\n"
+      "       \"directory\": \"/tmp\"\n"
+      "     },\n"
+      "     \"grpc\": {\n"
+      "       \"rpc_port\": \"foo\",\n"
+      "       \"listen_address\": \"10.0.2.26\"\n"
+      "     }\n"
+      "  }\n"
+      "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+    throw msg_fmt("could not write content of '{}'", config_file);
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::parser p;
+  ASSERT_THROW(p.parse(config_file), std::exception);
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+}
