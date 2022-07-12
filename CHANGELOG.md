@@ -1,5 +1,11 @@
 # Changelog
 
+## 21.04.9
+
+*grpc*
+
+Listen address is customizable. By default it is fixed to localhost.
+
 ## 21.04.8
 
 *log*
