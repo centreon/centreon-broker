@@ -26,6 +26,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/pool.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/exceptions/msg_fmt.hh"
@@ -97,12 +98,17 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _speed{},
       _stats_count_pos{0},
       _ref_count{0},
+      _group_clean_timer{pool::io_context()},
       _oldest_timestamp{std::numeric_limits<time_t>::max()} {
   log_v2::sql()->debug("conflict_manager: class instanciation");
 }
 
 conflict_manager::~conflict_manager() {
   log_v2::sql()->debug("conflict_manager: destruction");
+  {
+    std::lock_guard<std::mutex> l(_group_clean_timer_m);
+    _group_clean_timer.cancel();
+  }
 }
 
 /**

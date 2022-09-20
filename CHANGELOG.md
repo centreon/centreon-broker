@@ -6,6 +6,9 @@
 
 Listen address is customizable. By default it is fixed to localhost.
 
+*mysql*
+
+servicegroups and hostgroups are cleaned 5s after the last poller connexion
 ## 21.04.8
 
 *log*
