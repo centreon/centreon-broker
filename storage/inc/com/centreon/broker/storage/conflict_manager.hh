@@ -18,6 +18,7 @@
 #ifndef CCB_SQL_CONFLICT_MANAGER_HH
 #define CCB_SQL_CONFLICT_MANAGER_HH
 #include <array>
+#include <asio.hpp>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
@@ -197,6 +198,9 @@ class conflict_manager {
       _metric_cache;
   std::mutex _metric_cache_m;
 
+  std::mutex _group_clean_timer_m;
+  asio::system_timer _group_clean_timer;
+
   std::unordered_set<uint32_t> _hostgroup_cache;
   std::unordered_set<uint32_t> _servicegroup_cache;
 
@@ -330,6 +334,7 @@ class conflict_manager {
   void _load_deleted_instances();
   void _load_caches();
   void _clean_tables(uint32_t instance_id);
+  void _clean_group_table();
   void _prepare_hg_insupdate_statement();
   void _prepare_sg_insupdate_statement();
   void _finish_action(int32_t conn, uint32_t action);
