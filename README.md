@@ -1,5 +1,7 @@
 # Centreon Broker
 
+**Warning** This repository is **deprecated**. You should switch to [Centreon Collect](https://github.com/centreon/centreon-collect).
+
 Centreon Broker is an extensible open-source monitoring event
 transmitter (broker). It is a low-level component of the
 [Centreon software suite](https://www.centreon.com).
